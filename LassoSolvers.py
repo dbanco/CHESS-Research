@@ -65,6 +65,12 @@ def LASSO_grad(A,b,x):
     """
     return 2*A.T.dot(A.dot(x)-b)
 
+
+def Ax_ft(A0ft, x, maxima, m, n):  
+        
+    return Ax 
+
+
 def prox_ADMM(a, lam, max_iters, eps):
     """
     Solves
@@ -151,8 +157,6 @@ def prox_LASSO(A,b,a, lam, L, max_iters, eps):
         # Update
         alpha = alpha_new.copy()
 
-        
-    print(j)
     return alpha 
  
 def NN_LASSO_obj(A,x,b,lam):
@@ -231,6 +235,63 @@ def nn_fista(A, b, lam, L, maxit, eps, benchmark=0):
         return x, total_time
     else:
         return x
+
+
+import scipy.optimize as opt
+def obj_func(x,A,b,lam,eps):
+    """
+    Computes full LASSO objective function and Jacobian
+    """
+    
+    obj = LASSO_cost(A,b,x)
+    obj += lam*np.sum(np.sqrt(x**2 + eps))
+    
+    grad = 2*A.T.dot(A.dot(x)-b)
+    grad += lam*2*x/np.sqrt(x**2 + eps)
+    
+    return obj, grad
+
+def obj_func_circ(x,A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps):
+    """
+    Compute LASSO cost function leveraging circulant structure
+    """
+    res = Ax_ft(A0_ft,x,maxima,m,n) - b
+    obj = np.sum(res**2) + lam*np.sum(np.abs(x))   
+    grad = 2*ATb_ft(A0_tran_ft,res,num_var,maxima) + lam*2*x/np.sqrt(x**2 + eps)
+    
+    return obj, grad
+
+def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,benchmark=0):
+    
+    if benchmark: 
+        start_time = time.time()
+    
+    x0 = np.zeros(num_var*len(maxima))
+    m = num_theta
+    n = A0.shape[1]
+    A0_ft = np.fft.fft(A0,axis=0)    
+    A0_tran_ft = np.fft.fft(A0_tran,axis=0)  
+    
+    # Construct positivity bounds
+    bnd = []
+    for i in range(len(x0)):
+        bnd.append((0,None))
+    
+    result = opt.minimize(obj_func_circ,
+                          x0,
+                          args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps),
+                          method='L-BFGS-B',
+                          jac=True,
+                          bounds=bnd)
+    x = result.x
+    
+    if benchmark: 
+        total_time = time.time() - start_time
+        return x, total_time
+    else:
+        return x
+
+
 
 "Vector formatting helper function for circulant matrix-vector product"
 def x_to_x_ft(x, maxima, m, n):

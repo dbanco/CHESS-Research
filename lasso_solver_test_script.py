@@ -24,10 +24,11 @@ import LassoSolvers
 
 
 ### Data directory
-data_dir = os.path.join('F:','CHESS_raw_data')
+data_dir = os.path.join('E:','CHESS_raw_data')
 out_dir  = os.path.join(data_dir,'out')
 
-#%%
+#%% Load Real Image Data
+
 specimen_name         = 'al7075_mlf'
 step_names            = ['initial',  '1turn',    '2turn',    '3turn',    'unload']
 dic_files             = ['dic_4536', 'dic_4537', 'dic_4538', 'dic_4539', 'dic_4540']
@@ -56,9 +57,10 @@ sample    = DA.Specimen(specimen_name, data_dir, out_dir,
                         detector_dist, true_center, 
                         e_rng, p_rng, t_rng, E, G, v)   
 
-rsf_out = np.load('results_exp_aluminum_fixed.npy')
+# Data path
+struc_data = os.path.join('E:','CHESS_data','results_exp_aluminum_fixed.npy')
+rsf_out = np.load(struc_data)
 
-#%% Lasso fitting for each ring
 # Specify image data
 img_num = 75
 load_i = 0
@@ -67,10 +69,33 @@ rsf_ex = rsf_out[load_i][img_num]
 # Parameters
 num_theta = 2400
 dtheta = 2*np.pi/num_theta
-num_var = 15
 
 # 1D azimuthal diffraction data
 b = rsf_ex.f
+
+#%% Generate Data instead
+"""
+num_theta = 3000
+dtheta = 2*np.pi/num_theta
+
+scale = [200, 400, 330]
+means = [40, 140, 200]
+stds = [5, 10, 7]
+
+np.random.normal(0,1,num_theta)
+
+noise = np.random.normal(0,1,num_theta)
+b = np.zeros(num_theta)
+
+for i in range(3):
+    b += scale[i]*EM.gaussian_basis_wrap(num_theta,
+                                           dtheta,
+                                           means[i],
+                                           (stds[i]*dtheta)**2)
+
+"""
+#%% Lasso fitting for each ring
+num_var = 15
 
 # Extract local maxima
 maxima =argrelmax(b)[0]
@@ -120,21 +145,15 @@ y = np.zeros((num_theta,num_tests))
 
 # Parameters
 l1_ratio = 0.08
-max_iters = 20
+max_iters = 40
 
-reload(RingIP)
-reload(LassoSolvers)
-print('NN_FISTA')
-#beta = 10**(-4)
-#eta = 10**(-3)
-#rho = 1
-eps = 10**(-8)
-lam = 0.08
-L = 0.05
-coefs1, times1 = LassoSolvers.nn_fista(B, b, lam, L, 
-                                       max_iters,eps, benchmark=1) 
-coefs[:,5] = coefs1
-times[5]   = times1
+test_names = ['Circulant Coordinate Ascent',
+              'FISTA',
+              'Circulant FISTA',
+              'Scikit Coordinate Ascent',
+              'SciPy Minimize',
+              'NN_FISTA']
+
 
 print('Circulant Coordinate Ascent')
 coefs1, times1 = LassoSolvers.coord_ascent_circ(B,
@@ -179,12 +198,32 @@ sci_time = t2-t1
 coefs[:,3] = lasso.coef_
 times[3]   = sci_time
 
-#print('Cython Circulant Coordinate Ascent')
-#coefs1, times1 = LassoSolvers.cython_circulant_coord_ascent(B, B0, maxima, b, 
-#                                       l1_ratio, max_iters, 
-#                                       positive=1, benchmark=1) 
-#coefs[:,4] = coefs1
-#times[4]   = times1
+reload(RingIP)
+reload(LassoSolvers)
+print('SciPy Minimize')
+eps = 10**(-8)
+coefs1, times1 = LassoSolvers.LASSO_approx_tnc(B0,B0_tran,maxima,
+                                               num_var,num_theta,
+                                               b,l1_ratio,eps,benchmark=1)
+coefs[:,4] = coefs1
+times[4]   = times1
+
+print('NN_FISTA')
+#beta = 10**(-4)
+#eta = 10**(-3)
+#rho = 1
+eps = 10**(-8)
+lam = 0.08
+L = 0.05
+coefs1, times1 = LassoSolvers.nn_fista(B, b, lam, L, 
+                                       max_iters,eps, benchmark=1) 
+coefs[:,5] = coefs1
+times[5]   = times1     
+     
+reload(RingIP)
+reload(LassoSolvers)
+
+
 
 
 
@@ -198,5 +237,6 @@ for i in range(num_tests):
     plt.figure(i)
     plt.plot(b,'-ob')
     plt.plot(y[:,i],'-or')
+    plt.title(test_names[i])
     
     

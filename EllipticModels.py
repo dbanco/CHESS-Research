@@ -412,7 +412,7 @@ def gaussian_basis_wrap(num_theta,dtheta,mean,variance):
     """
     
     idx = np.arange(0,num_theta)
-    opposite = (idx[mean-np.floor(num_theta/2)] + idx[mean-np.ceil(num_theta/2)])/2
+    opposite = (idx[int(mean-np.floor(num_theta/2))] + idx[int(mean-np.ceil(num_theta/2))])/2
     dist1 = np.abs(mean - idx)
     dist2 = num_theta/2 - np.abs(opposite - idx)
     dist = np.minimum(dist1,dist2)*dtheta
