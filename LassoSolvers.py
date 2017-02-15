@@ -185,6 +185,13 @@ def NN_LASSO_obj_quad_approx(L,lam,x,y,A,b):
               0.5*L*norm(x-y)**2 + lam*np.sum(np.abs(x))
         return Q_L
 
+"Projected Nesterov's Proximal Gradient Algorithm"
+def pnpg(x0,u,gamma,b,n,m,xc,eta,eps):
+    x_old = 0
+    i = 0
+    kappa = 0
+    beta = 
+
 "NN FISTA algorithm"
 def nn_fista(A, b, lam, L, maxit, eps, benchmark=0):
     
