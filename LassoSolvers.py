@@ -46,7 +46,8 @@ def fista(A, b, l, maxit, positive=0, benchmark=0):
         t0 = t
         t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
         z = x + ((t0 - 1.) / t) * (x - xold)
-    
+        if positive:
+            z[z<0] = 0
     if benchmark: 
         total_time = time.time() - start_time
         return x, total_time

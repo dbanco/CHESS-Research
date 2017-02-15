@@ -145,7 +145,7 @@ y = np.zeros((num_theta,num_tests))
 
 # Parameters
 l1_ratio = 0.08
-max_iters = 40
+max_iters = 500
 
 test_names = ['Circulant Coordinate Ascent',
               'FISTA',
