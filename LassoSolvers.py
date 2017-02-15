@@ -106,7 +106,13 @@ def prox_ADMM(a, lam, max_iters, eps):
     z_old = z.copy()
     z = z_new.copy()
 
+    #rho = 1
     for j in range(max_iters):
+        
+        """
+        a_bar = (a + rho*(s_1 + v_1))/(1+rho)
+        alpha = 1
+        """
         
         # Convergence check
         conv_1 = norm(z - z_old)/norm(z)
@@ -186,6 +192,50 @@ def NN_LASSO_obj_quad_approx(L,lam,x,y,A,b):
               0.5*L*norm(x-y)**2 + lam*np.sum(np.abs(x))
         return Q_L
 
+def Quadratic_approx(beta,x,x_bar,A,b):
+    """
+    Evaluate nonnegative LASSO quadratic approximation
+    f(x_bar) + <x-x_bar,gradf(y)> + 0.5/beta*norm(x-x_bar)**2
+    """
+    if np.sum(x<0):
+        print('Negative coefficient found')
+        return float("inf")
+    else:
+        Q_L = LASSO_cost(A,b,x_bar) + \
+              np.dot(x-x_bar,LASSO_grad(A,b,x_bar)) + \
+              0.5/beta*norm(x-x_bar)**2
+        return Q_L
+
+def PNPG(x0,u,gamma,b,n,m,xc,eta,eps,max_iters):
+    
+    x_1 = np.zeros(x0.shape)
+    i = 0
+    kappa = 0
+    
+    # Initialize by BB method
+    grad1 = LASSO_grad(A,y,x0)
+    temp = 1e-5*grad1/norm(grad1)
+    grad2 = LASSO_grad(A,y,x0-temp)
+    beta = np.abs(np.dot(grad1-grad2,temp))/np.sum((opt-x0)**2)
+    
+    for it in range(max_iters):
+        i += 1
+        kappa += 1
+        x_2 = x_1.copy()
+        
+        # Backtracking search
+        while True:
+            B = beta_old/beta
+            if(i > 1):
+                theta = 1/gamma + np.sqrt(b + B*theta_1**2)
+            else:
+                theta = 1
+            T_const = (theta_1 - 1)/theta
+            x_bar = max(x_1 + T_const*(x_1 - x_2),0)
+            x = prox(x_bar - beta*LASSO_grad(A,y,x_bar))
+            
+
+
 "NN FISTA algorithm"
 def nn_fista(A, b, lam, L, maxit, eps, benchmark=0):
     
@@ -262,7 +312,7 @@ def obj_func_circ(x,A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps):
     
     return obj, grad
 
-def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,benchmark=0):
+def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,max_iter,benchmark=0):
     
     if benchmark: 
         start_time = time.time()
@@ -283,7 +333,8 @@ def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,benchmark=0):
                           args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps),
                           method='L-BFGS-B',
                           jac=True,
-                          bounds=bnd)
+                          bounds=bnd,
+                          options={'maxiter':max_iter})
     x = result.x
     
     if benchmark: 
@@ -291,7 +342,6 @@ def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,benchmark=0):
         return x, total_time
     else:
         return x
-
 
 
 "Vector formatting helper function for circulant matrix-vector product"
