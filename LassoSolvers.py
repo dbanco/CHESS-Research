@@ -9,6 +9,7 @@ Library of functions for solving Lasso problem
 
 ## Init
 from __future__ import division
+from __future__ import print_function
 
 import numpy as np
 import os
@@ -39,15 +40,21 @@ def fista(A, b, l, maxit, positive=0, benchmark=0):
     L = norm(A)**2
     for it in range(maxit):
         xold = x.copy()
+        
+        # Project onto constraint
         z = z + A.T.dot(b - A.dot(z))/L
+        # Enforce positivity 
         if positive:
             z[z<0] = 0
+        # Sot Threshold
         x = soft_thresh(z,1/L)
+        # Update Step size
         t0 = t
         t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
         z = x + ((t0 - 1.) / t) * (x - xold)
         if positive:
             z[z<0] = 0
+             
     if benchmark: 
         total_time = time.time() - start_time
         return x, total_time
@@ -58,18 +65,13 @@ def LASSO_cost(A,b,x):
     """
     Compute LASSO cost function
     """
-    return norm(A.dot(x) - b)**2
+    return 0.5/len(b)*np.sum((A.dot(x) - b)**2)
     
 def LASSO_grad(A,b,x):
     """
     Compute gradient of LASSO cost function
     """
-    return 2*A.T.dot(A.dot(x)-b)
-
-
-def Ax_ft(A0ft, x, maxima, m, n):  
-        
-    return Ax 
+    return A.T.dot(A.dot(x)-b)/len(b)
 
 
 def prox_ADMM(a, lam, max_iters, eps):
@@ -192,11 +194,13 @@ def NN_LASSO_obj_quad_approx(L,lam,x,y,A,b):
               0.5*L*norm(x-y)**2 + lam*np.sum(np.abs(x))
         return Q_L
 
+
+"""
 def Quadratic_approx(beta,x,x_bar,A,b):
-    """
+    ""
     Evaluate nonnegative LASSO quadratic approximation
     f(x_bar) + <x-x_bar,gradf(y)> + 0.5/beta*norm(x-x_bar)**2
-    """
+    ""
     if np.sum(x<0):
         print('Negative coefficient found')
         return float("inf")
@@ -235,51 +239,104 @@ def PNPG(x0,u,gamma,b,n,m,xc,eta,eps,max_iters):
             x = prox(x_bar - beta*LASSO_grad(A,y,x_bar))
             
 
+"""
+
+#def linearModel(x,A,y,b):
+#    Ax = A.dot(x)
+#
+#    g = Ax - b
+#    f = np.sum(g**2)/2
+#    h = np.ones(x.shape)
+#    
+#    return f, A.T.dot(g), hessian1(x,A,opt,h)
+    
+def hessian1(x,A,b,opt=2):
+    h = np.ones(x.shape)
+    yy = A.dot(x)
+    if(opt == 1):
+        hh = A.T.dot(h*yy)
+    else:
+        hh = np.dot(yy,h*yy) 
+    return hh
+
+#def nonegPenalty(x):
+#    temp = x < 0
+#    f = np.dot(x(temp),x(temp))
+#    
+#    g = np.zeros(x.shape)
+#    g(temp) = 2*x(temp)
+#    
+#    hh = hessian2(x,A,opt)
+    
+def hessian2(x,opt):
+    temp = x < 0
+    if(opt == 1):
+        hh = np.zeros(x.shape)
+        hh[temp,:] = x[temp,:]*2
+    else:
+        x = np.reshape(x,len(temp[:]),np.array([]))
+        y = x[temp,:]
+        hh = np.dot(y,y*2)
+    return(hh)
+
+def hessian(x,opt):
+    hh = 0
+    for j in range(2):
+        hh = hh + hessian1(x,A,bopt)*coef1 + hessian2(x,opt)*coef2
 
 "NN FISTA algorithm"
-def nn_fista(A, b, lam, L, maxit, eps, benchmark=0):
+def nn_fista(x0, A, b, lam, L, maxit, eps, benchmark=0):
     
     if benchmark: 
         start_time = time.time()
         
-    # Step 0
-    t = 1  
-    eta = 2
-    x_old = np.ones(A.shape[1])
-    y = x_old.copy()
-    
+    # Step 0 
+    stepShrink = 0.5
+    preAlpha = 0
+    thresh = 1e-4
+    theta = 0
+    cumu = 0
+    cumuTol = 4
+    oldCost = 0
+    x = x0
     for it in range(maxit):
+        temp = (1. + sqrt(1. + 4. * t ** 2)) / 2. 
+        y = x + ((theta - 1.) / theta) * (x - x_old)   
         
-        # Backtracking
-        p = prox_LASSO(A,b,y, lam,L, int(maxit/5), eps)
-        F = NN_LASSO_obj(A,p,b,lam)
-        Q = NN_LASSO_obj_quad_approx(L,lam,p,y,A,b)
+        theta = temp
+        x_old = x
         
-#        while(F<=Q):
-#            L = eta*L
-#            p = prox_LASSO(A,b,y, lam,L, int(maxit/5), eps)
-#            F = NN_LASSO_obj(A,p,b,lam)
-#            Q = NN_LASSO_obj_quad_approx(L,lam,p,y,A,b)
-#            if(Q<0 or F<0):
-#                break
-#        while(F>Q):
-#            L = eta/L
-#            p = prox_LASSO(A,b,y, lam,L, int(maxit/5), eps)
-#            F = NN_LASSO_obj(A,p,b,lam)
-#            Q = NN_LASSO_obj_quad_approx(L,lam,p,y,A,b) 
-#            if(Q<0 or F<0):
-#                break
-        if(Q<0 or F<0):
-            print('Why is Q negative?')
+        # Initialize theta step size if not given #############################
+        if(theta==-1):
+            oldCost, grad, hessian = obj_func_hess(x,A,b)
+            t = hessian(grad,2)/np.dot(grad,grad)
+        else:
+            oldCost, grad = obj_func(x,A,b)
+        ############################################################
+        
+        # Begin line search
+        i = 0
+        while True:
+            newX = y - grad/t
+            newX[newX>0] = 0
+            newCost = obj_func(newX)[0]
+            if(newCost<=oldCost + grad.dot(newX-y) + theta/2*norm(newX-y)**2):
+                break
+            else:
+                t = t/stepShrink
+        if(i == 1):
+            cumu = cumu + 1
+            if(cumu >= cumuTol):
+                t = t*stepShrink
+                cumu = 0
+        else:
+            cumu = 0
             
-        # Main Iteration 
-        x = prox_LASSO(A,b,y, lam,L, int(maxit/5), eps)
-        t_new = (1. + sqrt(1. + 4. * t ** 2)) / 2. 
-        y = x + ((t_new - 1.) / t_new) * (x - x_old)
-        
-        # Update old variables        
-        t = t_new
-        x_old = x.copy()
+        difx = norm(newX-x)/norm(newX)
+        x = newX
+        cost = newCost
+        if(difx<thresh):
+            break        
     
     if benchmark: 
         total_time = time.time() - start_time
@@ -297,7 +354,7 @@ def obj_func(x,A,b,lam,eps):
     obj = LASSO_cost(A,b,x)
     obj += lam*np.sum(np.sqrt(x**2 + eps))
     
-    grad = 2*A.T.dot(A.dot(x)-b)
+    grad = A.T.dot(A.dot(x)-b)/len(b)
     grad += lam*2*x/np.sqrt(x**2 + eps)
     
     return obj, grad
@@ -307,13 +364,23 @@ def obj_func_circ(x,A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps):
     Compute LASSO cost function leveraging circulant structure
     """
     res = Ax_ft(A0_ft,x,maxima,m,n) - b
-    obj = np.sum(res**2) + lam*np.sum(np.abs(x))   
-    grad = 2*ATb_ft(A0_tran_ft,res,num_var,maxima) + lam*2*x/np.sqrt(x**2 + eps)
+    obj = 0.5/len(b)*np.sum(res**2) + lam*np.sum(np.abs(x))   
+    grad = ATb_ft(A0_tran_ft,res,num_var,maxima)/len(b) + lam*2*x/np.sqrt(x**2 + eps)
     
     return obj, grad
 
-def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,max_iter,benchmark=0):
-    
+def obj_func_circ_callback(x,A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps):
+    """
+    Compute LASSO cost function leveraging circulant structure
+    """
+    res = Ax_ft(A0_ft,x,maxima,m,n) - b
+    obj = 0.5/len(res)*np.sum(res**2) + lam*np.sum(np.abs(x)) 
+    obj_hist = np.load('obj_hist.npy')
+    obj_hist = np.append(obj_hist,obj)
+    np.save('obj_hist.npy',obj_hist)
+
+def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,max_iter,callback=0,benchmark=0):
+  
     if benchmark: 
         start_time = time.time()
     
@@ -327,17 +394,28 @@ def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,max_iter,benc
     bnd = []
     for i in range(len(x0)):
         bnd.append((0,None))
+        
+    if callback:
+        obj_hist = np.array(())
+        np.save('obj_hist.npy',obj_hist)
+        callbackf = lambda x: obj_func_circ_callback(x,A0_ft,A0_tran_ft,
+                                                     b,maxima,num_var,m,n,
+                                                     lam,eps)
+        
+        x = opt.fmin_l_bfgs_b(obj_func_circ,
+                                   x0,
+                                   args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps),
+                                   bounds=bnd,
+                                   maxiter=max_iter,
+                                   callback=callbackf)
+    else:
+        x = opt.fmin_l_bfgs_b(obj_func_circ,
+                       x0,
+                       args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps),
+                       bounds=bnd,
+                       maxiter=max_iter) 
     
-    result = opt.minimize(obj_func_circ,
-                          x0,
-                          args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,lam,eps),
-                          method='L-BFGS-B',
-                          jac=True,
-                          bounds=bnd,
-                          options={'maxiter':max_iter})
-    x = result.x
-    
-    if benchmark: 
+    if benchmark:
         total_time = time.time() - start_time
         return x, total_time
     else:
@@ -405,7 +483,7 @@ def ATb_ft(A0_tran_ft,R,num_var,maxima):
     
 "FISTA algorithm using circulant matrix-vector product subroutines"
 def fista_circulant(A, A0, A0_tran, maxima, b,
-                    l, maxit, positive=0, benchmark=0):
+                    l1_ratio, maxit, positive=0, benchmark=0):
     
     if benchmark: 
         start_time = time.time()
@@ -428,14 +506,110 @@ def fista_circulant(A, A0, A0_tran, maxima, b,
         
         # Enforce positivity on coefficients
         if positive:
-                z[z<0]=0
+            z[z<0]=0
 
         x = soft_thresh(z,1/L)
         
         t0 = t
         t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
         z = x + ((t0 - 1.) / t) * (x - xold)
+        
+        if positive:
+            z[z<0]=0
+    if benchmark: 
+        total_time = time.time() - start_time
+        return x, total_time
+    else:
+        return x
+    
+"Circulant matrix-vector product subroutine"
+def Ax_ft_2D(A0ft, x):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+    """
+    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
+    
+    x_ft = np.fft.fft2(x,axes=(0,1))
+    
+    for tv in range(A0ft.shape[2]):
+        for rv in range(A0ft.shape[3]):
+            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
+        
+    return Ax
 
+"Circulant matrix-vector product subroutine"
+def AtR_ft_2D(A0ft, R):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+    """
+    AtR = np.zeros((A0ft.shape))
+    
+    R_ft = np.fft.fft2(R)
+
+    for tv in range(A0ft.shape[2]):
+        for rv in range(A0ft.shape[3]):
+            AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
+        
+    return AtR
+    
+
+
+"FISTA algorithm using circulant matrix-vector product subroutines"
+def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+    # A0 is a bunch of slices indexed by variance and radius
+    if benchmark: 
+        start_time = time.time()
+            
+        
+    num_rad = A0.shape[0]
+    num_theta = A0.shape[1]
+    num_var_theta = A0.shape[2]
+    num_var_rad = A0.shape[3]
+    
+    # Compute fft of each slice
+    A0ft = np.zeros(A0.shape)
+    for tv in range(num_var_theta):
+        for rv in range(num_var_rad):
+            A0ft[:,:,tv,rv] = np.fft.fft2(A0[:,:,tv,rv]) 
+            
+    
+    x = np.zeros(A0.shape)
+    t = 1
+    z = x.copy()
+
+    for it in range(maxit):
+        xold = x.copy()
+        
+        # Arrange x coefficents as matrix in fourier domain 
+        R = b - Ax_ft_2D(A0ft,z)
+        z = z + AtR_ft_2D(A0ft,R)/L
+        
+        # Enforce positivity on coefficients
+        if positive:
+            z[z<0]=0
+
+        x = soft_thresh(z,l1_ratio/L)
+        
+        t0 = t
+        t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
+        z = x + ((t0 - 1.) / t) * (x - xold)
+        
+        if positive:
+            z[z<0]=0
+        
+        if verbose:
+            obj = 0.5/(num_rad*num_theta)*np.sum((b.ravel() - Ax_ft_2D(A0ft,x).ravel())**2) + l1_ratio*np.sum(np.abs(x.ravel() ))
+            print('Iter: '+str(it) +' of '+ str(maxit) + ',   Obj: ' + str(obj))
+            
+        e = np.sum(np.abs(x - xold))/len(x.ravel())
+        if(e < eps):
+            break
+            
+        
     if benchmark: 
         total_time = time.time() - start_time
         return x, total_time
@@ -772,8 +946,6 @@ def cython_circulant_coord_ascent(A,
 # This may be good for a sanity check, but not good for much else
 import lasso_coord_ascent as coord      
 def cython_coord_ascent(A,
-                        A0,
-                        maxima,
                         b,
                         alpha, 
                         max_iter,
@@ -782,31 +954,12 @@ def cython_coord_ascent(A,
     if benchmark:  
         start_time = time.time()
         
-    num_theta = A0.shape[0]
-    num_var   = A0.shape[1]    
-
-    A_tran = np.transpose(A)
-
-    # Create transposed convolution matrix
-    A0_tran = np.zeros([num_theta,num_var])
-    for i in range(num_var): 
-        A0_tran[0,i] = A0[0,i]
-        A0_tran[1::,i] = np.flipud(A0[1::,i])
-    
-    A0ft = np.fft.fft(A0,axis=0)
-    A0_tranft = np.fft.fft(A0_tran,axis=0)    
-    
     # Enforce Fortran contiguous storage
     A = np.array(A, order='F', copy=True)
-    A_tran = np.array(A_tran, order='F', copy=True)
-    A0 = np.array(A0, order='F',copy=True)
-    A0_tran = np.array(A0_tran, order='F',copy=True)                                     
-    A0ft = np.array(A0ft, order='F',copy=True)
-    A0_tranft = np.array(A0_tranft, order='F',copy=True)
 
     # Call Cython function
-    x = coord.lasso_solver(A, A0ft, A0_tran_ft, maxima, b, 
-                           alpha, max_iter, positive=positive)
+    x = coord.lasso_solver(A, b, 
+                           alpha, max_iter, positive)
         
     if benchmark: 
         total_time = time.time() - start_time

@@ -504,8 +504,6 @@ def azimuthal_projection(img,center,r,theta_1,theta_2,num_theta):
             img         image
             center      center of the rings in the image
             r           radius of ring of interest     
-            theta_1     inside radius containing ring
-            theta_2     outside radius containing ring
             num_theta   number of samples along theta
             
     outputs

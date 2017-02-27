@@ -266,9 +266,15 @@ def ellipse_basis_single_spot(pos,a,b,xc,yc,dx,dy,theta,num_theta,var_perp,var_p
     """
     inputs:
         mask: points over which basis functions will be evaluated
+        pos: points for which elliptic gaussian is defined
         a: half x-axis length of ellipse
         b: half y-axis length of ellipse
+        xc: x-axis center of ellipse
+        yc: y-axis center of ellipse
+        dx: x-axis offset
+        dy: y-axis offset
         theta: azimuthal mean of spot
+        num_theta: number of azimuthal samples
         ssq_perp: Variance perpendicular to the curve
         ssq_prll: Variance paralell to the curve    
         
@@ -424,3 +430,134 @@ def gaussian_basis_wrap(num_theta,dtheta,mean,variance):
     B = np.exp(-dist_sq/variance)
             
     return B
+
+def gaussian_basis_wrap_2D(num_theta,dtheta,m_theta,v_theta,num_r,dr,m_r,v_r):
+    """
+    inputs:
+            num_theta      number of data points
+            dtheta         distance between data points
+            mean       mean of gaussian function
+            variance   variance of gaussian function
+       
+    outputs:
+            B           basis vector
+    """
+    
+    # Compute theta distances with wrapping
+    idx = np.arange(0,num_theta)
+    opposite = (idx[int(m_theta-np.floor(num_theta/2))] + idx[int(m_theta-np.ceil(num_theta/2))])/2
+    dist1 = np.abs(m_theta - idx)
+    dist2 = num_theta/2 - np.abs(opposite - idx)
+    dist = np.minimum(dist1,dist2)*dtheta
+    dist_sq_theta = dist**2    # num_theta length vector
+    
+    # Compute radial distance with wrapping
+    idx = np.arange(0,num_r)
+    opposite = (idx[int(m_r-np.floor(num_r/2))] + idx[int(m_r-np.ceil(num_r/2))])/2
+    dist1 = np.abs(m_r - idx)
+    dist2 = num_r/2 - np.abs(opposite - idx)
+    dist = np.minimum(dist1,dist2)*dr
+    dist_sq_r = dist**2    # num_r length vector
+
+    all_dist_sq_theta = dist_sq_theta.copy()
+    all_dist_sq_r = dist_sq_r[0]*np.ones((num_theta,))
+    for i in range(1,num_r):
+        all_dist_sq_theta = np.append(all_dist_sq_theta,dist_sq_theta)
+        all_dist_sq_r = np.append(all_dist_sq_r, dist_sq_r[i]*np.ones((num_theta,)))
+
+    # Build basis vector
+    B = np.exp(-all_dist_sq_theta/v_theta - all_dist_sq_r/v_r)
+            
+    return B
+
+def gaussian_basis_wrap_2D_tube(num_theta,dtheta,v_theta,num_rad,dr,v_r):
+    """
+    inputs:
+            num_theta      number of data points
+            dtheta         distance between data points
+            mean       mean of gaussian function
+            variance   variance of gaussian function
+       
+    outputs:
+            B           basis vector
+    """
+    
+    # Compute theta distances with wrapping
+    m_theta = np.arange(0,num_theta)
+    opposite = m_theta + num_theta/2
+    opposite[m_theta>=num_theta/2] = np.mod(m_theta[m_theta>=num_theta/2] + num_theta/2,num_theta/2)
+    dist1 = np.abs(m_theta)
+    dist2 = num_theta/2 - np.abs(opposite)
+    dist = np.minimum(dist1,dist2)*dtheta
+    dist_sq_theta = dist**2    # num_theta length vector
+    
+    
+    # Compute radial distance with wrapping
+    m_rad = np.arange(0,num_rad)
+    opposite = m_rad + num_rad/2
+    opposite[m_rad>=num_rad/2] = np.mod(m_rad[m_rad>=num_rad/2] + num_rad/2,num_rad/2)
+    dist1 = np.abs(m_rad)
+    dist2 = num_rad/2 - np.abs(opposite)
+    dist = np.minimum(dist1,dist2)*dr
+    dist_sq_r = dist**2    # num_r length vector
+
+    all_dist_sq_theta = dist_sq_theta.copy()
+    all_dist_sq_r = dist_sq_r[0]*np.ones((num_theta,))
+    coor_theta = m_theta.copy()
+    coor_rad = m_rad[0]*np.ones((num_theta,))
+    for i in range(1,num_rad):
+        all_dist_sq_theta = np.append(all_dist_sq_theta,dist_sq_theta)
+        all_dist_sq_r = np.append(all_dist_sq_r, dist_sq_r[i]*np.ones((num_theta,)))
+        coor_theta = np.append(coor_theta,m_theta)
+        coor_rad = np.append(coor_rad,m_rad[i]*np.ones((num_theta,)))
+    # Build basis vector
+    B = np.exp(-all_dist_sq_theta/v_theta - all_dist_sq_r/v_r)
+    domain = np.array((coor_theta,coor_rad))
+            
+    return B, domain
+
+def gaussian_basis_wrap_2D_shift_tube(num_theta,dtheta,v_theta,num_rad,dr,v_r,idx_t,idx_r):
+    """
+    inputs:
+            num_theta      number of data points
+            dtheta         distance between data points
+            mean       mean of gaussian function
+            variance   variance of gaussian function
+       
+    outputs:
+            B           basis vector
+    """
+    
+    # Compute theta distances with wrapping
+    m_theta = np.arange(0,num_theta)
+    opposite = m_theta + num_theta/2
+    opposite[m_theta>=num_theta/2] = np.mod(m_theta[m_theta>=num_theta/2] + num_theta/2,num_theta/2)
+    dist1 = np.abs(m_theta - idx_t)
+    dist2 = num_theta/2 - np.abs(opposite - idx_t)
+    dist = np.minimum(dist1,dist2)*dtheta
+    dist_sq_theta = dist**2    # num_theta length vector
+    
+    
+    # Compute radial distance with wrapping
+    m_rad = np.arange(0,num_rad)
+    opposite = m_rad + num_rad/2
+    opposite[m_rad>=num_rad/2] = np.mod(m_rad[m_rad>=num_rad/2] + num_rad/2,num_rad/2)
+    dist1 = np.abs(m_rad - idx_r)
+    dist2 = num_rad/2 - np.abs(opposite - idx_r)
+    dist = np.minimum(dist1,dist2)*dr
+    dist_sq_r = dist**2    # num_r length vector
+
+    all_dist_sq_theta = dist_sq_theta.copy()
+    all_dist_sq_r = dist_sq_r[0]*np.ones((num_theta,))
+    coor_theta = m_theta.copy()
+    coor_rad = m_rad[0]*np.ones((num_theta,))
+    for i in range(1,num_rad):
+        all_dist_sq_theta = np.append(all_dist_sq_theta,dist_sq_theta)
+        all_dist_sq_r = np.append(all_dist_sq_r, dist_sq_r[i]*np.ones((num_theta,)))
+        coor_theta = np.append(coor_theta,m_theta)
+        coor_rad = np.append(coor_rad,m_rad[i]*np.ones((num_theta,)))
+    # Build basis vector
+    B = np.exp(-all_dist_sq_theta/v_theta - all_dist_sq_r/v_r)
+    domain = np.array((coor_theta,coor_rad))
+            
+    return B, domain
