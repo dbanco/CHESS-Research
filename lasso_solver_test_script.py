@@ -7,6 +7,7 @@ Created on Mon Nov 28 16:56:01 2016
 
 ## Init
 from __future__ import division
+from __future__ import print_function
 
 import numpy as np
 from numpy.linalg import norm 
@@ -22,13 +23,12 @@ import EllipticModels as EM
 import DataAnalysis as DA
 import LassoSolvers
 
-
 ### Data directory
 data_dir = os.path.join('E:','CHESS_raw_data')
 out_dir  = os.path.join(data_dir,'out')
 
 #%% Load Real Image Data
-"""
+
 specimen_name         = 'al7075_mlf'
 step_names            = ['initial',  '1turn',    '2turn',    '3turn',    'unload']
 dic_files             = ['dic_4536', 'dic_4537', 'dic_4538', 'dic_4539', 'dic_4540']
@@ -62,8 +62,8 @@ struc_data = os.path.join('E:','CHESS_data','results_exp_aluminum_fixed.npy')
 rsf_out = np.load(struc_data)
 
 # Specify image data
-img_num = 75
-load_i = 0
+img_num = 165
+load_i = 3
 rsf_ex = rsf_out[load_i][img_num]
 
 # 1D azimuthal diffraction data
@@ -72,10 +72,10 @@ b = rsf_ex.f
 # Parameters
 num_theta = len(b)
 dtheta = 2*np.pi/num_theta
-"""
+
 
 #%% Generate Data instead
-
+"""
 num_theta = 300
 dtheta = 2*np.pi/num_theta
 
@@ -93,7 +93,7 @@ for i in range(3):
                                            dtheta,
                                            means[i],
                                            (stds[i]*dtheta)**2)
-
+"""
 #%% Lasso fitting for each ring
 num_var = 15
 
@@ -132,12 +132,18 @@ B0_tran = np.array(B0_tran, order='F',copy=True)
 #B0ft = np.array(B0ft, order='F',copy=True)
 #B0_tranft = np.array(B0_tranft, order='F',copy=True)   
 
+# Output as .mat files for MATLAB
+#from scipy.io import savemat
+#savemat('test_mats_small.mat',dict(B=B, b=b))
+
+
+
 #%% Test Lasso fitting routines
 reload(RingIP)
 reload(LassoSolvers)
 
 # Test outputs
-num_tests = 6
+num_tests = 5
 times = np.zeros((num_tests))
 rel_error = np.zeros((num_tests))
 coefs = np.zeros((B.shape[1],num_tests))
@@ -145,22 +151,17 @@ y = np.zeros((num_theta,num_tests))
 
 # Parameters
 l1_ratio = 0.08
-max_iters = 300
+max_iters = 10000
 
-test_names = ['Circulant Coordinate Ascent',
+test_names = ['Coordinate Ascent',
               'FISTA',
               'Circulant FISTA',
               'Scikit Coordinate Ascent',
-              'SciPy Minimize',
-              'NN_FISTA']
+              'SciPy Minimize']
 
-
-print('Circulant Coordinate Ascent')
-coefs1, times1 = LassoSolvers.coord_ascent_circ(B,
-                                              B_tran,
-                                              B0,
-                                              B0_tran,
-                                              maxima,
+reload(LassoSolvers)
+print('Coordinate Ascent')
+coefs1, times1 = LassoSolvers.cython_coord_ascent(B,
                                               b,
                                               l1_ratio, 
                                               max_iters,
@@ -201,35 +202,23 @@ times[3]   = sci_time
 reload(RingIP)
 reload(LassoSolvers)
 print('SciPy Minimize')
+
 eps = 10**(-8)
 coefs1, times1 = LassoSolvers.LASSO_approx_tnc(B0,B0_tran,maxima,
                                                num_var,num_theta,
                                                b,l1_ratio,eps,
                                                max_iters,
+                                               callback=1,
                                                benchmark=1)
-coefs[:,4] = coefs1
+coefs[:,4] = coefs1[0]
 times[4]   = times1
-
-"""
-print('NN_FISTA')
-#beta = 10**(-4)
-#eta = 10**(-3)
-#rho = 1
-eps = 10**(-8)
-lam = 0.08
-L = 0.05
-coefs1, times1 = LassoSolvers.nn_fista(B, b, lam, L, 
-                                       max_iters,eps, benchmark=1) 
-coefs[:,5] = coefs1
-times[5]   = times1     
-"""
+obj_hist = np.load('obj_hist.npy')
+plt.plot(obj_hist)
+     # plot cost as func of iter
+     
 
 reload(RingIP)
 reload(LassoSolvers)
-
-
-
-
 
 for i in range(num_tests):
     y[:,i] = np.dot(B,coefs[:,i])
@@ -244,3 +233,27 @@ for i in range(num_tests):
     plt.title(test_names[i])
     
     
+    
+#%%
+"""
+import scipy.optimize as opt
+x0 = np.zeros(num_var*len(maxima))
+m = num_theta
+n = B0.shape[1]
+A0_ft = np.fft.fft(B0,axis=0)    
+A0_tran_ft = np.fft.fft(B0_tran,axis=0)  
+
+# Construct positivity bounds
+bnd = []
+for i in range(len(x0)):
+    bnd.append((0,None))
+
+x = opt.fmin_l_bfgs_b(LassoSolvers.obj_func_circ,
+                       x0,
+                       args=(A0_ft,A0_tran_ft,b,maxima,num_var,m,n,l1_ratio,eps),
+                       bounds=bnd,
+                       maxiter=max_iters,
+                       disp=1,
+                       iprint=1)
+
+ """

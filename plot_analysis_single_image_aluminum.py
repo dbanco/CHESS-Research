@@ -48,7 +48,7 @@ t_rng                 = [-0.036, 0.036]    # total strain range
 E, G, v               =  71.7, 26.9, 0.33  # elastic modulus (GPa), shear modulus (GPa), poisson's ratio
 
 ring_name             = 'al_311'
-radius                = 718                # ring radius in pixels
+radius                = 370                # ring radius in pixels
 dr                    = 30                 # half of ring width in pixels
 min_amp               = 25                 # minimum acceptable peak amplitude
 vec_frac              = 0.25               # fraction of peaks that must be acceptable

@@ -169,10 +169,20 @@ for t in range(num_var_t):
 # Fit 2D data
 l1_ratio = 0.08
 max_iters = 500
-#
+
+#summ = 0
+#for t in range(num_var_t):
+#    for r in range(num_var_r):
+#        eigt = np.linalg.eig( np.dot(B0_stack[:,:,t,r].T,
+#                                    B0_stack[:,:,t,r] ))
+#        summ += np.max(eigt[0].real)
+#        print(summ)
+# Sum was 7782.123
+        
 eig = np.linalg.eig( np.dot(B0_stack.reshape((num_rad*num_var_t*num_var_r,num_theta)).T,
                             B0_stack.reshape((num_rad*num_var_t*num_var_r,num_theta)) ))
-L = np.max(eig[0].real)
+L = np.max(eig[0].real)*num_rad*num_theta/2
+          
 print('Circulant FISTA 2D')
 x_hat, times = LassoSolvers.fista_circulant_2D(B0_stack, polar_image, 
                                        L, l1_ratio, max_iters, 
