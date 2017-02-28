@@ -569,7 +569,7 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
     num_theta = A0.shape[1]
     num_var_theta = A0.shape[2]
     num_var_rad = A0.shape[3]
-    
+    Linv = 1/L
     # Compute fft of each slice
     A0ft = np.zeros(A0.shape)
     for tv in range(num_var_theta):
@@ -586,13 +586,13 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         
         # Arrange x coefficents as matrix in fourier domain 
         R = b - Ax_ft_2D(A0ft,z)
-        z = z + AtR_ft_2D(A0ft,R)/L
+        z = z + AtR_ft_2D(A0ft,R)*Linv
         
         # Enforce positivity on coefficients
         if positive:
             z[z<0]=0
 
-        x = soft_thresh(z,l1_ratio/L)
+        x = soft_thresh(z,l1_ratio*Linv)
         
         t0 = t
         t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
@@ -603,7 +603,7 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         
         if verbose:
             obj = 0.5/(num_rad*num_theta)*np.sum((b.ravel() - Ax_ft_2D(A0ft,x).ravel())**2) + l1_ratio*np.sum(np.abs(x.ravel() ))
-            print('Iter: '+str(it) +' of '+ str(maxit) + ',   Obj: ' + str(obj))
+            print('Iter: '+str(it) +' of '+ str(maxit) + ',   Obj: ' + str(obj) + 'Res: ' + str(norm(R)) + 'L1: ' + str(np.sum(np.abs(x))))
             
         e = np.sum(np.abs(x - xold))/len(x.ravel())
         if(e < eps):

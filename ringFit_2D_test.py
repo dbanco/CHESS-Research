@@ -170,6 +170,9 @@ for t in range(num_var_t):
 l1_ratio = 0.08
 max_iters = 500
 
+plt.figure(1)
+plt.imshow(8000*B0_stack[:,:,0,0],cmap='jet', interpolation='nearest',vmin=0,vmax=200)
+
 #summ = 0
 #for t in range(num_var_t):
 #    for r in range(num_var_r):
@@ -181,7 +184,7 @@ max_iters = 500
         
 eig = np.linalg.eig( np.dot(B0_stack.reshape((num_rad*num_var_t*num_var_r,num_theta)).T,
                             B0_stack.reshape((num_rad*num_var_t*num_var_r,num_theta)) ))
-L = np.max(eig[0].real)*num_rad*num_theta/2
+L = np.max(eig[0].real)*num_rad*num_theta/80000
           
 print('Circulant FISTA 2D')
 x_hat, times = LassoSolvers.fista_circulant_2D(B0_stack, polar_image, 
@@ -191,8 +194,8 @@ x_hat, times = LassoSolvers.fista_circulant_2D(B0_stack, polar_image,
 y_hat = LassoSolvers.Ax_ft_2D(B0_stack,x_hat)
 
 # Error
-norm(y_hat-polar_image)/norm(polar_image)
-
+error = norm(y_hat-polar_image)/norm(polar_image)
+print(error)
 # Sparsity 
 pos_coef = np.sum(x_hat>0)
 tot_coef = len(x_hat.ravel())
@@ -205,12 +208,12 @@ print(str(pos_coef) + '       |  ' + str(one_coef) + '             | ' + str(tot
 print(str(sparsity0) + ' |  ' + str(sparsity1))
 
 plt.figure(1)
-plt.imshow(y_hat,cmap='jet', interpolation='nearest',vmin=0,vmax=5)
+plt.imshow(y_hat,cmap='jet', interpolation='nearest')
 
 plt.figure(2)
 plt.imshow(polar_image,cmap='jet', interpolation='nearest',vmin=0,vmax=200)
 
-np.save('result_2D_500_3.npy',(x_hat, times, y_hat, polar_image))
+np.save('result_2D_500_6.npy',(x_hat, times, y_hat, polar_image))
 
 #%% Test Ax and AtR on small test data
 # Stack up a bunch of test images shiftes in theta using 2D gaussian basis
