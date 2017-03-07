@@ -5,13 +5,15 @@ Created on Tue Mar 07 17:26:18 2017
 @author: dbanco02
 """
 import numpy as np
-from multiprocessing import Pool
+import multiprocessing as mp
 
 def f(x):
     print(x)
     return x*x
 
 if __name__ == '__main__':
-    pool = Pool(processes=6)
-    x = [1,2,3,4,5,6,7,8]
+    pool = mp.Pool()
+    print(mp.cpu_count())
+    print(pool.processes)
+    x = range(0,20) 
     pool.map(f,x)
