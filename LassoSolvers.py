@@ -539,6 +539,55 @@ def Ax_ft_2D(A0ft, x):
         
     return Ax
 
+from multiprocessing import Pool
+
+"Circulant matrix-vector product subroutine"
+def AtR_ft_2D_Parallel(A0ft, R, P):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+        P       Number of processes to run simultaneously
+    """
+    AtR = np.zeros((A0ft.shape))
+    
+    R_ft = np.fft.fft2(R)
+
+    pool = Pool(processes=P)
+    
+    n = A0ft.shape[2]
+    m = A0ft.shape[3]
+    k = 0
+    index = np.zeros((n*m,2))
+    for tv in range(n):
+        for rv in range(m):
+            index[k,0] = tv
+            index[k,1] = rv
+            k += 1
+    pool.map        
+    AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
+        
+    return AtR
+    
+
+"Circulant matrix-vector product subroutine"
+def Ax_ft_2D_Parallel(A0ft, x, P):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+        P       Number of processes to run simultaneously
+    """
+    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
+    
+    x_ft = np.fft.fft2(x,axes=(0,1))
+    
+    for tv in range(A0ft.shape[2]):
+        for rv in range(A0ft.shape[3]):
+            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
+        
+    return Ax
+
 "Circulant matrix-vector product subroutine"
 def AtR_ft_2D(A0ft, R):  
     """
@@ -555,7 +604,6 @@ def AtR_ft_2D(A0ft, R):
             AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
         
     return AtR
-    
 
 
 "FISTA algorithm using circulant matrix-vector product subroutines"
@@ -565,8 +613,8 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         start_time = time.time()
             
         
-    num_rad = A0.shape[0]
-    num_theta = A0.shape[1]
+#    num_rad = A0.shape[0]
+#    num_theta = A0.shape[1]
     num_var_theta = A0.shape[2]
     num_var_rad = A0.shape[3]
     Linv = 1/L
@@ -601,12 +649,33 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         if positive:
             z[z<0]=0
         
+        criterion = np.sum(np.abs(x - xold))/len(x.ravel())
+        
         if verbose:
-            obj = 0.5/(num_rad*num_theta)*np.sum((b.ravel() - Ax_ft_2D(A0ft,x).ravel())**2) + l1_ratio*np.sum(np.abs(x.ravel() ))
-            print('Iter: '+str(it) +' of '+ str(maxit) + ',   Obj: ' + str(obj) + 'Res: ' + str(norm(R)) + 'L1: ' + str(np.sum(np.abs(x))))
+            res = np.sum( (b.ravel() - Ax_ft_2D(A0ft,x).ravel())**2 )
+            L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
+            obj =  res + L1
+            print('Iteration  ' +\
+                  'Objective      ' +\
+                  'Relative Error      ' +\
+                  'Residual            ' +\
+                  'L1 Penalty          ' +\
+                  'Criterion' )
             
-        e = np.sum(np.abs(x - xold))/len(x.ravel())
-        if(e < eps):
+            print( str(it) +' of '+ str(maxit) + '   ' +\
+                   str(obj)                    + ' ' +\
+                   str(np.sqrt(res)/norm(b))   + '       ' +\
+                   str(res)                    + '       ' +\
+                   
+                   str(L1)                     + '       ' +\
+                   str(criterion))
+#            print('Iter: '     + str(it) +' of '+ str(maxit) +\
+#                  ', Obj: '    + str(obj) +\
+#                  ', Res: '    + str(res) +\
+#                  ', RelErr: ' + str(np.sqrt(res)/norm(b))
+#                  ', L1: '     + str(L1)   +\
+#                  ', Crit: '   +str(criterion))
+        if(criterion < eps):
             break
             
         
