@@ -8,9 +8,10 @@ import numpy as np
 from multiprocessing import Pool
 
 def f(x):
+    print(x)
     return x*x
 
 if __name__ == '__main__':
     pool = Pool(processes=6)
     x = [1,2,3,4,5,6,7,8]
-    print(pool.map(f,x))
+    pool.map(f,x)
