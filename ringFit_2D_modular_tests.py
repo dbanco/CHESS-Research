@@ -123,8 +123,12 @@ for t in range(num_var_t):
                 B_full[:,:,t,r,i,j] = B_shift    
 
 
+B0ft_list = []
+for tv in range(num_var_t):
+    for rv in range(num_var_r):
+        B0ft_list.append([np.fft.fft2(B0_stack[:,:,tv,rv]).real])
 
-x = np.random.rand((num_rad,num_theta,num_var_t,num_var_t))
+x = np.random.rand(num_rad,num_theta,num_var_t,num_var_t)
 R = np.random.rand(num_rad,num_theta)
 Ax = np.zeros((num_rad,num_theta))
 AtR = np.zeros((num_rad,num_theta,num_var_t,num_var_t))
@@ -134,12 +138,12 @@ for t in range(num_var_t):
     for r in range(num_var_r):
         for i in range(num_rad):
             for j in range(num_theta):      
-                Ax += B_full[:,:,t,r,i,j]*x[i,j,v,r]
+                Ax += B_full[:,:,t,r,i,j]*x[i,j,t,r]
                 AtR[i,j,t,r] = np.sum(B_full[:,:,t,r,i,j]*R)
                 
 # Compute Ax and AtR with convolution
-Ax_conv = LassoSolvers.Ax_ft_2D(B0_stack_ft,x)
-AtR_conv = LassoSolvers.AtR_ft_2D(B0_stack_ft,R)
+Ax_conv = LassoSolvers.Ax_ft_2D_Parallel(B0ft_list,x)
+AtR_conv = LassoSolvers.AtR_ft_2D_Parallel(B0ft_list,R)
 
 print('Ax Error: '  + str(norm(Ax-Ax_conv)/norm(Ax)))
 print('AtR Error: ' + str(norm(AtR-AtR_conv)/norm(AtR)))

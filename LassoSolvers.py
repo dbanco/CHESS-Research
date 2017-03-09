@@ -540,51 +540,55 @@ def Ax_ft_2D(A0ft, x):
     return Ax
 
 from multiprocessing import Pool
+from functools import partial
+
+def convolve_2D(aft,bft):
+    c = np.fft.ifft2(aft*bft).real
+    return c
+
+def convolve_2D_b(a_bft):
+    c = np.fft.ifft2(a_bft[0]*a_bft[1]).real
+    return c
 
 "Circulant matrix-vector product subroutine"
-def AtR_ft_2D_Parallel(A0ft, R, P):  
+def AtR_ft_2D_Parallel(A0ft_list, R):  
     """
     Inputs:
         A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-        P       Number of processes to run simultaneously
+        R       Residual vector
     """
-    AtR = np.zeros((A0ft.shape))
     
     R_ft = np.fft.fft2(R)
 
-    pool = Pool(processes=P)
-    
-    n = A0ft.shape[2]
-    m = A0ft.shape[3]
-    k = 0
-    index = np.zeros((n*m,2))
-    for tv in range(n):
-        for rv in range(m):
-            index[k,0] = tv
-            index[k,1] = rv
-            k += 1
-    pool.map        
-    AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
+    pool = Pool()
         
+    partial_convolve = partial(convolve_2D,bft=R_ft)
+    AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
+    print(AtR.shape)
+    AtR = AtR.reshape(R.shape)
+    
     return AtR
     
 
 "Circulant matrix-vector product subroutine"
-def Ax_ft_2D_Parallel(A0ft, x, P):  
+def Ax_ft_2D_Parallel(A0ft_list, x):  
     """
     Inputs:
         A0ft    Each column is the first column of a circulant matrix Ai
         x       Coefficient vector
         P       Number of processes to run simultaneously
     """
-    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
     
     x_ft = np.fft.fft2(x,axes=(0,1))
+    pool = Pool()
+    k = 0
     
-    for tv in range(A0ft.shape[2]):
-        for rv in range(A0ft.shape[3]):
-            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
+    for tv in range(x.shape[2]):
+        for rv in range(x.shape[3]):
+            A0ft_list[k].append(x_ft[:,:,tv,rv])
+            k += 1
+        
+    Ax = np.sum(np.asarray(pool.map(convolve_2D_b,A0ft_list)))
         
     return Ax
 
@@ -606,6 +610,84 @@ def AtR_ft_2D(A0ft, R):
     return AtR
 
 
+"FISTA algorithm using circulant matrix-vector product subroutines"
+def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+    # A0 is a bunch of slices indexed by variance and radius
+    if benchmark: 
+        start_time = time.time()
+            
+        
+#    num_rad = A0.shape[0]
+#    num_theta = A0.shape[1]
+    num_var_theta = A0.shape[2]
+    num_var_rad = A0.shape[3]
+    Linv = 1/L
+    # Compute fft of each slice
+    A0ft_list = []
+    for tv in range(num_var_theta):
+        for rv in range(num_var_rad):
+            A0ft_list.append(np.fft.fft2(A0[:,:,tv,rv]).real)
+
+    x = np.zeros(A0.shape)
+    t = 1
+    z = x.copy()
+
+    for it in range(maxit):
+        xold = x.copy()
+        
+        # Arrange x coefficents as matrix in fourier domain 
+        R = b - Ax_ft_2D_Parallel(A0ft_list,z)
+        z = z + AtR_ft_2D_Parallel(A0ft_list,R)*Linv
+        
+        # Enforce positivity on coefficients
+        if positive:
+            z[z<0]=0
+
+        x = soft_thresh(z,l1_ratio*Linv)
+        
+        t0 = t
+        t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
+        z = x + ((t0 - 1.) / t) * (x - xold)
+        
+        if positive:
+            z[z<0]=0
+        
+        criterion = np.sum(np.abs(x - xold))/len(x.ravel())
+        
+        if verbose:
+            res = np.sum( (b.ravel() - Ax_ft_2D_Parallel(A0ft_list,x).ravel())**2 )
+            L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
+            obj =  res + L1
+            print('Iteration  ' +\
+                  'Objective      ' +\
+                  'Relative Error      ' +\
+                  'Residual            ' +\
+                  'L1 Penalty          ' +\
+                  'Criterion' )
+            
+            print( str(it) +' of '+ str(maxit) + '   ' +\
+                   str(obj)                    + ' ' +\
+                   str(np.sqrt(res)/norm(b))   + '       ' +\
+                   str(res)                    + '       ' +\
+                   
+                   str(L1)                     + '       ' +\
+                   str(criterion))
+#            print('Iter: '     + str(it) +' of '+ str(maxit) +\
+#                  ', Obj: '    + str(obj) +\
+#                  ', Res: '    + str(res) +\
+#                  ', RelErr: ' + str(np.sqrt(res)/norm(b))
+#                  ', L1: '     + str(L1)   +\
+#                  ', Crit: '   +str(criterion))
+        if(criterion < eps):
+            break
+            
+        
+    if benchmark: 
+        total_time = time.time() - start_time
+        return x, total_time
+    else:
+        return x
+  
 "FISTA algorithm using circulant matrix-vector product subroutines"
 def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius

@@ -129,7 +129,7 @@ eig = np.linalg.eig( np.dot(B0_stack.reshape((num_rad*num_var_t*num_var_r,num_th
 L = np.max(eig[0].real)*num_rad*num_theta/1200
           
 print('Circulant FISTA 2D')
-x_hat, times = LassoSolvers.fista_circulant_2D(B0_stack, polar_image, 
+x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(B0_stack, polar_image, 
                                        L, l1_ratio, max_iters, 
                                        positive=1, benchmark=1,verbose=1) 
 
@@ -154,12 +154,12 @@ plt.imshow(y_hat,cmap='jet', interpolation='nearest',vmin=0,vmax=200)
 
 plt.figure(2)
 plt.imshow(polar_image,cmap='jet', interpolation='nearest',vmin=0,vmax=200)
-
+"""
 data_out_dir = os.path.join('E:','CHESS_data')
 np.save(os.path.join(data_out_dir,'result_2D_500_12.npy'),
         (x_hat, times, y_hat, polar_image,
          var_theta,var_rad,L,l1_ratio,max_iters))
-
+"""
 
 #%% Load and view results of previously completed trials 
 data_out_dir = os.path.join('E:','CHESS_data')
