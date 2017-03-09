@@ -563,6 +563,7 @@ def AtR_ft_2D_Parallel(A0ft_list, R):
     pool = Pool()
         
     partial_convolve = partial(convolve_2D,bft=R_ft)
+    print(A0ft_list)
     AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
     print(AtR.shape)
     AtR = AtR.reshape(R.shape)
