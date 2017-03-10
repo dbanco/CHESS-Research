@@ -563,10 +563,10 @@ def AtR_ft_2D_Parallel(A0ft_list, R):
     pool = Pool()
         
     partial_convolve = partial(convolve_2D,bft=R_ft)
-    print(A0ft_list)
+
     AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
+
     print(AtR.shape)
-    AtR = AtR.reshape(R.shape)
     
     return AtR
     
@@ -577,21 +577,21 @@ def Ax_ft_2D_Parallel(A0ft_list, x):
     Inputs:
         A0ft    Each column is the first column of a circulant matrix Ai
         x       Coefficient vector
-        P       Number of processes to run simultaneously
     """
     
     x_ft = np.fft.fft2(x,axes=(0,1))
     pool = Pool()
     k = 0
-    
+
     for tv in range(x.shape[2]):
         for rv in range(x.shape[3]):
             A0ft_list[k].append(x_ft[:,:,tv,rv])
             k += 1
         
-    Ax = np.sum(np.asarray(pool.map(convolve_2D_b,A0ft_list)))
-        
-    return Ax
+    Ax = np.asarray(pool.map(convolve_2D_b,A0ft_list))
+    
+    
+    return np.sum(Ax,0)
 
 "Circulant matrix-vector product subroutine"
 def AtR_ft_2D(A0ft, R):  
@@ -1051,73 +1051,73 @@ def coord_ascent_circ(A,
     else:
         return x
         
-import circulant_lasso_ca as circ
-def cython_circulant_coord_ascent(A,
-                                  A0,
-                                  maxima,
-                                  b,
-                                  alpha, 
-                                  max_iter,
-                                  positive=0, 
-                                  benchmark=0):
-    if benchmark: 
-        start_time = time.time()
-        
-    num_theta = A0.shape[0]
-    num_var   = A0.shape[1]    
-
-    A_tran = np.transpose(A)
-
-    # Create transposed convolution matrix
-    A0_tran = np.zeros([num_theta,num_var])
-    for i in range(num_var): 
-        A0_tran[0,i] = A0[0,i]
-        A0_tran[1::,i] = np.flipud(A0[1::,i])
-    
-    A0ft = np.fft.fft(A0,axis=0)
-    A0_tranft = np.fft.fft(A0_tran,axis=0)    
-    
-    # Enforce Fortran contiguous storage
-    A = np.array(A, order='F', copy=True)
-    A_tran = np.array(A_tran, order='F', copy=True)
-    A0 = np.array(A0, order='F',copy=True)
-    A0_tran = np.array(A0_tran, order='F',copy=True)                                     
-    A0ft = np.array(A0ft, order='F',copy=True)
-    A0_tranft = np.array(A0_tranft, order='F',copy=True)
-
-    # Call Cython function
-    x = circ.lasso_solver(A, A0ft, A0_tran_ft, maxima, b, 
-                           alpha, max_iter, positive=positive)
-        
-    if benchmark: 
-        total_time = time.time() - start_time
-        return x, total_time
-    else:
-        return x
+#import circulant_lasso_ca as circ
+#def cython_circulant_coord_ascent(A,
+#                                  A0,
+#                                  maxima,
+#                                  b,
+#                                  alpha, 
+#                                  max_iter,
+#                                  positive=0, 
+#                                  benchmark=0):
+#    if benchmark: 
+#        start_time = time.time()
+#        
+#    num_theta = A0.shape[0]
+#    num_var   = A0.shape[1]    
+#
+#    A_tran = np.transpose(A)
+#
+#    # Create transposed convolution matrix
+#    A0_tran = np.zeros([num_theta,num_var])
+#    for i in range(num_var): 
+#        A0_tran[0,i] = A0[0,i]
+#        A0_tran[1::,i] = np.flipud(A0[1::,i])
+#    
+#    A0ft = np.fft.fft(A0,axis=0)
+#    A0_tranft = np.fft.fft(A0_tran,axis=0)    
+#    
+#    # Enforce Fortran contiguous storage
+#    A = np.array(A, order='F', copy=True)
+#    A_tran = np.array(A_tran, order='F', copy=True)
+#    A0 = np.array(A0, order='F',copy=True)
+#    A0_tran = np.array(A0_tran, order='F',copy=True)                                     
+#    A0ft = np.array(A0ft, order='F',copy=True)
+#    A0_tranft = np.array(A0_tranft, order='F',copy=True)
+#
+#    # Call Cython function
+#    x = circ.lasso_solver(A, A0ft, A0_tran_ft, maxima, b, 
+#                           alpha, max_iter, positive=positive)
+#        
+#    if benchmark: 
+#        total_time = time.time() - start_time
+#        return x, total_time
+#    else:
+#        return x
 
 # This may be good for a sanity check, but not good for much else
-import lasso_coord_ascent as coord      
-def cython_coord_ascent(A,
-                        b,
-                        alpha, 
-                        max_iter,
-                        positive=0, 
-                        benchmark=0):
-    if benchmark:  
-        start_time = time.time()
-        
-    # Enforce Fortran contiguous storage
-    A = np.array(A, order='F', copy=True)
-
-    # Call Cython function
-    x = coord.lasso_solver(A, b, 
-                           alpha, max_iter, positive)
-        
-    if benchmark: 
-        total_time = time.time() - start_time
-        return x, total_time
-    else:
-        return x
+#import lasso_coord_ascent as coord      
+#def cython_coord_ascent(A,
+#                        b,
+#                        alpha, 
+#                        max_iter,
+#                        positive=0, 
+#                        benchmark=0):
+#    if benchmark:  
+#        start_time = time.time()
+#        
+#    # Enforce Fortran contiguous storage
+#    A = np.array(A, order='F', copy=True)
+#
+#    # Call Cython function
+#    x = coord.lasso_solver(A, b, 
+#                           alpha, max_iter, positive)
+#        
+#    if benchmark: 
+#        total_time = time.time() - start_time
+#        return x, total_time
+#    else:
+#        return x
 
 #import circulant_fista as cf      
 #def cython_circulant_fista(A,

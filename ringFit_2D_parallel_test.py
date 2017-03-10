@@ -27,7 +27,7 @@ import LassoSolvers
 #%% Test Ax and AtR on small test data
 # Stack up a bunch of test images shiftes in theta using 2D gaussian basis
 
-num_theta= 10
+num_theta= 500
 dtheta = 2*np.pi/num_theta
 
 dr = 5
@@ -37,8 +37,8 @@ drad = 1
 # Create fitting matrix 
 reload(EM)
 reload(LassoSolvers)
-num_var_t = 5
-num_var_r = 5
+num_var_t = 15
+num_var_r = 10
 var_theta = np.linspace((dtheta),(np.pi/16),num_var_t)**2
 var_rad   = np.linspace(drad,10,num_var_r)**2
                        
@@ -66,10 +66,11 @@ for tv in range(num_var_t):
     for rv in range(num_var_r):
         B0ft_list.append([np.fft.fft2(B0_stack[:,:,tv,rv]).real])
 
-x = np.random.rand(num_rad,num_theta,num_var_t,num_var_t)
+x = np.random.rand(num_rad,num_theta,num_var_t,num_var_r)
 R = np.random.rand(num_rad,num_theta)
 Ax = np.zeros((num_rad,num_theta))
-AtR = np.zeros((num_rad,num_theta,num_var_t,num_var_t))
+AtR = np.zeros((num_rad,num_theta,num_var_t,num_var_r))
+AtR_conv_para = np.zeros((num_rad,num_theta,num_var_t,num_var_r))
 
 # Compute Ax and AtR regularly
 for t in range(num_var_t):
@@ -80,8 +81,36 @@ for t in range(num_var_t):
                 AtR[i,j,t,r] = np.sum(B_full[:,:,t,r,i,j]*R)
                 
 # Compute Ax and AtR with convolution
-Ax_conv = LassoSolvers.Ax_ft_2D_Parallel(B0ft_list,x)
-AtR_conv = LassoSolvers.AtR_ft_2D_Parallel(B0ft_list,R)
+a = time.time()
+AtR_conv = LassoSolvers.AtR_ft_2D(B0_stack_ft,R)
+timeAtR = time.time() - a
 
+a = time.time()
+Ax_conv = LassoSolvers.Ax_ft_2D(B0_stack_ft,x)
+timeAx = time.time() - a
+
+a = time.time()
+AtR_conv_para2 = LassoSolvers.AtR_ft_2D_Parallel(B0ft_list[:],R)
+timeAtR_para = time.time() - a
+
+a = time.time()
+Ax_conv_para = LassoSolvers.Ax_ft_2D_Parallel(B0ft_list[:],x)
+timeAx_para = time.time() - a
+
+
+k = 0
+for tv in range(num_var_t):
+    for rv in range(num_var_r):
+    
+        AtR_conv_para[:,:,tv,rv] = AtR_conv_para2[k,0,:,:]
+        k += 1
+    
 print('Ax Error: '  + str(norm(Ax-Ax_conv)/norm(Ax)))
 print('AtR Error: ' + str(norm(AtR-AtR_conv)/norm(AtR)))
+print('Ax Parallel Error: '  + str(norm(Ax-Ax_conv_para)/norm(Ax)))
+print('AtR Parallel Error: ' + str(norm(AtR-AtR_conv_para)/norm(AtR)))
+
+print('Ax Time: '  + str(timeAx))
+print('AtR Time: ' + str(timeAtR))
+print('Ax Parallel Time: '  + str(timeAx_para))
+print('AtR Parallel Time: ' + str(timeAtR_para))
