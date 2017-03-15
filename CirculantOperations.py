@@ -112,12 +112,12 @@ def convolve_2D_b(a_bft):
     return c
 
 
-def convolve_2D_svd(svd_x_list,Rft):
-    u   = svd_x_list[0]
-    s   = svd_x_list[1]
-    v   = svd_x_list[2]
-    x   = svd_x_list[3]
-    c = np.fft.ifft2(s*np.outer(u,v)*np.fft.fft2(x)).real
+def convolve_2D_svd(svd_list,Rft):
+    u   = svd_list[0]
+    s   = svd_list[1]
+    v   = svd_list[2]
+
+    c = np.fft.ifft2(s*np.outer(u,v)*Rft).real
     return c
 
 def convolve_2D_svd_b(svd_x_list):
@@ -131,8 +131,8 @@ def convolve_2D_svd_b(svd_x_list):
 def add_x_to_list(A0ft_list, x):
     k = 0
     A0ft_x_list = A0ft_list[:]
-    for t in enumerate(x.shape[2]):
-        for r in enumerate(x.shape[3]):
+    for t in range(x.shape[2]):
+        for r in range(x.shape[3]):
             A0ft_x_list[k].append(x[:,:,t,r])
             k += 1
             return A0ft_x_list
@@ -162,16 +162,12 @@ def AtR_ft_2D_Parallel(A0ft_list, R):
         R       Residual vector
     """
     
-    R_ft = np.fft.fft2(R)
-
-    pool = Pool()
-        
+    R_ft = np.fft.fft2(R)    
     partial_convolve = partial(convolve_2D,bft=R_ft)
-
-    AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
-
-    print(AtR.shape)
     
+    pool = Pool()
+    AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
+   
     return AtR
     
 
@@ -188,7 +184,6 @@ def Ax_ft_2D_Parallel(A0ft_list, x):
     pool = Pool() 
     Ax = np.asarray(pool.map(convolve_2D_b,A0ft_xft_list))
     
-    
     return np.sum(Ax,0)
   
     "Circulant matrix-vector product subroutine"
@@ -200,14 +195,10 @@ def AtR_ft_2D_Parallel_SVD(A0ft_list, R):
     """
     
     R_ft = np.fft.fft2(R)
-
-    pool = Pool()
-        
     partial_convolve = partial(convolve_2D_svd,Rft=R_ft)
-
+    
+    pool = Pool()
     AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
-
-    print(AtR.shape)
     
     return AtR
     
@@ -224,6 +215,5 @@ def Ax_ft_2D_Parallel_SVD(A0ft_list_svd, x):
     
     pool = Pool() 
     Ax = np.asarray(pool.map(convolve_2D_svd_b,svd_x_list))
-    
     
     return np.sum(Ax,0)
