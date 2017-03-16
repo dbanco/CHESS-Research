@@ -81,8 +81,7 @@ a = time.time()
 Ax_conv_para = CO.Ax_ft_2D_Parallel_SVD(B0ft_list_svd[:],x)
 timeAx_para = time.time() - a
 
-
-
+print(AtR_conv_para2.shape)
 k = 0
 for tv in range(num_var_t):
     for rv in range(num_var_r):
