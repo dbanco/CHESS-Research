@@ -75,14 +75,14 @@ var_rad   = np.linspace(drad,3,num_var_r)**2
 ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
     		               num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 
-polar_images = np.zeros((5,x_num*y_num,num_rad,num_theta))
 for step in range(5):
     for img in range(x_num*y_num):
         ringModel.load_step = step
         ringModel.img_num = img
 
         polar_image = ringModel.compute_polar_image(sample)
-        polar_images[step,img,:,:] = polar_image
-
-np.save('polar_images_al7075.npy',polar_images)
+        np.save(os.path.join('E:',
+        'CHESS_data',
+        'polar_images',
+        'polar_image_al7075_load_'+str(step)+'_img_'+str(img)+'.npy'),polar_image)
 
