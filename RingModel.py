@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 import DataAnalysis as DA
 import EllipticModels as EM
-import LassoSolvers as Lasso
+import LassoSolvers
 import RingImageProcessing as RingIP
 import os
 import time
@@ -49,25 +49,25 @@ class RingModel:
 
         self.polar_image = polar_image
 
-	def generate_basis_matrix_stack(self):
-		A0_stack = generate_basis_matrix_stack(self.var_theta,
-									           self.var_rad,
-									           self.dtheta,
-									           self.drad,
-									           self.num_theta,
-									           self.num_rad)
-		return A0_stack
+    def generate_basis_matrices(self):
+        A0ft_list = EM.unshifted_basis_ft_svd_list(self.var_theta,
+									                               self.var_rad,
+									                               self.dtheta,
+									                               self.drad,
+									                               self.num_theta,
+									                               self.num_rad)
+        return A0ft_list
 
     def compute_lipschitz(self,A0_stack):
         flat_shape = (self.num_rad*self.var_theta.shape[0]*self.var_rad.shape[0],self.num_theta)
         eig = np.linalg.eig( np.dot(A0_stack.reshape(flat_shape).T,
                                     A0_stack.reshape(flat_shape) ))
-        lipschitz = eig[0].real*num_rad*num_theta/500
+        lipschitz = np.max(eig[0].real)*self.num_rad*self.num_theta/500
         self.lipschitz = lipschitz
 
 
     def fit_circulant_FISTA(self,A0_stack,positive=1,benchmark=0,verbose=0):
-        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(B0_stack, self.polar_image, 
+        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(A0_stack, self.polar_image, 
 				                               self.lipschitz, self.l1_ratio, self.max_iters, 
 				                               positive=positive,
 											   benchmark=benchmark,
@@ -78,8 +78,8 @@ class RingModel:
         self.fit_image = y_hat  
         self.times = times      
         self.coefs = x_hat
-        self.fit_error = norm(y_hat-polar_image)
-        self.rel_fit_error = self.fit_error/norm(polar_image)
+        self.fit_error = norm(y_hat-self.polar_image)
+        self.rel_fit_error = self.fit_error/norm(self.polar_image)
 
     def print_fit_stats(self):
 		
