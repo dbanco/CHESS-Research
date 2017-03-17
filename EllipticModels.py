@@ -579,16 +579,15 @@ def unshifted_basis_matrix_list(var_theta,var_rad,dtheta,drad,num_theta,num_rad)
             A0 = gaussian_basis_wrap_2D(num_theta,dtheta,  0,  var_theta[t], 
                                         num_rad,  drad,    0,  var_rad[r])
             A0ft_list.append( [np.fft.fft2(A0.reshape((num_rad,num_theta)))] )
-            return A0ft_list
+    return A0ft_list
             
 def unshifted_basis_svd_list(var_theta,var_rad,dtheta,drad,num_theta,num_rad):
     A0ft_list = []
     for t in range(var_theta.shape[0]):
         for r in range(var_rad.shape[0]):
-            print(r)
             A0 = gaussian_basis_wrap_2D(num_theta,dtheta,  0,  var_theta[t], 
                                         num_rad,  drad,    0,  var_rad[r])
             u,s,v = np.linalg.svd(np.fft.fft2(A0.reshape((num_rad,num_theta))))
             A0ft_list.append([ u[:,0], s[0], v[0,:] ])
-            return A0ft_list
+    return A0ft_list
         

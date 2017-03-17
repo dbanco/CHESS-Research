@@ -18,8 +18,8 @@ class Specimen:
     def __init__(self, name, data_dir, out_dir, step_names, dic_files, dark_dirs, init_dirs, dic_center, x_range, x_num, y_range, y_num, detector_dist, true_center, e_rng, p_rng, t_rng, E, G, v):      
 
         self.name             = name
-        self.data_dir         = data_dir+'\\'+name+'\\'
-        self.out_dir          = out_dir +'\\'+name+'\\'        
+        self.data_dir         = os.path.join(data_dir, name)
+        self.out_dir          = os.path.join(out_dir, name)        
         
         if not os.path.exists(self.out_dir):
             os.mkdir(self.out_dir)            

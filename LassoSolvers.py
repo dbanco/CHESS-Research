@@ -23,7 +23,7 @@ from math import sqrt
 
 import RingImageProcessing as RingIP
 import EllipticModels as EM
-
+import CirculantOperations as CO
 "Soft thresholding function with vector input and output"
 def soft_thresh(x, l):
     return np.sign(x) * np.maximum(np.abs(x) - l, 0.)    
@@ -420,66 +420,6 @@ def LASSO_approx_tnc(A0,A0_tran,maxima,num_var,num_theta,b,lam,eps,max_iter,call
         return x, total_time
     else:
         return x
-
-
-"Vector formatting helper function for circulant matrix-vector product"
-def x_to_x_ft(x, maxima, m, n):
-    """ 
-    Inputs:
-        x       coefficient vector
-        maxima  vector of locations of maxima in signal
-        m       number of rows in x_ft
-        n       number of columns in x_ft
-    Output:
-        x_ft    Each column is the fourier transform of the coefficients
-                corresponding to the circulant matrix Ai
-    """
-    x_pad = np.zeros((m,n))
-    x_ft = np.zeros((m,n))
-    num_maxima = len(maxima)
-    for i in range(n):
-        x_pad[maxima,i] = x[i*num_maxima:(i+1)*num_maxima]      
-        
-    x_ft = np.fft.fft(x_pad,axis=0)
-    
-    return x_ft
-
-"Circulant matrix-vector product subroutine"
-def Ax_ft(A0ft, x, maxima, m, n):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-        maxima  vector of locations of maxima in signal
-        m       number of rows in x_ft
-        n       number of columns in x_ft
-    """
-    Ax = np.zeros((A0ft.shape[0]))
-    
-    x_ft = x_to_x_ft(x,maxima,m,n)
-    
-    for ii in range(A0ft.shape[1]):
-        Ax += np.fft.ifft(np.multiply(A0ft[:,ii],x_ft[:,ii])).real
-        
-    return Ax
-
-"Transposed circulant matrix-vector product subroutine"
-def ATb_ft(A0_tran_ft,R,num_var,maxima):
-    # Inputs:
-    #    A0_tran_ft    Each column is the first row of a circulant matrix Ai
-    #    R             Residual vector 
-    # Output:
-    #    ATb           Remember that this will be zero padded
-
-    num_maxima = len(maxima)
-    ATb = np.zeros((num_var*num_maxima))
-    R_ft = np.fft.fft(R)          
-    
-    # num_vars    
-    for ii in range(num_var):
-        ATb[ii*num_maxima:(ii+1)*num_maxima] = np.fft.ifft(np.multiply(A0_tran_ft[:,ii],R_ft)).real[maxima]   
-
-    return ATb
     
 "FISTA algorithm using circulant matrix-vector product subroutines"
 def fista_circulant(A, A0, A0_tran, maxima, b,
@@ -501,8 +441,8 @@ def fista_circulant(A, A0, A0_tran, maxima, b,
         xold = x.copy()
         
         # Arrange x coefficents as matrix in fourier domain 
-        R = b - Ax_ft(A0ft, z, maxima, m, n)
-        z = z + ATb_ft(A0_tran_ft,R,n,maxima)/L
+        R = b - CO.Ax_ft(A0ft, z, maxima, m, n)
+        z = z + CO.ATb_ft(A0_tran_ft,R,n,maxima)/L
         
         # Enforce positivity on coefficients
         if positive:
@@ -522,95 +462,6 @@ def fista_circulant(A, A0, A0_tran, maxima, b,
     else:
         return x
     
-"Circulant matrix-vector product subroutine"
-def Ax_ft_2D(A0ft, x):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-    """
-    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
-    
-    x_ft = np.fft.fft2(x,axes=(0,1))
-    
-    for tv in range(A0ft.shape[2]):
-        for rv in range(A0ft.shape[3]):
-            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
-        
-    return Ax
-
-from multiprocessing import Pool
-from functools import partial
-
-def convolve_2D(aft,bft):
-    c = np.fft.ifft2(aft*bft).real
-    return c
-
-def convolve_2D_b(a_bft):
-    c = np.fft.ifft2(a_bft[0]*a_bft[1]).real
-    return c
-
-"Circulant matrix-vector product subroutine"
-def AtR_ft_2D_Parallel(A0ft_list, R):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        R       Residual vector
-    """
-    
-    R_ft = np.fft.fft2(R)
-
-    pool = Pool()
-        
-    partial_convolve = partial(convolve_2D,bft=R_ft)
-
-    AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
-
-    print(AtR.shape)
-    
-    return AtR
-    
-
-"Circulant matrix-vector product subroutine"
-def Ax_ft_2D_Parallel(A0ft_list, x):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-    """
-    
-    x_ft = np.fft.fft2(x,axes=(0,1))
-    pool = Pool()
-    k = 0
-
-    for tv in range(x.shape[2]):
-        for rv in range(x.shape[3]):
-            A0ft_list[k].append(x_ft[:,:,tv,rv])
-            k += 1
-        
-    Ax = np.asarray(pool.map(convolve_2D_b,A0ft_list))
-    
-    
-    return np.sum(Ax,0)
-
-"Circulant matrix-vector product subroutine"
-def AtR_ft_2D(A0ft, R):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-    """
-    AtR = np.zeros((A0ft.shape))
-    
-    R_ft = np.fft.fft2(R)
-
-    for tv in range(A0ft.shape[2]):
-        for rv in range(A0ft.shape[3]):
-            AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
-        
-    return AtR
-
-
 "FISTA algorithm using circulant matrix-vector product subroutines"
 def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius
@@ -637,8 +488,8 @@ def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positiv
         xold = x.copy()
         
         # Arrange x coefficents as matrix in fourier domain 
-        R = b - Ax_ft_2D_Parallel(A0ft_list,z)
-        z = z + AtR_ft_2D_Parallel(A0ft_list,R)*Linv
+        R = b - CO.Ax_ft_2D_Parallel(A0ft_list,z)
+        z = z + CO.AtR_ft_2D_Parallel(A0ft_list,R)*Linv
         
         # Enforce positivity on coefficients
         if positive:
@@ -656,7 +507,7 @@ def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positiv
         criterion = np.sum(np.abs(x - xold))/len(x.ravel())
         
         if verbose:
-            res = np.sum( (b.ravel() - Ax_ft_2D_Parallel(A0ft_list,x).ravel())**2 )
+            res = np.sum( (b.ravel() - CO.Ax_ft_2D_Parallel(A0ft_list,x).ravel())**2 )
             L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
             obj =  res + L1
             print('Iteration  ' +\
@@ -716,8 +567,8 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         xold = x.copy()
         
         # Arrange x coefficents as matrix in fourier domain 
-        R = b - Ax_ft_2D(A0ft,z)
-        z = z + AtR_ft_2D(A0ft,R)*Linv
+        R = b - CO.Ax_ft_2D(A0ft,z)
+        z = z + CO.AtR_ft_2D(A0ft,R)*Linv
         
         # Enforce positivity on coefficients
         if positive:
@@ -735,7 +586,7 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
         criterion = np.sum(np.abs(x - xold))/len(x.ravel())
         
         if verbose:
-            res = np.sum( (b.ravel() - Ax_ft_2D(A0ft,x).ravel())**2 )
+            res = np.sum( (b.ravel() - CO.Ax_ft_2D(A0ft,x).ravel())**2 )
             L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
             obj =  res + L1
             print('Iteration  ' +\

@@ -83,23 +83,6 @@ def ATb_ft(A0_tran_ft,R,num_var,maxima):
 
     return ATb
     
-"Circulant matrix-vector product subroutine"
-def Ax_ft_2D(A0ft, x):  
-    """
-    Inputs:
-        A0ft    Each column is the first column of a circulant matrix Ai
-        x       Coefficient vector
-    """
-    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
-    
-    x_ft = np.fft.fft2(x,axes=(0,1))
-    
-    for tv in range(A0ft.shape[2]):
-        for rv in range(A0ft.shape[3]):
-            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
-        
-    return Ax
-
 from multiprocessing import Pool
 from functools import partial
 
@@ -128,6 +111,15 @@ def convolve_2D_svd_b(svd_x_list):
     c = np.fft.ifft2(s*np.outer(u,v)*np.fft.fft2(x)).real
     return c
 
+#def convolve_2D_post(variances,Rft,params):
+#    var_theta = variances[0]
+#    var_rad   = variances[1]
+#    A0 = EM.gaussian_basis_wrap_2D(num_theta,dtheta,  0,  var_theta, 
+#                                   num_rad,  drad,    0,  var_rad)
+#    AtR = np.fft.ifft2(np.fft.fft2(A0)*R_ft)                          
+#                                   
+#def convolve_2D_post(variances,x):
+
 def add_x_to_list(A0ft_list, x):
     k = 0
     A0ft_x_list = A0ft_list[:]
@@ -135,7 +127,24 @@ def add_x_to_list(A0ft_list, x):
         for r in range(x.shape[3]):
             A0ft_x_list[k].append(x[:,:,t,r])
             k += 1
-            return A0ft_x_list
+    return A0ft_x_list
+
+"Circulant matrix-vector product subroutine"
+def Ax_ft_2D(A0ft, x):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+    """
+    Ax = np.zeros((A0ft.shape[0],A0ft.shape[1]))
+    
+    x_ft = np.fft.fft2(x,axes=(0,1))
+    
+    for tv in range(A0ft.shape[2]):
+        for rv in range(A0ft.shape[3]):
+            Ax += np.fft.ifft2(A0ft[:,:,tv,rv]*x_ft[:,:,tv,rv]).real
+        
+    return Ax
 
 "Circulant matrix-vector product subroutine"
 def AtR_ft_2D(A0ft, R):  
@@ -180,7 +189,6 @@ def Ax_ft_2D_Parallel(A0ft_list, x):
     """
     
     A0ft_xft_list = add_x_to_list(A0ft_list,x)
-    
     pool = Pool() 
     Ax = np.asarray(pool.map(convolve_2D_b,A0ft_xft_list))
     
@@ -205,6 +213,37 @@ def AtR_ft_2D_Parallel_SVD(A0ft_list, R):
 
 "Circulant matrix-vector product subroutine"
 def Ax_ft_2D_Parallel_SVD(A0ft_list_svd, x):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+    """
+    
+    svd_x_list = add_x_to_list(A0ft_list_svd,x)
+    pool = Pool() 
+    Ax = np.asarray(pool.map(convolve_2D_svd_b,svd_x_list))
+    
+    return np.sum(Ax,0)
+    
+"Circulant matrix-vector product subroutine"
+def AtR_ft_2D_Parallel_Post(variances, R):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        R       Residual vector
+    """
+    
+    R_ft = np.fft.fft2(R)
+    partial_convolve = partial(convolve_2D_svd,Rft=R_ft)
+    
+    pool = Pool()
+    AtR = np.asarray(pool.map(partial_convolve,A0ft_list))  
+    
+    return AtR
+    
+
+"Circulant matrix-vector product subroutine"
+def Ax_ft_2D_Parallel_Post(variances, x):  
     """
     Inputs:
         A0ft    Each column is the first column of a circulant matrix Ai
