@@ -10,15 +10,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from numpy.linalg import norm 
 import matplotlib.pyplot as plt
 import os
-import time
 
-from scipy.signal import argrelmax
-from sklearn.linear_model import Lasso
-
-import RingImageProcessing as RingIP
 import RingModel as RM
 import EllipticModels as EM
 import DataAnalysis as DA
@@ -61,7 +55,7 @@ sample    = DA.Specimen(specimen_name, data_dir, out_dir,
                         detector_dist, true_center, 
                         e_rng, p_rng, t_rng, E, G, v) 
 
-# Data, Interpolation, Fitting Parameters
+# Data, Interpolation, Fitting Parameters        
 load_step = 0
 img_num = 35
 
@@ -70,27 +64,25 @@ num_rad = 2*dr
 
 num_var_t = 15
 num_var_r = 10
-var_theta = np.linspace((dtheta),(np.pi/32),num_var_t)**2
-var_rad   = np.linspace(drad,3,num_var_r)**2
 
 dtheta = 2*np.pi/num_theta
 drad = 1
 
+var_theta = np.linspace((dtheta),(np.pi/32),num_var_t)**2
+var_rad   = np.linspace(drad,3,num_var_r)**2
+
 # Initialize Ring Model
-ringModel = RingModel(load_step, img_num, radius-dr, radius+dr, 
-    		          polar_image, num_theta, num_rad, var_theta, var_rad,
-                      dtheta, drad)
+ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
+    		               num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 
-# Compute basis matrix and interpolate ring to polar coordinates 
-A0_stack = ringModel.generate_basis_matrix_stack()
-polar_image = ringModel.compute_polar_image(sample)
+polar_images = np.zeros((5,x_num*y_num,num_rad,num_theta))
+for step in range(5):
+    for img in range(x_num*y_num):
+        ringModel.load_step = step
+        ringModel.img_num = img
 
-ringModel.l1_ratio = 1
-ringModel.max_iters = 500
-ringModel.compute_lipschitz(A0_stack)
+        polar_image = ringModel.compute_polar_image(sample)
+        polar_images[step,img,:,:] = polar_image
 
-# Fit data
-ringModel.fit_circulant_FISTA(A0_stack,positive=1,benchmark=1,verbose=1)
-
-
+np.save('polar_images_al7075.npy',polar_images)
 
