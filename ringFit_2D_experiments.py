@@ -47,17 +47,17 @@ A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
 						                               ringModel.var_rad,
 						                               ringModel.dtheta,
 						                               ringModel.drad,
-						                               ringModel.num_theta,
-						                               ringModel.num_rad)
+						                               ringModel.num_theta, ringModel.num_rad)
+
 A0ft_svd_list = ringModel.generate_basis_matrices()
 
 ringModel.polar_image = np.load(img_path)
+print(ringModel.polar_image.shape)
 ringModel.l1_ratio = 1
 ringModel.max_iters = 500
 ringModel.compute_lipschitz(A0_stack)
 
-# Fit data
-ringModel.fit_circulant_FISTA(A0ft_svd_list,positive=1,benchmark=1,verbose=1)
+ringModel.fit_parallel_circulant_FISTA(A0ft_svd_list,positive=1,benchmark=0,verbose=0)
 
 np.save('ringModel_0_35.npy',ringModel)
 

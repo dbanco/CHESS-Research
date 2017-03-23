@@ -67,7 +67,7 @@ class RingModel:
 
 
     def fit_circulant_FISTA(self,A0_stack,positive=1,benchmark=0,verbose=0):
-        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(A0_stack, self.polar_image, 
+        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(A0_stack,len(self.var_theta), len(self.var_rad), self.polar_image, 
 				                               self.lipschitz, self.l1_ratio, self.max_iters, 
 				                               positive=positive,
 											   benchmark=benchmark,
@@ -80,6 +80,23 @@ class RingModel:
         self.coefs = x_hat
         self.fit_error = norm(y_hat-self.polar_image)
         self.rel_fit_error = self.fit_error/norm(self.polar_image)
+
+    def fit_parallel_circulant_FISTA(self,A0ft_svd_list,positive=1,benchmark=0,verbose=0):
+        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel_SVD(A0ft_svd_list,len(self.var_theta), len(self.var_rad), self.polar_image,
+ self.lipschitz, self.l1_ratio, self.max_iters,   positive=positive,
+
+           benchmark=benchmark,
+
+           verbose=verbose)
+
+        y_hat = CO.Ax_ft_2D_Parallel_SVD(A0ft_svd_list,x_hat)
+
+        self.fit_image = y_hat
+        self.times = times
+        self.coefs = x_hat
+        self.fit_error = norm(y_hat-self.polar_image)
+        self.rel_fit_error = self.fit_error/norm(self.polar_image)
+
 
     def print_fit_stats(self):
 		

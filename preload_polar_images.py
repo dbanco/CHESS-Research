@@ -80,9 +80,9 @@ for step in range(5):
         ringModel.load_step = step
         ringModel.img_num = img
 
-        polar_image = ringModel.compute_polar_image(sample)
+        ringModel.compute_polar_image(sample)
         np.save(os.path.join('E:',
         'CHESS_data',
         'polar_images',
-        'polar_image_al7075_load_'+str(step)+'_img_'+str(img)+'.npy'),polar_image)
+        'polar_image_al7075_load_'+str(step)+'_img_'+str(img)+'.npy'),ringModel.polar_image)
 
