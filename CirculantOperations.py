@@ -225,6 +225,41 @@ def Ax_ft_2D_Parallel_SVD(A0ft_list_svd, x):
     
     return np.sum(Ax,0)
     
+    "Circulant matrix-vector product subroutine"
+def AtR_ft_2D_SVD(A0ft_list, R):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        R       Residual vector
+    """
+    
+    R_ft = np.fft.fft2(R)
+    
+    AtR = []
+    for i in range(len(A0ft_list_svd)):
+        AtR.append(convolve_2D_svd(A0ft_list_svd[i],R_ft))
+    
+    AtR = np.asarray(AtR)  
+    
+    return AtR
+    
+
+"Circulant matrix-vector product subroutine"
+def Ax_ft_2D_SVD(A0ft_list_svd, x):  
+    """
+    Inputs:
+        A0ft    Each column is the first column of a circulant matrix Ai
+        x       Coefficient vector
+    """
+    
+    Ax = []
+    for i in range(len(A0ft_list_svd)):
+        Ax.append(convolve_2D_svd(A0ft_list_svd[i],x[i]))
+     
+    Ax = np.asarray(Ax)
+    
+    return np.sum(Ax,0)
+    
 "Circulant matrix-vector product subroutine"
 def AtR_ft_2D_Parallel_Post(variances, R):  
     """

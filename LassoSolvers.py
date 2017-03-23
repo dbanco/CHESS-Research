@@ -463,24 +463,14 @@ def fista_circulant(A, A0, A0_tran, maxima, b,
         return x
     
 "FISTA algorithm using circulant matrix-vector product subroutines"
-def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+def fista_circulant_2D_Parallel(A0ft_list, num_var_theta, num_var_rad, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius
     if benchmark: 
         start_time = time.time()
             
-        
-#    num_rad = A0.shape[0]
-#    num_theta = A0.shape[1]
-    num_var_theta = A0.shape[2]
-    num_var_rad = A0.shape[3]
     Linv = 1/L
-    # Compute fft of each slice
-    A0ft_list = []
-    for tv in range(num_var_theta):
-        for rv in range(num_var_rad):
-            A0ft_list.append(np.fft.fft2(A0[:,:,tv,rv]).real)
 
-    x = np.zeros(A0.shape)
+    x = np.zeros(A0ft_list[0].shape[0], A0ft_list[0].shape[1], num_ver_theta, num_var_rad)
     t = 1
     z = x.copy()
 
@@ -539,7 +529,151 @@ def fista_circulant_2D_Parallel(A0, b, L, l1_ratio, maxit, eps=10**(-8), positiv
         return x, total_time
     else:
         return x
-  
+ 
+
+
+
+"FISTA algorithm using circulant matrix-vector product subroutines"
+def fista_circulant_2D_Parallel_SVD(A0ft_list, num_var_theta, num_var_rad, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+    # A0 is a bunch of slices indexed by variance and radius
+    if benchmark: 
+        start_time = time.time()
+            
+    Linv = 1/L
+
+    x = np.zeros((A0ft_list[0][0].shape[0], A0ft_list[0][2].shape[0], num_var_theta, num_var_rad))
+    t = 1
+    z = x.copy()
+
+    for it in range(maxit):
+        xold = x.copy()
+        
+        # Arrange x coefficents as matrix in fourier domain 
+        R = b - CO.Ax_ft_2D_Parallel_SVD(A0ft_list,z).reshape(b.shape)
+        z = z + CO.AtR_ft_2D_Parallel_SVD(A0ft_list,R).reshape(z.shape)*Linv
+        
+        # Enforce positivity on coefficients
+        if positive:
+            z[z<0]=0
+
+        x = soft_thresh(z,l1_ratio*Linv)
+        
+        t0 = t
+        t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
+        z = x + ((t0 - 1.) / t) * (x - xold)
+        
+        if positive:
+            z[z<0]=0
+        
+        criterion = np.sum(np.abs(x - xold))/len(x.ravel())
+        
+        if verbose:
+            res = np.sum( (b.ravel() - CO.Ax_ft_2D_Parallel(A0ft_list,x).ravel())**2 )
+            L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
+            obj =  res + L1
+            print('Iteration  ' +\
+                  'Objective      ' +\
+                  'Relative Error      ' +\
+                  'Residual            ' +\
+                  'L1 Penalty          ' +\
+                  'Criterion' )
+            
+            print( str(it) +' of '+ str(maxit) + '   ' +\
+                   str(obj)                    + ' ' +\
+                   str(np.sqrt(res)/norm(b))   + '       ' +\
+                   str(res)                    + '       ' +\
+                   
+                   str(L1)                     + '       ' +\
+                   str(criterion))
+#            print('Iter: '     + str(it) +' of '+ str(maxit) +\
+#                  ', Obj: '    + str(obj) +\
+#                  ', Res: '    + str(res) +\
+#                  ', RelErr: ' + str(np.sqrt(res)/norm(b))
+#                  ', L1: '     + str(L1)   +\
+#                  ', Crit: '   +str(criterion))
+        if(criterion < eps):
+            break
+            
+        
+    if benchmark: 
+        total_time = time.time() - start_time
+        return x, total_time
+    else:
+        return x
+ 
+
+
+
+"FISTA algorithm using circulant matrix-vector product subroutines"
+def fista_circulant_2D_SVD(A0ft_list, num_var_theta, num_var_rad, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+    # A0 is a bunch of slices indexed by variance and radius
+    if benchmark: 
+        start_time = time.time()
+            
+    Linv = 1/L
+
+    x = np.zeros((A0ft_list[0][0].shape[0], A0ft_list[0][2].shape[0], num_var_theta, num_var_rad))
+    t = 1
+    z = x.copy()
+
+    for it in range(maxit):
+        xold = x.copy()
+        
+        # Arrange x coefficents as matrix in fourier domain 
+        R = b - CO.Ax_ft_2D_SVD(A0ft_list,z).reshape(b.shape)
+        z = z + CO.AtR_ft_2D_SVD(A0ft_list,R).reshape(z.shape)*Linv
+        
+        # Enforce positivity on coefficients
+        if positive:
+            z[z<0]=0
+
+        x = soft_thresh(z,l1_ratio*Linv)
+        
+        t0 = t
+        t = (1. + sqrt(1. + 4. * t ** 2)) / 2.
+        z = x + ((t0 - 1.) / t) * (x - xold)
+        
+        if positive:
+            z[z<0]=0
+        
+        criterion = np.sum(np.abs(x - xold))/len(x.ravel())
+        
+        if verbose:
+            res = np.sum( (b.ravel() - CO.Ax_ft_2D_Parallel(A0ft_list,x).ravel())**2 )
+            L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
+            obj =  res + L1
+            print('Iteration  ' +\
+                  'Objective      ' +\
+                  'Relative Error      ' +\
+                  'Residual            ' +\
+                  'L1 Penalty          ' +\
+                  'Criterion' )
+            
+            print( str(it) +' of '+ str(maxit) + '   ' +\
+                   str(obj)                    + ' ' +\
+                   str(np.sqrt(res)/norm(b))   + '       ' +\
+                   str(res)                    + '       ' +\
+                   
+                   str(L1)                     + '       ' +\
+                   str(criterion))
+#            print('Iter: '     + str(it) +' of '+ str(maxit) +\
+#                  ', Obj: '    + str(obj) +\
+#                  ', Res: '    + str(res) +\
+#                  ', RelErr: ' + str(np.sqrt(res)/norm(b))
+#                  ', L1: '     + str(L1)   +\
+#                  ', Crit: '   +str(criterion))
+        if(criterion < eps):
+            break
+            
+        
+    if benchmark: 
+        total_time = time.time() - start_time
+        return x, total_time
+    else:
+        return x
+
+
+ 
 "FISTA algorithm using circulant matrix-vector product subroutines"
 def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius

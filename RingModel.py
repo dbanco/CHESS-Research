@@ -11,6 +11,7 @@ import DataAnalysis as DA
 import EllipticModels as EM
 import LassoSolvers
 import RingImageProcessing as RingIP
+import CirculantOperations as CO
 import os
 import time
 
@@ -62,18 +63,34 @@ class RingModel:
         flat_shape = (self.num_rad*self.var_theta.shape[0]*self.var_rad.shape[0],self.num_theta)
         eig = np.linalg.eig( np.dot(A0_stack.reshape(flat_shape).T,
                                     A0_stack.reshape(flat_shape) ))
-        lipschitz = np.max(eig[0].real)*self.num_rad*self.num_theta/500
+        lipschitz = np.max(eig[0].real)*self.num_rad*self.num_theta
         self.lipschitz = lipschitz
 
-
     def fit_circulant_FISTA(self,A0_stack,positive=1,benchmark=0,verbose=0):
-        x_hat, times = LassoSolvers.fista_circulant_2D_Parallel(A0_stack,len(self.var_theta), len(self.var_rad), self.polar_image, 
-				                               self.lipschitz, self.l1_ratio, self.max_iters, 
-				                               positive=positive,
+        x_hat, times = LassoSolvers.fista_circulant_2D(A0_stack, self.polar_image, self.lipschitz, self.l1_ratio, self.max_iters, 
+                         positive=positive,
 											   benchmark=benchmark,
 											   verbose=verbose) 
 
-        y_hat = Lasso.Ax_ft_2D(A0_stack,x_hat)
+        y_hat = CO.Ax_ft_2D(A0_stack,x_hat)
+
+        self.fit_image = y_hat  
+        self.times = times      
+        self.coefs = x_hat
+        self.fit_error = norm(y_hat-self.polar_image)
+        self.rel_fit_error = self.fit_error/norm(self.polar_image)
+
+
+        
+        return self
+
+    def fit_circulant_svd_FISTA(self,A0ft_svd_list,positive=1,benchmark=0,verbose=0):
+        x_hat, times = LassoSolvers.fista_circulant_2D_SVD(A0ft_svd_list,len(self.var_theta), len(self.var_rad), self.polar_image,self.lipschitz, self.l1_ratio, self.max_iters, 
+                         positive=positive,
+											   benchmark=benchmark,
+											   verbose=verbose) 
+
+        y_hat = LassoSolvers.Ax_ft_2D_SVD(A0ft_svd_list,x_hat)
 
         self.fit_image = y_hat  
         self.times = times      
@@ -112,3 +129,19 @@ class RingModel:
 		 print(str(pos_coef) + '       |  ' + str(one_coef) + '             | ' + str(tot_coef))
 		 print(str(sparsity0) + ' |  ' + str(sparsity1))
     
+    
+def fit_circulant_FISTA_Multiprocess(ringModel,A0_stack,positive=1,benchmark=0,verbose=0):
+    x_hat, times = LassoSolvers.fista_circulant_2D(A0_stack, ringModel.polar_image, ringModel.lipschitz, ringModel.l1_ratio, ringModel.max_iters, 
+                     positive=positive,
+									   benchmark=benchmark,
+									   verbose=verbose) 
+
+    y_hat = CO.Ax_ft_2D(A0_stack,x_hat)
+
+    ringModel.fit_image = y_hat  
+    ringModel.times = times      
+    ringModel.coefs = x_hat
+    ringModel.fit_error = norm(y_hat-ringModel.polar_image)
+    ringModel.rel_fit_error = ringModel.fit_error/norm(ringModel.polar_image)
+
+    return ringModel

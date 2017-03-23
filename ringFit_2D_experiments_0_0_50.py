@@ -16,13 +16,11 @@ import EllipticModels as EM
 
 
 
+
 # Data, Interpolation, Fitting Parameters
 load_step = 0
-img_num = 35
+img_nums = range(0,50)
 
-img_file = 'polar_image_al7075_load_'+str(load_step)+'_img_'+str(img_num)+'.npy'
-img_path = os.path.join('/home','dbanco','CHESS_data',img_file)
- 
 dr = 30
 radius = 370
  
@@ -39,7 +37,7 @@ var_theta = np.linspace((dtheta),(np.pi/32),num_var_t)**2
 var_rad   = np.linspace(drad,3,num_var_r)**2
 
 # Initialize Ring Model
-ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
+ringModel = RM.RingModel(load_step, img_nums[0], radius-dr, radius+dr, 
     		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 
 # Compute basis matrix and interpolate ring to polar coordinates 
@@ -49,15 +47,22 @@ A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
 						                               ringModel.drad,
 						                               ringModel.num_theta, ringModel.num_rad)
 
-A0ft_svd_list = ringModel.generate_basis_matrices()
-
-ringModel.polar_image = np.load(img_path)
-print(ringModel.polar_image.shape)
 ringModel.l1_ratio = 1
 ringModel.max_iters = 500
 ringModel.compute_lipschitz(A0_stack)
 
-ringModel.fit_circulant_FISTA(A0ft_svd_list,positive=1,benchmark=1,verbose=1)
+ringModel_list = []
+for img_num in img_nums:
+    img_file = 'polar_image_al7075_load_'+str(load_step)+'_img_'+str(img_num)+'.npy'
+    img_path = os.path.join('/home','dbanco','CHESS_data',img_file)
+    ringModel.img_num = img_num
+    ringModel.polar_image = np.load(img_path)
+    ringModel_list.append(ringModel)
 
-np.save('ringModel_0_35.npy',ringModel)
+partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0_stack=A0_stack,positive=1,benchmark=1,verbose=1)
+
+pool = multiprocessing.Pool(processes=50)
+ringModels_out = pool.map(partial_fit,ringModel_list)
+
+np.save('ringModels_out_0_0_50.npy',ringModels_out)
 
