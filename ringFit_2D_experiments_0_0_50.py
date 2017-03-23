@@ -13,9 +13,8 @@ import numpy as np
 import os
 import RingModel as RM
 import EllipticModels as EM
-
-
-
+import multiprocessing
+from functools import partial
 
 # Data, Interpolation, Fitting Parameters
 load_step = 0
