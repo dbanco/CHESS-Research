@@ -18,7 +18,7 @@ from functools import partial
 
 # Data, Interpolation, Fitting Parameters
 load_step = 0
-img_nums = range(0,50)
+img_nums = range(0,205)
 
 dr = 30
 radius = 370
@@ -48,7 +48,7 @@ A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
 
 ringModel.l1_ratio = 1
 ringModel.max_iters = 500
-ringModel.compute_lipschitz(A0_stack)
+ringModel.lipschitz = 6e5
 
 ringModel_list = []
 for img_num in img_nums:
@@ -60,8 +60,8 @@ for img_num in img_nums:
 
 partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0_stack=A0_stack,positive=1,benchmark=1,verbose=1)
 
-pool = multiprocessing.Pool(processes=50)
+pool = multiprocessing.Pool()
 ringModels_out = pool.map(partial_fit,ringModel_list)
 
-np.save('ringModels_out_0_0_50.npy',ringModels_out)
+np.save('ringModels_out_load_0.npy',ringModels_out)
 
