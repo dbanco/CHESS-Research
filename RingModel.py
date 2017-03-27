@@ -66,13 +66,13 @@ class RingModel:
         lipschitz = np.max(eig[0].real)*self.num_rad*self.num_theta
         self.lipschitz = lipschitz
 
-    def fit_circulant_FISTA(self,A0_stack,positive=1,benchmark=0,verbose=0):
-        x_hat, times = LassoSolvers.fista_circulant_2D(A0_stack, self.polar_image, self.lipschitz, self.l1_ratio, self.max_iters, 
+    def fit_circulant_FISTA(self,A0ft_stack,positive=1,benchmark=0,verbose=0):
+        x_hat, times = LassoSolvers.fista_circulant_2D(A0ft_stack, self.polar_image, self.lipschitz, self.l1_ratio, self.max_iters, 
                          positive=positive,
 											   benchmark=benchmark,
 											   verbose=verbose) 
 
-        y_hat = CO.Ax_ft_2D(A0_stack,x_hat)
+        y_hat = CO.Ax_ft_2D(A0ft_stack,x_hat)
 
         self.fit_image = y_hat  
         self.times = times      
@@ -117,17 +117,17 @@ class RingModel:
 
     def print_fit_stats(self):
 		
-		 print('Relative Error: '  + str(rel_fit_error))
-
-		 pos_coef = np.sum(self.coefs>0)
-		 tot_coef = len(self.coefs.ravel())
-		 sparsity0 = pos_coef/tot_coef
-		 one_coef = np.sum(self.coefs>1)
-		 sparsity1 = one_coef/tot_coef
-		
-		 print('x > 0         |  x > 1             | total x')
-		 print(str(pos_coef) + '       |  ' + str(one_coef) + '             | ' + str(tot_coef))
-		 print(str(sparsity0) + ' |  ' + str(sparsity1))
+        print('Relative Error: '  + str(rel_fit_error))
+        
+        pos_coef = np.sum(self.coefs>0)
+        tot_coef = len(self.coefs.ravel())
+        sparsity0 = pos_coef/tot_coef
+        one_coef = np.sum(self.coefs>1)
+        sparsity1 = one_coef/tot_coef
+        
+        print('x > 0         |  x > 1             | total x')
+        print(str(pos_coef) + '       |  ' + str(one_coef) + '             | ' + str(tot_coef))
+        print(str(sparsity0) + ' |  ' + str(sparsity1))
     
     
 def fit_circulant_FISTA_Multiprocess(ringModel,A0_stack,positive=1,benchmark=0,verbose=0):

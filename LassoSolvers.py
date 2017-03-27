@@ -675,7 +675,7 @@ def fista_circulant_2D_SVD(A0ft_list, num_var_theta, num_var_rad, b, L, l1_ratio
 
  
 "FISTA algorithm using circulant matrix-vector product subroutines"
-def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+def fista_circulant_2D(A0ft, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius
     if benchmark: 
         start_time = time.time()
@@ -685,15 +685,9 @@ def fista_circulant_2D(A0, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verb
 #    num_theta = A0.shape[1]
     num_var_theta = A0.shape[2]
     num_var_rad = A0.shape[3]
-    Linv = 1/L
-    # Compute fft of each slice
-    A0ft = np.zeros(A0.shape)
-    for tv in range(num_var_theta):
-        for rv in range(num_var_rad):
-            A0ft[:,:,tv,rv] = np.fft.fft2(A0[:,:,tv,rv]) 
-            
+    Linv = 1/
     
-    x = np.zeros(A0.shape)
+    x = np.zeros(A0ft.shape)
     t = 1
     z = x.copy()
 
