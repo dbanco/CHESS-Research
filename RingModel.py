@@ -50,7 +50,7 @@ class RingModel:
 
         self.polar_image = polar_image
 
-    def generate_basis_matrices(self):
+    def generate_A0ft_svd_list(self):
         A0ft_list = EM.unshifted_basis_ft_svd_list(self.var_theta,
 									                               self.var_rad,
 									                               self.dtheta,
@@ -60,10 +60,12 @@ class RingModel:
         return A0ft_list
 
     def compute_lipschitz(self,A0_stack):
-        flat_shape = (self.num_rad*self.var_theta.shape[0]*self.var_rad.shape[0],self.num_theta)
-        eig = np.linalg.eig( np.dot(A0_stack.reshape(flat_shape).T,
-                                    A0_stack.reshape(flat_shape) ))
-        lipschitz = np.max(eig[0].real)*self.num_rad*self.num_theta
+        lipschitz = 0
+        for i in range(self.var_theta.shape[0]):
+            for j in range(self.var_rad.shape[0]):
+                lipschitz += max(np.linalg.eig( A0_stack[:,:,i,j] ).real)
+        print(lipschitz)
+        print(lipschitz*self.num_rad*self.num_theta)
         self.lipschitz = lipschitz
 
     def fit_circulant_FISTA(self,A0_stack,positive=1,benchmark=0,verbose=0):
@@ -129,7 +131,25 @@ class RingModel:
 		 print(str(pos_coef) + '       |  ' + str(one_coef) + '             | ' + str(tot_coef))
 		 print(str(sparsity0) + ' |  ' + str(sparsity1))
     
+def compute_lipschitz(ringModel,A0_stack):
+    lipschitz = 0
+    for i in range(ringModel.var_theta.shape[0]):
+        for j in range(ringModel.var_rad.shape[0]):
+            eigs,vecs = np.linalg.eig( np.dot(A0_stack[:,:,i,j],A0_stack[:,:,i,j].T) )
+            lipschitz += np.max(eigs.real)
+    print(lipschitz)
+    print(lipschitz*ringModel.num_rad*ringModel.num_theta)
+    ringModel.lipschitz = lipschitz
     
+def generate_A0_stack(ringModel):
+    A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
+							                               ringModel.var_rad,
+							                               ringModel.dtheta,
+							                               ringModel.drad,
+							                               ringModel.num_theta,
+							                               ringModel.num_rad)
+    return A0_stack
+
 def fit_circulant_FISTA_Multiprocess(ringModel,A0_stack,positive=1,benchmark=0,verbose=0):
     x_hat, times = LassoSolvers.fista_circulant_2D(A0_stack, ringModel.polar_image, ringModel.lipschitz, ringModel.l1_ratio, ringModel.max_iters, 
                      positive=positive,
