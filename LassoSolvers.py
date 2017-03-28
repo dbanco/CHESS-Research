@@ -675,17 +675,14 @@ def fista_circulant_2D_SVD(A0ft_list, num_var_theta, num_var_rad, b, L, l1_ratio
 
  
 "FISTA algorithm using circulant matrix-vector product subroutines"
-def fista_circulant_2D(A0ft, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, verbose=0, benchmark=0,):
+def fista_circulant_2D(A0ft, b, L, l1_ratio, maxit, eps=10**(-7), positive=0, verbose=0, benchmark=0,):
     # A0 is a bunch of slices indexed by variance and radius
     if benchmark: 
         start_time = time.time()
             
-        
-#    num_rad = A0.shape[0]
-#    num_theta = A0.shape[1]
-    num_var_theta = A0.shape[2]
-    num_var_rad = A0.shape[3]
-    Linv = 1/
+    num_var_theta = A0ft.shape[2]
+    num_var_rad = A0ft.shape[3]
+    Linv = 1/L
     
     x = np.zeros(A0ft.shape)
     t = 1
@@ -717,29 +714,25 @@ def fista_circulant_2D(A0ft, b, L, l1_ratio, maxit, eps=10**(-8), positive=0, ve
             print('Iteration  ' + str(it) +' of '+ str(maxit))
             
         if verbose == 2:
-            res = np.sum( (b.ravel() - CO.Ax_ft_2D(A0ft,x).ravel())**2 )
-            L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
-            obj =  res + L1
-            print('Iteration  ' +\
-                  'Objective      ' +\
-                  'Relative Error      ' +\
-                  'Residual            ' +\
-                  'L1 Penalty          ' +\
-                  'Criterion' )
-            
-            print( str(it) +' of '+ str(maxit) + '   ' +\
-                   str(obj)                    + ' ' +\
-                   str(np.sqrt(res)/norm(b))   + '       ' +\
-                   str(res)                    + '       ' +\
-                   
-                   str(L1)                     + '       ' +\
-                   str(criterion))
-#            print('Iter: '     + str(it) +' of '+ str(maxit) +\
-#                  ', Obj: '    + str(obj) +\
-#                  ', Res: '    + str(res) +\
-#                  ', RelErr: ' + str(np.sqrt(res)/norm(b))
-#                  ', L1: '     + str(L1)   +\
-#                  ', Crit: '   +str(criterion))
+            if (it % 10) == 0:
+                res = np.sum( (b.ravel() - CO.Ax_ft_2D(A0ft,x).ravel())**2 )
+                L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
+                obj =  res + L1
+                print('Iteration  ' +\
+                      'Objective      ' +\
+                      'Relative Error      ' +\
+                      'Residual            ' +\
+                      'L1 Penalty          ' +\
+                      'Criterion' )
+                
+                print( str(it) +' of '+ str(maxit) + '   ' +\
+                       str(obj)                    + ' ' +\
+                       str(np.sqrt(res)/norm(b))   + '       ' +\
+                       str(res)                    + '       ' +\
+                       
+                       str(L1)                     + '       ' +\
+                       str(criterion))
+
         if(criterion < eps):
             break
             
