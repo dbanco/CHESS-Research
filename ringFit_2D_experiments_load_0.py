@@ -40,7 +40,7 @@ ringModel = RM.RingModel(load_step, img_nums[0], radius-dr, radius+dr,
     		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 
 # Compute basis matrix and interpolate ring to polar coordinates 
-A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
+A0ft_stack = EM.unshifted_basis_matrix_ft_stack(ringModel.var_theta,
 						                               ringModel.var_rad,
 						                               ringModel.dtheta,
 						                               ringModel.drad,
@@ -48,7 +48,7 @@ A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
 
 ringModel.l1_ratio = 1
 ringModel.max_iters = 500
-ringModel.lipschitz = 6e4
+ringModel.lipschitz = 6e5
 
 ringModel_list = []
 for img_num in img_nums:
@@ -58,7 +58,7 @@ for img_num in img_nums:
     ringModel.polar_image = np.load(img_path)
     ringModel_list.append(ringModel)
 
-partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0_stack=A0_stack,positive=1,benchmark=1,verbose=2)
+partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0ft_stack=A0ft_stack,positive=1,benchmark=1,verbose=2)
 
 pool = multiprocessing.Pool()
 pool.map(partial_fit,ringModel_list)
