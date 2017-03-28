@@ -35,11 +35,9 @@ drad = 1
 var_theta = np.linspace((dtheta),(np.pi/32),num_var_t)**2
 var_rad   = np.linspace(drad,3,num_var_r)**2
 
-# Initialize Ring Model
-ringModel = RM.RingModel(load_step, img_nums[0], radius-dr, radius+dr, 
-    		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
-
 # Compute basis matrix and interpolate ring to polar coordinates 
+ringModel = RM.RingModel(load_step, img_nums[0], radius-dr, radius+dr, 
+		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 A0ft_stack = EM.unshifted_basis_matrix_ft_stack(ringModel.var_theta,
 						                               ringModel.var_rad,
 						                               ringModel.dtheta,
@@ -56,7 +54,8 @@ ringModel_list = []
 for img_num in img_nums:
     img_file = 'polar_image_al7075_load_'+str(load_step)+'_img_'+str(img_num)+'.npy'
     img_path = os.path.join('..','CHESS_data',img_file)
-    ringModel.img_num = img_num
+    ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
+    		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
     ringModel.polar_image = np.load(img_path)
     ringModel_list.append(ringModel)
 

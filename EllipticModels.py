@@ -572,7 +572,7 @@ def unshifted_basis_matrix_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad
     return A0_stack
     
 def unshifted_basis_matrix_ft_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad):
-    A0ft_stack = np.zeros((num_rad,num_theta,var_theta.shape[0],var_rad.shape[0]))
+    A0ft_stack = np.zeros((num_rad,num_theta,var_theta.shape[0],var_rad.shape[0]),dtype=complex)
     for t in range(var_theta.shape[0]):
         for r in range(var_rad.shape[0]):
             A0 = gaussian_basis_wrap_2D(num_theta,dtheta,  0,  var_theta[t], 
