@@ -48,20 +48,18 @@ A0_stack = EM.unshifted_basis_matrix_stack(ringModel.var_theta,
 
 ringModel.l1_ratio = 1
 ringModel.max_iters = 500
-ringModel.lipschitz = 6e5
+ringModel.lipschitz = 6e4
 
 ringModel_list = []
 for img_num in img_nums:
     img_file = 'polar_image_al7075_load_'+str(load_step)+'_img_'+str(img_num)+'.npy'
-    img_path = os.path.join('/home','dbanco','CHESS_data',img_file)
+    img_path = os.path.join('..','CHESS_data',img_file)
     ringModel.img_num = img_num
     ringModel.polar_image = np.load(img_path)
     ringModel_list.append(ringModel)
 
-partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0_stack=A0_stack,positive=1,benchmark=1,verbose=1)
+partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0_stack=A0_stack,positive=1,benchmark=1,verbose=2)
 
 pool = multiprocessing.Pool()
-ringModels_out = pool.map(partial_fit,ringModel_list)
-
-np.save('ringModels_out_load_0.npy',ringModels_out)
+pool.map(partial_fit,ringModel_list)
 

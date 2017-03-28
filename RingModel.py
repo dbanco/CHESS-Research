@@ -68,7 +68,7 @@ class RingModel:
         print(lipschitz*self.num_rad*self.num_theta)
         self.lipschitz = lipschitz
 
-    def fit_circulant_FISTA(self,A0ft_stack,positive=1,benchmark=0,verbose=0):
+    def fit_circulant_FISTA(self,A0ft_stack,out_path,positive=1,benchmark=0,verbose=0):
         x_hat, times = LassoSolvers.fista_circulant_2D(A0ft_stack, self.polar_image, self.lipschitz, self.l1_ratio, self.max_iters, 
                          positive=positive,
 											   benchmark=benchmark,
@@ -81,7 +81,8 @@ class RingModel:
         self.coefs = x_hat
         self.fit_error = norm(y_hat-self.polar_image)
         self.rel_fit_error = self.fit_error/norm(self.polar_image)
-
+        
+        np.save(os.path.join(out_path,'_load_',self.load_step,'_img_',self.img_num,'.npy'),self)
 
         
         return self
