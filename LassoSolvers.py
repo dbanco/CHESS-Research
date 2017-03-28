@@ -714,7 +714,7 @@ def fista_circulant_2D(A0ft, b, L, l1_ratio, maxit, eps=10**(-7), positive=0, ve
             print('Iteration  ' + str(it) +' of '+ str(maxit))
             
         if verbose == 2:
-            if (it % 10) == 0:
+            if (it % 10) == 1:
                 res = np.sum( (b.ravel() - CO.Ax_ft_2D(A0ft,x).ravel())**2 )
                 L1 =  l1_ratio*np.sum(np.abs( x.ravel() ))
                 obj =  res + L1

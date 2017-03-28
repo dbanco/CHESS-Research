@@ -151,13 +151,13 @@ def generate_A0_stack(ringModel):
 							                               ringModel.num_rad)
     return A0_stack
 
-def fit_circulant_FISTA_Multiprocess(ringModel,A0_stack,positive=1,benchmark=0,verbose=0):
-    x_hat, times = LassoSolvers.fista_circulant_2D(A0_stack, ringModel.polar_image, ringModel.lipschitz, ringModel.l1_ratio, ringModel.max_iters, 
+def fit_circulant_FISTA_Multiprocess(ringModel,A0ft_stack,out_path,positive=1,benchmark=0,verbose=0):
+    x_hat, times = LassoSolvers.fista_circulant_2D(A0ft_stack, ringModel.polar_image, ringModel.lipschitz, ringModel.l1_ratio, ringModel.max_iters, 
                      positive=positive,
 									   benchmark=benchmark,
 									   verbose=verbose) 
 
-    y_hat = CO.Ax_ft_2D(A0_stack,x_hat)
+    y_hat = CO.Ax_ft_2D(A0ft_stack,x_hat)
 
     ringModel.fit_image = y_hat  
     ringModel.times = times      
@@ -165,4 +165,4 @@ def fit_circulant_FISTA_Multiprocess(ringModel,A0_stack,positive=1,benchmark=0,v
     ringModel.fit_error = norm(y_hat-ringModel.polar_image)
     ringModel.rel_fit_error = ringModel.fit_error/norm(ringModel.polar_image)
 
-    return ringModel
+    np.save(os.path.join(out_path,'_load_',self.load_step,'_img_',self.img_num,'.npy'),self)
