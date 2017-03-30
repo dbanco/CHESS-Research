@@ -82,7 +82,7 @@ class RingModel:
         self.fit_error = norm(y_hat-self.polar_image)
         self.rel_fit_error = self.fit_error/norm(self.polar_image)
         
-        np.save(os.path.join(out_path,'_load_',self.load_step,'_img_',self.img_num,'.npy'),self)
+        np.save(os.path.join(out_path,'_load_',str(self.load_step),'_img_',str(self.img_num),'.npy'),self)
 
         
         return self
@@ -165,4 +165,4 @@ def fit_circulant_FISTA_Multiprocess(ringModel,A0ft_stack,out_path,positive=1,be
     ringModel.fit_error = norm(y_hat-ringModel.polar_image)
     ringModel.rel_fit_error = ringModel.fit_error/norm(ringModel.polar_image)
 
-    np.save(os.path.join(out_path,'_load_',self.load_step,'_img_',self.img_num,'.npy'),self)
+    np.save(out_path+'_load_'+str(ringModel.load_step)+'_img_'+str(ringModel.img_num)+'.npy',ringModel)

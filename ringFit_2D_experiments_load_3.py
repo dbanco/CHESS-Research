@@ -57,6 +57,9 @@ for img_num in img_nums:
     ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
     		              num_theta, num_rad, dtheta, drad, var_theta, var_rad)
     ringModel.polar_image = np.load(img_path)
+    ringModel.l1_ratio = 1
+    ringModel.max_iters = 500
+    ringModel.lipschitz = 6e5
     ringModel_list.append(ringModel)
 
 partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0ft_stack=A0ft_stack,out_path=out_path,
