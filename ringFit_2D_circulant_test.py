@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 """
 Created on Wed Feb 22 13:35:59 2017
 
@@ -51,15 +51,16 @@ A0_stack = EM.unshifted_basis_matrix_stack(var_theta,var_rad,
 #%% Test individual operations
 reload(CO)
 a = time.time()
-#np.fft.fft2(A0_stack[:,:,0,0])
-CO.Ax_ft_2D(A0_stack, A0_stack)
+np.fft.fft2(A0_stack[:,:,0,0])
+
 #CO.AtR_ft_2D(A0_stack, A0_stack[:,:,0,0])
 print(time.time()-a)
 
 
 #%% Test Algorithm
 a = time.time()
-LassoSolvers.fista_circulant_2D(A0_stack, np.sum(np.sum(A0_stack,2),2), 6e5, 1, 5, eps=10**(-7), positive=1, verbose=1, benchmark=1)
+CO.Ax_ft_2D(A0_stack, A0_stack)
+#LassoSolvers.fista_circulant_2D(A0_stack, np.sum(np.sum(A0#_stack,2),2), 6e5, 1, 5, eps=10**(-7), positive=1, verbose=1, #benchmark=1)
 print(time.time()-a)
 
 #np.save('ringModels_synth.npy',ringModels_synth)

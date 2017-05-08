@@ -17,8 +17,8 @@ import multiprocessing
 from functools import partial
 
 # Data, Interpolation, Fitting Parameters
-load_step = 1
-img_nums = range(50,100)
+load_step = 4
+img_nums = range(0,50)
 
 dr = 30
 radius = 370

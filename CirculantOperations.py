@@ -159,7 +159,7 @@ def AtR_ft_2D(A0ft, R):
 
     for tv in range(A0ft.shape[2]):
         for rv in range(A0ft.shape[3]):
-            AtR[:,:,tv,rv] += np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
+            AtR[:,:,tv,rv] = np.fft.ifft2(A0ft[:,:,tv,rv]*R_ft).real
         
     return AtR
 

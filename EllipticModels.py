@@ -462,7 +462,7 @@ def gaussian_basis_wrap_2D(num_theta,dtheta,m_theta,v_theta,num_r,dr,m_r,v_r):
     all_dist_sq_theta = dist_sq_theta.copy()
     all_dist_sq_r = dist_sq_r[0]*np.ones((num_theta,))
     for i in range(1,num_r):
-        all_dist_sq_theta = np.append(all_dist_sq_theta,dist_sq_theta)
+        all_dist_sq_theta = np.append(all_dist_sq_theta,dist_sq_theta.copy())
         all_dist_sq_r = np.append(all_dist_sq_r, dist_sq_r[i]*np.ones((num_theta,)))
 
     # Build basis vector

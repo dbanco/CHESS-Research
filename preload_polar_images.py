@@ -72,13 +72,12 @@ var_theta = np.linspace((dtheta),(np.pi/32),num_var_t)**2
 var_rad   = np.linspace(drad,3,num_var_r)**2
 
 # Initialize Ring Model
-ringModel = RM.RingModel(load_step, img_num, radius-dr, radius+dr, 
-    		               num_theta, num_rad, dtheta, drad, var_theta, var_rad)
+
 
 for step in range(5):
     for img in range(x_num*y_num):
-        ringModel.load_step = step
-        ringModel.img_num = img
+        ringModel = RM.RingModel(step, img, radius-dr, radius+dr, 
+    		               num_theta, num_rad, dtheta, drad, var_theta, var_rad)
 
         ringModel.compute_polar_image(sample)
         np.save(os.path.join('E:',

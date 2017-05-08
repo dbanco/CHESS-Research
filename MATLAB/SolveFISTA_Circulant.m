@@ -1,27 +1,4 @@
-% Copyright ©2010. The Regents of the University of California (Regents). 
-% All Rights Reserved. Contact The Office of Technology Licensing, 
-% UC Berkeley, 2150 Shattuck Avenue, Suite 510, Berkeley, CA 94720-1620, 
-% (510) 643-7201, for commercial licensing opportunities.
-
-% Authors: Arvind Ganesh, Allen Y. Yang, Zihan Zhou.
-% Contact: Allen Y. Yang, Department of EECS, University of California,
-% Berkeley. <yang@eecs.berkeley.edu>
-
-% IN NO EVENT SHALL REGENTS BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, 
-% SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, 
-% ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF 
-% REGENTS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-% REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED
-% TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
-% PARTICULAR PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, 
-% PROVIDED HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO 
-% PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-
-%% This function is modified from Matlab code proximal_gradient_bp
-
 function [x_hat,nIter, timeSteps, errorSteps] = SolveFISTA_Circulant(A0ft_stack,b, varargin)
-
 % b  - m x n polar ring image (required input)
 % A0_stack - m x n x t x r unshifted gaussian basis matrices (required input)
 %
@@ -43,16 +20,8 @@ function [x_hat,nIter, timeSteps, errorSteps] = SolveFISTA_Circulant(A0ft_stack,
 %
 % x_hat - estimate of coeeficient vector
 % numIter - number of iterations until convergence
-%
-%
-% References
-% "Robust PCA: Exact Recovery of Corrupted Low-Rank Matrices via Convex Optimization", J. Wright et al., preprint 2009.
-% "An Accelerated Proximal Gradient Algorithm for Nuclear Norm Regularized Least Squares problems", K.-C. Toh and S. Yun, preprint 2009.
-%
-% Arvind Ganesh, Summer 2009. Questions? abalasu2@illinois.edu
 
 t0 = tic ;
-
 STOPPING_TIME = -2;
 STOPPING_GROUND_TRUTH = -1;
 STOPPING_DUALITY_GAP = 1;
@@ -76,15 +45,9 @@ L0 = 1e6 ;
 %G = A'*A ; Replace with two convolutions
 nIter = 0 ;
 c = AtR_ft_2D(A0ft_stack,b);
-lambda0 = 0.5*norm(c(:),inf)/1000 ;
-eta = 0.99 ;
-% lambda_bar = 1e-10*lambda0 ;
-lambda_bar = 1e-6;
 xk = ones(m,n,t,r) ;
 % xk = A\b ; Might be good to init x this way if I can solve this quickly
-lambda = lambda0 ;
 L = L0 ;
-beta = 1.01 ;
 
 % Parse the optional inputs.
 if (mod(length(varargin), 2) ~= 0 ),
@@ -102,26 +65,18 @@ for parameterIndex = 1:parameterCount,
             xG = parameterValue;
         case 'tolerance'
             tolerance = parameterValue;
-        case 'linesearchflag'
-            lineSearchFlag = parameterValue;
         case 'lambda'
-            lambda_bar = parameterValue;
+            lambda = parameterValue;
+        case 'beta'
+            beta = parameterValue;
         case 'maxiteration'
             maxIter = parameterValue;
         case 'isnonnegative'
             isNonnegative = parameterValue;
-        case 'continuationflag'
-            continuationFlag = parameterValue;
         case 'initialization'
             xk = parameterValue;
             if ~all(size(xk)==[m,n,t,r])
                 error('The dimension of the initial xk does not match.');
-            end
-        case 'eta'
-            eta = parameterValue;
-            if ( eta <= 0 || eta >= 1 )
-                disp('Line search parameter out of bounds, switching to default 0.9') ;
-                eta = 0.9 ;
             end
         case 'maxtime'
             maxTime = parameterValue;
@@ -140,34 +95,42 @@ end
 
 keep_going = 1 ;
 nz_x = (abs(xk)> eps*10);
-f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,xk))^2 + lambda_bar * norm(xk(:),1);
+f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,xk))^2 + lambda * norm(xk(:),1);
 xkm1 = xk;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
+    % FISTA solution update
     yk = xk + ((t_km1-1)/t_k)*(xk-xkm1) ;
+    
+    % Enforce positivity
     if isNonnegative
         yk(yk<0) = 0;
     end
-
+    
+    % Compute gradient of f
+    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,yk)) - c ; % gradient of f at yk
+    
+    % Backtracking
     stop_backtrack = 0 ;
-    
-    temp = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,yk)) - c ; % gradient of f at yk
-    
     while ~stop_backtrack
         
-        gk = yk - (1/L)*temp ;
+        gk = yk - (1/L)*grad ;
         if isNonnegative
             gk(gk<0) = 0;
         end
         xkp1 = soft(gk,lambda/L) ;
         
+        % Compute objective at xkp1
         fit = Ax_ft_2D(A0ft_stack,xkp1);
-        fit2 = Ax_ft_2D(A0ft_stack,yk);
-        temp1 = 0.5*norm(b(:)-fit(:))^2 ;
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
-            (xkp1(:)-yk(:))'*temp(:) + (L/2)*norm(xkp1(:)-yk(:))^2 ;
         
+        % Compute quadratic approximation at yk
+        fit2 = Ax_ft_2D(A0ft_stack,yk);
+        temp1 = norm(b(:)-fit(:))^2;
+        temp2 = norm(b(:)-fit2(:))^2 +...
+            (xkp1(:)-yk(:))'*grad(:) + (L/2)*norm(xkp1(:)-yk(:))^2 ;
+        
+        % Stop backtrack if objective <= quadratic approximation
         if temp1 <= temp2
             stop_backtrack = 1 ;
         else
@@ -182,7 +145,6 @@ while keep_going && (nIter < maxIter)
     disp(['Iter ', num2str(nIter),...
           '||x||_0 ', num2str(sum(abs(xkp1(:)) > 0)),...
           ' err ', num2str(errorSteps(nIter)) ]) ;
-
     
     switch stoppingCriterion
         case STOPPING_GROUND_TRUTH
@@ -206,7 +168,7 @@ while keep_going && (nIter < maxIter)
             % compute the stopping criterion based on the relative
             % variation of the objective function.
             prev_f = f;
-            f = 0.5*norm(b-fit)^2 + lambda_bar * norm(xk(:),1);
+            f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
             criterionObjective = abs(f-prev_f)/(prev_f);
             keep_going =  (criterionObjective > tolerance);
         case STOPPING_DUALITY_GAP
@@ -217,8 +179,9 @@ while keep_going && (nIter < maxIter)
             error('Undefined stopping criterion.');
     end
     
-    lambda = max(eta*lambda,lambda_bar) ;
+    % lambda = max(eta*lambda,lambda_bar) ;
     
+    % FISTA step size update 
     t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k)) ;
     
     t_km1 = t_k ;
