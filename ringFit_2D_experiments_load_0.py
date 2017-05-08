@@ -20,6 +20,7 @@ from functools import partial
 load_step = 4
 img_nums = range(0,50)
 
+
 dr = 30
 radius = 370
  
@@ -65,6 +66,7 @@ for img_num in img_nums:
 partial_fit = partial(RM.fit_circulant_FISTA_Multiprocess,A0ft_stack=A0ft_stack,out_path=out_path,
 positive=1,benchmark=1,verbose=2)
 
-pool = multiprocessing.Pool()
-pool.map(partial_fit,ringModel_list)
+partial_fit(ringModel_list[0])
+#pool = multiprocessing.Pool()
+#pool.map(partial_fit,ringModel_list)
 
