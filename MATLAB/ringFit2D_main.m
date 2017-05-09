@@ -1,4 +1,4 @@
-data_dir = 'E:\CHESS_data\matlab_polar_images\';
+data_dir = '../../CHESS_data/';
 dr = 30;
 
 num_var_t = 15;
@@ -106,17 +106,26 @@ num_rad = size(im_struc.polar_image,1);
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 A0_stack = unshifted_basis_matrix_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 
-load('fista_fit_load_0_img_30.mat')
 [xhat_new,nIter, timeSteps, errorSteps] =...
 SolveFISTA_Circulant(A0ft_stack,...
                      im_struc.polar_image,...
-                     'initialization',xhat_new,...
-                     'maxiteration',1000,...
-                     'stoppingcriterion',3,...
+                     'maxiteration',200,...
+                     'stoppingcriterion',3,... %Objective
                      'tolerance',1e-6,...
+                     'lipschitz',1e1,...
                      'lambda',50,...
                      'beta',1.2 );
 
+params.stoppingCriterion = 2;
+params.tolerance = 1e-6;
+params.L = 1e1;
+params.lambda = 50;
+params.beta = 1.2;
+params.maxIter = 500;
+params.isNonnegative = 1;
+[x_hat, errorSteps] = FISTA_Circulant(A0ft_stack,im_struc.polar_image,params);            
+                 
+                 
 fit = Ax_ft_2D(A0ft_stack,xhat_new);
 rel_fit_error = norm(im_struc.polar_image(:)-fit(:))/norm(im_struc.polar_image(:));
 sparsity = sum(xhat_new(:)>0);
@@ -131,7 +140,6 @@ title('Fit')
 
 disp(['Err ' num2str(rel_fit_error) ])
 disp(['||x||_0 ' num2str(sparsity) ])
-
 
 % Save test result
 dir = ['fista_fit_2000_load_',...
