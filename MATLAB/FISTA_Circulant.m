@@ -1,4 +1,4 @@
-function [x_hat, errorSteps] = FISTA_Circulant(A0ft_stack,b,params)
+function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,params)
 % Inputs:
 % b          - m x n polar ring image
 % A0ft_stack - m x n x t x r fft2 of unshifted gaussian basis matrices
@@ -50,17 +50,16 @@ if ~all(size(x_init)==[m,n,t,r])
     error('The dimension of the initial xk does not match.');
 end
 
-errorSteps = nan(1,maxIter) ;
-switch stoppingCriterion
-    case STOPPING_SUBGRADIENT
-    case STOPPING_SPARSE_SUPPORT
-        nz_x = (abs(x_init)> eps*10);
-    case STOPPING_OBJECTIVE_VALUE
-        f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
-            lambda * norm(x_init(:),1);
-    otherwise
-        error('Undefined stopping criterion.');
-end
+% Track error, objective, and sparsity
+err = nan(1,maxIter);
+obj = nan(1,maxIter);
+l_0 = nan(1,maxIter);
+
+% Initial sparsity and objective
+nz_x = (abs(x_init)> eps*10);
+f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
+    lambda * norm(x_init(:),1);
+
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -107,11 +106,19 @@ while keep_going && (nIter < maxIter)
             L = L*beta ;
         end
     end
-        
-    errorSteps(nIter) = norm(b(:)-fit(:))/norm(b(:)) ;
-    disp(['Iter ', num2str(nIter),...
-          '||x||_0 ', num2str(sum(abs(xkp1(:)) > 0)),...
-          ' err ', num2str(errorSteps(nIter)) ]) ;
+           
+    % Track and display error, objective, sparsity
+    prev_f = f;
+    f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
+    nz_x_prev = nz_x;
+    nz_x = (abs(xkp1)>eps*10);
+    err(nIter) = norm(b(:)-fit(:))/norm(b(:));
+    obj(nIter) = f;
+    l_0(nIter) = nz_x;
+    disp(['Iter ',     num2str(nIter),...
+          ' Obj ',     num2str(obj(nIter)),...
+          ' ||x||_0 ', num2str(l_0(nIter)),...
+          ' RelErr ',  num2str(err(nIter)) ]);
     
     % Check stopping criterion
     switch stoppingCriterion
@@ -122,8 +129,6 @@ while keep_going && (nIter < maxIter)
         case STOPPING_SPARSE_SUPPORT
             % compute the stopping criterion based on the change
             % of the number of non-zero components of the estimate
-            nz_x_prev = nz_x;
-            nz_x = (abs(xkp1)>eps*10);
             num_nz_x = sum(nz_x(:));
             num_changes_active = (sum(nz_x(:)~=nz_x_prev(:)));
             if num_nz_x >= 1
@@ -133,8 +138,6 @@ while keep_going && (nIter < maxIter)
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
-            prev_f = f;
-            f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
             criterionObjective = abs(f-prev_f)/(prev_f);
             keep_going =  (criterionObjective > tolerance);
         otherwise
@@ -150,7 +153,9 @@ while keep_going && (nIter < maxIter)
 end
 
 x_hat = xkp1 ;
-errorSteps = errorSteps(1:nIter) ;
+err = err(1:nIter) ;
+obj = obj(1:nIter) ;
+l_0 = l_0(1:nIter) ;
 
 function y = soft(x,T)
 if sum(abs(T(:)))==0

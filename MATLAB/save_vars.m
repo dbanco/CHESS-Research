@@ -1,8 +1,5 @@
-function save_vars( dir,xhat_new,rel_fit_error_new,sparse_new,rel_fit_error_old,sparse_old )
-%save_vars Summary of this function goes here
-%   Detailed explanation goes here
-save(dir,'xhat_new','rel_fit_error_new','sparse_new',...
-                    'rel_fit_error_old','sparse_old')
-
+function save_vars( dir,x_hat,err,obj,l_0,params)
+%save_vars Saves output variables
+save(dir,'x_hat','err','obj','l_0','params')
 end
 
