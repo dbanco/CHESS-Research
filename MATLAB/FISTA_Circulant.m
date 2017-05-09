@@ -43,7 +43,6 @@ isNonnegative = params.isNonnegative;
 try
     x_init = params.x_init;
 catch
-    disp('default: x_init = ones(m,n,t,r)')
     x_init = ones(m,n,t,r);
 end
 if ~all(size(x_init)==[m,n,t,r])
