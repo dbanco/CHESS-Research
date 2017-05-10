@@ -21,7 +21,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm(var_theta,var_rad,dtheta,drad,
 A0_stack = unshifted_basis_matrix_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 
 % FISTA parameters
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
 params.L = 1e1;
 params.lambda = 50;
@@ -30,15 +30,15 @@ params.maxIter = 500;
 params.isNonnegative = 1;
 
 %% Begin experiments
-for step = 0:4
-    parfor img = 0:204
+for step = 1:5
+    parfor img = 1:205
         disp(['step ', num2str(step),', img ' num2str(img)])
         
         % Load polar_image
         im_struc = load([data_dir,... 
         'polar_image_al7075_load_',...
-        num2str(step), '_img_',...
-        num2str(img), '.mat']);
+        num2str(step-1), '_img_',...
+        num2str(img-1), '.mat']);
 
         % FISTA with backtracking
         [x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,im_struc.polar_image,params);   
@@ -46,8 +46,8 @@ for step = 0:4
         % Save result
         dir = [results_dir,...
                'fista_out_load_',...
-               num2str(step), '_img_',...
-               num2str(img), '.mat'];
+               num2str(step-1), '_img_',...
+               num2str(img-1), '.mat'];
 
         % Use function to save to make this valid parfor loop
         save_vars(dir,x_hat,err,obj,l_0,params);

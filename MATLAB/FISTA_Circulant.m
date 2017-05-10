@@ -20,9 +20,8 @@ function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,params)
 %       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
 
 % Define stopping criterion
-STOPPING_SPARSE_SUPPORT = 1;
-STOPPING_OBJECTIVE_VALUE = 2;
-STOPPING_SUBGRADIENT = 3;
+STOPPING_OBJECTIVE_VALUE = 1;
+STOPPING_SUBGRADIENT = 2;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -55,7 +54,6 @@ obj = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-nz_x = (abs(x_init)> eps*10);
 f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
@@ -109,11 +107,9 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     prev_f = f;
     f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
-    nz_x_prev = nz_x;
-    nz_x = (abs(xkp1)>eps*10);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
-    l_0(nIter) = nz_x;
+    l_0(nIter) = sum(abs(xkp1(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
@@ -125,15 +121,6 @@ while keep_going && (nIter < maxIter)
             sk = L*(ykp1-xkp1) +...
                  AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,(xkp1-ykp1)));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xkp1(:)));
-        case STOPPING_SPARSE_SUPPORT
-            % compute the stopping criterion based on the change
-            % of the number of non-zero components of the estimate
-            num_nz_x = sum(nz_x(:));
-            num_changes_active = (sum(nz_x(:)~=nz_x_prev(:)));
-            if num_nz_x >= 1
-                criterionActiveSet = num_changes_active / num_nz_x;
-                keep_going = (criterionActiveSet > tolerance);
-            end
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
