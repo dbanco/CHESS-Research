@@ -1,7 +1,17 @@
 function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,params)
+%FISTA_Circulant Image regression by solving LASSO problem 
+%                argmin_x ||Ax-b||^2 + lambda||x||_1
+%
+%   Implementation of Fast Iterative Shrinkage-Thresholding Algorithm using 
+%   convolutional subroutines for circulant matrix computations as
+%   described in:
+%   A. Beck and M. Teboulle, “A Fast Iterative Shrinkage-Thresholding 
+%       Algorithm for Linear Inverse Problems,�? SIAM Journal on Imaging 
+%       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
+%
 % Inputs:
-% b          - m x n polar ring image
-% A0ft_stack - m x n x t x r fft2 of unshifted gaussian basis matrices
+% b          - (m x n) polar ring image
+% A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
 % params     - struct containing the following field
 %   lambda - l1 penalty parameter > 0
 %   L - initial Lipschitz constant > 0
@@ -12,12 +22,12 @@ function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,params)
 %   isNonnegative - flag to enforce nonnegative solution
 %   x_init - initial guess of solution
 %
-%   Implementation of Fast Iterative Shrinkage-Thresholding Algorithm using 
-%   convolutional subroutines for circulant matrix computations as
-%   described in:
-%   A. Beck and M. Teboulle, “A Fast Iterative Shrinkage-Thresholding 
-%       Algorithm for Linear Inverse Problems,” SIAM Journal on Imaging 
-%       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
+% Outputs:
+% x_hat - (m x n x t x r) solution 
+% err - (nIters) relative error of solution at each iteration
+% obj - (nIters) objective value of solution at each iteration
+% l_0 - (nIters) sparsity of solution at each iteration
+
 
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;

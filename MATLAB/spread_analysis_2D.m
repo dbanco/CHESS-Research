@@ -66,7 +66,7 @@ load_steps = 5;
 total_var = squeeze(sum(sum(var_signal(:,:,1:load_steps,:,:),1),2));
 for i = 1:load_steps
     figure(1)
-    high_var_theta = squeeze(sum(sum(var_signal(cutoff_t:end,:,1:load_steps,:,:),1),2))./total_var;
+     
     all = high_var_theta(1:load_steps,3:40,:);
     mu = mean(all(:));
     sig = std(all(:));

@@ -1,6 +1,16 @@
 function AtR = AtR_ft_2D( A0ft_stack, R )
-%AX_ft_2D Summary of this function goes here
-%   Detailed explanation goes here
+%AtR_ft_2D Computes matrix vector product between A transposed and R
+% Elementwise multiplies each basis function of A0ft_stack with fft2(R)
+%
+% Inputs:
+% A0ft_stack - (n x m x t x r) array
+% R - (n x m) array
+% (n x m) is the size of the image and basis functions
+% (t x r) indexes the basis function by theta variance and radial variance
+%
+% Outputs:
+% AtR - (n x m x t x r) array
+
 
 AtR = zeros(size(A0ft_stack));
 

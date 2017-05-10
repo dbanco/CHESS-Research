@@ -1,6 +1,15 @@
 function Ax = Ax_ft_2D( A0ft_stack, x )
-%AX_ft_2D Summary of this function goes here
-%   Detailed explanation goes here
+%Ax_ft_2D Computes matrix vector product between A and x
+% Elementwise multiplies each basis function of A0ft_stack with fft2(x)
+%
+% Inputs:
+% A0ft_stack - (n x m x t x r) array
+% x - (n x m x t x r) array
+% (n x m) is the size of the image and basis functions
+% (t x r) indexes the basis function by theta variance and radial variance
+%
+% Outputs:
+% Ax - (n x m) array
 
 Ax = zeros(size(A0ft_stack,1),size(A0ft_stack,2));
 

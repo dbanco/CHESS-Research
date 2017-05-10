@@ -1,6 +1,7 @@
+%% Problem parameters
 % Data I/O directories
-data_dir = '/data/dbanco02/matlab_images/';
-results_dir = '/data/dbanco02/fista_fit_results/';
+data_dir = 'E:\CHESS_data\matlab_polar_images\';
+results_dir = 'E:\CHESS_results\fista_fit_results\';
 
 % Ring sampling parameters
 ring_width = 30;
@@ -17,7 +18,7 @@ var_rad   = linspace(drad,  3,       num_var_r).^2;
 
 % Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
-A0_stack = unshifted_basis_matrix_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
+A0_stack = unshifted_basis_matrix_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 
 % FISTA parameters
 params.stoppingCriterion = 2;
@@ -28,18 +29,26 @@ params.beta = 1.2;
 params.maxIter = 500;
 params.isNonnegative = 1;
 
-
+step = 0;
+img = 35;
 % Load polar_image
 load([data_dir,... 
 'polar_image_al7075_load_',...
 num2str(step), '_img_',...
 num2str(img), '.mat']);
 
-% FISTA with backtracking
+%% FISTA with backtracking
 [x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,polar_image,params);   
+
+%% Or load previously computed results
+load([results_dir,... 
+'fista_out_load_',...
+num2str(step), '_img_',...
+num2str(img), '.mat']);
+
+%% View full image and fit
 fit_image = Ax_ft_2D(A0ft_stack,x_hat);
 
-% Show image and fit
 figure(1)
 subplot(2,1,1)
 imshow(polar_image,'DisplayRange',[0 200],'Colormap',jet)
@@ -48,48 +57,59 @@ subplot(2,1,2)
 imshow(fit_image,'DisplayRange',[0 200],'Colormap',jet)
 title('Fit Image')
 
+%% Analyze regression results:  view coefficients and corresponding basis 
+%  functions used to fit small region of the polar image
 
-%% View basis functions used to fit
+% Choose n x m size region to inspect
+n = 40;
+m = 100;
+% Set starting row and col of region
+row1 = 16;
+col1 = 1901;
+% Select radial variance of basis function (1-10)
+var_rad_idx = 1;
 
-% Choose 20x60 size region to inspect
-n = 30;
-m = 60;
-row1 = 21;
-col1 = 301;
+
+% Indices of region
 rows = row1:row1+n-1;
 cols = col1:col1+m-1;
-
 % Subplot dimensions
 px = 6;
 py = 3;
 
-% Spatial sum over coefficients gets contribution of each variance basis function
-coef_sum = squeeze(sum(sum(x_hat,1),2));
-
-% Show original and fit
+% Show original and fit images restricted to region
 figure(2)
 subplot(px,py,1) 
 imshow(polar_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
-title(['coefs sum',' --- ','weighted coefs sum' ]);
+title('Original');
 subplot(px,py,2) 
 imshow(fit_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
 title('Fit')
-
 % Subplot coef values (fixed radial variance)
-figure(2)
 for i = 1:num_var_t
     subplot(px,py,i+2) 
-    coef_slice = sum(xhat_new(rows,cols,i,:),4);
-    imshow(coef_slice,'DisplayRange',[0 100],'Colormap',jet)
-    title(num2str(sum(coef_sum(i,:))));
+    coef_slice = x_hat(rows,cols,i,var_rad_idx);
+    imshow(coef_slice,'DisplayRange',[0 1],'Colormap',jet)
+    coef_sum = sum(coef_slice(:));
+    title(num2str(coef_sum));
 end
-% Subplot basis function (fixed azimuthal variance)
+
+% Show original and fit images restricted to region
 figure(3)
-for i = 1:num_var_r
+subplot(px,py,1) 
+imshow(polar_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
+title('Original');
+subplot(px,py,2) 
+imshow(fit_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
+title('Fit')
+% Subplot basis function 
+figure(3)
+for i = 1:num_var_t
     subplot(px,py,i+2) 
-    basis = A0_stack(rows,cols,i,1);
+    basis = A0_stack(:,:,i,var_rad_idx);
     basis_shift = shift2D(basis,n/2,m/2);
-    imshow(basis_shift(1:n,1:m),'DisplayRange',[0 0.1],'Colormap',jet)
-    title(num2str(sum(coef_sum(:,i))));
+    imshow(basis_shift(1:n,1:m),'DisplayRange',[0 1],'Colormap',jet)
+    title( ['\sigma_{\theta}/d\theta = ' num2str(sqrt(var_theta(i))/dtheta),...
+            ',    \sigma_r/dr = ', num2str(sqrt(var_rad(var_rad_idx))/drad)] );
 end
 
