@@ -48,6 +48,5 @@ end
 
 % Compute values
 B = exp(-all_dist_sq_theta./var_theta - all_dist_sq_rad./var_rad);
-B = reshape(B,num_theta,num_rad)';
 end
 
