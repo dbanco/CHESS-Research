@@ -507,8 +507,8 @@ def azimuthal_projection(img,center,r,theta_1,theta_2,num_theta):
             num_theta   number of samples along theta
             
     outputs
-            r_project  image values at points along line
-            r_domain   domain over which image values are defined
+            theta_project  image values at points along line
+            theta_domain   domain over which image values are defined
     """
     n,m = img.shape
     if(center==0): center = [round(n/2.0),round(m/2.0)]  
@@ -520,10 +520,10 @@ def azimuthal_projection(img,center,r,theta_1,theta_2,num_theta):
         # identify surrounding four points
         x = r*np.cos(theta_domain[tidx]) + center[0]
         y = r*np.sin(theta_domain[tidx]) + center[1]     
-        x1 = np.floor( x )
-        x2 = np.ceil(  x )
-        y1 = np.floor( y )
-        y2 = np.ceil(  y )
+        x1 = int(np.floor( x ))
+        x2 = int(np.ceil(  x ))
+        y1 = int(np.floor( y ))
+        y2 = int(np.ceil(  y ))
   
         # make sure we are in image
         if( (x1 < n) & (x2 < n) & (x1 > 0) & (x2 > 0) &

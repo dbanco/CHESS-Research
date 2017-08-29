@@ -28,7 +28,7 @@ reload(EM)
 reload(LassoSolvers)
 
 # Data directory
-data_dir = os.path.join('E:','CHESS_raw_data')
+data_dir = os.path.join('D:','CHESS_raw_data')
 out_dir  = os.path.join(data_dir,'out')
 
 # Load Real Image Data
@@ -76,10 +76,10 @@ for i, r in enumerate(np.arange(radius-dr,radius+dr,1)):
     fi, theta_domain = RingIP.azimuthal_projection(image,true_center,r,0,2*np.pi-dtheta,num_theta)
     polar_image[i,:] = fi
 
-#plt.figure(1)
-#plt.imshow(polar_image,cmap='jet',vmin=0,vmax=200, interpolation='nearest')
-#plt.figure(2)
-#plt.imshow(image,cmap='jet',vmin=0,vmax=200, interpolation='nearest')
+plt.figure(1)
+plt.imshow(polar_image,cmap='jet',vmin=0,vmax=200, interpolation='nearest')
+plt.figure(2)
+plt.imshow(image,cmap='jet',vmin=0,vmax=200, interpolation='nearest')
 
 # Success
 
