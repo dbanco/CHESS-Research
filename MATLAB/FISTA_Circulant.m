@@ -67,7 +67,6 @@ l_0 = nan(1,maxIter);
 f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
-
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
 

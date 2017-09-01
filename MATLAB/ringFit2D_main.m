@@ -1,23 +1,23 @@
 %% Problem parameters
 % Data I/O directories
-data_dir = 'E:\CHESS_data\matlab_polar_images\';
-results_dir = 'E:\CHESS_results\fista_fit_results\';
+data_dir = 'D:\CHESS_data\al7075_311_polar\';
+results_dir = 'D:\CHESS_results\fista_fit_results\';
 
 % Ring sampling parameters
-ring_width = 30;
+ring_width = 20;
 num_theta= 2048;
-num_rad = 2*ring_width;
+num_rad = 2*ring_width+1;
 dtheta = 2*pi/num_theta;
 drad = 1;
 
 % Basis function variance parameters
 num_var_t = 15;
 num_var_r = 10;
-var_theta = linspace(dtheta,pi/32,num_var_t).^2;
-var_rad   = linspace(drad,  3,       num_var_r).^2;
+var_theta = linspace(dtheta,pi/64,num_var_t).^2;
+var_rad   = linspace(drad,  2,       num_var_r).^2;
 
 % Generate unshifted basis function matrices
-A0ft_stack = unshifted_basis_matrix_ft_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
+A0ft_stack = unshifted_basis_matrix_ft_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 A0_stack = unshifted_basis_matrix_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad);
 
 % FISTA parameters
@@ -33,8 +33,8 @@ step = 0;
 img = 35;
 % Load polar_image
 load([data_dir,... 
-'polar_image_al7075_load_',...
-num2str(step), '_img_',...
+'polar_image_',...
+num2str(step),'_',...
 num2str(img), '.mat']);
 
 %% FISTA with backtracking
@@ -51,21 +51,21 @@ fit_image = Ax_ft_2D(A0ft_stack,x_hat);
 
 figure(1)
 subplot(2,1,1)
-imshow(polar_image,'DisplayRange',[0 200],'Colormap',jet)
+imshow(log(polar_image),'DisplayRange',[0 9],'Colormap',jet)
 title('Original Image')
 subplot(2,1,2)
-imshow(fit_image,'DisplayRange',[0 200],'Colormap',jet)
+imshow(log(fit_image),'DisplayRange',[0 9],'Colormap',jet)
 title('Fit Image')
 
 %% Analyze regression results:  view coefficients and corresponding basis 
 %  functions used to fit small region of the polar image
 
 % Choose n x m size region to inspect
-n = 40;
+n = 20;
 m = 100;
 % Set starting row and col of region
-row1 = 16;
-col1 = 1901;
+row1 = 10;
+col1 = 1301;
 % Select radial variance of basis function (1-10)
 var_rad_idx = 1;
 
@@ -80,10 +80,10 @@ py = 3;
 % Show original and fit images restricted to region
 figure(2)
 subplot(px,py,1) 
-imshow(polar_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
+imshow(polar_image(rows,cols),'DisplayRange',[0 200],'Colormap',jet)
 title('Original');
 subplot(px,py,2) 
-imshow(fit_image(rows,cols,:,:),'DisplayRange',[0 200],'Colormap',jet)
+imshow(fit_image(rows,cols),'DisplayRange',[0 200],'Colormap',jet)
 title('Fit')
 % Subplot coef values (fixed radial variance)
 for i = 1:num_var_t
