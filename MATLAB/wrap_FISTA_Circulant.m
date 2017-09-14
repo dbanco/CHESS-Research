@@ -19,6 +19,6 @@ load(fileDir)
 [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,P.params);
 
 %% save output
-save(fullfile(outputdir,sprintf('fista_fit_%i_%i.mat',load_step,img_num)),'x_hat','err','polar_image','P')
+save(fullfile(outputdir,sprintf('fista_fit_%i_%i.mat',P.load_step,P.img)),'x_hat','err','polar_image','P')
 end
 
