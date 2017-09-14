@@ -22,7 +22,7 @@ function varargout = decomp_visualizer(varargin)
 
 % Edit the above text to modify the response to help decomp_visualizer
 
-% Last Modified by GUIDE v2.5 13-Sep-2017 14:36:48
+% Last Modified by GUIDE v2.5 14-Sep-2017 15:29:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -108,14 +108,9 @@ if isstr(fileName)
     handles.P = P;
 
     % Compute basis matrices
-    if handles.P.weight
-        handles.A0ft_stack = unshifted_basis_matrix_ft_stack_weight(handles.P.var_theta,handles.P.var_rad,handles.P.dtheta,handles.P.drad,handles.P.num_theta,handles.P.num_rad,handles.P.betap);
-        handles.A0_stack = unshifted_basis_matrix_stack_weight(handles.P.var_theta,handles.P.var_rad,handles.P.dtheta,handles.P.drad,handles.P.num_theta,handles.P.num_rad,handles.P.betap);
-    else
-        handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P.var_theta,handles.P.var_rad,handles.P.dtheta,handles.P.drad,handles.P.num_theta,handles.P.num_rad);
-        handles.A0_stack = unshifted_basis_matrix_stack(handles.P.var_theta,handles.P.var_rad,handles.P.dtheta,handles.P.drad,handles.P.num_theta,handles.P.num_rad);
-    end
-       
+    handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P);
+    handles.A0_stack = unshifted_basis_matrix_stack(handles.P);
+    
     handles.err = err;
     handles.x_hat = x_hat;  
     handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat);
@@ -200,6 +195,16 @@ for i = 1:15
 end
 
 function plot_regions(handles)
+% Plot depending on the display mode
+if handles.button_signal.Value
+    plot_signals(handles)
+elseif handles.button_coefficients.Value
+    plot_coefs(handles)
+elseif handles.button_basis.Value
+    plot_basis(handles)
+end
+
+function plot_signals(handles)
 if ~handles.loaded 
     return
 end
@@ -235,6 +240,90 @@ elseif handles.fix_var_theta_button.Value
         imshow(real(log(signal_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
+    end
+end  
+
+function plot_coefs(handles)
+if ~handles.loaded 
+    return
+end
+
+axes(handles.axis_region_data)
+imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
+axes(handles.axis_region_fit) 
+imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+title('Fit')
+
+clear_region_axes(handles)
+% Fix radial variance
+if handles.fix_var_rad_button.Value
+    variances = handles.P.var_theta;
+    var_idx = handles.var_rad_menu.Value;
+    % Show contributions from different coef values (fixed radial variance)
+    for i = 1:numel(variances)
+        eval(sprintf('axes(handles.axes%i)',i))
+        coef_slice = handles.x_hat(:,:,i,var_idx);
+        imshow(real(log(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        coef_sum = sum(coef_slice(:));
+        title(sprintf('%4d: %6.4f',i,coef_sum));
+    end
+% Fix theta variance
+elseif handles.fix_var_theta_button.Value
+    variances = handles.P.var_rad;
+    var_idx = handles.var_theta_menu.Value;
+    % Show contributions from different coef values (fixed radial variance)
+    for i = 1:numel(variances)
+        eval(sprintf('axes(handles.axes%i)',i))
+        coef_slice = handles.x_hat(:,:,var_idx,i);
+        imshow(real(log(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        coef_sum = sum(coef_slice(:));
+        title(sprintf('%4d: %6.4f',i,coef_sum));
+    end
+end  
+
+
+function plot_basis(handles)
+if ~handles.loaded 
+    return
+end
+P = handles.P;
+
+axes(handles.axis_region_data)
+imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
+axes(handles.axis_region_fit) 
+imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+title('Fit')
+
+clear_region_axes(handles)
+% Fix radial variance
+if handles.fix_var_rad_button.Value
+    variances = handles.P.var_theta;
+    var_idx = handles.var_rad_menu.Value;
+    % Show contributions from different coef values (fixed radial variance)
+    for i = 1:numel(variances)
+        eval(sprintf('axes(handles.axes%i)',i))
+        basis = handles.A0_stack(:,:,i,var_idx);
+        basis = basis./max(basis(:));
+        basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
+        imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
+        title( ['\sigma_{\theta}/d\theta = ' num2str(sqrt(P.var_theta(i))/P.dtheta),...
+            ',    \sigma_r/dr = ', num2str(sqrt(P.var_rad(var_idx))/P.drad)] );
+    end
+% Fix theta variance
+elseif handles.fix_var_theta_button.Value
+    variances = handles.P.var_rad;
+    var_idx = handles.var_theta_menu.Value;
+    % Show contributions from different coef values (fixed radial variance)
+    for i = 1:numel(variances)
+        eval(sprintf('axes(handles.axes%i)',i))
+        basis = handles.A0_stack(:,:,var_idx,i);
+        basis = basis./max(basis(:));
+        basis_shift = shift2D(basis,numel(1:handles.rows)/2,numel(handles.cols)/2);
+        imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
+        title( ['\sigma_{\theta}/d\theta = ' num2str(sqrt(P.var_theta(var_idx))/P.dtheta),...
+            ',    \sigma_r/dr = ', num2str(sqrt(P.var_rad(i))/P.drad)] );
     end
 end  
 
@@ -290,15 +379,10 @@ function fix_var_theta_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of fix_var_theta_button
-handles.fix_var_rad_button.Value = ~handles.fix_var_rad_button.Value;
-
 eval_menu_state(handles,hObject)
 
 % Update plots
 plot_regions(handles)
-
-% Update handles
-guidata(hObject, handles);
 
 % --- Executes on button press in fix_var_rad_button.
 function fix_var_rad_button_Callback(hObject, eventdata, handles)
@@ -307,15 +391,11 @@ function fix_var_rad_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of fix_var_rad_button
-handles.fix_var_theta_button.Value = ~handles.fix_var_theta_button.Value;
-
 eval_menu_state(handles,hObject)
 
 % Update plots
 plot_regions(handles)
 
-% Update handles
-guidata(hObject, handles);
 
 
 % --- Executes on mouse press over axes background.
@@ -340,3 +420,33 @@ plot_regions(handles)
 
 % Update handles
 guidata(uiObject, handles);
+
+
+% --- Executes on button press in button_coefficients.
+function button_coefficients_Callback(hObject, eventdata, handles)
+% hObject    handle to button_coefficients (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of button_coefficients
+plot_regions(handles)
+
+
+% --- Executes on button press in button_signal.
+function button_signal_Callback(hObject, eventdata, handles)
+% hObject    handle to button_signal (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of button_signal
+plot_regions(handles)
+
+
+% --- Executes on button press in button_basis.
+function button_basis_Callback(hObject, eventdata, handles)
+% hObject    handle to button_basis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of button_basis
+plot_regions(handles)

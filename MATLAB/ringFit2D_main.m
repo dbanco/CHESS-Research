@@ -4,23 +4,25 @@ data_dir = 'D:\CHESS_data\al7075_311_polar\';
 results_dir = 'D:\CHESS_results\fista_fit_results\';
 
 % Ring sampling parameters
-ring_width = 20;
-num_theta= 2048;
-num_rad = 2*ring_width+1;
-dtheta = 2*pi/num_theta;
-drad = 1;
+P.ring_width = 20;
+P.num_theta= 2048;
+P.num_rad = 2*P.ring_width+1;
+P.dtheta = 2*pi/P.num_theta;
+P.drad = 1;
 
 % Basis function variance parameters
-num_var_t = 15;
-num_var_r = 10;
-var_theta = linspace(dtheta,pi/64,num_var_t).^2;
-var_rad   = linspace(drad,  2,       num_var_r).^2;
+P.num_var_t = 15;
+P.num_var_r = 10;
+P.var_theta = linspace(dtheta,pi/64,num_var_t).^2;
+P.var_rad   = linspace(drad,  2,       num_var_r).^2;
 
 % Generate unshifted basis function matrices
-betap = 1;
-weight = 1;
-A0ft_stack = unshifted_basis_matrix_ft_stack_weight(var_theta,var_rad,dtheta,drad,num_theta,num_rad,betap);
-A0_stack = unshifted_basis_matrix_stack_weight(var_theta,var_rad,dtheta,drad,num_theta,num_rad,betap);
+P.betap = P.dtheta*P.drad;
+P.weight = 1;
+P.alphap = 10;
+
+A0ft_stack = unshifted_basis_matrix_ft_stack(P);
+A0_stack = unshifted_basis_matrix_stack(P);
 
 % FISTA parameters
 params.stoppingCriterion = 2;

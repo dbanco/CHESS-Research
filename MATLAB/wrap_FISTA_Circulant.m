@@ -2,11 +2,7 @@ function wrap_FISTA_Circulant(datadir,P,outputdir)
 %wrap_FISTA_Circulant 
 
 %% Generate unshifted basis function matrices
-if P.weight
-    A0ft_stack = unshifted_basis_matrix_ft_stack(P.var_theta,P.var_rad,P.dtheta,P.drad,P.num_theta,P.num_rad,P.betap);
-else
-    A0ft_stack = unshifted_basis_matrix_ft_stack(P.var_theta,P.var_rad,P.dtheta,P.drad,P.num_theta,P.num_rad);
-end
+A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 
 %% load polar image
 str1 = sprintf('%i',P.load_step);
