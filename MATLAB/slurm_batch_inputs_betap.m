@@ -20,15 +20,15 @@ P.img = 35;
 P.weight = 1;
 P.ring_width = 20;
 P.num_theta= 2048;
-P.num_rad = 2*ring_width+1;
-P.dtheta = 2*pi/num_theta;
+P.num_rad = 2*P.ring_width+1;
+P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
 
 % Basis function variance parameters
 P.num_var_t = 15;
 P.num_var_r = 10;
-P.var_theta = linspace(dtheta,pi/64,num_var_t).^2;
-P.var_rad   = linspace(drad,  2,       num_var_r).^2;
+P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  2,       P.num_var_r).^2;
 
 %% params
 params.stoppingCriterion = 2;
@@ -49,7 +49,7 @@ for load_step = steps
     for betap = betaps
         P.betap = betap;
         P.load_step = load_step;
-        if ~exist(fullfile(outputdir,sprintf('fista_fit_%i_%i.mat',load_step,img)),'file')
+        if ~exist(fullfile(outputdir,sprintf('fista_fit_%i_%i_betap_%2.2f.mat',P.load_step,P.img,P.betap)),'file')
             varin = {dataset,P,outputdir};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
             k = k + 1;

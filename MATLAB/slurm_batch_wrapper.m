@@ -8,7 +8,7 @@ load(['varin_',index_str,'.mat'])
 
 % Evaluate function
 funcH = eval(['@',funcName]);
-funcH(varin{1},varin{2},varin{3},varin{4})
+funcH(varin{1},varin{2},varin{3})
 
 end
 
