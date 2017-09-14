@@ -1,14 +1,19 @@
-function A0ft_stack = unshifted_basis_matrix_ft_stack(var_theta,var_rad,dtheta,drad,num_theta,num_rad)
-%unshifted_basis_matrix_ft_stack Generates fft2 of many zero mean gaussian  
-% basis function matrices with a max value of 1 using provided parameters
+function A0_stack = unshifted_basis_matrix_ft_stack(P)
+%unshifted_basis_matrix_stack Generates fft2 of many zero mean gaussian  
+% basis function matrices that sum to 1 using provided parameters
 %
 % Inputs:
+% P:
 % var_theta -vector of theta variances
 % var_rad - vector of radial variances
 % dtheta - difference in theta between each pixel
 % drad - difference in radius between each pixel
 % num_theta - image size in theta direction
 % num_rad - image size in radial direction
+% weight - 1 or 0, to weight or not to weight
+% alphap - total penalty
+% betap  - variance based penalty
+% 
 %
 % Outputs:
 % A0ft_stack - (n x m x t x r) array
@@ -17,12 +22,14 @@ function A0ft_stack = unshifted_basis_matrix_ft_stack(var_theta,var_rad,dtheta,d
 %             t = numel(var_theta)
 %             r = numel(var_rad)
 
-A0ft_stack = zeros(num_rad,num_theta,numel(var_theta),numel(var_rad));
-for t = 1:numel(var_theta)
-    for r = 1:numel(var_rad)
-        A0 = gaussian_basis_wrap_2D(num_theta,dtheta,  0,  var_theta(t),...
-                                    num_rad,  drad,    0,  var_rad(r));
-        A0ft_stack(:,:,t,r) = fft2(A0);
+A0_stack = zeros(num_rad,num_theta,numel(var_theta),numel(var_rad));
+for t = 1:numel(P.var_theta)
+    for r = 1:numel(P.var_rad)
+        A0 = gaussian_basis_wrap_2D(P.num_theta,P.dtheta,  0,  P.var_theta(t),...
+                                    P.num_rad,  P.drad,    0,  P.var_rad(r));
+        A0_stack(:,:,t,r) = fft2(P.alphap*2.^(-P.weight*P.betap*...
+                                               P.var_theta(t)/P.dtheta^2)*...
+                                               P.var_rad(t)/P.drad^2*A0);
     end
 end
 end
