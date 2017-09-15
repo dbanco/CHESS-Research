@@ -22,14 +22,14 @@ function A0_stack = unshifted_basis_matrix_ft_stack(P)
 %             t = numel(var_theta)
 %             r = numel(var_rad)
 
-A0_stack = zeros(num_rad,num_theta,numel(var_theta),numel(var_rad));
+A0_stack = zeros(P.num_rad,P.num_theta,numel(P.var_theta),numel(P.var_rad));
 for t = 1:numel(P.var_theta)
     for r = 1:numel(P.var_rad)
         A0 = gaussian_basis_wrap_2D(P.num_theta,P.dtheta,  0,  P.var_theta(t),...
                                     P.num_rad,  P.drad,    0,  P.var_rad(r));
         A0_stack(:,:,t,r) = fft2(P.alphap*2.^(-P.weight*P.betap*...
                                                P.var_theta(t)/P.dtheta^2)*...
-                                               P.var_rad(t)/P.drad^2*A0);
+                                               P.var_rad(r)/P.drad^2*A0);
     end
 end
 end

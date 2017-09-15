@@ -28,7 +28,7 @@ for t = 1:numel(P.var_theta)
                                     P.num_rad,  P.drad,    0,  P.var_rad(r));
         A0_stack(:,:,t,r) = P.alphap*2.^(-P.weight*P.betap*...
                                           P.var_theta(t)/P.dtheta^2)*...
-                                          P.var_rad(t)/P.drad^2*A0;
+                                          P.var_rad(r)/P.drad^2*A0;
     end
 end
 end

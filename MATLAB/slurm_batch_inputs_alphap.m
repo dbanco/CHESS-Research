@@ -20,15 +20,15 @@ P.load_step = 0;
 % Ring sampling parameters
 P.ring_width = 20;
 P.num_theta= 2048;
-P.num_rad = 2*ring_width+1;
-P.dtheta = 2*pi/num_theta;
+P.num_rad = 2*P.ring_width+1;
+P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
 
 % Basis function variance parameters
 P.num_var_t = 15;
 P.num_var_r = 10;
-P.var_theta = linspace(dtheta,pi/64,num_var_t).^2;
-P.var_rad   = linspace(drad,  2,       num_var_r).^2;
+P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
 
 % basis weighting
 P.weight = 1;
