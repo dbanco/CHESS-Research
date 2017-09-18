@@ -45,7 +45,7 @@ params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
-alphaps = [1 5 10 20 50 100 200 500 1000];
+alphaps = [2000 5000 10000 50000 100000 500000 1000000 10000000 100000000 1000000000];
 k = 0;
 for alphap = alphaps
     P.alphap = alphap;
