@@ -17,5 +17,6 @@ load(fileDir)
 
 %% save output
 save(fullfile(outputdir,sprintf('fista_fit_%i_%i_task_%i.mat',P.load_step,P.img,P.task)),'x_hat','err','polar_image','P')
+
 end
 
