@@ -54,8 +54,7 @@ function decomp_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for decomp_visualizer
 handles.output = hObject;
-handles.defaultDir = fullfile('C:','Users','dbanco02','Documents',....
-                              'CHESS-Research','MATLAB');
+handles.defaultDir = fullfile('D:','CHESS_data');
 handles.loaded = 0;
 
 eval_menu_state(handles,hObject)
@@ -248,6 +247,7 @@ if ~handles.loaded
     return
 end
 
+
 axes(handles.axis_region_data)
 imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
@@ -256,15 +256,16 @@ imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0
 title('Fit')
 
 clear_region_axes(handles)
+maxLim = max(real(handles.x_hat(:)));
 % Fix radial variance
 if handles.fix_var_rad_button.Value
     variances = handles.P.var_theta;
-    var_idx = handles.var_rad_menu.Value;
+    var_idx = handles.var_rad_menu.Value;   
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         coef_slice = handles.x_hat(:,:,i,var_idx);
-        imshow(real(log(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        imshow(real((coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
@@ -276,7 +277,7 @@ elseif handles.fix_var_theta_button.Value
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         coef_slice = handles.x_hat(:,:,var_idx,i);
-        imshow(real(log(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        imshow(real((coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
