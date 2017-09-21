@@ -22,7 +22,7 @@ function varargout = decomp_visualizer(varargin)
 
 % Edit the above text to modify the response to help decomp_visualizer
 
-% Last Modified by GUIDE v2.5 14-Sep-2017 15:29:57
+% Last Modified by GUIDE v2.5 21-Sep-2017 11:12:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -99,13 +99,19 @@ function load_fit_button_Callback(hObject, eventdata, handles)
 [fileName, pathName] = uigetfile('*.mat','Select a fit data file',...
                                  handles.defaultDir);
 if isstr(fileName)
-	% Load file
+    % Add mat file names to menu
+    allFiles = dir([pathName,'*.mat']);
+    handles.filePath = pathName;
+    handles.menu_file.String = {allFiles.name};
+    handles.menu_file.Value = find(strcmp(handles.menu_file.String,fileName));
+	
+    % Load file
     load(fullfile(pathName,fileName))
     handles.loaded = 1;
     
     % Save data
     handles.P = P;
-
+    
     % Compute basis matrices
     handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P);
     handles.A0_stack = unshifted_basis_matrix_stack(handles.P);
@@ -118,6 +124,10 @@ if isstr(fileName)
     % Update static text
     handles.text_coefs.String = sprintf('Total Coefficients: %2.2e',sum(handles.x_hat(:)>0));
     handles.text_error.String = sprintf('Relative Error: %3.3f',handles.err(end));
+    handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
+    handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+    handles.text_img.String = sprintf('Image: %i',handles.P.img);
+    handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
     
     % Update menus
     handles.var_rad_menu.String = update_var_menu(handles.P.var_rad,handles.P.drad);
@@ -156,12 +166,12 @@ if ~handles.loaded
 end
 % Plot full data iamges
 axes(handles.axis_data)
-handles.im_data = imshow(log(handles.polar_image),'DisplayRange',[0 9],'Colormap',jet);
+handles.im_data = imshow(real(log(handles.polar_image)),'DisplayRange',[0 9],'Colormap',jet);
 set(handles.im_data,'ButtonDownFcn',@box_ButtonDownFcn);
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 
 axes(handles.axis_fit)
-handles.im_fit = imshow(log(handles.fit_image),'DisplayRange',[0 9],'Colormap',jet);
+handles.im_fit = imshow(real(log(handles.fit_image)),'DisplayRange',[0 9],'Colormap',jet);
 set(handles.im_fit,'ButtonDownFcn',@box_ButtonDownFcn);
 title('Fit Image')
  
@@ -321,7 +331,7 @@ elseif handles.fix_var_theta_button.Value
         eval(sprintf('axes(handles.axes%i)',i))
         basis = handles.A0_stack(:,:,var_idx,i);
         basis = basis./max(basis(:));
-        basis_shift = shift2D(basis,numel(1:handles.rows)/2,numel(handles.cols)/2);
+        basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
         imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
         title( ['\sigma_{\theta}/d\theta = ' num2str(sqrt(P.var_theta(var_idx))/P.dtheta),...
             ',    \sigma_r/dr = ', num2str(sqrt(P.var_rad(i))/P.drad)] );
@@ -451,3 +461,73 @@ function button_basis_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of button_basis
 plot_regions(handles)
+
+
+% --- Executes on selection change in menu_file.
+function menu_file_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns menu_file contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from menu_file
+    
+% Load file
+fileName = handles.menu_file.String{handles.menu_file.Value};
+load(fullfile(handles.filePath,fileName))
+handles.loaded = 1;
+
+% Save data
+handles.P = P;
+
+% Compute basis matrices
+handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P);
+handles.A0_stack = unshifted_basis_matrix_stack(handles.P);
+
+handles.err = err;
+handles.x_hat = x_hat;  
+handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat);
+handles.polar_image = polar_image;
+
+% Update static text
+handles.text_coefs.String = sprintf('Total Coefficients: %2.2e',sum(handles.x_hat(:)>0));
+handles.text_error.String = sprintf('Relative Error: %3.3f',handles.err(end));
+handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
+handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+handles.text_img.String = sprintf('Image: %i',handles.P.img);
+handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
+
+% Update menus
+handles.var_rad_menu.String = update_var_menu(handles.P.var_rad,handles.P.drad);
+handles.var_theta_menu.String = update_var_menu(handles.P.var_theta,handles.P.dtheta);
+
+% Set default region
+[n,m] = size(handles.polar_image);
+x = floor(m/2);
+y = 1;
+Nx = 200;
+Ny = n;
+handles.rows = y:y+Ny-1;
+handles.cols = x-floor(Nx/2):x+floor(Nx/2)-1;
+handles.region = [handles.cols(1), handles.rows(1), Nx-1, Ny-1]; 
+handles.box_data = 0;
+handles.box_fit = 0;
+
+% Plot images
+plot_full_images(handles)
+handles = init_boxes(handles);
+
+% Update handles
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function menu_file_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to menu_file (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
