@@ -1,5 +1,5 @@
 %% Load fit results
-resultDir = 'D:\CHESS_data\al7075_311_alpha_beta_part2\*.mat';
+resultDir = 'D:\CHESS_data\al7075_222\*.mat';
 files = dir(resultDir);
 
 coefs = zeros(numel(files),1);
@@ -19,26 +19,36 @@ end
 %% Plot figures
 figure(1)
 loglog(alphap,coefs,'o')  
-xlabel('log(alpha)')
-ylabel('log(# of coefs)')
+xlabel('alpha')
+ylabel('# of coefs')
 
 figure(2)
 plot(coefs,fitErr,'o') 
 ylabel('Error')
-xlabel('log(# of coefs')
+xlabel('# of coefs')
 
 figure(3)
 semilogx(alphap(betap==min(betap)),fitErr(betap==min(betap)),'o')  
-xlabel('log(alpha)')
+xlabel('alpha')
 ylabel('Error')
 
-[task(betap==min(betap)) , betap(betap==min(betap))]
+figure(33)
+semilogx(alphap,fitErr,'o')  
+xlabel('alpha')
+ylabel('Error')
+
+figure(44)
+semilogx(betap,fitErr,'o')  
+xlabel('beap')
+ylabel('Error')
+
 figure(4)
 loglog(betap,coefs,'o')  
-xlabel('log(beta)')
-ylabel('log(# of coefs)')
+xlabel('beta')
+ylabel('# of coefs')
 
 figure(5)
-semilogx(betap(alphap == 1),coefs(alphap == 1),'o')
-xlabel('log(beta)')
+idx = 78;
+plot(betap(alphap == alphap(idx)),coefs(alphap == alphap(idx)),'o')
+xlabel('beta')
 ylabel('# of coefs')

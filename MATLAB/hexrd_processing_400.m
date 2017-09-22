@@ -1,21 +1,21 @@
 clear all; close all;
-outDir = 'F:\CHESS_data\al7075_421_polar';
+outDir = 'F:\CHESS_data\al7075_400_polar';
 mkdir(outDir)
 
 %% Load HEXRD image 
 imDir = 'D:\CHESS_raw_data\al7075_mlf_mat';
 
-%% AL7075 311 ring (there is also a 440 ring)
-radius = 748;
-dr = 18;
-num_theta = 2400;
+%% AL7075 311 ring 
+radius = 800;
+dr = 20;
+num_theta = 2048;
 
-center = [1024.67, 1024.61];
+center = [1023.67, 1024.61];
 r1 = radius - dr;
 r2 = radius + dr;
 dtheta = 2*pi/num_theta;
 
-for i = 19:205
+for i = 116:205
     for j = 1:5
         img_num = i-1;
         load_step = j-1;
@@ -25,6 +25,7 @@ for i = 19:205
         % Extract ring
         polar_image = extract_ring( image,r1,r2,center,dtheta,num_theta);
         
+        % Plot ring
         figure(1)
         imshow(image,'DisplayRange',[0 200],'Colormap',jet)
         hold on
