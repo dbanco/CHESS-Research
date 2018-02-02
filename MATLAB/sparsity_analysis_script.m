@@ -1,5 +1,5 @@
 %% Load fit results
-resultDir = 'D:\CHESS_data\al7075_222\*.mat';
+resultDir = 'D:\CHESS_data\al7075_polar_fit_ab_9_23\*.mat';
 files = dir(resultDir);
 
 coefs = zeros(numel(files),1);

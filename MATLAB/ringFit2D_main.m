@@ -1,7 +1,7 @@
 %% Problem parameters
 % Data I/O directories
 data_dir = 'D:\CHESS_data\al7075_311_polar\';
-results_dir = 'D:\CHESS_results\fista_fit_results\';
+results_dir = 'D:\CHESS_results\test\';
 
 % Ring sampling parameters
 P.ring_width = 20;
@@ -13,8 +13,8 @@ P.drad = 1;
 % Basis function variance parameters
 P.num_var_t = 15;
 P.num_var_r = 10;
-P.var_theta = linspace(dtheta,pi/64,num_var_t).^2;
-P.var_rad   = linspace(drad,  2,       num_var_r).^2;
+P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  2,       P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
 P.betap = P.dtheta*P.drad;
@@ -32,16 +32,23 @@ params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 500;
 params.isNonnegative = 1;
+P.params = params;
 
-step = 4;
-img = 35;
+P.load_step = 4;
+P.img = 35;
+
 % Load polar_image
 load([data_dir,... 
 'polar_image_',...
-num2str(step),'_',...
-num2str(img), '.mat']);
+num2str(P.load_step),'_',...
+num2str(P.img), '.mat']);
+
+% Reduce image 
+test_im = polar_image(:,1:100);
+test_A0ft_stack = A0ft_stack(:,1:100,:,:);
 
 %% FISTA with backtracking
-[x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,polar_image,params);   
+[x_hat, err, obj, l_0]  = FISTA_Circulant(test_A0ft_stack,test_im,params);   
 
-save('fista_fit_wavlt_4_35.mat','x_hat','err','betap','weight','dtheta','drad','num_rad','num_theta','var_theta','var_rad','params','img','step')
+save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
+      P.load_step,P.img))

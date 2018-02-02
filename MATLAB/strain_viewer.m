@@ -1,35 +1,35 @@
-function varargout = spread_visualizer(varargin)
-% SPREAD_VISUALIZER MATLAB code for spread_visualizer.fig
-%      SPREAD_VISUALIZER, by itself, creates a new SPREAD_VISUALIZER or raises the existing
+function varargout = strain_viewer(varargin)
+% STRAIN_VIEWER MATLAB code for strain_viewer.fig
+%      STRAIN_VIEWER, by itself, creates a new STRAIN_VIEWER or raises the existing
 %      singleton*.
 %
-%      H = SPREAD_VISUALIZER returns the handle to a new SPREAD_VISUALIZER or the handle to
+%      H = STRAIN_VIEWER returns the handle to a new STRAIN_VIEWER or the handle to
 %      the existing singleton*.
 %
-%      SPREAD_VISUALIZER('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in SPREAD_VISUALIZER.M with the given input arguments.
+%      STRAIN_VIEWER('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in STRAIN_VIEWER.M with the given input arguments.
 %
-%      SPREAD_VISUALIZER('Property','Value',...) creates a new SPREAD_VISUALIZER or raises the
+%      STRAIN_VIEWER('Property','Value',...) creates a new STRAIN_VIEWER or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before spread_visualizer_OpeningFcn gets called.  An
+%      applied to the GUI before strain_viewer_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to spread_visualizer_OpeningFcn via varargin.
+%      stop.  All inputs are passed to strain_viewer_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help spread_visualizer
+% Edit the above text to modify the response to help strain_viewer
 
-% Last Modified by GUIDE v2.5 11-Dec-2017 09:29:19
+% Last Modified by GUIDE v2.5 25-Oct-2017 08:42:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @spread_visualizer_OpeningFcn, ...
-                   'gui_OutputFcn',  @spread_visualizer_OutputFcn, ...
+                   'gui_OpeningFcn', @strain_viewer_OpeningFcn, ...
+                   'gui_OutputFcn',  @strain_viewer_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,26 +44,26 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before spread_visualizer is made visible.
-function spread_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before strain_viewer is made visible.
+function strain_viewer_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to spread_visualizer (see VARARGIN)
+% varargin   command line arguments to strain_viewer (see VARARGIN)
 
-% Choose default command line output for spread_visualizer
+% Choose default command line output for strain_viewer
 handles.output = hObject;
-handles.defaultDir = fullfile('D:','CHESS_data','spread_results');
+handles.defaultDir = fullfile('C:','Users','dbanco02','CHESS-Research','MATLAB');
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes spread_visualizer wait for user response (see UIRESUME)
+% UIWAIT makes strain_viewer wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = spread_visualizer_OutputFcn(hObject, eventdata, handles) 
+function varargout = strain_viewer_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -88,35 +88,21 @@ if isstr(fileName)
     handles.loaded = 1;
     
     % Save data
-    handles.var_signal = var_signal;
-    handles.rel_error = rel_error;
-    handles.sparsity = sparsity;
-    handles.P = P;
+    handles.strain = strain;
     
     handles.edit_rowstart.String = '1';
-    handles.edit_rowend.String = num2str(size(rel_error,2));
+    handles.edit_rowend.String = num2str(size(handles.strain,4));
     handles.r1 = str2num(handles.edit_rowstart.String);
     handles.rend = str2num(handles.edit_rowend.String);
     
-    % Update cutoff menu
-    if handles.radio_az.Value
-        handles.menu_cutoff.String = update_cutoff_menu(handles.P.var_theta);
-    elseif handles.radio_rad.Value
-        handles.menu_cutoff.String = update_cutoff_menu(handles.P.var_rad);
-    end
     handles.apply_limits = 0;
     
     % Plot images
-    plot_images(handles)
+    handles = update_indices(handles);
+    plot_strain(handles)
     
     % Update handles
     guidata(hObject, handles);
-end
-
-function menu = update_cutoff_menu(variances)
-menu = {};
-for i = 1:numel(variances)
-    menu{i} = sprintf('%4d: %4.4f',i,variances(i));
 end
 
 function clear_axes(handles)
@@ -124,25 +110,26 @@ for i = 1:5
         eval(sprintf('cla(handles.axes%i,''reset'')',i))
 end
 
-function plot_images(handles)
-if handles.radio_spread.Value
-    if  handles.radio_az.Value
-        plot_az_spread(handles)
-    elseif handles.radio_rad.Value
-        plot_rad_spread(handles)
-    end
-elseif handles.radio_sparsity.Value
-    plot_sparsity(handles)
-elseif handles.radio_error.Value
-    plot_error(handles)
+function handles = update_indices(handles)
+if handles.radio_exx.Value
+    handles.comp_idx = 1;
+elseif handles.radio_eyy.Value
+    handles.comp_idx = 2;
+elseif handles.radio_exy.Value
+    handles.comp_idx = 3;
 end
 
-function plot_az_spread(handles)
-cutoff = handles.menu_cutoff.Value;
-total_var = squeeze(sum(sum(handles.var_signal(:,:,1:5,:,:),1),2));
-high_var_theta = squeeze(sum(sum(handles.var_signal(cutoff:end,:,1:5,:,:),1),2))./total_var;
+if handles.radio_total.Value
+    handles.type_idx = 1;
+elseif handles.radio_elastic.Value
+    handles.type_idx = 2;
+elseif handles.radio_plastic.Value
+    handles.type_idx = 3;  
+end
+
+function plot_strain(handles)
 if handles.radio_subtract.Value
-    center = high_var_theta(1,handles.r1:handles.rend,:);
+    center = squeeze(handles.strain(handles.type_idx,handles.comp_idx,1,handles.r1:handles.rend,:));
 else
     center = 0;
 end
@@ -150,140 +137,54 @@ if handles.apply_limits
     handles.max_limit = str2num(handles.edit_max.String);
     handles.min_limit = str2num(handles.edit_min.String);
 elseif handles.radio_subtract.Value
-    handles.max_limit = 1;
-    handles.min_limit = -1;
+    handles.max_limit = 0.025;
+    handles.min_limit = -0.025;
 else
-    handles.max_limit = 1;
-    handles.min_limit = 0;
+    handles.max_limit = 0.025;
+    handles.min_limit = -0.025;
 end
 for i = 1:5
     eval(sprintf('axes(handles.axes%i)',i)) 
-    handles.viewData{i} = squeeze(high_var_theta(i,handles.r1:handles.rend,:)-center);
-    imshow(handles.viewData{i},'DisplayRange',...
-        [handles.min_limit handles.max_limit],'Colormap',jet)
+    tmp_img = squeeze(handles.strain(handles.type_idx,handles.comp_idx,i,handles.r1:handles.rend,:));
+    imshow( (tmp_img-center),'DisplayRange',...
+        [handles.min_limit handles.max_limit],'Colormap',jet);
     title(sprintf('Load %i',i))
 end
-colorbar()  
+colorbar() 
 
-function plot_rad_spread(handles)
-cutoff = handles.menu_cutoff.Value;
-total_var = squeeze(sum(sum(handles.var_signal(:,:,1:5,:,:),1),2));
-high_var_rad = squeeze(sum(sum(handles.var_signal(:,cutoff:end,1:5,:,:),1),2))./total_var; 
-if handles.radio_subtract.Value
-    center = high_var_rad(1,handles.r1:handles.rend,:);
-else
-    center = 0;
-end
-if handles.apply_limits
-    handles.max_limit = str2num(handles.edit_max.String);
-    handles.min_limit = str2num(handles.edit_min.String);
-elseif handles.radio_subtract.Value
-    handles.max_limit = 1;
-    handles.min_limit = -1;
-else
-    handles.max_limit = 1;
-    handles.min_limit = 0;
-end
-for i = 1:5
-    eval(sprintf('axes(handles.axes%i)',i))
-    handles.viewData{i} = squeeze(high_var_rad(i,handles.r1:handles.rend,:)-center);
-    imshow(handles.viewData{i},'DisplayRange',...
-           [handles.min_limit handles.max_limit],'Colormap',jet)
-    title(sprintf('Load %i',i))
-end
-colorbar()
 
-function plot_sparsity(handles)
-if handles.apply_limits
-    handles.max_limit = str2num(handles.edit_max.String);
-    handles.min_limit = str2num(handles.edit_min.String);
-else
-    handles.max_limit = max(handles.sparsity(:));
-    handles.min_limit = min(handles.sparsity(:));
-end
-for i = 1:5
-    eval(sprintf('axes(handles.axes%i)',i))
-    imshow(squeeze(handles.sparsity(i,handles.r1:handles.rend,:)),'DisplayRange',...
-            [handles.min_limit handles.max_limit],'Colormap',jet)
-    title(sprintf('Load %i',i))
-end
-colorbar()
 
-function plot_error(handles)
-if handles.apply_limits
-    handles.max_limit = str2num(handles.edit_max.String);
-    handles.min_limit = str2num(handles.edit_min.String);
-else
-    handles.max_limit = 1;
-    handles.min_limit = 0;
-end
 
-for i = 1:5
-    eval(sprintf('axes(handles.axes%i)',i))
-    imshow(squeeze(handles.rel_error(i,handles.r1:handles.rend,:)),'DisplayRange',...
-            [handles.min_limit handles.max_limit],'Colormap',jet)
-    title(sprintf('Load %i',i))
-end
-colorbar()
-
-% --- Executes on selection change in menu_cutoff.
-function menu_cutoff_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_cutoff (see GCBO)
+% --- Executes on button press in radio_total.
+function radio_total_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_total (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns menu_cutoff contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from menu_cutoff
-clear_axes(handles)
-plot_images(handles)
+% Hint: get(hObject,'Value') returns toggle state of radio_total
 
-% --- Executes during object creation, after setting all properties.
-function menu_cutoff_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to menu_cutoff (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in radio_az.
-function radio_az_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_az (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radio_az
-% Update cutoff menu
-handles.menu_cutoff.String = update_cutoff_menu(handles.P.var_theta);
-handles.menu_cutoff.Value = min(numel(handles.menu_cutoff.String),...
-                                handles.menu_cutoff.Value);
 % Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
 
 
-% --- Executes on button press in radio_rad.
-function radio_rad_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_rad (see GCBO)
+% --- Executes on button press in radio_elastic.
+function radio_elastic_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_elastic (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radio_rad
+% Hint: get(hObject,'Value') returns toggle state of radio_elastic
 % Update cutoff menu
 
-handles.menu_cutoff.String = update_cutoff_menu(handles.P.var_rad);
-handles.menu_cutoff.Value = min(numel(handles.menu_cutoff.String),...
-                                handles.menu_cutoff.Value);
 % Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
@@ -296,49 +197,54 @@ function radio_subtract_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radio_subtract
+
 % Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
 
 
-% --- Executes on button press in radio_spread.
-function radio_spread_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_spread (see GCBO)
+% --- Executes on button press in radio_exx.
+function radio_exx_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_exx (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radio_spread
+% Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
 
-% --- Executes on button press in radio_sparsity.
-function radio_sparsity_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_sparsity (see GCBO)
+% --- Executes on button press in radio_eyy.
+function radio_eyy_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_eyy (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radio_sparsity
+% Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
 
-% --- Executes on button press in radio_error.
-function radio_error_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_error (see GCBO)
+% --- Executes on button press in radio_exy.
+function radio_exy_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_exy (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radio_error
+% Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
@@ -396,8 +302,12 @@ function button_apply_limits_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.apply_limits = 1;
+
+% Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
+
 % Update handles
 guidata(hObject, handles);
 
@@ -407,8 +317,11 @@ function button_reset_limits_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.apply_limits = 0;
+
+% Plot images
+handles = update_indices(handles);
 clear_axes(handles)
-plot_images(handles)
+plot_strain(handles)
 
 % Update handles
 guidata(hObject, handles);
@@ -479,12 +392,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% % --- Executes on mouse press over figure background.
-% function figure1_ButtonDownFcn(hObject, eventdata, handles)
-% % hObject    handle to figure1 (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% C = get;
-% row = round(C(1,2));
-% col = round(C(1,1));
-% print(sprintf('Val: %2.2f, Row: %i, Col: %i',handles.viewData{5}(row,col),row,col))
+
+% --- Executes on button press in radio_plastic.
+function radio_plastic_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_plastic (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radio_plastic
+
+% Plot images
+handles = update_indices(handles);
+clear_axes(handles)
+plot_strain(handles)
+
+% Update handles
+guidata(hObject, handles);
