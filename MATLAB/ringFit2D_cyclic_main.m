@@ -76,29 +76,29 @@ x_hat_array  = cyclic_optimization(A0ft_stack,b_array,P.params);
 save('cyclic_fista_fit2.mat','x_hat_array','params')
 
 %% Show results
-var_signal = zeros(P.num_var_t,P.num_var_r,N,M);
-hvs_az = zeros(N,M);
-k = 1;
-for i = 1:N
-    for j = 1:M
-        figure(1)
-        subplot(3,5,k)
-        im_fit = Ax_ft_2D(A0ft_stack,x_hat_array{i,j});
-        image(im_fit)
-        colormap jet
-        
-        figure(2)
-        subplot(3,5,k)
-        image(b_array{i,j})
-        colormap jet
-        
-        k = k + 1;
-        
-        var_signal(:,:,i,j) = squeeze(sum(sum(x_hat_array{i,j},1),2)); 
-        hvs_az(i,j) = squeeze(sum(sum(var_signal(6:end,:,i,j))))/sum(sum(var_signal(:,:,i,j)));
-    end
-end
-figure(3)
-imagesc(hvs_az)
-colormap jet
-colorbar()
+% var_signal = zeros(P.num_var_t,P.num_var_r,N,M);
+% hvs_az = zeros(N,M);
+% k = 1;
+% for i = 1:N
+%     for j = 1:M
+%         figure(1)
+%         subplot(3,5,k)
+%         im_fit = Ax_ft_2D(A0ft_stack,x_hat_array{i,j});
+%         image(im_fit)
+%         colormap jet
+%         
+%         figure(2)
+%         subplot(3,5,k)
+%         image(b_array{i,j})
+%         colormap jet
+%         
+%         k = k + 1;
+%         
+%         var_signal(:,:,i,j) = squeeze(sum(sum(x_hat_array{i,j},1),2)); 
+%         hvs_az(i,j) = squeeze(sum(sum(var_signal(6:end,:,i,j))))/sum(sum(var_signal(:,:,i,j)));
+%     end
+% end
+% figure(3)
+% imagesc(hvs_az)
+% colormap jet
+% colorbar()
