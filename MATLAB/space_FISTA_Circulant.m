@@ -7,7 +7,7 @@ function [x_hat, err, obj, l_0] = space_FISTA_Circulant(A0ft_stack,b,x_neighbors
 %   convolutional subroutines for circulant matrix computations as
 %   described in:
 %   A. Beck and M. Teboulle, â€œA Fast Iterative Shrinkage-Thresholding 
-%       Algorithm for Linear Inverse Problems,â€? SIAM Journal on Imaging 
+%       Algorithm for Linear Inverse Problems,ï¿½? SIAM Journal on Imaging 
 %       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
 %
 % Inputs:
@@ -88,8 +88,10 @@ while keep_going && (nIter < maxIter)
     end
         
     % Compute gradient of f
+    size(x_neighbors)
+    size(squeeze(sum(sum(ykp1,1),2)))
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c +...
-           params.gamma*(x_neighbors - squeeze(sum(sum(ykp1,1),2))); 
+           params.gamma*(x_neighbors - ykp1); 
     
     % Backtracking
     stop_backtrack = 0 ;
