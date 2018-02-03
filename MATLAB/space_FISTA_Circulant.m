@@ -89,7 +89,7 @@ while keep_going && (nIter < maxIter)
         
     % Compute gradient of f
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c +...
-           params.gamma*(x_neighbors - squeeze(sum(sum(ykp1,1),2))); 
+           params.gamma*(x_neighbors - ykp1); 
     
     % Backtracking
     stop_backtrack = 0 ;
