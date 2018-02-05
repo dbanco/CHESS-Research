@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,params)
+function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x||_1
 %
@@ -49,11 +49,6 @@ beta = params.beta;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
 [m,n,t,r] = size(A0ft_stack) ;
-try
-    x_init = params.x_init;
-catch
-    x_init = ones(m,n,t,r);
-end
 if ~all(size(x_init)==[m,n,t,r])
     error('The dimension of the initial xk does not match.');
 end
