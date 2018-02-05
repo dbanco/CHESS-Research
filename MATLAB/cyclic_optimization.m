@@ -1,4 +1,4 @@
-function [x_hat_array] = cyclic_optimization(A0ft_stack,b_array,params)
+function [x_hat_array, error_array] = cyclic_optimization(A0ft_stack,b_array,params)
 %cyclic_optimization Alternately uses FISTA algorithm across HEXD data array 
 %
 % Inputs:
@@ -33,11 +33,14 @@ odd_error_array = zeros(numel(odd),1);
 even_error_array = zeros(numel(even),1);
 odd_b_array = b_array(odd);
 even_b_array = b_array(even);
+
 % Initial cycle without regularization (All in parallel)
+[m,n,t,r] = size(A0ft_stack);
+x_init = ones(m,n,t,r);
 parfor idx = all
     [x_hat,err,~,l0] = FISTA_Circulant(A0ft_stack,...
                                     b_array{idx},...
-                                    params);
+                                    x_init,params);
     x_hat_array(idx) = {x_hat};
     error_array(idx) = err(end);
     l0_array = l0(end)
@@ -49,15 +52,12 @@ for k = 1:params.maxCycles
         [i,j] = ind2sub([N,M],odd(idx));
         fprintf('Cycle: %i;  Point %i,%i',k,i,j)
         x_neighbors = neighbors_vdf(x_hat_array,i,j);
-        local_params = params;
-        local_params.x_init = x_hat_array{i,j};
-        [x_hat,err,~,l0] = space_FISTA_Circulant(A0ft_stack,...
+        [x_hat,err,~,~] = space_FISTA_Circulant(A0ft_stack,...
                                               odd_b_array{idx},...
-                                              x_neighbors,local_params);
+                                              x_neighbors,...
+                                              x_hat_array{i,j},params);
         odd_x_hat_array(idx) = {x_hat};
         odd_error_array(idx) = err(end);
-        l0(end)
-   
     end
     x_hat_array = fill_array(x_hat_array,odd_x_hat_array,odd);
     error_array = fill_array(error_array,odd_error_array,odd);
@@ -65,14 +65,12 @@ for k = 1:params.maxCycles
         [i,j] = ind2sub([N,M],even(idx));
         fprintf('Cycle: %i;  Point %i,%i',k,i,j)
         x_neighbors = neighbors_vdf(x_hat_array,i,j);
-        local_params = params;
-        local_params.x_init = x_hat_array{i,j};
-        [x_hat,err,~,l0] = space_FISTA_Circulant(A0ft_stack,...
+        [x_hat,err,~,~] = space_FISTA_Circulant(A0ft_stack,...
                                               even_b_array{idx},...
-                                              x_neighbors,params);
+                                              x_neighbors,...
+                                              x_hat_array{i,j},params);
         even_x_hat_array(idx) = {x_hat};
         even_error_array(idx) = err(end);
-        l0(end)
     end
     x_hat_array = fill_array(x_hat_array,even_x_hat_array,even);
     error_array = fill_array(error_array,even_error_array,even);

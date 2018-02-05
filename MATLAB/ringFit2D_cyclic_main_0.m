@@ -54,7 +54,7 @@ for img = 0:204
 end
 
 % Reduce to subset of sample (41x5 -> 3x5)
-P.img_array = img_array
+P.img_array = img_array;
 [N,M] = size(P.img_array);
 
 % Reduce size of each image to be 21x50
@@ -72,7 +72,10 @@ for i = 1:N
     end
 end
 %% cyclic FISTA with backtracking
-x_hat_array  = cyclic_optimization(A0ft_stack,b_array,P.params);   
+c = parcluster('local');
+c.NumWorkers = 32;
+parpool(c, c.NumWorkers);
+[x_hat_array, error_array]  = cyclic_optimization(A0ft_stack,b_array,P.params);   
 save('cyclic_fista_fit_load_0.mat','x_hat_array','params')
 
 %% Show results
