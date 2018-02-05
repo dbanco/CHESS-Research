@@ -1,6 +1,6 @@
 %% Problem parameters
 % Data I/O directories
-data_dir = 'D:\CHESS_data\al7075_311_polar\';
+data_dir = '/cluster/home/dbanco02/al7075_311_polar/';
 results_dir = 'D:\CHESS_results\test\';
 
 % Ring sampling parameters

@@ -25,7 +25,6 @@ for k = [j-1,j+1]
             end
         end
     end
-neighbors = neighbors;
 
 end
 

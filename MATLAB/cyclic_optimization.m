@@ -34,13 +34,12 @@ even_error_array = zeros(numel(even),1);
 odd_b_array = b_array(odd);
 even_b_array = b_array(even);
 % Initial cycle without regularization (All in parallel)
-for idx = all
-    [i,j] = ind2sub([N,M],idx);
+parfor idx = all
     [x_hat,err,~,l0] = FISTA_Circulant(A0ft_stack,...
-                                    b_array{i,j},...
+                                    b_array{idx},...
                                     params);
-    x_hat_array{i,j} = x_hat;
-    error_array(i,j) = err(end);
+    x_hat_array(idx) = {x_hat};
+    error_array(idx) = err(end);
     l0_array = l0(end)
 end
 

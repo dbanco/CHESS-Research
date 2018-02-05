@@ -88,8 +88,6 @@ while keep_going && (nIter < maxIter)
     end
         
     % Compute gradient of f
-    size(x_neighbors)
-    size(squeeze(sum(sum(ykp1,1),2)))
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c +...
            params.gamma*(x_neighbors - ykp1); 
     
