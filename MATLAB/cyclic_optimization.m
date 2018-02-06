@@ -23,7 +23,7 @@ function [x_hat_array, error_array] = cyclic_optimization(A0ft_stack,b_array,par
 x_hat_array = cell(N,M);
 error_array = zeros(N,M);
 
-% Set up indices
+% Set up indices and arrays
 all = 1:N*M;
 odd = 1:2:N*M;
 even = 2:2:N*M;
