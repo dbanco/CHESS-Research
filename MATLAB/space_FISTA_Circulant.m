@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_FISTA_Circulant(A0ft_stack,b,x_neighbors,x_init,params)
+function [x_hat, err, obj, l_0] = space_FISTA_Circulant(A0ft_stack,b,x_neighbors,vdfs,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -98,12 +98,21 @@ while keep_going && (nIter < maxIter)
         
         % Compute objective at xkp1
         fit = Ax_ft_2D(A0ft_stack,xkp1);
-        
-        % Compute quadratic approximation at yk
-        fit2 = Ax_ft_2D(A0ft_stack,ykp1);
         temp1 = norm(b(:)-fit(:))^2;
+        
+        % Compute quadratic approximation at ykp1
+        fit2 = Ax_ft_2D(A0ft_stack,ykp1);
         temp2 = norm(b(:)-fit2(:))^2 +...
-            (xkp1(:)-ykp1(:))'*grad(:) + (L/2)*norm(xkp1(:)-ykp1(:))^2;
+            (xkp1(:)-ykp1(:))'*grad(:) +...
+            (L/2)*norm(xkp1(:)-ykp1(:))^2;
+        
+        % Add spatial VDF smoothness part of objective to each term
+        x_vdf = squeeze(sum(sum(xkp1,1),2))/sum(xkp1(:));
+        y_vdf = squeeze(sum(sum(ykp1,1),2))/sum(ykp1(:));
+        for idx = 1:numel(vdfs)
+            temp1 = temp1 + norm(vdfs{idx} - x_vdf)^2;
+            temp2 = temp2 + norm(vdfs{idx} - y_vdf)^2; 
+        end
         
         % Stop backtrack if objective <= quadratic approximation
         if temp1 <= temp2

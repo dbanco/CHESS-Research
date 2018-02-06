@@ -33,7 +33,7 @@ params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 10;
 params.gamma = 0.5;
-params.maxCycles = 100;
+params.maxCycles = 10;
 params.isNonnegative = 1;
 P.params = params;
 
