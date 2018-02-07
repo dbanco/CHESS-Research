@@ -5,12 +5,13 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'al7075_311_polar');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_alpha_beta');
+outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit');
 mkdir(outputdir)
 % Function
-funcName = 'wrap_FISTA_Circulant';
+funcName = 'wrap_Fls
+ISTA_Circulant';
 
-jobDir = fullfile(datadir,'job_al7075_311_alpha_beta');
+jobDir = fullfile(datadir,'job_al7075_311');
 mkdir(jobDir)
 
 %% Fixed Parameters
@@ -44,17 +45,19 @@ params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
-alphaps = logspace(log10(0.001),log10(0.5),50);
-
-P.betap = 0.001*P.dtheta*P.drad;
+alphaps = logspace(log10(0.005),log10(1),20);
+betaps = logspace(log10(0.005),log10(10),20);
 
 k = 0;
 for alphap = alphaps
-    P.alphap = alphap;
-    P.task = k;
-    varin = {dataset,P,outputdir};
-    save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-    k = k + 1;
+    for betap = betaps
+        P.alphap = alphap;
+        P.betap = betap;
+        P.task = k;
+        varin = {dataset,P,outputdir};
+        save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+        k = k + 1;
+    end
 end
 
 slurm_write_bash(k-1,jobDir)

@@ -1,11 +1,12 @@
 %% Problem parameters
 % Data I/O directories
 data_dir = '/cluster/home/dbanco02/al7075_311_polar/';
+%:data_dir = 'D:\CHESS_data\al7075_311_polar\';
 results_dir = 'D:\CHESS_results\test\';
 
 % Ring sampling parameters
-P.ring_width = 10;
-P.num_theta= 50;
+P.ring_width = 20;
+P.num_theta= 500;
 P.num_rad = 2*P.ring_width+1;
 P.dtheta = 2*pi/2048;
 P.drad = 1;
@@ -32,7 +33,7 @@ params.L = 1e1;
 params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 10;
-params.gamma = 0.5;
+params.gamma = 0.25;
 params.maxCycles = 10;
 params.isNonnegative = 1;
 P.params = params;
@@ -54,7 +55,7 @@ for img = 0:204
 end
 
 % Reduce to subset of sample (41x5 -> 3x5)
-P.img_array = img_array(35:37,:);
+P.img_array = img_array(31:37,:);
 [N,M] = size(P.img_array);
 
 % Reduce size of each image to be 21x50
@@ -67,7 +68,7 @@ for i = 1:N
         num2str(P.img_array(i,j)), '.mat']);
 
         % Reduce image 
-        test_im = polar_image(10:30,1001:1050);
+        test_im = polar_image(:,1:500);
         b_array{i,j} = test_im;
     end
 end
@@ -76,31 +77,39 @@ c = parcluster('local');
 c.NumWorkers = 32;
 parpool(c, c.NumWorkers);
 [x_hat_array, error_array]  = cyclic_optimization(A0ft_stack,b_array,P.params);   
-save('cyclic_fista_fit_test.mat','x_hat_array','params')
+save('cyclic_fista_fit_test3.mat','x_hat_array','params')
 %% Show results
-% var_signal = zeros(P.num_var_t,P.num_var_r,N,M);
-% hvs_az = zeros(N,M);
-% k = 1;
-% for i = 1:N
-%     for j = 1:M
-%         figure(1)
-%         subplot(3,5,k)
-%         im_fit = Ax_ft_2D(A0ft_stack,x_hat_array{i,j});
-%         image((im_fit))
-%         colormap jet
+%var_signal = zeros(P.num_var_t,P.num_var_r,N,M);
+%hvs_az = zeros(N,M);
+%k = 1;
+%for i = 1:N
+%    for j = 1:M
+%        x_hat = x_hat_array{i,j};
+%        
+%        figure(1)
+%        subplot(3,5,k)
+%        im_fit = Ax_ft_2D(A0ft_stack,x_hat);
+%        image((im_fit))
+%        colormap jet
+%        
+%        figure(2)
+%        subplot(3,5,k)
+%        image((b_array{i,j}))
+%        colormap jet
 %         
-%         figure(2)
-%         subplot(3,5,k)
-%         image((b_array{i,j}))
-%         colormap jet
-%         
-%         k = k + 1;
-%         
-%         var_signal(:,:,i,j) = squeeze(sum(sum(x_hat_array{i,j},1),2)); 
-%         hvs_az(i,j) = squeeze(sum(sum(var_signal(6:end,:,i,j))))/sum(sum(var_signal(:,:,i,j)));
-%     end
-% end
-% figure(3)
-% imagesc(hvs_az)
-% colormap jet
-% colorbar()
+%        figure(3)
+%        subplot(3,5,k)
+%        image(squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:)));
+%        colormap jet
+%        colorbar()
+%        
+%        k = k + 1;
+%        
+%        var_signal(:,:,i,j) = squeeze(sum(sum(x_hat,1),2)); 
+%        hvs_az(i,j) = squeeze(sum(sum(var_signal(6:end,:,i,j))))/sum(sum(var_signal(:,:,i,j)));
+%    end
+%end
+%figure(4)
+%imagesc(hvs_az)
+%colormap jet
+%colorbar()

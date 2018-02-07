@@ -1,20 +1,20 @@
 % Data directory
-datadir = fullfile('/cluster','home','dbanco02');
+datadir = fullfile('/cluster','shared','dbanco02');
 
 % Ring dataset
 dataset = fullfile(datadir,'al7075_311_polar');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_596');
+outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit');
 mkdir(outputdir)
-
 % Function
 funcName = 'wrap_FISTA_Circulant';
 
-jobDir = fullfile(datadir,'job_al7075_311_596');
+jobDir = fullfile('/cluster','home','dbanco02','job_al7075_311');
 mkdir(jobDir)
 
 %% Fixed Parameters
+
 % Ring sampling parameters
 P.ring_width = 20;
 P.num_theta= 2048;
@@ -30,8 +30,8 @@ P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
 
 % basis weighting
 P.weight = 1;
-P.betap = P.dtheta*P.drad;
-P.alphap = 10;
+P.alphap = 0.02;
+P.betap = 3;
 
 % fista params
 params.stoppingCriterion = 2;
@@ -44,13 +44,15 @@ params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
-k = 0;
+img_nums = 0:204;
+load_steps = 0:4;
 
-for img = 82 
-    for load_step = 2 
+k = 0;
+for load_step = load_steps
+    for img = img_nums
         P.img = img;
         P.load_step = load_step;
-
+        P.task = k;
         varin = {dataset,P,outputdir};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;

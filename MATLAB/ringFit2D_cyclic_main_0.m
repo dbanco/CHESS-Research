@@ -71,6 +71,7 @@ for i = 1:N
         b_array{i,j} = test_im;
     end
 end
+
 %% cyclic FISTA with backtracking
 c = parcluster('local');
 c.NumWorkers = 32;
