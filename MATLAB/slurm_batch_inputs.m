@@ -6,6 +6,7 @@ dataset = fullfile(datadir,'al7075_311_polar');
 
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit');
+
 mkdir(outputdir)
 % Function
 funcName = 'wrap_FISTA_Circulant';
