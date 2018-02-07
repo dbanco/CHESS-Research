@@ -5,13 +5,13 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'al7075_311_polar');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_596');
+outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_spatial_1');
 mkdir(outputdir)
 
 % Function
 funcName = 'wrap_FISTA_Circulant';
 
-jobDir = fullfile(datadir,'job_al7075_311_596');
+jobDir = fullfile(datadir,'job_al7075_311_spatial');
 mkdir(jobDir)
 
 %% Fixed Parameters
