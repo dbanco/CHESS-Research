@@ -21,6 +21,7 @@ P.num_theta= 2048;
 P.num_rad = 2*P.ring_width+1;
 P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
+P.sampleDims = [41,5];
 
 % Basis function variance parameters
 P.num_var_t = 15;
@@ -59,4 +60,9 @@ for img = 0:204
     end
 end
 
-slurm_write_bash(k-1,jobDir)
+% Init script
+slurm_write_bash(k-1,jobDir,'init_batch_script.sh','0-204')
+% Odd script
+slurm_write_bash(k-1,jobDir,'odd_batch_script.sh','0-204:2')
+% Even script
+slurm_write_bash(k-1,jobDir,'even_batch_script.sh','1-203:2')
