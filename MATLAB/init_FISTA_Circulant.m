@@ -1,9 +1,6 @@
-function init_FISTA_Circulant( data_dir,P_file,output_dir )
+function init_FISTA_Circulant( data_dir,P,output_dir )
 %init_FISTA_Circuleant Runs FISTA_Circulant loading input files and saving
 % ouput files
-
-% Load P file
-load(P_file)
 
 % Load image file
 str1 = sprintf('%i',P.load_step);
