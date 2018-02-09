@@ -56,9 +56,10 @@ for img = 0:204
         P.load_step = load_step;
 
         varin = {dataset,P,outputdir};
-        
-        save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName1')
-        save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName2')
+        funcName = funcName1;
+        save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
+        funcName = funcName2;
+        save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
     end
 end
