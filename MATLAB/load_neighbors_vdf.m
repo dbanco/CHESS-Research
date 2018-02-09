@@ -27,7 +27,7 @@ R = P.num_var_r;
 neighbors = zeros(n,m,T,R);
 vdfs = {}; 
 for i = 1:size(neighbor_imgs,1)
-    n_img = sub2ind(P.sampleDims,neighbor_imgs(i,1),neighbor_imgs(i,1));
+    n_img = sub2ind(P.sampleDims,neighbor_imgs(i,1),neighbor_imgs(i,2));
     load(sprintf(baseFileName,P.load_step,n_img))
     x_hat_var = x_hat;
     vdf = squeeze(sum(sum(x_hat_var)))/sum(x_hat_var(:));
