@@ -11,7 +11,7 @@ x_init = x_hat;
 A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 
 %% Run FISTA updating solution and error array
-[x_neighbors,vdfs] = load_neighbors_vdf(baseFileName,P);
+[x_neighbors,vdfs] = load_neighbors_vdf(fullfile(output_dir,baseFileName),P);
 [x_hat, err_new, ~, ~] = space_FISTA_Circulant(A0ft_stack,polar_image,x_hat,P.params);
 err = [err;err_new];
 
