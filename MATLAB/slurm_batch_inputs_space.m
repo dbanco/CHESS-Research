@@ -2,7 +2,7 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'al7075_311_polar');
+dataset = fullfile(datadir,'al7075_311_polar_reduced');
 
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_spatial_1');
@@ -23,7 +23,7 @@ P.num_theta= 2048;
 P.num_rad = 2*P.ring_width+1;
 P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
-P.sampleDims = [41,5];
+P.sampleDims = [37,5];
 
 % Basis function variance parameters
 P.num_var_t = 15;
@@ -65,8 +65,8 @@ for img = 0:204
 end
 
 % Init script
-slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-204')
+slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-184')
 % Odd script
-slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-204:2')
+slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-184:2')
 % Even script
-slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-203:2')
+slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-183:2')
