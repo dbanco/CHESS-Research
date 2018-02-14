@@ -306,7 +306,7 @@ imshow(log(real(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0
 title('Fit')
 
 clear_region_axes(handles)
-maxLim = log(max(real(handles.x_hat(:))));
+maxLim = (max(real(handles.x_hat(:))));
 % Fix radial variance
 if handles.fix_var_rad_button.Value
     variances = handles.P.var_theta;
@@ -315,7 +315,7 @@ if handles.fix_var_rad_button.Value
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         coef_slice = handles.x_hat(:,:,i,var_idx);
-        imshow(log(real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
+        imshow((real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
@@ -327,7 +327,7 @@ elseif handles.fix_var_theta_button.Value
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         coef_slice = handles.x_hat(:,:,var_idx,i);
-        imshow(log(real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
+        imshow((real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
