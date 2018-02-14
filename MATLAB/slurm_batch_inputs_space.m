@@ -34,7 +34,7 @@ P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
 % basis weighting
 P.weight = 1;
 P.betap = P.dtheta*P.drad;
-P.alphap = 10;
+P.alphap = 2e-2;
 
 % fista params
 params.stoppingCriterion = 2;
