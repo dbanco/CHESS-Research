@@ -43,14 +43,14 @@ params.L = 1e1;
 params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 20;
-params.gamma = 0.5;
+params.gamma = 0.05;
 params.maxCycles = 10;
 params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
 k = 0;
-for img = 0:204 
+for img = 0:184
     for load_step = 0 
         P.img = img;
         P.load_step = load_step;
