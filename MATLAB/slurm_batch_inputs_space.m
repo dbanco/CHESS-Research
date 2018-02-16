@@ -33,7 +33,7 @@ P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
 
 % basis weighting
 P.weight = 1;
-P.betap = P.dtheta*P.drad;
+P.betap = 3;
 P.alphap = 2e-2;
 
 % fista params
@@ -43,7 +43,7 @@ params.L = 1e1;
 params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 20;
-params.gamma = 0.1;
+params.gamma = 0.2;
 params.maxCycles = 10;
 params.isNonnegative = 1;
 P.params = params;
@@ -51,7 +51,7 @@ P.params = params;
 %% Parameters to vary
 k = 0;
 for img = 0:184
-    for load_step = 0 
+    for load_step = 0:4
         P.img = img;
         P.load_step = load_step;
 
@@ -65,8 +65,8 @@ for img = 0:184
 end
 
 % Init script
-slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-184')
+slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-924')
 % Odd script
-slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-184:2')
+slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-924:2')
 % Even script
-slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-183:2')
+slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-923:2')
