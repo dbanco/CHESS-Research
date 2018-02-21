@@ -5,7 +5,6 @@ function wrap_space_FISTA_Circulant( data_dir,P,output_dir )
 % Initialize solution
 baseFileName = 'spatial_fit_%i_%i.mat';
 load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
-x_init = x_hat;
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_matrix_ft_stack(P);

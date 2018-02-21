@@ -124,7 +124,7 @@ while keep_going && (nIter < maxIter)
            
     % Track and display error, objective, sparsity
     prev_f = f;
-    f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
+    f = temp1 + lambda * norm(xk(:),1);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
     l_0(nIter) = sum(abs(xkp1(:))>eps*10);
