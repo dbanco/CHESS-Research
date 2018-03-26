@@ -4,13 +4,13 @@ function [neighbors, vdfs] = load_neighbors_vdf(baseFileName,P)
 
 
 % Get list of possible neighbors
-[row,col] = ind2sub(P.sampleDims,P.img);
+[row,col] = ind2sub(P.sampleDims,P.img+1);
 rows = [row-1;
-        row-1; 
-        row+1;
-        row+1];
-cols = [col-1;
-        col+1; 
+        row+1; 
+        row;
+        row];
+cols = [col;
+        col; 
         col-1;
         col+1];
 
