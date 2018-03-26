@@ -2,9 +2,9 @@ function [neighbors, vdfs] = load_neighbors_vdf(baseFileName,P)
 %neighbors Returns term used in gradient of vdf objective and vdfs 
 %          of coefficients neighboring point (i,j)
 
-
 % Get list of possible neighbors
-[row,col] = ind2sub(P.sampleDims,P.img+1);
+row = floor(P.img/5)+1;
+col = mod(P.img,5)+1;
 rows = [row-1;
         row+1; 
         row;
