@@ -22,7 +22,7 @@ function varargout = spread_visualizer(varargin)
 
 % Edit the above text to modify the response to help spread_visualizer
 
-% Last Modified by GUIDE v2.5 11-Dec-2017 09:29:19
+% Last Modified by GUIDE v2.5 06-Mar-2018 18:29:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,7 +54,7 @@ function spread_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for spread_visualizer
 handles.output = hObject;
-handles.defaultDir = fullfile('D:','CHESS_data','spread_results');
+handles.defaultDir = fullfile('E:','CHESS_data','spread_results');
 % Update handles structure
 guidata(hObject, handles);
 
@@ -94,7 +94,7 @@ if isstr(fileName)
     handles.P = P;
     
     handles.edit_rowstart.String = '1';
-    handles.edit_rowend.String = num2str(size(rel_error,2));
+    handles.edit_rowend.String = num2str(size(var_signal,4));
     handles.r1 = str2num(handles.edit_rowstart.String);
     handles.rend = str2num(handles.edit_rowend.String);
     
@@ -130,6 +130,12 @@ if handles.radio_spread.Value
         plot_az_spread(handles)
     elseif handles.radio_rad.Value
         plot_rad_spread(handles)
+    end
+elseif handles.radio_meanvar.Value
+    if  handles.radio_az.Value
+        plot_az_mean_variance(handles)
+    elseif handles.radio_rad.Value
+        plot_rad_mean_variance(handles)
     end
 elseif handles.radio_sparsity.Value
     plot_sparsity(handles)
@@ -187,6 +193,91 @@ end
 for i = 1:5
     eval(sprintf('axes(handles.axes%i)',i))
     handles.viewData{i} = squeeze(high_var_rad(i,handles.r1:handles.rend,:)-center);
+    imshow(handles.viewData{i},'DisplayRange',...
+           [handles.min_limit handles.max_limit],'Colormap',jet)
+    title(sprintf('Load %i',i))
+end
+colorbar()
+
+function mvar = compute_mean_az_variance(var_signal,var_theta)
+az_var_signal = squeeze(sum(var_signal,2));
+[~, s2, s3, s4] = size(az_var_signal);
+mvar = zeros(s2,s3,s4);
+for j = 1:s2
+    for k = 1:s3
+        for l = 1:s4
+            total = sum(az_var_signal(:,j,k,l));
+            for i = 1:numel(var_theta)
+                mvar(j,k,l) = mvar(j,k,l) +...
+                      var_theta(i)*az_var_signal(i,j,k,l)/total;
+            end
+        end        
+    end
+end
+
+function mvar = compute_mean_rad_variance(var_signal,var_theta)
+az_var_signal = squeeze(sum(var_signal,1));
+[~, s2, s3, s4] = size(az_var_signal);
+mvar = zeros(s2,s3,s4);
+for j = 1:s2
+    for k = 1:s3
+        for l = 1:s4
+            total = sum(az_var_signal(:,j,k,l));
+            for i = 1:numel(var_theta)
+                mvar(j,k,l) = mvar(j,k,l) +...
+                      var_theta(i)*az_var_signal(i,j,k,l)/total;
+            end
+        end        
+    end
+end
+
+
+function plot_az_mean_variance(handles)
+mvar = compute_mean_az_variance(handles.var_signal,handles.P.var_theta);
+if handles.radio_subtract.Value
+    center = mvar(1,handles.r1:handles.rend,:);
+else
+    center = 0;
+end
+if handles.apply_limits
+    handles.max_limit = str2num(handles.edit_max.String);
+    handles.min_limit = str2num(handles.edit_min.String);
+elseif handles.radio_subtract.Value
+    handles.max_limit = 1;
+    handles.min_limit = -1;
+else
+    handles.max_limit = handles.P.var_theta(end);
+    handles.min_limit = handles.P.var_theta(1);
+end
+for i = 1:5
+    eval(sprintf('axes(handles.axes%i)',i))
+    handles.viewData{i} = squeeze(mvar(i,handles.r1:handles.rend,:)-center);
+    imshow(handles.viewData{i},'DisplayRange',...
+           [handles.min_limit handles.max_limit],'Colormap',jet)
+    title(sprintf('Load %i',i))
+end
+colorbar()
+
+function plot_rad_mean_variance(handles)
+mvar = compute_mean_rad_variance(handles.var_signal,handles.P.var_rad);
+if handles.radio_subtract.Value
+    center = mvar(1,handles.r1:handles.rend,:);
+else
+    center = 0;
+end
+if handles.apply_limits
+    handles.max_limit = str2num(handles.edit_max.String);
+    handles.min_limit = str2num(handles.edit_min.String);
+elseif handles.radio_subtract.Value
+    handles.max_limit = 1;
+    handles.min_limit = -1;
+else
+    handles.max_limit = handles.P.var_rad(end);
+    handles.min_limit = handles.P.var_rad(1);
+end
+for i = 1:5
+    eval(sprintf('axes(handles.axes%i)',i))
+    handles.viewData{i} = squeeze(mvar(i,handles.r1:handles.rend,:)-center);
     imshow(handles.viewData{i},'DisplayRange',...
            [handles.min_limit handles.max_limit],'Colormap',jet)
     title(sprintf('Load %i',i))
@@ -324,6 +415,19 @@ function radio_sparsity_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radio_sparsity
+clear_axes(handles)
+plot_images(handles)
+
+% Update handles
+guidata(hObject, handles);
+
+% --- Executes on button press in radio_meanvar.
+function radio_meanvar_Callback(hObject, eventdata, handles)
+% hObject    handle to radio_meanvar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radio_meanvar
 clear_axes(handles)
 plot_images(handles)
 
@@ -488,3 +592,6 @@ end
 % row = round(C(1,2));
 % col = round(C(1,1));
 % print(sprintf('Val: %2.2f, Row: %i, Col: %i',handles.viewData{5}(row,col),row,col))
+
+
+
