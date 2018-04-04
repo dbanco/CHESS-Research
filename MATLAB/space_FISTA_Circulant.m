@@ -49,6 +49,7 @@ tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
 beta = params.beta;
+params.gamma = params.gamma*sum(b(:));
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
 [m,n,t,r] = size(A0ft_stack) ;
