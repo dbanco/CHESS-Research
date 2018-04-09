@@ -1,4 +1,4 @@
-function [neighbors, evs] = load_neighbors_ev_az(baseFileName,P)
+function neighbors_ev = load_neighbors_ev_az(baseFileName,P)
 %neighbors Returns term used in gradient of vdf objective and vdfs 
 %          of coefficients neighboring point (i,j)
 
@@ -24,18 +24,14 @@ n = P.num_rad;
 m = P.num_theta;
 T = P.num_var_t;
 R = P.num_var_r;
-neighbors = zeros(n,m,T,R);
-vdfs = {}; 
+neighbors_ev = 0;
+ 
 for i = 1:size(neighbor_imgs,1)
     n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
     load(sprintf(baseFileName,P.load_step,n_img-1))
     x_hat_var = x_hat;
-    ev = compute_exp_az_variance(x_hat_var,P.var_theta)
-    for t = 1:T
-        for r = 1:R
-            neighbors(:,:,t,r) = neighbors(:,:,t,r) + ones(n,m)*vdf(t,r);
-        end
-    end
+    ev = compute_exp_az_variance(x_hat_var,P.var_theta);
+    neighbors_ev = neighbors_ev + ev;
 end
-
+neighbors_ev = neighbors_ev/size(neighbor_imgs,1);
 
