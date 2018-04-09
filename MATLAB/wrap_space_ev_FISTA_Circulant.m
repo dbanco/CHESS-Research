@@ -10,8 +10,8 @@ load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
 A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 
 %% Run FISTA updating solution and error array
-[x_neighbors,vdfs] = load_neighbors_ev_az(fullfile(output_dir,baseFileName),P);
-[x_hat, err_new, ~, ~] = space_FISTA_Circulant(A0ft_stack,polar_image,x_neighbors,vdfs,x_hat,P.params);
+neighbors_ev = load_neighbors_ev_az(fullfile(output_dir,baseFileName),P);
+[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,polar_image,neighbors_ev,vdfs,x_hat,P.params);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration

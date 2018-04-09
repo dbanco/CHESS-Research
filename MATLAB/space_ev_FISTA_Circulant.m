@@ -12,7 +12,7 @@ function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,x_neighb
 %
 % Inputs:
 % b          - (m x n) polar ring images
-% neighbors  - (t x r) average variance contributions of neighboring ring images
+% neighibors_ev - (scalar) average expected variance of neighboring ring images
 % A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
 % params     - struct containing the following field
 %   lambda - l1 penalty parameter > 0
