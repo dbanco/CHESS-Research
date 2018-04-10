@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,x_init,params)
+function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,var_theta,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -68,7 +68,7 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add spatial expected variance smoothness part of objective
-x_ev = compute_exp_az_variance(x_init,P.var_theta);
+x_ev = compute_exp_az_variance(x_init,var_theta);
 f = f + params.gamma*(x_ev - neighbors_ev)^2;
 
 % Used to compute gradient
@@ -89,11 +89,11 @@ while keep_going && (nIter < maxIter)
     end
         
     % Compute gradient of f
-    x_ev = compute_exp_az_variance(ykp1,P.var_theta);
+    x_ev = compute_exp_az_variance(ykp1,var_theta);
     total = sum(ykp1(:));
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c;
     for az_i = 1:numel(P.var_theta)
-    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbor_ev)*((P.var_theta(az_i)-x_ev)/total); 
+    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbor_ev)*((var_theta(az_i)-x_ev)/total); 
     end
     % Backtracking
     stop_backtrack = 0 ;
@@ -106,12 +106,12 @@ while keep_going && (nIter < maxIter)
         
         % Compute objective at xkp1
         fit = Ax_ft_2D(A0ft_stack,xkp1);
-        x_ev = compute_exp_az_variance(xkp1,P.var_theta);
+        x_ev = compute_exp_az_variance(xkp1,var_theta);
         temp1 = norm(b(:)-fit(:))^2 + params.gamma*(x_ev - neighbors_ev)^2;
         
         % Compute quadratic approximation at ykp1
         fit2 = Ax_ft_2D(A0ft_stack,ykp1);
-        x_ev = compute_exp_az_variance(ykp1,P.var_theta);
+        x_ev = compute_exp_az_variance(ykp1,var_theta);
         temp2 = norm(b(:)-fit2(:))^2 +...
             params.gamma*(x_ev - neighbors_ev)^2 +...
             (xkp1(:)-ykp1(:))'*grad(:) +...
