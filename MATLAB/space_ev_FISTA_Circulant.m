@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,x_neighbors,vdfs,x_init,params)
+function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -69,7 +69,7 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 
 % Add spatial expected variance smoothness part of objective
 x_ev = compute_exp_az_variance(x_init,P.var_theta);
-f = f + params.gamma*(x_ev - x_vdf)^2;
+f = f + params.gamma*(x_ev - neighbors_ev)^2;
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -107,13 +107,13 @@ while keep_going && (nIter < maxIter)
         % Compute objective at xkp1
         fit = Ax_ft_2D(A0ft_stack,xkp1);
         x_ev = compute_exp_az_variance(xkp1,P.var_theta);
-        temp1 = norm(b(:)-fit(:))^2 + params.gamma*(x_ev - neighbor_ev)^2;
+        temp1 = norm(b(:)-fit(:))^2 + params.gamma*(x_ev - neighbors_ev)^2;
         
         % Compute quadratic approximation at ykp1
         fit2 = Ax_ft_2D(A0ft_stack,ykp1);
         x_ev = compute_exp_az_variance(ykp1,P.var_theta);
         temp2 = norm(b(:)-fit2(:))^2 +...
-            params.gamma*(x_ev - neighbor_ev)^2 +...
+            params.gamma*(x_ev - neighbors_ev)^2 +...
             (xkp1(:)-ykp1(:))'*grad(:) +...
             (L/2)*norm(xkp1(:)-ykp1(:))^2;
         
