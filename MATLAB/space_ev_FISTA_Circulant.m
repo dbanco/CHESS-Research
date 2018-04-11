@@ -92,7 +92,7 @@ while keep_going && (nIter < maxIter)
     x_ev = compute_exp_az_variance(ykp1,var_theta);
     total = sum(ykp1(:));
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c;
-    for az_i = 1:numel(P.var_theta)
+    for az_i = 1:numel(var_theta)
     	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbor_ev)*((var_theta(az_i)-x_ev)/total); 
     end
     % Backtracking
