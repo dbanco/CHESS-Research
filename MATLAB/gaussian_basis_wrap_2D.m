@@ -23,8 +23,11 @@ idx = 1:num_theta;
 wrapN = @(x, N) (1 + mod(x-1, N));
 opposite = (idx(wrapN(mean_theta-floor(num_theta/2),num_theta)) +... 
             idx(wrapN(mean_theta-ceil(num_theta/2),num_theta)))/2;
+if opposite == mean_theta
+    opposite = 0.5;
+end
 dist1 = abs(mean_theta - idx);
-dist2 = num_theta/2 - abs(opposite - idx);
+dist2 = abs(num_theta/2 - abs(opposite - idx));
 dist = min(dist1,dist2).*dtheta;
 dist_sq_theta = dist.^2;    % num_theta length vector
 
@@ -32,8 +35,11 @@ dist_sq_theta = dist.^2;    % num_theta length vector
 idx = 1:num_rad;
 opposite = (idx(wrapN(mean_rad-floor(num_rad/2),num_rad)) +...
             idx(wrapN(mean_rad-ceil(num_rad/2),num_rad)))/2;
+if opposite == mean_rad
+    opposite = 0.5;
+end
 dist1 = abs(mean_rad - idx);
-dist2 = num_rad/2 - abs(opposite - idx);
+dist2 = abs(num_rad/2 - abs(opposite - idx));
 dist = min(dist1,dist2).*drad;
 dist_sq_rad = dist.^2;    % num_r length vector
 
