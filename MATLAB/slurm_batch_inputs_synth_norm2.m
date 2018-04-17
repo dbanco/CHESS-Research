@@ -10,7 +10,7 @@ mkdir(outputdir)
 
 % Function
 funcName1 = 'wrap_norm2_FISTA_Circulant';
-jobDir1 = fullfile(datadir,'job_al7075_311_synth_norm');
+jobDir1 = fullfile(datadir,'job_al7075_311_synth_norm2');
 mkdir(jobDir1)
 
 %% Fixed Parameters
