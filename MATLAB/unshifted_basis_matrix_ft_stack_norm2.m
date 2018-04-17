@@ -22,8 +22,8 @@ function A0_stack = unshifted_basis_matrix_ft_stack_norm2(P)
 %             t = numel(var_theta)
 %             r = numel(var_rad)
 A0_stack = zeros(P.num_rad,P.num_theta,numel(P.var_theta),numel(P.var_rad));
-for t = 1:numel(var_theta)
-    for r = 1:numel(var_rad)
+for t = 1:numel(P.var_theta)
+    for r = 1:numel(P.var_rad)
         A0 = gaussian_basis_wrap_2D_norm2(P.num_theta,P.dtheta,  0,  P.var_theta(t),...
                                          P.num_rad,  P.drad,    0,  P.var_rad(r));
         A0_stack(:,:,t,r) = fft2(A0);

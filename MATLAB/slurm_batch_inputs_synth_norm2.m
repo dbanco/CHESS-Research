@@ -5,7 +5,7 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'al7075_311_polar_synth');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_spatial_1');
+outputdir = fullfile('/cluster','shared','dbanco02','fit_synth_norm2');
 mkdir(outputdir)
 
 % Function
