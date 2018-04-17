@@ -42,7 +42,7 @@ params.beta = 1.2;
 params.maxIter = 500;
 params.gamma = 1e4;
 params.maxCycles = 10;
-params.isNonnegative = 1;cd ../
+params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
@@ -60,4 +60,3 @@ end
 
 % Init script
 slurm_write_bash(k-1,jobDir1,'fista_batch_script.sh','0-24')
-
