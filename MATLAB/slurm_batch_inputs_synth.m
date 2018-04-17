@@ -42,7 +42,7 @@ params.beta = 1.2;
 params.maxIter = 500;
 params.gamma = 1e4;
 params.maxCycles = 10;
-params.isNonnegative = 1;
+params.isNonnegative = 1;cd ../
 P.params = params;
 
 %% Parameters to vary
