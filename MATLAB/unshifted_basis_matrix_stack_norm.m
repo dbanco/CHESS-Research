@@ -1,4 +1,4 @@
-function A0_stack = unshifted_basis_matrix_stack_norm(var_theta,var_rad,dtheta,drad,num_theta,num_rad)
+function A0_stack = unshifted_basis_matrix_stack_norm(P)
 %unshifted_basis_matrix_stack Generates many zero mean gaussian  
 % basis function matrices that sum to 1 using provided parameters
 %
@@ -17,11 +17,11 @@ function A0_stack = unshifted_basis_matrix_stack_norm(var_theta,var_rad,dtheta,d
 %             t = numel(var_theta)
 %             r = numel(var_rad)
 
-A0_stack = zeros(num_rad,num_theta,numel(var_theta),numel(var_rad));
-for t = 1:numel(var_theta)
-    for r = 1:numel(var_rad)
-        A0 = gaussian_basis_wrap_2D_norm(num_theta,dtheta,  0,  var_theta(t),...
-                                         num_rad,  drad,    0,  var_rad(r));
+A0_stack = zeros(P.num_rad,P.num_theta,numel(P.var_theta),numel(P.var_rad));
+for t = 1:numel(P.var_theta)
+    for r = 1:numel(P.var_rad)
+        A0 = gaussian_basis_wrap_2D_norm(P.num_theta,P.dtheta,  0,  P.var_theta(t),...
+                                         P.num_rad,  P.drad,    0,  P.var_rad(r));
         A0_stack(:,:,t,r) = A0;
     end
 end
