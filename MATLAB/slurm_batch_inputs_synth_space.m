@@ -9,9 +9,12 @@ outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit_spatia
 mkdir(outputdir)
 
 % Function
-funcName1 = 'wrap_FISTA_Circulant';
-jobDir1 = fullfile(datadir,'job_al7075_311_synth');
+funcName1 = 'init_FISTA_Circulant';
+funcName2 = 'wrap_space_ev_FISTA_Circulant';
+jobDir1 = fullfile(datadir,'job_al7075_311_synth_spatial_init');
+jobDir2 = fullfile(datadir,'job_al7075_311_synth_spatial');
 mkdir(jobDir1)
+mkdir(jobDir2)
 
 %% Fixed Parameters
 % Ring sampling parameters
@@ -51,13 +54,19 @@ for img = 0:24
     for load_step = 0
         P.img = img;
         P.load_step = load_step;
+
         varin = {dataset,P,outputdir};
         funcName = funcName1;
         save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
+        funcName = funcName2;
+        save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
     end
 end
 
 % Init script
-slurm_write_bash(k-1,jobDir1,'fista_batch_script.sh','0-24')
-
+slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-24')
+% Odd script
+slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-24:2')
+% Even script
+slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-23:2')

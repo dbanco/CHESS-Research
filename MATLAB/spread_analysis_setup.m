@@ -1,7 +1,7 @@
 %% Processes data to be loaded into spread_visualizer
-spreadDir = fullfile('E:\CHESS_data\spread_results');
-outFile = 'spread_311_spatial_sub0_alphap_%2.2f_betap_%2.2f.mat';
-result_path = fullfile('E:\CHESS_data','al7075_311_polar_fit_spatial_sub0');
+spreadDir = fullfile('F:\CHESS_data\spread_results');
+outFile = 'spread_synth1_alphap_%2.2f_betap_%2.2f.mat';
+result_path = fullfile('F:\CHESS_data','synth_fit1');
 fileInfo = dir(fullfile(result_path,'spatial_fit*.mat'));
 
 for i = 1:numel(fileInfo)

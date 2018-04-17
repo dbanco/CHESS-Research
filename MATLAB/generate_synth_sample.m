@@ -98,7 +98,10 @@ for i = 1:size(positions,1)
     % Save out image files
     save(im_name,'polar_image')
 end
-save('F:\CHESS_data\synth_data\synth_data.mat','synth_sample')
+
+%save('F:\CHESS_data\synth_data\synth_data.mat','synth_sample')
+
+%% View Expected Variance
 figure(2)
 image(evar_image,'CDataMapping','scaled')
 colorbar()
