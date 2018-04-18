@@ -3,7 +3,7 @@ function wrap_space_ev_FISTA_Circulant( data_dir,P,output_dir )
 % ouput files
 
 % Initialize solution
-baseFileName = 'spatial_fit_%i_%i.mat';
+baseFileName = 'fista_fit_%i_%i.mat';
 load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
 
 % Construct dictionary
