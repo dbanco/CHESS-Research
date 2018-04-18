@@ -25,13 +25,13 @@ d_weight = max_az_var/5;
 % Setup sample positions and 
 positions = zeros(25,2);
 dist = zeros(25,1);
-center = [3,3];
+center = [1,1];
 k = 1;
 for i = 1:5
     for j = 1:5
         positions(k,1) = i;
         positions(k,2) = j;
-        dist(k) = sqrt((i-center(1))^2 + (j-center(2))^2);
+        dist(k) = sqrt( (j-center(2))^2);
         k = k + 1;
     end
 end
@@ -92,16 +92,16 @@ for i = 1:size(positions,1)
     
     % Add sample to 5x5 cell array 
     synth_sample{row,col} = sample;
-    im_name = sprintf('F:\\CHESS_data\\synth_data\\polar_image_0_%i.mat',i);
+    im_name = sprintf('F:\\CHESS_data\\synth_data2\\polar_image_0_%i.mat',i-1);
     polar_image = B;
     
     % Save out image files
-    %save(im_name,'polar_image')
+    save(im_name,'polar_image')
 end
 
-%save('F:\CHESS_data\synth_data\synth_data.mat','synth_sample')
+save('F:\CHESS_data\synth_data2\synth_data2.mat','synth_sample')
 
 %% View Expected Variance
-% figure(2)
-% image(evar_image,'CDataMapping','scaled')
-% colorbar()
+figure(2)
+image(evar_image,'CDataMapping','scaled')
+colorbar()

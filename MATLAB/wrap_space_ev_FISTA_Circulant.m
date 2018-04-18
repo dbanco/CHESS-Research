@@ -7,7 +7,7 @@ baseFileName = 'spatial_fit_%i_%i.mat';
 load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
 
 % Construct dictionary
-A0ft_stack = unshifted_basis_matrix_ft_stack(P);
+A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% Run FISTA updating solution and error array
 neighbors_ev = load_neighbors_ev_az(fullfile(output_dir,baseFileName),P);
