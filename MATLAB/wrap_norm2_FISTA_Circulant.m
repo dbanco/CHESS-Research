@@ -1,4 +1,4 @@
-function wrap__norm_FISTA_Circulant(datadir,P,outputdir)
+function wrap_norm2_FISTA_Circulant(datadir,P,outputdir)
 %wrap_FISTA_Circulant 
 
 %% Generate unshifted basis function matrices

@@ -2,7 +2,7 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'al7075_311_polar');
+dataset = fullfile(datadir,'al7075_311_polar_reduced');
 
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_space_ev_norm2');
