@@ -61,4 +61,4 @@ for load_step = load_steps
     end
 end
 
-slurm_write_bash(k-1,jobDir)
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh','0-924')
