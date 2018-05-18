@@ -1,5 +1,5 @@
 % Data directory
-datadir = fullfile('/cluster','shared','dbanco02');
+datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
 dataset = fullfile(datadir,'al7075_311_polar_reduced');
