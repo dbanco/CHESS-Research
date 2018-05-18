@@ -2,10 +2,10 @@
 datadir = fullfile('/cluster','shared','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'al7075_311_polar');
+dataset = fullfile(datadir,'al7075_311_polar_reduced');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_polar_fit');
+outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_norm2');
 
 mkdir(outputdir)
 % Function
@@ -22,6 +22,7 @@ P.num_theta= 2048;
 P.num_rad = 2*P.ring_width+1;
 P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
+P.sampleDims = [37,5];
 
 % Basis function variance parameters
 P.num_var_t = 15;
@@ -31,8 +32,8 @@ P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
 
 % basis weighting
 P.weight = 1;
-P.alphap = 0.02;
-P.betap = 3;
+P.alphap = 0.05;
+P.betap = 1;
 
 % fista params
 params.stoppingCriterion = 2;
@@ -45,7 +46,7 @@ params.isNonnegative = 1;
 P.params = params;
 
 %% Parameters to vary
-img_nums = 0:204;
+img_nums = 0:184;
 load_steps = 0:4;
 
 k = 0;
@@ -53,7 +54,7 @@ for load_step = load_steps
     for img = img_nums
         P.img = img;
         P.load_step = load_step;
-        P.task = k;
+
         varin = {dataset,P,outputdir};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
