@@ -11,8 +11,8 @@ P.drad = 1;
 P.num_var_t = 15;
 P.num_var_r = 10;
 
-P.var_theta = linspace(P.dtheta,pi/4,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  1,    P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta,pi/3,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  1.3,    P.num_var_r).^2;
 
 % basis weighting
 P.weight = 0;
@@ -20,7 +20,7 @@ P.betap = P.dtheta*P.drad;
 P.alphap = 1;
 
 A0_stack = unshifted_basis_matrix_stack(P);
-basis = squeeze(A0_stack(:,:,15,10));
+basis = squeeze(A0_stack(:,:,1,1));
 [n,m] = size(basis); 
 basis_shift_row = [basis(n+1-3:n,:); basis(1:n-3,:)];
 % column shift
