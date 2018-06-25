@@ -1,4 +1,4 @@
-function B = gaussian_basis_wrap_2D_norm(num_theta,dtheta,mean_theta,var_theta,...
+function B = gaussian_basis_wrap_2D_norm2(num_theta,dtheta,mean_theta,var_theta,...
                                          num_rad,drad,mean_rad,var_rad )
 %gaussian_basis_wrap_2D Generates gaussian basis function matrix
 % normalized to sum to 1
@@ -21,8 +21,8 @@ function B = gaussian_basis_wrap_2D_norm(num_theta,dtheta,mean_theta,var_theta,.
 % Compute theta distances with wrapping
 idx = 1:num_theta;
 wrapN = @(x, N) (1 + mod(x-1, N));
-opposite = (idx(wrapN(mean_theta-floor(num_theta/2),num_theta)+1) +... 
-            idx(wrapN(mean_theta-ceil(num_theta/2),num_theta)+1))/2;
+opposite = (idx(wrapN(mean_theta-floor(num_theta/2),num_theta)) +... 
+            idx(wrapN(mean_theta-ceil(num_theta/2),num_theta)))/2;
 if opposite == mean_theta
     opposite = 0.5;
 end
@@ -33,8 +33,8 @@ dist_sq_theta = dist.^2;    % num_theta length vector
 
 % Compute radial distance with wrapping
 idx = 1:num_rad;
-opposite = (idx(wrapN(mean_rad-floor(num_rad/2),num_rad)+1) +...
-            idx(wrapN(mean_rad-ceil(num_rad/2),num_rad)+1))/2;
+opposite = (idx(wrapN(mean_rad-floor(num_rad/2),num_rad)) +...
+            idx(wrapN(mean_rad-ceil(num_rad/2),num_rad)))/2;
 if opposite == mean_rad
     opposite = 0.5;
 end

@@ -7,10 +7,10 @@ dtheta = 2*pi/num_theta;
 drad = 1;
 
 % Basis function variance parameters
-var_theta = (pi)^2;
+var_theta = (pi/100)^2;
 var_rad   = (4)^2;
-theta_mean = round(num_theta/2);
-rad_mean = ring_width;
+theta_mean = 0;
+rad_mean = 0;
 
 B = gaussian_basis_wrap_2D( num_theta,dtheta,theta_mean,var_theta,...
                                  num_rad,drad,rad_mean,var_rad );

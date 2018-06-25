@@ -1,4 +1,4 @@
-function B = gaussian_basis_wrap_3D_norm2(num_theta,dtheta,mean_theta,var_theta,...
+function B = gaussian_basis_wrap_3D(num_theta,dtheta,mean_theta,var_theta,...
                                          num_rad,drad,mean_rad,var_rad,...
                                          num_omega,domega,mean_omega,var_omega)
 %gaussian_basis_wrap_2D Generates gaussian basis function matrix
@@ -76,6 +76,5 @@ end
 
 % Compute values
 B = exp(-all_dist_sq_theta/(2*var_theta) - all_dist_sq_rad/(2*var_rad)- all_dist_sq_omega/(2*var_omega));
-B = B/norm(B(:));
 end
 
