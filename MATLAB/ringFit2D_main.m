@@ -25,12 +25,12 @@ A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 A0_stack = unshifted_basis_matrix_stack(P);
 
 % FISTA parameters
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 3;
 params.tolerance = 1e-6;
 params.L = 1e1;
 params.lambda = 50;
 params.beta = 1.2;
-params.maxIter = 500;
+params.maxIter = 1000;
 params.isNonnegative = 1;
 P.params = params;
 
@@ -47,8 +47,21 @@ num2str(P.img), '.mat']);
 test_im = polar_image(:,1:100);
 test_A0ft_stack = A0ft_stack(:,1:100,:,:);
 
+x_init = ones(size(test_A0ft_stack));
 %% FISTA with backtracking
-[x_hat, err, obj, l_0]  = FISTA_Circulant(test_A0ft_stack,test_im,params);   
+[x_hat, err, obj, l_0]  = FISTA_Circulant(test_A0ft_stack,test_im,x_init,params);
 
-save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
-      P.load_step,P.img))
+err(end)
+%% Plot stuff
+figure
+subplot(3,1,1)
+semilogy(err)
+subplot(3,1,2)
+semilogy(obj)
+subplot(3,1,3)
+semilogy(l_0)
+
+
+
+%  save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
+%       P.load_step,P.img))
