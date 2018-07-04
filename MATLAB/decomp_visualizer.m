@@ -113,8 +113,8 @@ if isstr(fileName)
     handles.P = P;
     
     % Compute basis matrices
-    handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P);
-    handles.A0_stack = unshifted_basis_matrix_stack(handles.P);
+    handles.A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(handles.P);
+    handles.A0_stack = unshifted_basis_matrix_stack_norm2(handles.P);
     
     handles.err = err;
     handles.x_hat = x_hat;  
@@ -124,8 +124,13 @@ if isstr(fileName)
     % Update static text
     handles.text_coefs.String = sprintf('Total Coefficients: %2.2e',sum(handles.x_hat(:)>0));
     handles.text_error.String = sprintf('Relative Error: %3.3f',handles.err(end));
-    handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
-    handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+    try
+        handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
+        handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+    catch
+        handles.text_alpha.String = 'Alpha:';
+        handles.text_beta.String = 'Beta:';
+    end
     handles.text_img.String = sprintf('Image: %i',handles.P.img);
     handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
     
@@ -521,8 +526,8 @@ handles.loaded = 1;
 handles.P = P;
 
 % Compute basis matrices
-handles.A0ft_stack = unshifted_basis_matrix_ft_stack(handles.P);
-handles.A0_stack = unshifted_basis_matrix_stack(handles.P);
+handles.A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(handles.P);
+handles.A0_stack = unshifted_basis_matrix_stack_norm2(handles.P);
 
 handles.err = err;
 handles.x_hat = x_hat;  
@@ -532,8 +537,13 @@ handles.polar_image = polar_image;
 % Update static text
 handles.text_coefs.String = sprintf('Total Coefficients: %2.2e',sum(handles.x_hat(:)>0));
 handles.text_error.String = sprintf('Relative Error: %3.3f',handles.err(end));
-handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
-handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+try
+    handles.text_alpha.String = sprintf('Alpha: %3.3e',handles.P.alphap);
+    handles.text_beta.String = sprintf('Beta: %3.3e',handles.P.betap);
+catch
+    handles.text_alpha.String = 'Alpha:';
+    handles.text_beta.String = 'Beta:';
+end
 handles.text_img.String = sprintf('Image: %i',handles.P.img);
 handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
 

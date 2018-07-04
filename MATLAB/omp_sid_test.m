@@ -71,7 +71,7 @@ outDir = 'D:\CHESS_data\al7075_311_norm2_omp_sid2d';
 
 for load_step = 1
     fprintf('Load %i/5\n',load_step+1)
-	for img_num = 1 
+	for img_num = 78
         fprintf('Image %i/185\n',img_num+1)
         str1 = sprintf('%i',load_step);
         str2 = sprintf('%i',img_num);

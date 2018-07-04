@@ -1,8 +1,8 @@
 %% Processes data to be loaded into spread_visualizer
-spreadDir = fullfile('F:\CHESS_data\spread_results');
-outFile = 'spread_synth1_alphap_%2.2f_betap_%2.2f.mat';
-result_path = fullfile('F:\CHESS_data','synth_fit1');
-fileInfo = dir(fullfile(result_path,'spatial_fit*.mat'));
+spreadDir = fullfile('D:\CHESS_data\spread_results');
+outFile = 'spread_311_norm2_3_lambda_%2.2f.mat';
+result_path = fullfile('D:\CHESS_data','al7075_311_norm2_3');
+fileInfo = dir(fullfile(result_path,'fista_fit*.mat'));
 
 for i = 1:numel(fileInfo)
     load(fullfile(fileInfo(i).folder,fileInfo(i).name))
@@ -23,5 +23,5 @@ sparsity = flip(sparsity,2);
 rel_error = flip(rel_error,2);
 var_signal = flip(var_signal,4);
 
-save(fullfile(spreadDir,sprintf(outFile,P.alphap,P.betap)),'var_signal','rel_error','sparsity','P')
+save(fullfile(spreadDir,sprintf(outFile,P.params.lambda)),'var_signal','rel_error','sparsity','P')
         

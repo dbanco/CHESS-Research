@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
+function [x_hat, err, obj, l_0] = FISTA_Circulant_masked(A0ft_stack,b,x_init,mask,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -32,7 +32,6 @@ function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
-COEF_CHANGE = 3;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -66,6 +65,9 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
 
+% Apply mask
+x_init(mask(:,1),mask(:,2),:,:) = 0;
+
 xkm1 = x_init;
 xk = x_init;
 zk = xk;
@@ -78,7 +80,8 @@ while keep_going && (nIter < maxIter)
     
     % Compute gradient of f
     grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,zk)) -c; % gradient of f at zk
-    
+    grad(mask(:,1),mask(:,2),:,:) = 0;
+
     % Backtracking Line Search
     stop_backtrack = 0 ;
     while ~stop_backtrack 
@@ -89,6 +92,7 @@ while keep_going && (nIter < maxIter)
         if isNonnegative
             xk(xk<0) = 0;
         end
+        xk(mask(:,1),mask(:,2),:,:) = 0;
         
         % Compute objective at xk
         fit = Ax_ft_2D(A0ft_stack,xk);
@@ -122,15 +126,6 @@ while keep_going && (nIter < maxIter)
           ' ||x||_0 ', num2str(l_0(nIter)),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
-    % Keep objective minimizing solution
-    if(f==min(obj))
-        x_obj = xk;  
-        minIter = nIter;
-    end 
-    if((nIter-minIter) > 25)
-       break 
-    end
-    
     % Check stopping criterion
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
@@ -142,9 +137,6 @@ while keep_going && (nIter < maxIter)
             % variation of the objective function.
             criterionObjective = abs(f-prev_f)/(prev_f);
             keep_going =  (criterionObjective > tolerance);
-        case COEF_CHANGE
-            diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
-            keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
     end
@@ -154,7 +146,7 @@ while keep_going && (nIter < maxIter)
     xkm1 = xk;
 end
 
-x_hat = x_obj ;
+x_hat = xk ;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;
 l_0 = l_0(1:nIter) ;
