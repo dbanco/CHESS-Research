@@ -5,9 +5,8 @@ function wrap_mmpad_norm2_FISTA_Circulant(datadir,P,outputdir)
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% load polar image
-str1 = sprintf('%i',P.ring_num);
 str2 = sprintf('%i',P.img);
-fileName = ['polar_image_',str1,'_',str2,'.mat'];
+fileName = ['mmpad_img_',str2,'.mat'];
 fileDir = fullfile(datadir,fileName);
 load(fileDir)
 
