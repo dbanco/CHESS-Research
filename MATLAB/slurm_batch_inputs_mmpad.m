@@ -9,7 +9,7 @@ outputdir = fullfile('/cluster','shared','dbanco02','mmpad_ring1_fit');
 
 mkdir(outputdir)
 % Function
-funcName = 'wrap_norm2_FISTA_Circulant';
+funcName = 'wrap_mmpad_norm2_FISTA_Circulant';
 
 jobDir = fullfile('/cluster','home','dbanco02','mmpad_ring1_fit');
 mkdir(jobDir)
