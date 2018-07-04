@@ -54,7 +54,7 @@ function spread_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for spread_visualizer
 handles.output = hObject;
-handles.defaultDir = fullfile('E:','CHESS_data','spread_results');
+handles.defaultDir = fullfile('D:','CHESS_data','spread_results');
 % Update handles structure
 guidata(hObject, handles);
 

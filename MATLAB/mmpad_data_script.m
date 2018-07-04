@@ -19,6 +19,18 @@ ring = ring2;
 omega = ones(size(ring));
 omega(:,130:134,:) = 0;
 
+%% Save reduced images to file
+imDir = 'D:\MMPAD_data';
+for ring_num = 1:4
+    for i = 1:546
+        fname = sprintf('mmpad_img_%i.mat',i);
+        fdir = sprintf('ring%i',ring_num);
+        polar_image = squeeze(ring(j,:,:));
+        save(fullfile(imDir,fdir,fname),'polar_image')
+    end
+end
+
+
 %% Display iamges
 for j = 1:1:546
     figure(1)
