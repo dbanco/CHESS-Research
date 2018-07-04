@@ -1,3 +1,4 @@
+addpath(genpath('./'))
 % Data directory
 datadir = fullfile('/cluster','home','dbanco02');
 
@@ -58,7 +59,7 @@ Ph = ones(M,1);
 sid = initSID2D(Qv,Qh,Pv,Ph,y);
 
 % omp_sid2D params
-P.sid
+P.sid = sid;
 P.bSize = [16,64; 64,16; 32,32];
 P.s = 200;
 

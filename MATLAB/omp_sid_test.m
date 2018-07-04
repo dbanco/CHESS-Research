@@ -1,7 +1,7 @@
  %% Load data 
  disp('Loading Data...')
 % 311 Ring dataset
-dataset = fullfile('D:','CHESS_data','al7075_311_polar_reduced');
+dataset = fullfile('/cluster','home','dbanco02','al7075_311_polar_reduced');
 
 % K = 185*5;
 % X = zeros(41,2048,K);
@@ -71,7 +71,7 @@ outDir = 'D:\CHESS_data\al7075_311_norm2_omp_sid2d';
 
 for load_step = 1
     fprintf('Load %i/5\n',load_step+1)
-	for img_num = 78:184
+	for img_num = 1 
         fprintf('Image %i/185\n',img_num+1)
         str1 = sprintf('%i',load_step);
         str2 = sprintf('%i',img_num);
@@ -81,10 +81,10 @@ for load_step = 1
         fileDir = fullfile(dataset,fileName);
         load(fileDir)
         x_hat = saSID2Domp(polar_image, sid, P.s,'mexOMP',P.bSize,0);
-        b_fit = multSID2D(sid, x_hat, 41, 2048);
-        err = norm(polar_image-b_fit)/norm(polar_image);
-        outName = sprintf('fista_fit_%i_%i.mat',load_step,img_num);
-        save(fullfile(outDir,outName),'x_hat','polar_image','P','err')
+        %b_fit = multSID2D(sid, x_hat, 41, 2048);
+        %err = norm(polar_image-b_fit)/norm(polar_image);
+        %outName = sprintf('fista_fit_%i_%i.mat',load_step,img_num);
+        %save(fullfile(outDir,outName),'x_hat','polar_image','P','err')
 	end
 end
 
