@@ -14,18 +14,18 @@ ring3 = img_array(:,[2:129,135:262],268:310);
 ring4 = img_array(:,[2:129,135:262],355:395);
 
 % Set ring
-ring = ring2;
+ring = ring4;
 
 omega = ones(size(ring));
 omega(:,130:134,:) = 0;
 
 %% Save reduced images to file
 imDir = 'D:\MMPAD_data';
-for ring_num = 1:4
+for ring_num = 4
     for i = 1:546
         fname = sprintf('mmpad_img_%i.mat',i);
         fdir = sprintf('ring%i',ring_num);
-        polar_image = squeeze(ring(j,:,:));
+        polar_image = squeeze(ring(i,:,:));
         save(fullfile(imDir,fdir,fname),'polar_image')
     end
 end

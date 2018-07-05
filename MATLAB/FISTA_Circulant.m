@@ -1,6 +1,6 @@
 function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
-%                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
+%                argmin_x ||Ax-b||^2 + lambda||x||_1
 %
 %   Implementation of Fast Iterative Shrinkage-Thresholding Algorithm using 
 %   convolutional subroutines for circulant matrix computations as
@@ -32,7 +32,6 @@ function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
-COEF_CHANGE = 3;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -68,36 +67,38 @@ c = AtR_ft_2D(A0ft_stack,b);
 
 xkm1 = x_init;
 xk = x_init;
-zk = xk;
 t_k = 1;
 t_kp1 = 1;
 keep_going = 1;
 nIter = 0;
 while keep_going && (nIter < maxIter)
-    nIter = nIter + 1 ;        
+    nIter = nIter + 1 ;
     
+    ykp1 = xk + ((t_k-1)/t_kp1)*(xk-xkm1) ;
+    if isNonnegative
+        ykp1(ykp1<0) = 0;
+    end
+        
     % Compute gradient of f
-    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,zk)) -c; % gradient of f at zk
+    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c ; % gradient of f at yk
     
-    % Backtracking Line Search
+    % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
-        
-        %l1/nonnegative-proximal
-        gk = zk - (1/L)*grad ;
-        xk = soft(gk,lambda/L) ;
+        gk = ykp1 - (1/L)*grad ;
         if isNonnegative
-            xk(xk<0) = 0;
+            gk(gk<0) = 0;
         end
+        xkp1 = soft(gk,lambda/L) ;
         
-        % Compute objective at xk
-        fit = Ax_ft_2D(A0ft_stack,xk);
+        % Compute objective at xkp1
+        fit = Ax_ft_2D(A0ft_stack,xkp1);
         
         % Compute quadratic approximation at yk
-        fit2 = Ax_ft_2D(A0ft_stack,zk);
-        temp1 = 0.5*norm(b(:)-fit(:))^2  + lambda*sum(abs(xk));
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
-            (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
+        fit2 = Ax_ft_2D(A0ft_stack,ykp1);
+        temp1 = norm(b(:)-fit(:))^2;
+        temp2 = norm(b(:)-fit2(:))^2 +...
+            (xkp1(:)-ykp1(:))'*grad(:) + (L/2)*norm(xkp1(:)-ykp1(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
         if temp1 <= temp2
@@ -106,55 +107,42 @@ while keep_going && (nIter < maxIter)
             L = L*beta ;
         end
     end
-    
-    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
-    zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
-
-
+           
     % Track and display error, objective, sparsity
     prev_f = f;
     f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
-    l_0(nIter) = sum(abs(xk(:))>eps*10);
+    l_0(nIter) = sum(abs(xkp1(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
-    % Keep objective minimizing solution
-    if(f==min(obj))
-        x_obj = xk;  
-        minIter = nIter;
-    end 
-    if((nIter-minIter) > 25)
-       break 
-    end
-    
     % Check stopping criterion
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
-            sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,(xk-xkm1)));
-            keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
+            sk = L*(ykp1-xkp1) +...
+                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,(xkp1-ykp1)));
+            keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xkp1(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
             criterionObjective = abs(f-prev_f)/(prev_f);
             keep_going =  (criterionObjective > tolerance);
-        case COEF_CHANGE
-            diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
-            keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
     end
     
-    % Update indices
     t_k = t_kp1;
+    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
     xkm1 = xk;
+    xk = xkp1;
+    
+    
 end
 
-x_hat = x_obj ;
+x_hat = xkp1 ;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;
 l_0 = l_0(1:nIter) ;
