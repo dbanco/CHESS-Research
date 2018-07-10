@@ -75,48 +75,60 @@ ring_fill = reshape(X,[n1,n2,n3])*normalize;
 %% Save new array
 save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 
-%% Test FISTA Masked
+%% Test FISTA 
+load('D:\MMPAD_data\ring1\mmpad_img_150.mat')
+
 % Ring sampling parameters
 P.ring_width = 20;
-P.num_theta= 396;
-P.num_rad = 265;
+P.num_theta= size(polar_image,2);
+P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
 
 % Basis function variance parameters
 P.num_var_t = 10;
 P.num_var_r = 10;
-P.var_theta = linspace(P.dtheta,30,  P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  100, P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta,6,  P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  10, P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
 P.betap = P.dtheta*P.drad;
 P.weight = 1;
 P.alphap = 10;
 
-A0ft_stack = unshifted_basis_matrix_ft_stack(P);
-A0_stack = unshifted_basis_matrix_stack(P);
+A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
+A0_stack = unshifted_basis_matrix_stack_norm2(P);
 
 % FISTA parameters
 params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 1e1;
+params.L = 100;
 params.lambda = 50;
 params.beta = 1.2;
-params.maxIter = 100;
+params.maxIter = 500;
 params.isNonnegative = 1;
 P.params = params;
 
 % Set image
-test_im = squeeze(img_array(1,:,:));
-
-[i1,i2]=find(test_im == 0);
-mask = [i1,i2];
 
 x_init = ones(size(A0ft_stack));
 %% FISTA with backtracking
-[x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,test_im,x_init,params);
+[x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
 
-err(end)
+
 %  save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
 %       P.load_step,P.img))
+
+%% View mmpad fit
+A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
+img_fit = Ax_ft_2D(A0ft_stack,x_hat);
+rel_err = norm(polar_image(:)-img_fit(:))/norm(polar_image(:))
+l0 = sum(x_hat(:)>0)
+lim1 = 0;
+lim2 = max(polar_image(:));
+% Plot both images
+figure(6)
+subplot(1,2,1)
+imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
+subplot(1,2,2)
+imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
