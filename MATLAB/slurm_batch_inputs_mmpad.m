@@ -41,11 +41,11 @@ for ring_num = 1:4
     ringName = sprintf('ring%i',ring_num);
     
     % Output directory
-    outputdir = fullfile('/cluster','shared','dbanco02','mmpad_',ringName,'_fit');
+    outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit']);
     mkdir(outputdir)
 
     % Job directory
-    jobDir = fullfile('/cluster','home','dbanco02','job_mmpad_',ringName,'_fit');
+    jobDir = fullfile('/cluster','home','dbanco02',['job_mmpad_',ringName,'_fit']);
     mkdir(jobDir)
 
     for img = img_nums
