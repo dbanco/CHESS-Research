@@ -19,14 +19,14 @@ P.sampleDims = [546,1];
 % Basis function variance parameters
 P.num_var_t = 10;
 P.num_var_r = 10;
-P.var_theta = linspace(P.dtheta,10,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  30,P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta,6,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  10,P.num_var_r).^2;
 
 % fista params
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
 params.L = 1e3;
-params.lambda = 100;
+params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 500;
 params.isNonnegative = 1;
