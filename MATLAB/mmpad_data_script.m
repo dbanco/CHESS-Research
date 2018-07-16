@@ -102,7 +102,7 @@ A0_stack = unshifted_basis_matrix_stack_norm2(P);
 % FISTA parameters
 params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 100;
+params.L = 1000;
 params.lambda = 50;
 params.beta = 1.2;
 params.maxIter = 500;

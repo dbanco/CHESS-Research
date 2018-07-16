@@ -12,8 +12,8 @@ funcName = 'wrap_mmpad_norm2_FISTA_Circulant';
 % Ring sampling parameters
 P.num_theta= 51;
 P.num_rad = 256;
-P.dtheta = 1;
-P.drad = 1;
+P.dtheta = 0.25;
+P.drad = 0.25;
 P.sampleDims = [546,1];
 
 % Basis function variance parameters
