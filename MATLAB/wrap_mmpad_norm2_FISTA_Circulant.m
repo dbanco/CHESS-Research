@@ -17,6 +17,9 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 [m,n,t,r] = size(A0ft_stack);
 x_init = ones(m,n,t,r);
 
+% Scale image by 2-norm
+polar_image = polar_image/norm(polar_image(:));
+
 %% call function
 [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,x_init,P.params);
 

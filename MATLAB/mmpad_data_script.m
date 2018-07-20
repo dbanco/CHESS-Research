@@ -76,51 +76,51 @@ ring_fill = reshape(X,[n1,n2,n3])*normalize;
 save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 
 %% Test FISTA 
-load('D:\MMPAD_data\ring1\mmpad_img_150.mat')
-
+load('D:\MMPAD_data\ring1\mmpad_img_1.mat')
+polar_image = polar_image(224:end,:);
 % Ring sampling parameters
-P.ring_width = 20;
 P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
 
 % Basis function variance parameters
-P.num_var_t = 10;
-P.num_var_r = 10;
-P.var_theta = linspace(P.dtheta,6,  P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  10, P.num_var_r).^2;
+P.num_var_t = 6;
+P.num_var_r = 8;
+P.var_theta = linspace(P.dtheta,4,  P.num_var_t).^2;
+P.var_rad   = linspace(P.drad,  8, P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
-P.betap = P.dtheta*P.drad;
-P.weight = 1;
-P.alphap = 10;
-
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 A0_stack = unshifted_basis_matrix_stack_norm2(P);
 
-% FISTA parameters
-params.stoppingCriterion = 1;
+%% FISTA parameters
+params.stoppingCriterion = 2;
 params.tolerance = 1e-6;
-params.L = 1000;
-params.lambda = 50;
-params.beta = 1.2;
+params.L = 1;
+params.lambda = 0.1;
+params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
+params.noBacktrack = 0;
+params.plotProgress = 0;
 P.params = params;
 
-% Set image
+% Initialize solution
+x_init = rand(size(A0ft_stack));
+x_init = x_init/norm(x_init(:));
 
-x_init = ones(size(A0ft_stack));
 %% FISTA with backtracking
+polar_image = polar_image/norm(polar_image(:));
 [x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
 
 
 %  save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
 %       P.load_step,P.img))
 
+
+
 %% View mmpad fit
-A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 rel_err = norm(polar_image(:)-img_fit(:))/norm(polar_image(:))
 l0 = sum(x_hat(:)>0)
@@ -128,7 +128,29 @@ lim1 = 0;
 lim2 = max(polar_image(:));
 % Plot both images
 figure(6)
-subplot(1,2,1)
+subplot(1,3,1)
 imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-subplot(1,2,2)
+subplot(1,3,2)
 imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+subplot(1,3,3)
+imshow(abs(polar_image-img_fit),'DisplayRange',[lim1 2*lim2],'Colormap',jet);
+
+%% View basis functions
+figure(5)
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        subplot(P.num_var_t,P.num_var_r,(i-1)*P.num_var_r+j)
+        basis_func = shift2D(squeeze(A0_stack(:,:,i,j)),round(P.num_rad/2),round(P.num_theta/2));
+        imshow(basis_func','DisplayRange',[lim1 0.8],'Colormap',jet);
+    end
+end
+
+%% Test basis functions
+x_test = zeros(size(A0ft_stack));
+x_test(15:7:end,1:5:10,1,1)=1;
+test_img = Ax_ft_2D(A0ft_stack,x_test);
+lim1 = 0;
+lim2 = max(test_img(:));
+figure(8)
+imshow(test_img,'DisplayRange',[lim1 lim2],'Colormap',jet);
+

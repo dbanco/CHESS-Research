@@ -77,7 +77,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,zk)) -c; % gradient of f at zk
+    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,zk)) - c; % gradient of f at zk
     
     % Backtracking Line Search
     stop_backtrack = 0 ;
@@ -102,6 +102,8 @@ while keep_going && (nIter < maxIter)
         % Stop backtrack if objective <= quadratic approximation
         if temp1 <= temp2
             stop_backtrack = 1 ;
+        elseif params.noBacktrack
+            stop_backtrack = 1;
         else
             L = L*beta ;
         end
@@ -109,7 +111,7 @@ while keep_going && (nIter < maxIter)
     
     t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
-
+    
 
     % Track and display error, objective, sparsity
     prev_f = f;
@@ -119,18 +121,53 @@ while keep_going && (nIter < maxIter)
     l_0(nIter) = sum(abs(xk(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
+          ' L ',       num2str(L),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
     % Keep objective minimizing solution
     if(f==min(obj))
         x_obj = xk;  
+        fit_obj = Ax_ft_2D(A0ft_stack,x_obj);
         minIter = nIter;
     end        
-    if((nIter-minIter) > 100)
-       break 
+%     if((nIter-minIter) > 25)
+%        break 
+%     end
+    
+    if params.plotProgress
+        lim1 = 0;
+        lim2 = max(b(:));
+        figure(1)
+        subplot(2,4,1)
+        imshow(b,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('img')
+        subplot(2,4,2)
+        imshow(fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('xk')
+        subplot(2,4,3)
+        imshow(fit2,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('zk')
+        subplot(2,4,4)
+        fit_gk = Ax_ft_2D(A0ft_stack,gk);
+        imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('x_obj')
+        subplot(2,4,5)
+        imshow(fit_obj,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('gk')
+        subplot(2,4,6)
+        imshow(abs(b-fit),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('diff xk')
+        subplot(2,4,7)
+        imshow(abs(b-fit2),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('diff zk')
+        subplot(2,4,8)
+        imshow(abs(b-fit_obj),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('diff x_obj')
+        pause
     end
     
+
     % Check stopping criterion
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
