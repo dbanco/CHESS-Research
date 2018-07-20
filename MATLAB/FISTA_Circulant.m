@@ -125,16 +125,6 @@ while keep_going && (nIter < maxIter)
           ' ||x||_0 ', num2str(l_0(nIter)),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
-    % Keep objective minimizing solution
-    if(f==min(obj))
-        x_obj = xk;  
-        fit_obj = Ax_ft_2D(A0ft_stack,x_obj);
-        minIter = nIter;
-    end        
-%     if((nIter-minIter) > 25)
-%        break 
-%     end
-    
     if params.plotProgress
         lim1 = 0;
         lim2 = max(b(:));
@@ -177,7 +167,7 @@ while keep_going && (nIter < maxIter)
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
-            criterionObjective = abs(f-prev_f)/(prev_f);
+            criterionObjective = abs(f-prev_f);
             keep_going =  (criterionObjective > tolerance);
         case COEF_CHANGE
             diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
