@@ -181,7 +181,7 @@ while keep_going && (nIter < maxIter)
     xkm1 = xk;
 end
 
-x_hat = x_obj ;
+x_hat = xk;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;
 l_0 = l_0(1:nIter) ;
