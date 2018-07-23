@@ -87,15 +87,15 @@ P.drad = 1;
 % Basis function variance parameters
 P.num_var_t = 6;
 P.num_var_r = 8;
-P.var_theta = linspace(P.dtheta,4,  P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  8, P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta/2,4,  P.num_var_t).^2;
+P.var_rad   = linspace(P.drad/2,  8, P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 A0_stack = unshifted_basis_matrix_stack_norm2(P);
 
 %% FISTA parameters
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
 params.L = 1;
 params.lambda = 0.1;
