@@ -1,7 +1,7 @@
 %% Show mmpad video
-fDir = 'D:\MMPAD_data\mmpad_ring1_fit1';
+fDir = 'D:\MMPAD_data\mmpad_ring1_fit';
 for ring_num = 1
-    for img_num = 1:546
+    for img_num = 277
         
         fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
         load(fullfile(fDir,fName))
@@ -58,7 +58,7 @@ rad_spread = zeros(546,1);
 rel_err = zeros(546,1);
 k = 1;
 for ring_num = 1
-    for img_num = 1:546
+    for img_num = 519:546
         fprintf('Image %i\n',k)
         fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
         load(fullfile(fDir,fName))
@@ -66,7 +66,7 @@ for ring_num = 1
 %         P.num_theta = size(polar_image,2); DIDNT WORK
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
         img_fit = Ax_ft_2D(A0ft_stack,x_hat);
-        rel_err(k) = norm(polar_image(:)-img_fit(:))/norm(polar_image(:));
+        rel_err(k) = err(end);
         var_signal = squeeze(sum(sum(x_hat,1),2));
         rad_var_signal = squeeze(sum(var_signal,2));
         az_var_signal = squeeze(sum(var_signal,1));

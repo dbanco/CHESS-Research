@@ -31,7 +31,7 @@ for ring_num = 4
 end
 
 
-%% Display iamges
+%% Display images
 for j = 1:1:546
     figure(1)
     subplot(1,3,1)
@@ -78,6 +78,11 @@ save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 %% Test FISTA 
 load('D:\MMPAD_data\ring1\mmpad_img_100.mat')
 %polar_image = polar_image(224:end,:);
+
+% Zero pad
+zPad = [0,0];
+polar_image = zeroPad(polar_image,zPad);
+
 % Ring sampling parameters
 P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
@@ -103,23 +108,21 @@ params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
 params.noBacktrack = 0;
-params.plotProgress = 1;
+params.zeroPad = zPad;
+params.plotProgress = 0;
 P.params = params;
 
 % Initialize solution
 x_init = rand(size(A0ft_stack));
 x_init = x_init/norm(x_init(:));
+x_init = forcePadToZeroArray(x_init,zPad);
 
 %% FISTA with backtracking
 polar_image = polar_image/norm(polar_image(:));
-[x_hat, err, obj, l_0]  = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
-
+[x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
 
 %  save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
 %       P.load_step,P.img))
-
-
-
 %% View mmpad fit
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 rel_err = norm(polar_image(:)-img_fit(:))/norm(polar_image(:))

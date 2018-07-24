@@ -49,6 +49,7 @@ lambda = params.lambda;
 beta = params.beta;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
+zPad = params.zeroPad;
 [m,n,t,r] = size(A0ft_stack) ;
 if ~all(size(x_init)==[m,n,t,r])
     error('The dimension of the initial xk does not match.');
@@ -66,6 +67,7 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
 
+x_init = forcePadToZeroArray(x_init,zPad);
 xkm1 = x_init;
 xk = x_init;
 zk = xk;
@@ -77,7 +79,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,zk)) - c; % gradient of f at zk
+    grad = AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zPad)) - c; % gradient of f at zk
     
     % Backtracking Line Search
     stop_backtrack = 0 ;
@@ -91,10 +93,10 @@ while keep_going && (nIter < maxIter)
         end
         
         % Compute objective at xk
-        fit = Ax_ft_2D(A0ft_stack,xk);
+        fit = forcePadToZero(Ax_ft_2D(A0ft_stack,xk),zPad);
         
         % Compute quadratic approximation at yk
-        fit2 = Ax_ft_2D(A0ft_stack,zk);
+        fit2 = forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zPad);
         temp1 = 0.5*norm(b(:)-fit(:))^2  + lambda*sum(abs(xk));
         temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
@@ -135,7 +137,7 @@ while keep_going && (nIter < maxIter)
         title('img')
         
         subplot(2,3,2)
-        imshow(fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        imshow(Ax_ft_2D(A0ft_stack,xk),'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('xk')
         
         subplot(2,3,3)
@@ -143,7 +145,7 @@ while keep_going && (nIter < maxIter)
         title('zk')
         
         subplot(2,3,4)
-        fit_gk = Ax_ft_2D(A0ft_stack,gk);
+        fit_gk = forcePadToZero(Ax_ft_2D(A0ft_stack,gk),zPad);
         imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('gk')
         
@@ -163,7 +165,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,(xk-xkm1)));
+                 AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zPad));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
