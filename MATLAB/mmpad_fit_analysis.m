@@ -1,23 +1,22 @@
 %% Show mmpad video
-fDir = 'D:\MMPAD_data\mmpad_ring1_fit4';
+fDir = 'D:\MMPAD_data\mmpad_ring1_fit1';
 for ring_num = 1
     for img_num = 1:546
         
         fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
         load(fullfile(fDir,fName))
-%         P.num_rad = size(polar_image,1);   WRONG
-%         P.num_theta = size(polar_image,2); DIDNT WORK
+        polar_image = polar_image/norm(polar_image(:));
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
         img_fit = Ax_ft_2D(A0ft_stack,x_hat);
         lim1 = 0;
-        lim2 = 30000;
+        lim2 = max(polar_image(:));
         % Plot both images
         figure(1)
         subplot(1,2,1)
         imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
         subplot(1,2,2)
         imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        pause(0.05)
+        pause
     end
 end
 

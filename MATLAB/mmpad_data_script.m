@@ -76,8 +76,8 @@ ring_fill = reshape(X,[n1,n2,n3])*normalize;
 save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 
 %% Test FISTA 
-load('D:\MMPAD_data\ring1\mmpad_img_1.mat')
-polar_image = polar_image(224:end,:);
+load('D:\MMPAD_data\ring1\mmpad_img_100.mat')
+%polar_image = polar_image(224:end,:);
 % Ring sampling parameters
 P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
@@ -87,8 +87,8 @@ P.drad = 1;
 % Basis function variance parameters
 P.num_var_t = 6;
 P.num_var_r = 8;
-P.var_theta = linspace(P.dtheta/2,4,  P.num_var_t).^2;
-P.var_rad   = linspace(P.drad/2,  8, P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta/2,10, P.num_var_t).^2;
+P.var_rad   = linspace(P.drad/2,  32, P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
@@ -98,12 +98,12 @@ A0_stack = unshifted_basis_matrix_stack_norm2(P);
 params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
 params.L = 1;
-params.lambda = 0.1;
+params.lambda = 0.05;
 params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
 params.noBacktrack = 0;
-params.plotProgress = 0;
+params.plotProgress = 1;
 P.params = params;
 
 % Initialize solution
@@ -135,7 +135,23 @@ imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
 subplot(1,3,3)
 imshow(abs(polar_image-img_fit),'DisplayRange',[lim1 2*lim2],'Colormap',jet);
 
-%% View basis functions
+%% View basis functions used
+figure(7)
+var_signal = squeeze(sum(sum(x_hat,1),2));
+lim2 = max(var_signal(:));
+imshow(var_signal,'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+
+%%
+lim2 = max(x_hat(:));
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        subplot(1,P.num_var_r,j)
+        imshow(x_hat(:,:,i,j),'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+    end
+    pause
+end
+
+        %% View basis functions
 figure(5)
 for i = 1:P.num_var_t
     for j = 1:P.num_var_r

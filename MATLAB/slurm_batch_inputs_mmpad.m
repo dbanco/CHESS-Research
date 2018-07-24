@@ -12,15 +12,15 @@ funcName = 'wrap_mmpad_norm2_FISTA_Circulant';
 % Ring sampling parameters
 P.num_theta= 51;
 P.num_rad = 256;
-P.dtheta = 0.25;
-P.drad = 0.25;
+P.dtheta = 1;
+P.drad = 1;
 P.sampleDims = [546,1];
 
 % Basis function variance parameters
 P.num_var_t = 8;
 P.num_var_r = 12;
-P.var_theta = linspace(P.dtheta/2,4,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad/2,  16,P.num_var_r).^2;
+P.var_theta = linspace(P.dtheta/2,10,P.num_var_t).^2;
+P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 
 % fista params
 params.stoppingCriterion = 1;
@@ -36,7 +36,6 @@ P.params = params;
 
 %% Parameters to vary
 img_nums = 1:546;
-
 
 for ring_num = 1:4
     k = 0;

@@ -129,32 +129,33 @@ while keep_going && (nIter < maxIter)
         lim1 = 0;
         lim2 = max(b(:));
         figure(1)
-        subplot(2,4,1)
+       
+        subplot(2,3,1)
         imshow(b,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('img')
-        subplot(2,4,2)
+        
+        subplot(2,3,2)
         imshow(fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('xk')
-        subplot(2,4,3)
+        
+        subplot(2,3,3)
         imshow(fit2,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('zk')
-        subplot(2,4,4)
+        
+        subplot(2,3,4)
         fit_gk = Ax_ft_2D(A0ft_stack,gk);
         imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('x_obj')
-        subplot(2,4,5)
-        imshow(fit_obj,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('gk')
-        subplot(2,4,6)
+        
+        subplot(2,3,5)
         imshow(abs(b-fit),'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('diff xk')
-        subplot(2,4,7)
+        
+        subplot(2,3,6)
         imshow(abs(b-fit2),'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('diff zk')
-        subplot(2,4,8)
-        imshow(abs(b-fit_obj),'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('diff x_obj')
-        pause
+        
+        pause(0.05)
     end
     
 

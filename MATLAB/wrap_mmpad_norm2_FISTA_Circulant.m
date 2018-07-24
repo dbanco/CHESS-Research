@@ -13,9 +13,9 @@ P.num_theta = size(polar_image,2);
 %% Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
-%% Initialize solution
-[m,n,t,r] = size(A0ft_stack);
-x_init = ones(m,n,t,r);
+% Initialize solution
+x_init = rand(size(A0ft_stack));
+x_init = x_init/norm(x_init(:));
 
 % Scale image by 2-norm
 polar_image = polar_image/norm(polar_image(:));
