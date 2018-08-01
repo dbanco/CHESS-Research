@@ -7,11 +7,11 @@ fileName = ['mmpad_img_',str2,'.mat'];
 fileDir = fullfile(datadir,fileName);
 load(fileDir)
 
-P.num_rad = size(polar_image,1);
-P.num_theta = size(polar_image,2);
-
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
+
+P.num_rad = size(b,1);
+P.num_theta = size(b,2);
 
 %% Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);

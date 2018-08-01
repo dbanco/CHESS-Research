@@ -28,16 +28,21 @@ P.sampleDims = [37,5];
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
+P.var_rad   = linspace(P.drad,  6,    P.num_var_r).^2;
+
+% Zero padding
+P.zeroPad = [10,0];
 
 % fista params
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 1e1;
-params.lambda = 100;
-params.beta = 1.2;
+params.L = 1;
+params.lambda = 0.1;
+params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
+params.noBacktrack = 0;
+params.plotProgress = 0;
 P.params = params;
 
 %% Parameters to vary
