@@ -9,7 +9,7 @@ fileDir = fullfile(datadir,fileName);
 load(fileDir)
 
 %% Zero pad image
-b = zeroPad(polar_iamge,P.params.zeroPad);
+b = zeroPad(polar_image,P.params.zeroPad);
 
 P.num_rad = size(b,1);
 P.num_theta = size(b,2);
@@ -25,7 +25,7 @@ x_init = x_init/norm(x_init(:));
 b = b/norm(b(:));
 
 %% call function
-[x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,x_init,P.params);
+[x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
 
 
 %% save output
