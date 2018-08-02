@@ -1,7 +1,7 @@
 %% Processes data to be loaded into spread_visualizer
 spreadDir = fullfile('D:\CHESS_data\spread_results');
-outFile = 'spread_311_norm2_3_lambda_%2.2f.mat';
-result_path = fullfile('D:\CHESS_data','al7075_311_norm2_3');
+outFile = 'spread_311_norm2_correct_lambda_%2.2f.mat';
+result_path = fullfile('D:\CHESS_data','al7075_311_norm2_correct');
 fileInfo = dir(fullfile(result_path,'fista_fit*.mat'));
 
 for i = 1:numel(fileInfo)

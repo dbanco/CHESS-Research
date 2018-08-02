@@ -27,11 +27,11 @@ P.sampleDims = [37,5];
 % Basis function variance parameters
 P.num_var_t = 15;
 P.num_var_r = 10;
-P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
+P.var_theta = linspace(P.dtheta,pi/48,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad,  6,    P.num_var_r).^2;
 
 % Zero padding
-params.zeroPad = [10,0];
+params.zeroPad = [0,0];
 
 % fista params
 params.stoppingCriterion = 1;
