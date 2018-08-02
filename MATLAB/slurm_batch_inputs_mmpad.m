@@ -23,7 +23,7 @@ P.var_theta = linspace(P.dtheta/2,10,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 
 % Zero padding
-P.zeroPad = [10,0];
+params.zeroPad = [10,0];
 
 % fista params
 params.stoppingCriterion = 1;

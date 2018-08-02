@@ -9,7 +9,7 @@ outputdir = fullfile('/cluster','shared','dbanco02','al7075_311_norm2_1');
 
 mkdir(outputdir)
 % Function
-funcName = 'wrap_norm2_2FISTA_Circulant';
+funcName = 'wrap_norm2_FISTA_Circulant';
 
 jobDir = fullfile('/cluster','home','dbanco02','job_al7075_311_norm2_1');
 mkdir(jobDir)
@@ -31,7 +31,7 @@ P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad,  6,    P.num_var_r).^2;
 
 % Zero padding
-P.zeroPad = [10,0];
+params.zeroPad = [10,0];
 
 % fista params
 params.stoppingCriterion = 1;
