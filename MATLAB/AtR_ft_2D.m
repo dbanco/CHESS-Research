@@ -18,7 +18,7 @@ R_ft = fft2(R);
 
 for tv = 1:size(A0ft_stack,3)
     for rv = 1:size(A0ft_stack,4)
-         y = real(ifft2(A0ft_stack(:,:,tv,rv).*R_ft));
+        y = real(ifft2(A0ft_stack(:,:,tv,rv).*R_ft));
         AtR(:,:,tv,rv) = shift2D(y,2,2);
     end
 end

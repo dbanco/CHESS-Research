@@ -5,12 +5,12 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'al7075_311_polar_synth2');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','fit_synth2_norm2');
+outputdir = fullfile('/cluster','shared','dbanco02','synth2_norm2_1');
 mkdir(outputdir)
 
 % Function
 funcName1 = 'wrap_norm2_FISTA_Circulant';
-jobDir1 = fullfile(datadir,'job_al7075_311_synth2_norm2');
+jobDir1 = fullfile(datadir,'job_synth2_norm2_1');
 mkdir(jobDir1)
 
 %% Fixed Parameters
@@ -26,23 +26,20 @@ P.sampleDims = [5,5];
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
-
-% basis weighting
-P.weight = 1;
-P.betap = 1;
-P.alphap = 5e-2;
+P.var_rad   = linspace(P.drad,  6,    P.num_var_r).^2;
+% Zero padding
+params.zeroPad = [10,0];
 
 % fista params
-params.stoppingCriterion = 2;
+params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 1e1;
-params.lambda = 50;
-params.beta = 1.2;
-params.maxIter = 200;
-params.gamma = 1e4;
-params.maxCycles = 10;
+params.L = 1;
+params.lambda = 0.1;
+params.beta = 1.1;
+params.maxIter = 500;
 params.isNonnegative = 1;
+params.noBacktrack = 0;
+params.plotProgress = 0;
 P.params = params;
 
 %% Parameters to vary
