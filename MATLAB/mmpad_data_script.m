@@ -1,18 +1,22 @@
 %% Load data into single array
-% img_array = zeros(546,265,396);
-% for i = 1:546
-%     fname = sprintf('mmpad_img_%i.mat',i-1);
-%     load(fullfile('D:\MMPAD_data',fname))
-%     img_array(i,:,:) = squeeze(sum(mmpad_img,1));
-% end
+img_array = zeros(546,265,396);
+for i = 1:546
+    fname = sprintf('mmpad_img_%i.mat',i-1);
+    load(fullfile('D:\MMPAD_data\full',fname))
+    img_array(i,:,:) = squeeze(sum(mmpad_img,1));
+end
 
 %% Crop image array to separate rings
 % rows 1,130-134
-ring1 = img_array(:,[2:129,135:262],5:40);
-ring2 = img_array(:,[2:129,135:262],210:260);
-ring3 = img_array(:,[2:129,135:262],268:310);
-ring4 = img_array(:,[2:129,135:262],355:395);
-
+% These remove the zero pixels
+% ring1 = img_array(:,[2:129,135:262],5:40);
+% ring2 = img_array(:,[2:129,135:262],210:260);
+% ring3 = img_array(:,[2:129,135:262],268:310);
+% ring4 = img_array(:,[2:129,135:262],355:395);
+ring1 = img_array(:,2:262,5:40);
+ring2 = img_array(:,2:262,210:260);
+ring3 = img_array(:,2:262,268:310);
+ring4 = img_array(:,2:262,355:395);
 % Set ring
 ring = ring4;
 
@@ -20,11 +24,12 @@ omega = ones(size(ring));
 omega(:,130:134,:) = 0;
 
 %% Save reduced images to file
-imDir = 'D:\MMPAD_data';
+imDir = 'D:\MMPAD_data\';
 for ring_num = 4
+    fdir = sprintf('ring%i_zero',ring_num);
+    mkdir(fullfile(imDir,fdir))
     for i = 1:546
         fname = sprintf('mmpad_img_%i.mat',i);
-        fdir = sprintf('ring%i',ring_num);
         polar_image = squeeze(ring(i,:,:));
         save(fullfile(imDir,fdir,fname),'polar_image')
     end
@@ -79,8 +84,20 @@ save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 load('D:\MMPAD_data\ring1\mmpad_img_100.mat')
 %polar_image = polar_image(224:end,:);
 
-% Zero pad
+% Zero pad and Zero mask
+% ring1 = img_array(:,[2:129,135:262],5:40);
+% ring2 = img_array(:,[2:129,135:262],210:260);
+% ring3 = img_array(:,[2:129,135:262],268:310);
+% ring4 = img_array(:,[2:129,135:262],355:395);
+
+maskRows = 129:133;
 zPad = [0,0];
+
+zMask = zeros(size(polar_image));
+zMask(maskRows,:) = 1;
+zMask = onePad(maskRows,zPad);
+[r,c] = find(zMask);
+zMask = [r,c];
 polar_image = zeroPad(polar_image,zPad);
 
 % Ring sampling parameters
@@ -109,6 +126,7 @@ params.maxIter = 500;
 params.isNonnegative = 1;
 params.noBacktrack = 0;
 params.zeroPad = zPad;
+params.zeroMask = zMask;
 params.plotProgress = 0;
 P.params = params;
 
