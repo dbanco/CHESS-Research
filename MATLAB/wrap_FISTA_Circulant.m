@@ -34,6 +34,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 % Initialize solution
 x_init = rand(size(A0ft_stack));
 x_init = x_init/norm(x_init(:));
+x_init = forceMaskToZeroArray(x_init,P.zeroMask);
 
 % Scale image by 2-norm
 b = b/norm(b(:));
