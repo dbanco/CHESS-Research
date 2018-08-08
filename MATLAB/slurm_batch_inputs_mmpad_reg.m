@@ -50,6 +50,7 @@ params.lambda = 0.1;
 params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
+params.zeroPad = zPad;
 params.zeroMask = zMask;
 params.noBacktrack = 0;
 params.plotProgress = 0;
