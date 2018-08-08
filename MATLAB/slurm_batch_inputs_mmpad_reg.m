@@ -24,7 +24,7 @@ mkdir(jobDir2)
 % Ring sampling parameters
 load(fullfile(dataset,ringName,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);
-P.num_rad = size(polar_iamge,1);
+P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
 P.sampleDims = [546,1];
