@@ -4,7 +4,7 @@ datadir = fullfile('/cluster','home','dbanco02');
 % Ring dataset
 dataset = fullfile(datadir,'mmpad_polar');
 ringName = 'ring1_zero';
-
+ring_num  = 1;
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg1']);
 mkdir(outputdir)
