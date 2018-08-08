@@ -18,14 +18,11 @@ ring2 = img_array(:,2:262,210:260);
 ring3 = img_array(:,2:262,268:310);
 ring4 = img_array(:,2:262,355:395);
 % Set ring
-ring = ring4;
-
-omega = ones(size(ring));
-omega(:,130:134,:) = 0;
+ring = ring3;
 
 %% Save reduced images to file
 imDir = 'D:\MMPAD_data\';
-for ring_num = 4
+for ring_num = 3
     fdir = sprintf('ring%i_zero',ring_num);
     mkdir(fullfile(imDir,fdir))
     for i = 1:546
@@ -45,7 +42,7 @@ for j = 1:1:546
     imshow(squeeze(omega(j,:,:)),'DisplayRange',[0,1],'ColorMap',jet)
 %     subplot(1,3,3)
 %     imshow(squeeze(ring_fill(j,:,:)),'DisplayRange',[0,10e3],'ColorMap',jet)
-     pause(0.1)
+     pause
 end
 
 %% Load saved array
@@ -81,7 +78,7 @@ ring_fill = reshape(X,[n1,n2,n3])*normalize;
 save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 
 %% Test FISTA 
-load('D:\MMPAD_data\ring1\mmpad_img_100.mat')
+load('D:\MMPAD_data\ring1_zero\mmpad_img_100.mat')
 %polar_image = polar_image(224:end,:);
 
 % Zero pad and Zero mask
@@ -91,12 +88,12 @@ load('D:\MMPAD_data\ring1\mmpad_img_100.mat')
 % ring4 = img_array(:,[2:129,135:262],355:395);
 
 maskRows = 129:133;
-zPad = [0,0];
+zPad = [5,0];
 
 zMask = zeros(size(polar_image));
 zMask(maskRows,:) = 1;
-zMask = onePad(maskRows,zPad);
-[r,c] = find(zMask);
+zMask = onePad(zMask,zPad);
+[r,c] = find(zMask==1);
 zMask = [r,c];
 polar_image = zeroPad(polar_image,zPad);
 
@@ -133,7 +130,6 @@ P.params = params;
 % Initialize solution
 x_init = rand(size(A0ft_stack));
 x_init = x_init/norm(x_init(:));
-x_init = forcePadToZeroArray(x_init,zPad);
 
 %% FISTA with backtracking
 polar_image = polar_image/norm(polar_image(:));
@@ -143,7 +139,8 @@ polar_image = polar_image/norm(polar_image(:));
 %       P.load_step,P.img))
 %% View mmpad fit
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
-rel_err = norm(polar_image(:)-img_fit(:))/norm(polar_image(:))
+img_fit_z = forceMaskToZero(img_fit,zMask);
+rel_err = norm(polar_image(:)-img_fit_z(:))/norm(polar_image(:))
 l0 = sum(x_hat(:)>0)
 lim1 = 0;
 lim2 = max(polar_image(:));

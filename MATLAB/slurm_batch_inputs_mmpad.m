@@ -22,8 +22,15 @@ P.num_var_r = 12;
 P.var_theta = linspace(P.dtheta/2,10,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 
-% Zero padding
-params.zeroPad = [10,0];
+% Zero padding and mask
+maskRows = 129:133;
+zPad = [5,0];
+
+zMask = zeros(size(polar_image));
+zMask(maskRows,:) = 1;
+zMask = onePad(zMask,zPad);
+[r,c] = find(zMask==1);
+zMask = [r,c];
 
 % fista params
 params.stoppingCriterion = 1;
@@ -33,6 +40,7 @@ params.lambda = 0.1;
 params.beta = 1.1;
 params.maxIter = 500;
 params.isNonnegative = 1;
+params.zeroMask = zMask;
 params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;

@@ -1,17 +1,24 @@
 function wrap_space_ev_FISTA_Circulant( data_dir,P,output_dir )
-%init_FISTA_Circuleant Runs FISTA_Circulant loading input files and saving
+%wrap_space_ev_FISTA_Circulant Runs FISTA_Circulant loading input files and saving
 % ouput files
 
-% Initialize solution
+% Load solution
 baseFileName = 'fista_fit_%i_%i.mat';
 load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
+
+%% Zero pad image
+b = zeroPad(polar_image,P.params.zeroPad);
+% Scale image by 2-norm
+b = b/norm(b(:));
+P.num_rad = size(b,1);
+P.num_theta = size(b,2);
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% Run FISTA updating solution and error array
 neighbors_ev = load_neighbors_ev_az(output_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,polar_image,neighbors_ev,P.var_theta,x_hat,P.params);
+[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,P.var_theta,x_hat,P.params);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration

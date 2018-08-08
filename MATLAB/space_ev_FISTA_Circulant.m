@@ -35,6 +35,7 @@ function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbor
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
+COEF_CHANGE = 3;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -51,6 +52,8 @@ lambda = params.lambda;
 beta = params.beta;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
+zPad = params.zeroPad;
+zMask = params.zeroMask;
 [m,n,t,r] = size(A0ft_stack) ;
 
 if ~all(size(x_init)==[m,n,t,r])
@@ -73,8 +76,10 @@ f = f + params.gamma*(x_ev - neighbors_ev)^2;
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
 
+x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
 xk = x_init;
+zk = xk;
 t_k = 1;
 t_kp1 = 1;
 keep_going = 1;
@@ -82,39 +87,41 @@ nIter = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
+    % Compute gradient of f
+    x_ev = compute_exp_az_variance(zk,var_theta);
+    total = sum(ykp1(:));
+    grad = AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
+    for az_i = 1:numel(var_theta)
+    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbors_ev)*((var_theta(az_i)-x_ev)/total); 
+    end
+    
     ykp1 = xk + ((t_k-1)/t_kp1)*(xk-xkm1) ;
     if isNonnegative
         ykp1(ykp1<0) = 0;
     end
         
-    % Compute gradient of f
-    x_ev = compute_exp_az_variance(ykp1,var_theta);
-    total = sum(ykp1(:));
-    grad = AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,ykp1)) - c;
-    for az_i = 1:numel(var_theta)
-    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbors_ev)*((var_theta(az_i)-x_ev)/total); 
-    end
+
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
-        gk = ykp1 - (1/L)*grad ;
+        gk = zk - (1/L)*grad ;
+        xk = soft(gk,lambda/L) ;
         if isNonnegative
-            gk(gk<0) = 0;
+            xk(xk<0) = 0;
         end
-        xkp1 = soft(gk,lambda/L) ;
         
         % Compute objective at xkp1
-        fit = Ax_ft_2D(A0ft_stack,xkp1);
-        x_ev = compute_exp_az_variance(xkp1,var_theta);
-        temp1 = norm(b(:)-fit(:))^2 + params.gamma*(x_ev - neighbors_ev)^2;
+        fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
+        x_ev = compute_exp_az_variance(xk,var_theta);
+        temp1 = 0.5*norm(b(:)-fit(:))^2 + lambda*sum(abs(xk)) + params.gamma*(x_ev - neighbors_ev)^2;
         
         % Compute quadratic approximation at ykp1
-        fit2 = Ax_ft_2D(A0ft_stack,ykp1);
-        x_ev = compute_exp_az_variance(ykp1,var_theta);
-        temp2 = norm(b(:)-fit2(:))^2 +...
+        fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
+        x_ev = compute_exp_az_variance(zk,var_theta);
+        temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
             params.gamma*(x_ev - neighbors_ev)^2 +...
-            (xkp1(:)-ykp1(:))'*grad(:) +...
-            (L/2)*norm(xkp1(:)-ykp1(:))^2;
+            (xk(:)-zk(:))'*grad(:) +...
+            (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
         if temp1 <= temp2
@@ -123,42 +130,79 @@ while keep_going && (nIter < maxIter)
             L = L*beta ;
         end
     end
+    
+    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
+    zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);  
            
     % Track and display error, objective, sparsity
     prev_f = f;
-    f = temp1 + lambda * norm(xk(:),1);
+    f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
-    l_0(nIter) = sum(abs(xkp1(:))>eps*10);
+    l_0(nIter) = sum(abs(xk(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
+          ' L ',       num2str(L),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
+	if params.plotProgress
+        lim1 = 0;
+        lim2 = max(b(:));
+        figure(1)
+       
+        subplot(2,3,1)
+        imshow(b,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('img')
+        
+        subplot(2,3,2)
+        imshow(Ax_ft_2D(A0ft_stack,xk),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('xk')
+        
+        subplot(2,3,3)
+        imshow(fit2,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('zk')
+        
+        subplot(2,3,4)
+        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zPad);
+        imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('gk')
+        
+        subplot(2,3,5)
+        imshow(abs(b-fit),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('diff xk')
+        
+        subplot(2,3,6)
+        imshow(abs(b-fit2),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        title('diff zk')
+        
+        pause(0.05)
+    end
+      
     % Check stopping criterion
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
-            sk = L*(ykp1-xkp1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,(xkp1-ykp1)));
-            keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xkp1(:)));
+            sk = L*(xk-xkm1) +...
+                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zPad)));
+            keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
-            criterionObjective = abs(f-prev_f)/(prev_f);
+            criterionObjective = abs(f-prev_f);
             keep_going =  (criterionObjective > tolerance);
+        case COEF_CHANGE
+            diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
+            keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
     end
     
+    % Update indices
     t_k = t_kp1;
-    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
     xkm1 = xk;
-    xk = xkp1;
-    
-    
 end
 
-x_hat = xkp1 ;
+x_hat = xk;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;
 l_0 = l_0(1:nIter) ;

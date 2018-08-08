@@ -10,7 +10,7 @@ mkdir(outputdir)
 
 % Function
 funcName1 = 'wrap_norm2_FISTA_Circulant';
-funcName2 = 'wrap_space_ev_FISTA_Circulant';
+funcName2 = 'wrap_norm2_reg_FISTA_Circulant';
 jobDir1 = fullfile(datadir,'job_al7075_311_space_ev_norm2_init');
 jobDir2 = fullfile(datadir,'job_al7075_311_space_ev_norm2');
 mkdir(jobDir1)
@@ -30,11 +30,6 @@ P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta,pi/64,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad,  2,    P.num_var_r).^2;
-
-% basis weighting
-P.weight = 1;
-P.betap = 1;
-P.alphap = 5e-2;
 
 % fista params
 params.stoppingCriterion = 2;

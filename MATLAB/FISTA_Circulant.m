@@ -52,6 +52,7 @@ isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 [m,n,t,r] = size(A0ft_stack) ;
+
 if ~all(size(x_init)==[m,n,t,r])
     error('The dimension of the initial xk does not match.');
 end

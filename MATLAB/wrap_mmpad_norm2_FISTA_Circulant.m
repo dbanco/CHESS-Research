@@ -1,5 +1,5 @@
 function wrap_mmpad_norm2_FISTA_Circulant(datadir,P,outputdir)
-%wrap_FISTA_Circulant 
+%wrap_mmpad_norm2_FISTA_Circulant
 
 %% load polar image
 str2 = sprintf('%i',P.img);
