@@ -62,8 +62,10 @@ for img = img_nums
     P.img = img;
     P.ring_num = ring_num;
     varin = {fullfile(dataset,ringName),P,outputdir};
-    save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName1')
-    save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName2')
+    funcName = funcName1;
+    save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
+    funcName = funcName2;
+    save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
     k = k + 1;
 end
 
