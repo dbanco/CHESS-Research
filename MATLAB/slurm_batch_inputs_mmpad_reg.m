@@ -12,8 +12,8 @@ mkdir(outputdir)
 % Function
 funcName1 = 'wrap_mmpad_norm2_FISTA_Circulant';
 funcName2 = 'wrap_norm2_space_ev_FISTA_Circulant';
-jobDir1 = fullfile(datadir,'job_mmpad_',ringName,'_reg_init');
-jobDir2 = fullfile(datadir,'job_mmpad_',ringName,'_reg');
+jobDir1 = fullfile(datadir,['job_mmpad_',ringName],'_reg_init');
+jobDir2 = fullfile(datadir,['job_mmpad_',ringName],'_reg');
 mkdir(jobDir1)
 mkdir(jobDir2)
 
