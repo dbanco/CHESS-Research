@@ -25,6 +25,7 @@ P.drad = 1;
 P.sampleDims = [37,5];
 
 % Basis function variance parameters
+P.basis = 'norm2';
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta,pi/48,P.num_var_t).^2;

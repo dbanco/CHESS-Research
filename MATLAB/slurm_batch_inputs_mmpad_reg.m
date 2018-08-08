@@ -5,13 +5,15 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'mmpad_polar');
 ringName = 'ring1_zero';
 ring_num  = 1;
+prefix = 'mmpad_img';
+
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg1']);
 mkdir(outputdir)
 
 % Function
-funcName1 = 'wrap_mmpad_norm2_FISTA_Circulant';
-funcName2 = 'wrap_norm2_space_ev_FISTA_Circulant';
+funcName1 = 'wrap_FISTA_Circulant';
+funcName2 = 'wrap_space_ev_FISTA_Circulant';
 jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_reg_init']);
 jobDir2 = fullfile(datadir,['job_mmpad_',ringName,'_reg']);
 mkdir(jobDir1)
@@ -20,13 +22,15 @@ mkdir(jobDir2)
 %% Fixed Parameters
 
 % Ring sampling parameters
-P.num_theta= 51;
-P.num_rad = 256;
+load(fullfile(dataset,ringName,[prefix,'_1.mat']));
+P.num_theta= size(polar_image,2);
+P.num_rad = size(polar_iamge,1);
 P.dtheta = 1;
 P.drad = 1;
 P.sampleDims = [546,1];
 
 % Basis function variance parameters
+P.basis = 'norm2';
 P.num_var_t = 8;
 P.num_var_r = 12;
 P.var_theta = linspace(P.dtheta/2,10,P.num_var_t).^2;
@@ -35,8 +39,7 @@ P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 % Zero padding and mask
 maskRows = 129:133;
 zPad = [0,0];
-load(fullfile(dataset,ringName,'mmpad_img_1.mat'));
-zMask = zeros(size(polar_image));
+zMask = zeros(size(zeroPad(polar_image,zPad)));
 zMask(maskRows,:) = 1;
 zMask = onePad(zMask,zPad);
 [r,c] = find(zMask==1);
@@ -61,8 +64,8 @@ img_nums = 1:546;
 k = 0;
 for img = img_nums
     P.img = img;
-    P.ring_num = ring_num;
-    varin = {fullfile(dataset,ringName),P,outputdir};
+    P.set = ring_num;
+    varin = {fullfile(dataset,ringName,prefix),P,outputdir};
     funcName = funcName1;
     save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
     funcName = funcName2;

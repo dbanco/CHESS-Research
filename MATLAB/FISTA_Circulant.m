@@ -81,7 +81,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c; % gradient of f at zk
+    grad = AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c; % gradient of f at zk
     
     % Backtracking Line Search
     stop_backtrack = 0 ;
