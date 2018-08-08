@@ -35,7 +35,7 @@ P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 % Zero padding and mask
 maskRows = 129:133;
 zPad = [0,0];
-load(fullfile(dataset,ringName,'mmpad_img_0.mat'));
+load(fullfile(dataset,ringName,'mmpad_img_1.mat'));
 zMask = zeros(size(polar_image));
 zMask(maskRows,:) = 1;
 zMask = onePad(zMask,zPad);
