@@ -6,7 +6,7 @@ dataset = fullfile(datadir,'mmpad_polar');
 ringName = 'ring1';
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit']);
+outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg1']);
 mkdir(outputdir)
 
 % Function
@@ -35,7 +35,7 @@ P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 % Zero padding and mask
 maskRows = 129:133;
 zPad = [5,0];
-
+load(fullfile(dataset,ringName,'mmpad_img_0.mat'));
 zMask = zeros(size(polar_image));
 zMask(maskRows,:) = 1;
 zMask = onePad(zMask,zPad);
