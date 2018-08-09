@@ -4,7 +4,7 @@ function wrap_space_ev_FISTA_Circulant( data_dir,P,output_dir )
 
 % Load solution
 baseFileName = 'fista_fit_%i_%i.mat';
-load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
+load(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)))
 
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
@@ -22,7 +22,7 @@ neighbors_ev = load_neighbors_ev_az(output_dir,baseFileName,P);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration
-save(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)),'x_hat','err','polar_image','P')
+save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')
 
 
 end
