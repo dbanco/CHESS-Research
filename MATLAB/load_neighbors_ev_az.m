@@ -28,7 +28,7 @@ neighbors_ev = 0;
  
 for i = 1:size(neighbor_imgs,1)
     n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
-    load_file = fullfile(output_dir,sprintf(baseFileName,P.load_step,n_img-1));
+    load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img-1));
     load(load_file)
     x_hat_var = x_hat;
     ev = compute_exp_az_variance(x_hat_var,P.var_theta);
