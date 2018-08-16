@@ -54,7 +54,7 @@ k = 0;
 for load_step = load_steps
     for img = img_nums
         P.img = img;
-        P.load_step = load_step;
+        P.set = set;
 
         varin = {dataset,P,outputdir};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')

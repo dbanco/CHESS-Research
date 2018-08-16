@@ -4,7 +4,7 @@ function wrap_space_FISTA_Circulant( data_dir,P,output_dir )
 
 % Initialize solution
 baseFileName = 'spatial_fit_%i_%i.mat';
-load(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)))
+load(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)))
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_matrix_ft_stack(P);
@@ -15,7 +15,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration
-save(fullfile(output_dir,sprintf(baseFileName,P.load_step,P.img)),'x_hat','err','polar_image','P')
+save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')
 
 
 end

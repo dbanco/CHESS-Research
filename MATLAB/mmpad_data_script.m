@@ -136,7 +136,7 @@ polar_image = polar_image/norm(polar_image(:));
 [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
 
 %  save(sprintf('fista_fit_%i_%i.mat','x_hat','err','polar_image','P',...
-%       P.load_step,P.img))
+%       P.set,P.img))
 %% View mmpad fit
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 img_fit_z = forceMaskToZero(img_fit,zMask);

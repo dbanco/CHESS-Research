@@ -3,15 +3,16 @@
 data_dir = 'D:\CHESS_data\al7075_311_polar\';
 results_dir = 'D:\CHESS_results\test\';
 
+% Select image
+P.set = 4;
+P.img = 35;
+
 % Ring sampling parameters
 P.ring_width = 20;
 P.num_theta= 2048;
 P.num_rad = 2*P.ring_width+1;
 P.dtheta = 2*pi/P.num_theta;
 P.drad = 1;
-
-P.load_step = 4;
-P.img = 35;
 
 % Basis function dictionary parameters
 P.num_var_t = 15;
@@ -36,7 +37,7 @@ P.params = params;
 % Load polar_image
 load([data_dir,... 
 'polar_image_',...
-num2str(P.load_step),'_',...
+num2str(P.set),'_',...
 num2str(P.img), '.mat']);
 
 % Define zero mask
