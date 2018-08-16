@@ -1,5 +1,5 @@
-function [ high_az_var, high_rad_var ] = computeHighVarSignal( x_hat, az_idx, rad_idx )
-%computeHighVarSignal Computes contribution of high variance bases to fit
+function [ high_az_var, high_rad_var ] = computeHVS( x_hat, az_idx, rad_idx )
+%computeHVS Computes contribution of high variance bases to fit
 % with respective to provided cutoffs
 %
 % Inputs:

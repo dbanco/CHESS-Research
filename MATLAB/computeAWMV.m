@@ -1,5 +1,5 @@
-function evar = compute_exp_az_variance(x,var_theta)
-%compute_exp_az_variance
+function [awmv_az, awmv_rad] = computeAWMV(x,var_theta,var_rad)
+%computeAWMV
 % Inputs
 % x- (z,x,az_var,rad_var) array of fitted coefficients
 % var_theta- (az_var) array of azimuthal variances

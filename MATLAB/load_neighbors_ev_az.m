@@ -31,8 +31,8 @@ for i = 1:size(neighbor_imgs,1)
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img-1));
     load(load_file)
     x_hat_var = x_hat;
-    ev = compute_exp_az_variance(x_hat_var,P.var_theta);
-    neighbors_ev = neighbors_ev + ev;
+    [awmv_az, awmv_rad] = computeAWMV(x_hat_var,P.var_theta,P.var_rad);
+    neighbors_ev = neighbors_ev + awmv_az;
 end
 neighbors_ev = neighbors_ev/size(neighbor_imgs,1);
 

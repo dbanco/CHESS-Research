@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,var_theta,x_init,params)
+function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,var_theta,var_rad,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -70,8 +70,8 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add spatial expected variance smoothness part of objective
-x_ev = compute_exp_az_variance(x_init,var_theta);
-f = f + params.gamma*(x_ev - neighbors_ev)^2;
+[awmv_az, awmv_rad] = computeAWMV(x_init,var_theta,var_rad);
+f = f + params.gamma*(awmv_az - neighbors_ev)^2;
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -88,11 +88,11 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Compute gradient of f
-    x_ev = compute_exp_az_variance(zk,var_theta);
+    [awmv_az, awmv_rad] = computeAWMV(zk,var_theta,var_rad);
     total = sum(ykp1(:));
     grad = AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
     for az_i = 1:numel(var_theta)
-    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(x_ev - neighbors_ev)*((var_theta(az_i)-x_ev)/total); 
+    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(awmv_az - neighbors_ev)*((var_theta(az_i)-awmv_az)/total); 
     end
     
     ykp1 = xk + ((t_k-1)/t_kp1)*(xk-xkm1) ;
@@ -112,14 +112,14 @@ while keep_going && (nIter < maxIter)
         
         % Compute objective at xkp1
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
-        x_ev = compute_exp_az_variance(xk,var_theta);
-        temp1 = 0.5*norm(b(:)-fit(:))^2 + lambda*sum(abs(xk)) + params.gamma*(x_ev - neighbors_ev)^2;
+        [awmv_az, awmv_rad] = computeAWMV(xk,var_theta,var_rad);
+        temp1 = 0.5*norm(b(:)-fit(:))^2 + lambda*sum(abs(xk)) + params.gamma*(awmv_az - neighbors_ev)^2;
         
         % Compute quadratic approximation at ykp1
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        x_ev = compute_exp_az_variance(zk,var_theta);
+        [awmv_az, awmv_rad] = computeAWMV(zk,var_theta,var_rad);
         temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
-            params.gamma*(x_ev - neighbors_ev)^2 +...
+            params.gamma*(awmv_az - neighbors_ev)^2 +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         
