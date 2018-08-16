@@ -10,7 +10,7 @@ mkdir(outputdir)
 
 % Function
 funcName1 = 'wrap_norm2_FISTA_Circulant';
-funcName2 = 'wrap_space_ev_FISTA_Circulant';
+funcName2 = 'wrap_space_awmv_FISTA_Circulant';
 jobDir1 = fullfile(datadir,'job_al7075_311_synth2_reg7_init');
 jobDir2 = fullfile(datadir,'job_al7075_311_synth2_reg7');
 mkdir(jobDir1)

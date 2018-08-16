@@ -1,5 +1,5 @@
-function wrap_space_ev_FISTA_Circulant( data_dir,P,output_dir )
-%wrap_space_ev_FISTA_Circulant Runs FISTA_Circulant loading input files and saving
+function wrap_space_awmv_FISTA_Circulant( data_dir,P,output_dir )
+%wrap_space_awmv_FISTA_Circulant Runs FISTA_Circulant loading input files and saving
 % ouput files
 
 % Load solution
@@ -17,8 +17,8 @@ P.num_theta = size(b,2);
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% Run FISTA updating solution and error array
-neighbors_ev = load_neighbors_ev_az(output_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,P.var_theta,x_hat,P.params);
+[n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P);
+[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,P.var_theta,x_hat,P.params);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration
