@@ -8,7 +8,6 @@ dataset = fullfile(datadir,'mmpad_polar');
 funcName = 'wrap_mmpad_norm2_FISTA_Circulant';
 
 %% Fixed Parameters
-
 % Ring sampling parameters
 P.num_theta= 51;
 P.num_rad = 256;

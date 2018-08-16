@@ -39,11 +39,11 @@ x_init = forceMaskToZeroArray(x_init,P.zeroMask);
 % Scale image by 2-norm
 b = b/norm(b(:));
 
-%% call function
+%% Call function
 [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
 
 
-%% save output
+%% Save output
 save(fullfile(outputdir,sprintf('fista_fit_%i_%i.mat',P.set,P.img)),'x_hat','err','polar_image','P')
 
 end

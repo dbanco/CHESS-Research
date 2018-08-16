@@ -14,7 +14,13 @@ dr = 20;
 num_theta = round(2*pi*radius);
 r1 = radius - dr;
 r2 = radius + dr;
-dtheta = 2*pi/num_theta;
+dtheta = 2*pi1/num_theta;
+
+ring_params.drad = 1;
+ring_params.dtheta = 1;
+ring_params.num_theta = num_theta;
+ring_params.num_rad = 2*dr+1;
+ring_params.sampleDims = [37,5];
 
 n_load_steps = 5;
 n_imgs = 195;
@@ -38,7 +44,7 @@ for load_step = 1:n_load_steps
         
         % Save ring
 %         outFile = fullfile(outDir,['polar_image_',num2str(load_step),'_',num2str(img_num)]);
-%         save(outFile,'polar_image')
+%         save(outFile,'polar_image','ring_params')
     end
 end
 
