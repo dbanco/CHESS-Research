@@ -89,7 +89,7 @@ r_vec = squeeze(r(:));
 g1 = bccb'*r_vec;
 g2 = AtR_ft_2D((A0ft_stack(:,:,1,1)),r);
 
-g2 = shift2D(g2,2,2);
+% g2 = shift2D(g2,2,2);
 
 err2 = norm(g1(:)-g2(:))
 
@@ -102,4 +102,23 @@ subplot(2,1,2)
 imshow(reshape(g1(:,:,1,1),[P.num_rad,P.num_theta]),'DisplayRange',[min(g1(:)) max(g1(:))],'ColorMap',jet)
 colorbar()
 
+figure(4)
+subplot(2,1,1)
+imshow(bccb,'DisplayRange',[min(bccb(:)) max(bccb(:))],'ColorMap',jet)
+colorbar()
 
+bccbt = bccb';
+subplot(2,1,2)
+imshow(bccbt,'DisplayRange',[min(bccb(:)) max(bccb(:))],'ColorMap',jet)
+colorbar()
+
+figure(5)
+subplot(2,1,1)
+t1 = 17;
+imshow(reshape(bccb(:,t1),[P.num_rad,P.num_theta]),'DisplayRange',[min(bccb(:,t1)) max(bccb(:,t1))],'ColorMap',jet)
+colorbar()
+bccbt = bccb';
+subplot(2,1,2)
+t2 = 1;
+imshow(reshape(bccbt(:,t2),[P.num_rad,P.num_theta]),'DisplayRange',[min(bccb(:,t2)) max(bccb(:,t2))],'ColorMap',jet)
+colorbar()

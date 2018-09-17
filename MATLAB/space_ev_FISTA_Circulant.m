@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev,var_theta,var_rad,x_init,params)
+function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev_az_neighbors_ev_rad,var_theta,var_rad,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -71,7 +71,7 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 
 % Add spatial expected variance smoothness part of objective
 [awmv_az, awmv_rad] = computeAWMV(x_init,var_theta,var_rad);
-f = f + params.gamma*(awmv_az - neighbors_ev)^2;
+f = f + params.gamma*((awmv_az - neighbors_ev_az)^2 + (awmv_rad - neighbors_ev_rad)^2;
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
