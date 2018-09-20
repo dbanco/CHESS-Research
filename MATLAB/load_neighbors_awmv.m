@@ -3,8 +3,8 @@ function [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P)
 %          of coefficients neighboring point (i,j)
 
 % Get list of possible neighbors
-row = floor(P.img/5)+1;
-col = mod(P.img,5)+1;
+row = floor(P.img/P.sampleDims(2))+1;
+col = mod(P.img,P.sampleDims(2))+1;
 rows = [row-1;
         row+1; 
         row;
@@ -34,7 +34,7 @@ for i = 1:size(neighbor_imgs,1)
     x_hat_var = x_hat;
     [awmv_az, awmv_rad] = computeAWMV(x_hat_var,P.var_theta,P.var_rad);
     n_awmv_az = n_awmv_az + awmv_az;
-    n_awmv_rad = n_n_awmv_rad+ awmv_rad;
+    n_awmv_rad = n_awmv_rad + awmv_rad;
 end
 n_awmv_az = n_awmv_az/size(neighbor_imgs,1);
 n_awmv_rad = n_awmv_rad/size(neighbor_imgs,1);

@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_ev_az,neighbors_ev_rad,var_theta,var_rad,x_init,params)
+function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_awmv_az,neighbors_awmv_rad,var_theta,var_rad,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -50,7 +50,7 @@ tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
 beta = params.beta;
-maxIter = params.maxIter;
+maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
@@ -71,7 +71,7 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 
 % Add spatial expected variance smoothness part of objective
 [awmv_az, awmv_rad] = computeAWMV(x_init,var_theta,var_rad);
-f = f + params.gamma*((awmv_az - neighbors_ev_az)^2 + (awmv_rad - neighbors_ev_rad)^2;
+f = f + params.gamma*((awmv_az - neighbors_awmv_az)^2 + (awmv_rad - neighbors_awmv_rad)^2);
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -89,17 +89,19 @@ while keep_going && (nIter < maxIter)
     
     % Compute gradient of f
     [awmv_az, awmv_rad] = computeAWMV(zk,var_theta,var_rad);
-    total = sum(ykp1(:));
-    grad = AtR_ft_2D(A0ft_stack,forcePadToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
+    total = sum(zk(:));
+    % Data matching gradient update
+    grad = AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
+    % AWMV_az regularizer gradient update
     for az_i = 1:numel(var_theta)
-    	grad(:,:,az_i,:) = grad(:,:,az_i,:) + params.gamma*(awmv_az - neighbors_ev)*((var_theta(az_i)-awmv_az)/total); 
+    	grad(:,:,az_i,:) = grad(:,:,az_i,:) +...
+            params.gamma*(awmv_az - neighbors_awmv_az)*((var_theta(az_i)-awmv_az)/total);   
     end
-    
-    ykp1 = xk + ((t_k-1)/t_kp1)*(xk-xkm1) ;
-    if isNonnegative
-        ykp1(ykp1<0) = 0;
-    end
-        
+    % AWMV_rad regularizer gradient update
+    for rad_i = 1:numel(var_rad)
+    	grad(:,:,:,rad_i) = grad(:,:,:,rad_i) +...
+            params.gamma*(awmv_rad - neighbors_awmv_rad)*((var_rad(rad_i)-awmv_rad)/total);    
+    end      
 
     % Backtracking
     stop_backtrack = 0 ;
@@ -110,16 +112,16 @@ while keep_going && (nIter < maxIter)
             xk(xk<0) = 0;
         end
         
-        % Compute objective at xkp1
+        % Compute objective at xk
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
         [awmv_az, awmv_rad] = computeAWMV(xk,var_theta,var_rad);
-        temp1 = 0.5*norm(b(:)-fit(:))^2 + lambda*sum(abs(xk)) + params.gamma*(awmv_az - neighbors_ev)^2;
+        temp1 = 0.5*norm(b(:)-fit(:))^2 + lambda*sum(abs(xk)) + params.gamma*((awmv_az - neighbors_awmv_az)^2+(awmv_rad - neighbors_awmv_rad)^2);
         
-        % Compute quadratic approximation at ykp1
+        % Compute quadratic approximation at zk
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
         [awmv_az, awmv_rad] = computeAWMV(zk,var_theta,var_rad);
         temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
-            params.gamma*(awmv_az - neighbors_ev)^2 +...
+            params.gamma*((awmv_az - neighbors_awmv_az)^2+(awmv_rad - neighbors_awmv_rad)^2) +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         

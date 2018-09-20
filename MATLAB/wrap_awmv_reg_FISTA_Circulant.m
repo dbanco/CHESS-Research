@@ -1,4 +1,4 @@
-function wrap_space_awmv_FISTA_Circulant( data_dir,P,output_dir )
+function wrap_awmv_reg_FISTA_Circulant( data_dir,P,output_dir )
 %wrap_space_awmv_FISTA_Circulant Runs FISTA_Circulant loading input files and saving
 % ouput files
 
@@ -18,7 +18,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% Run FISTA updating solution and error array
 [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,x_hat,P.params);
+[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,P.var_rad,x_hat,P.params);
 err = [err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration
