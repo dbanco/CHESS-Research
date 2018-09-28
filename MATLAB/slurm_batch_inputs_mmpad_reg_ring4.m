@@ -8,7 +8,7 @@ ring_num  = 4;
 prefix = 'mmpad_img';
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg1']);
+outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg4']);
 mkdir(outputdir)
 
 % Function
@@ -48,12 +48,12 @@ zMask = [r,c];
 % fista params
 params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 1;
-params.lambda = 0.1;
+params.L = 500;
+params.lambda = 0.01;
 params.gamma = 1;
 params.beta = 1.1;
 params.maxIter = 500;
-params.maxIterReg = 50;
+params.maxIterReg = 100;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;

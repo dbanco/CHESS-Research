@@ -1,5 +1,5 @@
-function varargout = decomp_visualizer(varargin)
-% DECOMP_VISUALIZER MATLAB code for decomp_visualizer.fig
+function varargout = decomp_visualizer_mmpad(varargin)
+% DECOMP_VISUALIZER_MMPAD MATLAB code for decomp_visualizer_mmpad.fig
 %      DECOMP_VISUALIZER, by itself, creates a new DECOMP_VISUALIZER or raises the existing
 %      singleton*.
 %
@@ -54,7 +54,7 @@ function decomp_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for decomp_visualizer
 handles.output = hObject;
-handles.defaultDir = fullfile('E:','CHESS_data');
+handles.defaultDir = fullfile('D:','MMPAD_data');
 handles.loaded = 0;
 
 eval_menu_state(handles,hObject)
@@ -102,7 +102,7 @@ if isstr(fileName)
     % Add mat file names to menu
     allFiles = dir([pathName,'*.mat']);
     handles.filePath = pathName;
-    handles.menu_file.String = {allFiles.name};
+    handles.menu_file.String = natsortfiles({allFiles.name});
     handles.menu_file.Value = find(strcmp(handles.menu_file.String,fileName));
 	
     % Load file
@@ -118,7 +118,8 @@ if isstr(fileName)
     
     handles.err = err;
     handles.x_hat = x_hat;  
-    handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat);
+    handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat)*norm(polar_image(:));
+    handles.fit_image = handles.fit_image;
     handles.polar_image = polar_image;
     
     % Update static text
@@ -132,17 +133,26 @@ if isstr(fileName)
         handles.text_beta.String = 'Beta:';
     end
     handles.text_img.String = sprintf('Image: %i',handles.P.img);
-    handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
-    
+    try
+        handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
+    catch
+        handles.text_load_step.String = sprintf('Set: %i',handles.P.set);
+        handles.P.load_step = handles.P.set;
+    end
     % Update menus
     handles.var_rad_menu.String = update_var_menu(handles.P.var_rad,handles.P.drad);
     handles.var_theta_menu.String = update_var_menu(handles.P.var_theta,handles.P.dtheta);
     
     % Set default region
     [n,m] = size(handles.polar_image);
+    if n > m
+        handles.polar_image = handles.polar_image';
+        handles.fit_image = handles.fit_image';
+        [n,m] = size(handles.polar_image);
+    end
     x = floor(m/2);
     y = 1;
-    Nx = 200;
+    Nx = min([200,x]);
     Ny = n;
     handles.rows = y:y+Ny-1;
     handles.cols = x-floor(Nx/2):x+floor(Nx/2)-1;
@@ -171,12 +181,13 @@ if ~handles.loaded
 end
 % Plot full data iamges
 axes(handles.axis_data)
-handles.im_data = imshow(real(log(handles.polar_image)),'DisplayRange',[0 9],'Colormap',jet);
+lim2 = max(handles.polar_image(:));
+handles.im_data = imshow(handles.polar_image,'DisplayRange',[0 lim2],'Colormap',jet);
 set(handles.im_data,'ButtonDownFcn',@box_ButtonDownFcn);
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 
 axes(handles.axis_fit)
-handles.im_fit = imshow(real(log(handles.fit_image)),'DisplayRange',[0 9],'Colormap',jet);
+handles.im_fit = imshow(handles.fit_image,'DisplayRange',[0 lim2],'Colormap',jet);
 set(handles.im_fit,'ButtonDownFcn',@box_ButtonDownFcn);
 title('Fit Image')
  
@@ -263,12 +274,13 @@ function plot_signals(handles)
 if ~handles.loaded 
     return
 end
-
+lim2 = max(handles.polar_image(:));
+scale = norm(handles.polar_image(:));
 axes(handles.axis_region_data)
-imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)
@@ -279,8 +291,8 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,i,var_idx),handles.x_hat(:,:,i,var_idx));
-        imshow(real(log(signal_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,i,var_idx),handles.x_hat(:,:,i,var_idx))';
+        imshow(signal_slice(handles.rows,handles.cols)*scale,'DisplayRange',[0 lim2],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
     end
@@ -291,8 +303,8 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,var_idx,i),handles.x_hat(:,:,var_idx,i));
-        imshow(real(log(signal_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,var_idx,i),handles.x_hat(:,:,var_idx,i))';
+        imshow(signal_slice(handles.rows,handles.cols)*scale,'DisplayRange',[0 lim2],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
     end
@@ -302,12 +314,12 @@ function plot_coefs(handles)
 if ~handles.loaded 
     return
 end
-
+lim2 = max(handles.polar_image(:));
 axes(handles.axis_region_data)
-imshow(log(real(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(log(real(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)
@@ -319,8 +331,8 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        coef_slice = handles.x_hat(:,:,i,var_idx);
-        imshow((real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
+        coef_slice = handles.x_hat(:,:,i,var_idx)';
+        imshow(coef_slice(handles.rows,handles.cols),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
@@ -331,8 +343,8 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        coef_slice = handles.x_hat(:,:,var_idx,i);
-        imshow((real(coef_slice(handles.rows,handles.cols))),'DisplayRange',[0 maxLim],'Colormap',jet)
+        coef_slice = handles.x_hat(:,:,var_idx,i)';
+        imshow(coef_slice(handles.rows,handles.cols),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
     end
@@ -344,12 +356,12 @@ if ~handles.loaded
     return
 end
 P = handles.P;
-
+lim2 = max(handles.polar_image(:));
 axes(handles.axis_region_data)
-imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 lim2],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)
@@ -360,7 +372,7 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        basis = handles.A0_stack(:,:,i,var_idx);
+        basis = handles.A0_stack(:,:,i,var_idx)';
         basis = basis./max(basis(:));
         basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
         imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
@@ -374,7 +386,7 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        basis = handles.A0_stack(:,:,var_idx,i);
+        basis = handles.A0_stack(:,:,var_idx,i)';
         basis = basis./max(basis(:));
         basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
         imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
@@ -464,6 +476,7 @@ axesHandle  = get(hObject,'Parent');
 coordinates = get(axesHandle,'CurrentPoint'); 
 coordinates = coordinates(1,1:2);
 
+
 % Save new box coordinates
 uiObject = get(axesHandle,'Parent');
 handles = guidata(uiObject);
@@ -517,7 +530,8 @@ function menu_file_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns menu_file contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from menu_file
-    
+     % Add mat file names to menu
+
 % Load file
 fileName = handles.menu_file.String{handles.menu_file.Value};
 load(fullfile(handles.filePath,fileName))
@@ -532,7 +546,8 @@ handles.A0_stack = unshifted_basis_matrix_stack_norm2(handles.P);
 
 handles.err = err;
 handles.x_hat = x_hat;  
-handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat);
+handles.fit_image = Ax_ft_2D(handles.A0ft_stack,handles.x_hat)*norm(polar_image(:));
+handles.fit_image = handles.fit_image;
 handles.polar_image = polar_image;
 
 % Update static text
@@ -546,17 +561,26 @@ catch
     handles.text_beta.String = 'Beta:';
 end
 handles.text_img.String = sprintf('Image: %i',handles.P.img);
-handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
-
+try
+    handles.text_load_step.String = sprintf('Load Step: %i',handles.P.load_step);
+catch
+    handles.text_load_step.String = sprintf('Set: %i',handles.P.set);
+    handles.P.load_step = handles.P.set;
+end
 % Update menus
 handles.var_rad_menu.String = update_var_menu(handles.P.var_rad,handles.P.drad);
 handles.var_theta_menu.String = update_var_menu(handles.P.var_theta,handles.P.dtheta);
 
 % Set default region
 [n,m] = size(handles.polar_image);
+if n > m
+    handles.polar_image = handles.polar_image';
+    handles.fit_image = handles.fit_image';
+    [n,m] = size(handles.polar_image);
+end
 x = floor(m/2);
 y = 1;
-Nx = 200;
+Nx = min([200,x]);
 Ny = n;
 handles.rows = y:y+Ny-1;
 handles.cols = x-floor(Nx/2):x+floor(Nx/2)-1;
@@ -570,7 +594,6 @@ handles = init_boxes(handles);
 
 % Update handles
 guidata(hObject, handles);
-
 % --- Executes during object creation, after setting all properties.
 function menu_file_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to menu_file (see GCBO)
