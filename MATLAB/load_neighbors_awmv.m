@@ -32,7 +32,7 @@ for i = 1:size(neighbor_imgs,1)
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img-1));
     load(load_file)
     x_hat_var = x_hat;
-    [awmv_az, awmv_rad] = computeAWMV(x_hat_var,P.var_theta,P.var_rad);
+    [awmv_az, awmv_rad] = computeAWMV(x_hat_var,sqrt(P.var_theta),sqrt(P.var_rad));
     n_awmv_az = n_awmv_az + awmv_az;
     n_awmv_rad = n_awmv_rad + awmv_rad;
 end

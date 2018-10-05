@@ -13,11 +13,11 @@ az_signal = squeeze(sum(sum(sum(x,1),2),4));
 rad_signal = squeeze(sum(sum(sum(x,1),2),3));
 total = sum(az_signal);
 
-% Compute aemv_az
+% Compute awmv_az
 awmv_az = var_theta'.*az_signal./total;
 awmv_az = sum(awmv_az(:));
 
-% Compute aemv_rad
+% Compute awmv_rad
 awmv_rad = var_rad'.*rad_signal./total;
 awmv_rad = sum(awmv_rad(:));
 end

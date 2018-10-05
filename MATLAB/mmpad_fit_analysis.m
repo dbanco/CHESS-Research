@@ -6,7 +6,7 @@ for img_num = 1:546
     frame = [];
     for ring_num = 1:4
         fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
-        fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg1'];
+        fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg4'];
         load(fullfile(fDir,fName))
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
         img_fit = Ax_ft_2D(A0ft_stack,x_hat)*norm(polar_image(:));
@@ -29,7 +29,7 @@ end
 
 %% Create gif
 h = figure;
-filename = 'mmpad_norm_fit1.gif';
+filename = 'mmpad_norm_fit4.gif';
 for i = 1:546
     lim1 = 0;
     lim2 = max(video_norm{i}(:));
@@ -51,7 +51,7 @@ for i = 1:546
     for ring_num = 1:4
         for dd = 1:2
             fName = sprintf('fista_fit_%i_%i.mat',ring_num,1);
-            fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg3'];
+            fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg4'];
             load(fullfile(fDir,fName))
             n_cols = size(polar_image,2);
             ind = ind + n_cols;
@@ -118,8 +118,8 @@ for i = 1:P.num_var_r
 end
 
 %% Compute time varying spread and error functions
-for ring_num = 1:4
-    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg3'];
+for ring_num = 1
+    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg4'];
     az_spread = zeros(546,1);
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
@@ -145,19 +145,19 @@ for ring_num = 1:4
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_lambda_%2.3f.mat';
+    outFile = 'spread_mmpad_ring%i_zero_fit4_time_lambda_%2.3f.mat';
     save(fullfile(spreadDir,sprintf(outFile,ring_num,P.params.lambda)),...
         'var_signal','rel_err','P','rad_spread','az_spread','rel_err')
 end    
 %% Load spread data
 for i = 1:4
-    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_lambda_0.002.mat',i)));
+    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit4_lambda_0.010.mat',i)));
 end
 %% Plot time varying spread and error functions
 
 figure(1)
 for j = 1:4
-    plot(ring_data{j}.az_spread,'-o','MarkerSize',4)
+    plot(ring_data{j}.az_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -166,7 +166,7 @@ xlabel('Time')
 
 figure(2)
 for j = 1:4
-    plot(ring_data{j}.rad_spread,'-o','MarkerSize',4)
+    plot(ring_data{j}.rad_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')

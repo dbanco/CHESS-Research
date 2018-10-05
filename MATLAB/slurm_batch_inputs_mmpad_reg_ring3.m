@@ -33,7 +33,7 @@ P.sampleDims = [546,1];
 P.basis = 'norm2';
 P.num_var_t = 8;
 P.num_var_r = 12;
-P.var_theta = linspace(P.dtheta/2,10,P.num_var_t).^2;
+P.var_theta = linspace(P.dtheta/2,6,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
 
 % Zero padding and mask
