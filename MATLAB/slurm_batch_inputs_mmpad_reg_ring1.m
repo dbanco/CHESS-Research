@@ -31,16 +31,16 @@ P.sampleDims = [546,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
-P.num_var_t = 8;
-P.num_var_r = 12;
-P.var_theta = linspace(P.dtheta/2,6,P.num_var_t).^2;
-P.var_rad   = linspace(P.drad/2,  32,P.num_var_r).^2;
+P.num_var_t = 12;
+P.num_var_r = 8;
+P.var_theta   = linspace(P.dtheta/2,  32,P.num_var_t).^2;
+P.var_rad = linspace(P.drad/2,6,P.num_var_r).^2;
 
 % Zero padding and mask
-maskRows = 129:133;
+maskCols = 129:133;
 zPad = [0,0];
 zMask = zeros(size(zeroPad(polar_image,zPad)));
-zMask(maskRows,:) = 1;
+zMask(:,maskCols) = 1;
 zMask = onePad(zMask,zPad);
 [r,c] = find(zMask==1);
 zMask = [r,c];
@@ -53,7 +53,7 @@ params.lambda = 0.01;
 params.gamma = 1;
 params.beta = 1.1;
 params.maxIter = 500;
-params.maxIterReg = 100;
+params.maxIterReg = 500;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
