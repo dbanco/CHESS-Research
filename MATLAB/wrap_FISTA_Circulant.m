@@ -28,8 +28,6 @@ switch P.basis
     case 'max'
         A0ft_stack = unshifted_basis_matrix_ft_stack(P);
 end
-    
-A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 % Initialize solution
 x_init = rand(size(A0ft_stack));

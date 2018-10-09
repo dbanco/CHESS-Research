@@ -78,7 +78,7 @@ ring_fill = reshape(X,[n1,n2,n3])*normalize;
 save('D:\MMPAD_processing\mmpad_summed.mat','img_array')
 
 %% Test FISTA 
-load('D:\MMPAD_data\ring1_zero\mmpad_img_100.mat')
+load('D:\MMPAD_data\ring1_zero\mmpad_img_99.mat')
 %polar_image = polar_image(224:end,:);
 
 % Zero pad and Zero mask
@@ -87,15 +87,14 @@ load('D:\MMPAD_data\ring1_zero\mmpad_img_100.mat')
 % ring3 = img_array(:,[2:129,135:262],268:310);
 % ring4 = img_array(:,[2:129,135:262],355:395);
 
-maskRows = 129:133;
-zPad = [5,0];
-
-zMask = zeros(size(polar_image));
-zMask(maskRows,:) = 1;
+% Zero padding and mask
+maskCols = 129:133;
+zPad = [0,0];
+zMask = zeros(size(zeroPad(polar_image,zPad)));
+zMask(:,maskCols) = 1;
 zMask = onePad(zMask,zPad);
 [r,c] = find(zMask==1);
 zMask = [r,c];
-polar_image = zeroPad(polar_image,zPad);
 
 % Ring sampling parameters
 P.num_theta= size(polar_image,2);
@@ -104,26 +103,28 @@ P.dtheta = 1;
 P.drad = 1;
 
 % Basis function variance parameters
-P.num_var_t = 6;
-P.num_var_r = 8;
-P.var_theta = linspace(P.dtheta/2,10, P.num_var_t).^2;
-P.var_rad   = linspace(P.drad/2,  32, P.num_var_r).^2;
+P.num_var_t = 8;
+P.num_var_r = 6;
+P.var_theta = linspace(P.dtheta/2,32, P.num_var_t).^2;
+P.var_rad   = linspace(P.drad/2,  6, P.num_var_r).^2;
 
 % Generate unshifted basis function matrices
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 A0_stack = unshifted_basis_matrix_stack_norm2(P);
 
-%% FISTA parameters
+% FISTA parameters
 params.stoppingCriterion = 1;
 params.tolerance = 1e-6;
-params.L = 1;
-params.lambda = 0.05;
+params.L = 500;
+params.lambda = 0.01;
+params.gamma = 1;
 params.beta = 1.1;
 params.maxIter = 500;
+params.maxIterReg = 500;
 params.isNonnegative = 1;
-params.noBacktrack = 0;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
+params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
 
@@ -131,7 +132,7 @@ P.params = params;
 x_init = rand(size(A0ft_stack));
 x_init = x_init/norm(x_init(:));
 
-%% FISTA with backtracking
+% FISTA with backtracking
 polar_image = polar_image/norm(polar_image(:));
 [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,polar_image,x_init,params);
 

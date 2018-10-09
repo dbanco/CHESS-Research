@@ -8,7 +8,7 @@ ring_num  = 2;
 prefix = 'mmpad_img';
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg4']);
+outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg5']);
 mkdir(outputdir)
 
 % Function
