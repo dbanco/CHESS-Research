@@ -8,7 +8,7 @@ function [awmv_az, awmv_rad] = computeAWMV(x,var_theta,var_rad)
 % awmv_az- amplitude weighted mean variance (azimuthal)
 % awmv_rad- amplitude weighted mean variance (rad)
 
-% Sum over space, radial variance
+% Sum over space, variance
 az_signal = squeeze(sum(sum(sum(x,1),2),4));
 rad_signal = squeeze(sum(sum(sum(x,1),2),3));
 total = sum(az_signal);

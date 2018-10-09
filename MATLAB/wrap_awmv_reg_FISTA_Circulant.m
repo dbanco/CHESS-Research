@@ -6,6 +6,7 @@ function wrap_awmv_reg_FISTA_Circulant( data_dir,P,output_dir )
 baseFileName = 'fista_fit_%i_%i.mat';
 fileData = load(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)));
 polar_image = fileData.polar_image;
+P = fileData.P;
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
 % Scale image by 2-norm
@@ -18,7 +19,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 
 %% Run FISTA updating solution and error array
 [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,sqrt(P.var_theta),sqrt(P.var_rad),fileData.x_hat,P.params);
+[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,P.var_rad,fileData.x_hat,P.params);
 err = [fileData.err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration

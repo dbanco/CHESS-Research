@@ -75,7 +75,7 @@ end
 img_num = 25;
 ring_num = 1;
 
-fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_reg1';
+fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_reg5_init';
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
@@ -89,7 +89,7 @@ figure(1)
 subplot(1,2,1)
 imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
 subplot(1,2,2)
-imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
 
 %% View basis function
 figure(2)
@@ -119,7 +119,7 @@ end
 
 %% Compute time varying spread and error functions
 for ring_num = 1
-    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg4'];
+    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg5_init'];
     az_spread = zeros(546,1);
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
@@ -145,19 +145,19 @@ for ring_num = 1
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_fit4_time_lambda_%2.3f.mat';
+    outFile = 'spread_mmpad_ring%i_zero_fit5_init_lambda_%2.3f.mat';
     save(fullfile(spreadDir,sprintf(outFile,ring_num,P.params.lambda)),...
         'var_signal','rel_err','P','rad_spread','az_spread','rel_err')
 end    
 %% Load spread data
-for i = 1:4
-    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit4_lambda_0.010.mat',i)));
+for i = 1
+    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit5_init_lambda_0.010.mat',i)));
 end
 %% Plot time varying spread and error functions
 
 figure(1)
-for j = 1:4
-    plot(ring_data{j}.az_spread(1:200),'-o','MarkerSize',2)
+for j = 1
+    plot(ring_data{j}.rad_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -165,8 +165,8 @@ title('Azimuthal AWMV')
 xlabel('Time')
 
 figure(2)
-for j = 1:4
-    plot(ring_data{j}.rad_spread(1:200),'-o','MarkerSize',2)
+for j = 1
+    plot(ring_data{j}.az_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -175,7 +175,7 @@ xlabel('Time')
 
 
 figure(3)
-for j = 1:4
+for j = 1
     plot(ring_data{j}.rel_err,'-')
     hold on
 end
