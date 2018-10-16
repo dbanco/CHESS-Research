@@ -196,7 +196,7 @@ handles.var_dist = compute_var_dist(handles);
 lim1 = min(handles.var_dist(:));
 lim2 = max(handles.var_dist(:));
 handles.im_var_dist = imshow(handles.var_dist,'DisplayRange',[lim1 lim2],'Colormap',jet);
-%xlabel('\sigma_\theta','Fontsize',10)
+% xlabel('\sigma_\theta','Fontsize',10)
 ylabel('\sigma_r','Fontsize',10)
 title('Signal Distribution','Fontsize',10)
 colorbar()
@@ -206,7 +206,7 @@ handles.coef_dist = compute_coef_dist(handles);
 lim1 = min(handles.coef_dist(:));
 lim2 = max(handles.coef_dist(:));
 handles.im_coef_dist = imshow(handles.coef_dist,'DisplayRange',[lim1 lim2],'Colormap',jet);
-%xlabel('\sigma_\theta','Fontsize',10)
+% xlabel('\sigma_\theta','Fontsize',10)
 ylabel('\sigma_r','Fontsize',10)
 title(' Coefficient Distribution','Fontsize',10)
 colorbar()
@@ -291,7 +291,7 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,i,var_idx),handles.x_hat(:,:,i,var_idx))';
+        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,i,var_idx),handles.x_hat(:,:,i,var_idx));
         imshow(signal_slice(handles.rows,handles.cols)*scale,'DisplayRange',[0 lim2],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
@@ -303,7 +303,7 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,var_idx,i),handles.x_hat(:,:,var_idx,i))';
+        signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,var_idx,i),handles.x_hat(:,:,var_idx,i));
         imshow(signal_slice(handles.rows,handles.cols)*scale,'DisplayRange',[0 lim2],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
@@ -331,7 +331,7 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        coef_slice = handles.x_hat(:,:,i,var_idx)';
+        coef_slice = handles.x_hat(:,:,i,var_idx);
         imshow(coef_slice(handles.rows,handles.cols),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
@@ -343,7 +343,7 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        coef_slice = handles.x_hat(:,:,var_idx,i)';
+        coef_slice = handles.x_hat(:,:,var_idx,i);
         imshow(coef_slice(handles.rows,handles.cols),'DisplayRange',[0 maxLim],'Colormap',jet)
         coef_sum = sum(coef_slice(:));
         title(sprintf('%4d: %6.4f',i,coef_sum));
@@ -372,7 +372,7 @@ if handles.fix_var_rad_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        basis = handles.A0_stack(:,:,i,var_idx)';
+        basis = handles.A0_stack(:,:,i,var_idx);
         basis = basis./max(basis(:));
         basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
         imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
@@ -386,7 +386,7 @@ elseif handles.fix_var_theta_button.Value
     % Show contributions from different coef values (fixed radial variance)
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
-        basis = handles.A0_stack(:,:,var_idx,i)';
+        basis = handles.A0_stack(:,:,var_idx,i);
         basis = basis./max(basis(:));
         basis_shift = shift2D(basis,numel(handles.rows)/2,numel(handles.cols)/2);
         imshow(basis_shift(1:numel(handles.rows),1:numel(handles.cols)),'DisplayRange',[0 1],'Colormap',jet)
