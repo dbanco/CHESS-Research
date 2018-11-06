@@ -47,7 +47,7 @@
 % P.params = params;
 
 P.set = 1;
-P.img = 137;
+P.img = 39;
 
 data_dir = 'D:\MMPAD_data\ring1_zero';
 output_dir = 'D:\MMPAD_data\init_mmpad_reg_fit';
@@ -60,7 +60,7 @@ P = fileData.P;
 
 P.params.gamma = 1;
 P.params.lambda = 0.01;
-P.params.tolerance = 10e-8;
+P.params.tolerance = 10e-12;
 
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);

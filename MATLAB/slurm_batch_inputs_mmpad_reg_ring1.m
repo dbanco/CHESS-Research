@@ -47,13 +47,13 @@ zMask = [r,c];
 
 % fista params
 params.stoppingCriterion = 1;
-params.tolerance = 1e-8;
+params.tolerance = 1e-15;
 params.L = 500;
 params.lambda = 0.01;
 params.gamma = 1;
 params.beta = 1.1;
-params.maxIter = 500;
-params.maxIterReg = 500;
+params.maxIter = 1000;
+params.maxIterReg = 1000;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;

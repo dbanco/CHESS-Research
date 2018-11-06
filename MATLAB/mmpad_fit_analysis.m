@@ -75,7 +75,7 @@ end
 img_num = 25;
 ring_num = 1;
 
-fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_reg5_gamma_0.02';
+fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_reg5_init';
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
@@ -118,8 +118,10 @@ for i = 1:P.num_var_r
 end
 
 %% Compute time varying spread and error functions
+P.num_var_t = 12;
+P.num_var_r = 8;
 for ring_num = 1
-    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg5_gamma_0.02'];
+    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg6'];
     az_spread = zeros(546,1);
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
@@ -146,14 +148,14 @@ for ring_num = 1
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_fit_reg5_gamma_0.01_lambda_%2.3f.mat';
-    save(fullfile(spreadDir,sprintf(outFile,ring_num,P.params.lambda)),...
+    outFile = 'spread_mmpad_ring%i_zero_fit_reg6.mat';
+    save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
         'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')
 end    
 %% Load spread data
 spreadDir = fullfile('D:','MMPAD_data','spread_results');
 for i = 1
-    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit_reg5_gamma_0.01_lambda_0.010.mat',i)));
+    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit_reg6.mat',i)));
 end
 
 % ring_data{2} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring1_zero_fit5_reg5_lambda_0.010.mat',i)));
@@ -190,10 +192,10 @@ xlabel('Time')
 
 figure(4)
 for j = 1
-    semilogy(ring_data{j}.sparsity,'-')
+    semilogy(ring_data{j}.sparsity,'o')
     hold on
 end
-legend(num2str(mean(ring_data{1}.sparsity)),num2str(mean(ring_data{2}.sparsity)),'Location','Best')
+%legend(num2str(mean(ring_data{1}.sparsity)),num2str(mean(ring_data{2}.sparsity)),'Location','Best')
 title('Sparsity')
 xlabel('Time')
 
