@@ -47,7 +47,7 @@
 % P.params = params;
 
 P.set = 1;
-P.img = 39;
+P.img = 73;
 
 data_dir = 'D:\MMPAD_data\ring1_zero';
 output_dir = 'D:\MMPAD_data\init_mmpad_reg_fit';
@@ -58,9 +58,18 @@ fileData = load(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)));
 polar_image = fileData.polar_image;
 P = fileData.P;
 
-P.params.gamma = 1;
+% fista params
+P.params.stoppingCriterion = 1;
+P.params.tolerance = 1e-15;
+P.params.L = 500;
 P.params.lambda = 0.01;
-P.params.tolerance = 10e-12;
+P.params.gamma = 1;
+P.params.beta = 1.1;
+P.params.maxIter = 1000;
+P.params.maxIterReg = 1000;
+P.params.isNonnegative = 1;
+P.params.noBacktrack = 0;
+P.params.plotProgress = 0;
 
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
@@ -76,5 +85,3 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P);
 [x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,P.var_rad,fileData.x_hat,P.params);
 err = [fileData.err(:);err_new(:)];
-
-%% Plot results

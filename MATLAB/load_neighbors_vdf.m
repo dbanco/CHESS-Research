@@ -1,10 +1,10 @@
-function [neighbors, vdfs] = load_neighbors_vdf(baseFileName,P)
+function vdfs = load_neighbors_vdf(output_dir,baseFileName,P)
 %neighbors Returns term used in gradient of vdf objective and vdfs 
 %          of coefficients neighboring point (i,j)
 
 % Get list of possible neighbors
-row = floor(P.img/5)+1;
-col = mod(P.img,5)+1;
+row = floor(P.img/P.sampleDims(2))+1;
+col = mod(P.img,P.sampleDims(2))+1;
 rows = [row-1;
         row+1; 
         row;
@@ -28,15 +28,11 @@ neighbors = zeros(n,m,T,R);
 vdfs = {}; 
 for i = 1:size(neighbor_imgs,1)
     n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
-    load(sprintf(baseFileName,P.load_step,n_img-1))
+    load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img-1));
+    load(load_file)
     x_hat_var = x_hat;
     vdf = squeeze(sum(sum(x_hat_var)))/sum(x_hat_var(:));
     vdfs{i} = vdf;
-    for t = 1:T
-        for r = 1:R
-            neighbors(:,:,t,r) = neighbors(:,:,t,r) + ones(n,m)*vdf(t,r);
-        end
-    end
 end
 
 

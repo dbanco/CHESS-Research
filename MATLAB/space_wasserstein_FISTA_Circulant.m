@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_ev_FISTA_Circulant(A0ft_stack,b,neighbors_awmv_az,neighbors_awmv_rad,var_theta,var_rad,x_init,params)
+function [x_hat, err, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,var_theta,var_rad,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -49,6 +49,7 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
+wLam = params.wLam;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
@@ -72,9 +73,11 @@ l_0 = nan(1,maxIter);
 f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
-% Add spatial expected variance smoothness part of objective
-[awmv_az, awmv_rad] = computeAWMV(x_init,sqrt(var_theta),sqrt(var_rad));
-f = f + 0.5*params.gamma*((awmv_az - neighbors_awmv_az)^2 + (awmv_rad - neighbors_awmv_rad)^2);
+% Add entropic reg wasserstein distance vdf term  
+vdf = squeeze(sum(sum(x_init,1),2));
+vdf = vdf/sum(vdf(:)); 
+wObj = WassersteinObjective(vdf(:), neighbors_vdf(:), wLam, D);
+f = f + 0.5*params.gamma*wObj;
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -90,22 +93,25 @@ nIter = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
-    % Compute gradient of f
-    [awmv_az, awmv_rad] = computeAWMV(zk,sqrt(var_theta),sqrt(var_rad));
-    total = sum(zk(:));
     % Data matching gradient update
     grad = AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
-    % AWMV_az regularizer gradient update
-    for az_i = 1:numel(var_theta)
-    	grad(:,:,az_i,:) = grad(:,:,az_i,:) +...
-            params.gamma*(awmv_az - neighbors_awmv_az)*((sqrt(var_theta(az_i))-awmv_az)/total);   
-    end
-    % AWMV_rad regularizer gradient update
-    for rad_i = 1:numel(var_rad)
-    	grad(:,:,:,rad_i) = grad(:,:,:,rad_i) +...
-            params.gamma*(awmv_rad - neighbors_awmv_rad)*((sqrt(var_rad(rad_i))-awmv_rad)/total);    
-    end      
 
+    % Wasserstein regularizer gradient update
+    vdf = squeeze(sum(sum(zk,1),2));
+    vdf = vdf/sum(vdf(:)); 
+    gradW = zeros(t*r,1);
+    for i = 1:numel(neighbors_vdf)
+        gradW = gradW + WassersteinGrad( vdf(:), neighbors_vdf{i}(:), wLam, D );
+    end
+   gradW = reshape(gradW,[t,r]);
+    for i = 1:t
+        for j = 1:r
+            grad(:,:,i,j) = grad(:,:,i,j) + ...
+            params.gamma*gradW(i,j)./sum(zk(:)).*(1-vdf(i,j));
+        end
+    end
+
+    
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
@@ -117,14 +123,18 @@ while keep_going && (nIter < maxIter)
         
         % Compute objective at xk
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
-        [awmv_az_xk, awmv_rad_xk] = computeAWMV(xk,sqrt(var_theta),sqrt(var_rad));
-        temp1 = 0.5*norm(b(:)-fit(:))^2 + ...
-            0.5*params.gamma*((awmv_az_xk - neighbors_awmv_az)^2+(awmv_rad_xk - neighbors_awmv_rad)^2);
+        vdf = squeeze(sum(sum(xk,1),2));
+        vdf = vdf/sum(vdf(:)); 
+        wObj_xk = WassersteinObjective(vdf(:),neighbors_vdf(:),wLam,D);
+        temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 + ...
-            0.5*params.gamma*((awmv_az - neighbors_awmv_az)^2+(awmv_rad - neighbors_awmv_rad)^2) +...
+        vdf = squeeze(sum(sum(zk,1),2));
+        vdf = vdf/sum(vdf(:)); 
+        wObj = WassersteinObjective(vdf(:),neighbors_vdf(:),wLam,D);
+        temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
+            0.5*params.gamma*wObj +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         
@@ -143,13 +153,13 @@ while keep_going && (nIter < maxIter)
     prev_f = f;
     f_data = 0.5*norm(b-fit)^2;
     f_sparse = lambda * norm(xk(:),1);
-    f_awmv = 0.5*params.gamma*((awmv_az_xk - neighbors_awmv_az)^2 + (awmv_rad_xk - neighbors_awmv_rad)^2);
-    f = f_data + f_sparse + f_awmv;   
+    f_wasserstein = 0.5*params.gamma*wObj_xk;
+    f = f_data + f_sparse + f_wasserstein;   
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
     obj1(nIter) = f_data;
     obj2(nIter) = f_sparse;
-    obj3(nIter) = f_awmv;
+    obj3(nIter) = f_wasserstein;
     l_0(nIter) = sum(abs(xk(:))>0);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
