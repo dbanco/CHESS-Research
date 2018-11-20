@@ -7,8 +7,8 @@ r = r(Ind);
 M = M(Ind,:);
 K = exp(-lam*M);
 
-x = ones(numel(r),1)/length(r);
-x_old = ones(size(x));
+x = ones(numel(r),1);
+x_old = x/2;
 
 % subsequent iterations include test
 while 1

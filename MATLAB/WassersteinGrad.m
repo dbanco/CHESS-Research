@@ -5,10 +5,10 @@ function [ gradW ] = WassersteinGrad( h, y, lam, D )
 Ind = h > 0;
 h = h(Ind);
 D = D(Ind,:);
-
+K = exp(-lam*D);
 u = ones(size(h));
 u_old = u/2;
-K = exp(-lam*D);
+
 
 while 1
     u = h./(K*(y.*(1./(K'*u))));
