@@ -47,6 +47,7 @@ for i=1:N
         D(i,j)= abs(i-j); 
     end
 end
+D = D/max(D(:)+0.1);
 
 %% Run FISTA updating solution and error array
 vdfs = load_neighbors_vdf(output_dir,baseFileName,P);
