@@ -1,7 +1,9 @@
 %% Load data
 data1 = load(fullfile('D:','Chess_data','al7075_222_polar_fit2','fista_fit_0_175_task_175.mat'));
 data2 = load(fullfile('D:','Chess_data','al7075_222_polar_fit2','fista_fit_4_175_task_995.mat'));
-A0ft_stack = unshifted_basis_matrix_ft_stack(P);
+
+
+A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(data1.P);
 
 y_fit1 = Ax_ft_2D(A0ft_stack,data1.x_hat);
 y_fit2 = Ax_ft_2D(A0ft_stack,data2.x_hat);

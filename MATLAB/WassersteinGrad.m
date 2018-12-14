@@ -11,7 +11,7 @@ u_old = u/2;
 
 
 while 1
-    u = h./(K*(y.*(1./(K'*u))));
+    u = h./(K*(y./(K'*u)));
     
     if norm(u-u_old) < 1e-8
        break 
@@ -19,5 +19,5 @@ while 1
     u_old = u;
 end
 gradW = zeros(size(y));
-gradW(Ind) = lam*log(u)-sum(lam*log(sum(u))./K,2);
+gradW(Ind) = lam*log(u)-sum(lam*log(sum(u))./numel(h),2);
 
