@@ -123,16 +123,16 @@ while keep_going && (nIter < maxIter)
         
         % Compute objective at xk
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
-        vdf = squeeze(sum(sum(xk,1),2));
-        vdf = vdf/sum(vdf(:)); 
-        wObj_xk = WassersteinObjective(vdf(:),neighbors_vdf(:),wLam,D);
+        vdf_xk = squeeze(sum(sum(xk,1),2));
+        vdf_xk = vdf_xk/sum(vdf_xk(:)); 
+        wObj_xk = WassersteinObjective(vdf_xk(:),neighbors_vdf(:),wLam,D);
         temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        vdf = squeeze(sum(sum(zk,1),2));
-        vdf = vdf/sum(vdf(:)); 
-        wObj = WassersteinObjective(vdf(:),neighbors_vdf(:),wLam,D);
+        vdf_zk = squeeze(sum(sum(zk,1),2));
+        vdf_zk = vdf_zk/sum(vdf_zk(:)); 
+        wObj = WassersteinObjective(vdf_zk(:),neighbors_vdf(:),wLam,D);
         temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
             0.5*params.gamma*wObj +...
             (xk(:)-zk(:))'*grad(:) +...

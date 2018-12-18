@@ -1,23 +1,28 @@
-function [ gradW ] = WassersteinGrad( h, y, lam, D )
+function [ gradW ] = WassersteinGrad( r, c, lam, D )
 %WassersteinGrad Summary of this function goes here
 %   Detailed explanation goes here
 
-Ind = h > 0;
-h = h(Ind);
+iter = 1;
+Ind = r > 0;
+r = r(Ind);
 D = D(Ind,:);
 K = exp(-lam*D);
-u = ones(size(h));
-u_old = u/2;
 
+x = ones(size(r));
+x_old = x/2;
 
 while 1
-    u = h./(K*(y./(K'*u)));
-    
-    if norm(u-u_old) < 1e-8
-       break 
+    e = c./(K'*(1./x));
+    x = diag(1./r)*K*e;
+
+    check = e.*K'*(1./x) - c;
+    if sum(abs(check ))<1e-8
+        break
     end
-    u_old = u;
+    x_old = x;
 end
-gradW = zeros(size(y));
-gradW(Ind) = lam*log(u)-sum(lam*log(sum(u))./numel(h),2);
+
+u = 1./x;
+gradW = zeros(size(c));
+gradW(Ind) = lam*log(u)-sum(lam*log(sum(u))./numel(c),2);
 

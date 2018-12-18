@@ -75,7 +75,7 @@ end
 img_num = 25;
 ring_num = 1;
 
-fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_reg5_init';
+fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_wass_init';
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
@@ -121,7 +121,7 @@ end
 P.num_var_t = 12;
 P.num_var_r = 8;
 for ring_num = 1
-    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_reg6'];
+    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_wass_init'];
     az_spread = zeros(546,1);
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
@@ -148,14 +148,14 @@ for ring_num = 1
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_fit_reg6.mat';
+    outFile = 'spread_mmpad_ring%i_zero_fit_wass.mat';
     save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
         'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')
 end    
 %% Load spread data
 spreadDir = fullfile('D:','MMPAD_data','spread_results');
 for i = 1
-    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit_reg6.mat',i)));
+    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit_wass_init.mat',i)));
 end
 
 % ring_data{2} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring1_zero_fit5_reg5_lambda_0.010.mat',i)));

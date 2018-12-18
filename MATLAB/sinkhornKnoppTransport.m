@@ -1,20 +1,21 @@
-function [Wd, r, c, T] = sinkhornKnoppTransport(M,lam,r,c)
+function [Wd, r, c, T] = sinkhornKnoppTransport(D,lam,r,c)
 %sinkhornKnoppTransport
 
 iter = 1;
-Ind = (r > 0);
+Ind = r > 0;
 r = r(Ind);
-M = M(Ind,:);
-K = exp(-lam*M);
+D = D(Ind,:);
+K = exp(-lam*D);
 
-x = ones(numel(r),1);
+x = ones(size(r));
 x_old = x/2;
 
-% subsequent iterations include test
 while 1
-    iter = iter + 1;
-    x = diag(1./r)*K*(c.*(1./(K'*(1./x))));
-    if norm(x_old - x) <1e-8
+    e = c./(K'*(1./x));
+    x = diag(1./r)*K*e;
+
+    check = e.*K'*(1./x) - c;
+    if sum(abs(check ))<1e-8
         break
     end
     x_old = x;
@@ -23,6 +24,6 @@ end
 u = 1./x; 
 v = c.*(1./(K'*u));
 T = diag(u)*K*diag(v);
-Wd = sum(u.*((K.*M)*v));
+Wd = sum(u.*((K.*D)*v));
 
 end

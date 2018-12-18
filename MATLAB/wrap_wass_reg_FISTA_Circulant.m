@@ -22,12 +22,18 @@ N = P.num_var_t*P.num_var_r;
 THRESHOLD = 32;
 
 D = ones(N,N).*THRESHOLD;
-for i=1:N
-    for j=max([1 i-THRESHOLD+1]):min([N i+THRESHOLD-1])
-        D(i,j)= abs(i-j); 
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+                ind1 = i + (j-1)*P.num_var_t;
+                ind2 = ii + (jj-1)*P.num_var_t;
+                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+            end
+        end
     end
 end
-D = D/max(D(:)+0.1);
+
 
 %% Run FISTA updating solution and error array
 vdfs = load_neighbors_vdf(output_dir,baseFileName,P);

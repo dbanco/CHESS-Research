@@ -18,11 +18,11 @@ P.params.stoppingCriterion = 1;
 P.params.tolerance = 1e-15;
 P.params.L = 500;
 P.params.lambda = 0.01;
-P.params.wLam = 0.01;
-P.params.gamma = 0.02;
+P.params.wLam = 10;
+P.params.gamma = 1;
 P.params.beta = 1.1;
 P.params.maxIter = 1000;
-P.params.maxIterReg = 1000;
+P.params.maxIterReg = 200;
 P.params.isNonnegative = 1;
 P.params.noBacktrack = 0;
 P.params.plotProgress = 0;
@@ -42,13 +42,18 @@ N = P.num_var_t*P.num_var_r;
 THRESHOLD = 32;
 
 D = ones(N,N).*THRESHOLD;
-for i=1:N
-    for j=max([1 i-THRESHOLD+1]):min([N i+THRESHOLD-1])
-        D(i,j)= abs(i-j); 
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+                ind1 = i + (j-1)*P.num_var_t;
+                ind2 = ii + (jj-1)*P.num_var_t;
+                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+            end
+        end
     end
 end
-D = D/max(D(:)+0.1);
-
+D = D./max(D(:));
 %% Run FISTA updating solution and error array
 vdfs = load_neighbors_vdf(output_dir,baseFileName,P);
 [x_hat, err_new, ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,P.var_theta,P.var_rad,fileData.x_hat,P.params);

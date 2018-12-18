@@ -5,17 +5,22 @@ y = ones(5,5)/25;
 h = h/sum(h(:));
 y = y/sum(y(:));
 
-lam = 1;
+lam = 10;
 % Construct distance matrix
-THRESHOLD = 32;
 N = 25;
+THRESHOLD = 25;
 D = ones(N,N).*THRESHOLD;
-for i=1:N
-    for j=max([1 i-THRESHOLD+1]):min([N i+THRESHOLD-1])
-        D(i,j)= abs(i-j); 
+for i = 1:5
+    for j = 1:5
+        for ii=max([1 i-THRESHOLD+1]):min([5 i+THRESHOLD-1])
+            for jj = max([1 j-THRESHOLD+1]):min([5 j+THRESHOLD-1])
+                ind1 = i + (j-1)*5;
+                ind2 = ii + (jj-1)*5;
+                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+            end
+        end
     end
 end
-% D = D/max(D(:)+0.1);
 
 [ gradW ] = WassersteinGrad( y(:), h(:), lam, D );
 gradW = gradW/sum(abs(gradW));
