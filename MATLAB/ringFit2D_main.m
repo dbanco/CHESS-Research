@@ -1,19 +1,19 @@
 %% Problem parameters
 % Data I/O directories
-% data_dir = 'D:\CHESS_data\al7075_311_polar\';
-% results_dir = 'D:\CHESS_results\test\';
+data_dir = 'D:\CHESS_data\al7075_311_polar\';
+results_dir = 'D:\CHESS_results\test\';
 
-data_dir = '';
-results_dir = '';
+% data_dir = '';
+% results_dir = '';
 
 % Select image
-P.set = 4;
+P.set = 0;
 P.img = 35;
 
 % Load polar_image
 load([data_dir,... 
-'polar_image_al7075_load_',...
-num2str(P.set),'_img_',...
+'polar_image_',...
+num2str(P.set),'_',...
 num2str(P.img), '.mat']);
 
 % Define zero pad

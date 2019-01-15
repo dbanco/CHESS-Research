@@ -1,6 +1,6 @@
 function [x_hat, err, obj, l_0] = FISTA_Circulant_Weighted(A0ft_stack,b,x_init,params,w)
-%FISTA_Circulant Image regression by solving LASSO problem 
-%                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
+%FISTA_Circulant_Weighted Image regression by solving LASSO problem 
+%                argmin_x 0.5*(Ax-b)'W(Ax-b) + lambda||x||_1
 %
 %   Implementation of Fast Iterative Shrinkage-Thresholding Algorithm using 
 %   convolutional subroutines for circulant matrix computations as
@@ -63,7 +63,8 @@ obj = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-f = 0.5*norm(w.*(b-Ax_ft_2D(w.*A0ft_stack,x_init)))^2 +...
+phi = w.*(b-Ax_ft_2D(A0ft_stack,x_init)).^2;
+f = 0.5*sum(phi(:)) +...
     lambda * norm(x_init(:),1);
 
 % Used to compute gradient
@@ -99,8 +100,8 @@ while keep_going && (nIter < maxIter)
         
         % Compute quadratic approximation at yk
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        temp1 = 0.5*norm(b(:)-fit(:))^2  + lambda*sum(abs(xk));
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
+        temp1 = 0.5*sum(w(:).*(b(:)-fit(:)).^2)  + lambda*sum(abs(xk(:)));
+        temp2 = 0.5*sum(w(:).*(b(:)-fit2(:)).^2) + lambda*sum(abs(zk(:))) +...
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
@@ -119,7 +120,7 @@ while keep_going && (nIter < maxIter)
 
     % Track and display error, objective, sparsity
     prev_f = f;
-    f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
+    f = 0.5*sum(w(:).*(b(:)-fit(:)).^2) + lambda * norm(xk(:),1);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
     l_0(nIter) = sum(abs(xk(:))>eps*10);

@@ -99,8 +99,8 @@ while keep_going && (nIter < maxIter)
         
         % Compute quadratic approximation at yk
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        temp1 = 0.5*norm(b(:)-fit(:))^2  + lambda*sum(abs(xk));
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 + lambda*sum(abs(zk)) +...
+        temp1 = 0.5*sum((b(:)-fit(:)).^2)  + lambda*sum(abs(xk(:)));
+        temp2 = 0.5*sum((b(:)-fit2(:)).^2) + lambda*sum(abs(zk(:))) +...
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
