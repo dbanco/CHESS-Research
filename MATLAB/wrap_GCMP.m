@@ -14,7 +14,8 @@ catch
 end
 
 %% Zero pad image
-b = zeroPad(polar_image,P.params.zeroPad);
+% b = zeroPad(polar_image,P.params.zeroPad);
+b = polar_image
 
 P.num_rad = size(b,1);
 P.num_theta = size(b,2);
