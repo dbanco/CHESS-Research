@@ -108,7 +108,7 @@ while norm(R(:))/x_norm > params.epsilon
     newR = x - Ax_ft_2D(A0ft_stack,a);
     
     % Break if residual is not changing
-    if norm(R(:)-newR(:))/norm(R(:)) < 1e-6
+    if norm(R(:)-newR(:))/norm(R(:)) < 2e-3
        break 
     end
     
