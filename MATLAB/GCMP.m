@@ -112,6 +112,8 @@ while norm(R(:))/x_norm > params.epsilon
        break 
     end
     
+    R = newR;
+    
     fprintf('%3.3f\n', norm(R(:))/x_norm)
     k = k + 1;
 end
