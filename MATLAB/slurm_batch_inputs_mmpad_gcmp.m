@@ -43,7 +43,7 @@ zMask = onePad(zMask,zPad);
 zMask = [r,c];
 
 % fista params
-params.epsilon = 0.2;
+params.epsilon = 0.28;
 params.isNonnegative = 1;
 params.showImage = 0;
 % params.zeroPad = zPad;

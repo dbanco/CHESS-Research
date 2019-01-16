@@ -105,7 +105,13 @@ while norm(R(:))/x_norm > params.epsilon
 
     end
     % Update residual
-    R = x - Ax_ft_2D(A0ft_stack,a);
+    newR = x - Ax_ft_2D(A0ft_stack,a);
+    
+    % Break if residual is not changing
+    if norm(R(:)-newR(:))/norm(R(:)) < 1e-6
+       break 
+    end
+    
     fprintf('%3.3f\n', norm(R(:))/x_norm)
     k = k + 1;
 end
