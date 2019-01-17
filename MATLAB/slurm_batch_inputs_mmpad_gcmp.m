@@ -47,7 +47,7 @@ params.epsilon = 0.2;
 params.isNonnegative = 1;
 params.showImage = 0;
 % params.zeroPad = zPad;
-% params.zeroMask = zMask;
+params.zeroMask = zMask;
 P.params = params;
 
 %% Parameters to vary
