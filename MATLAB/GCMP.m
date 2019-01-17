@@ -13,7 +13,7 @@ function a = GCMP(A0ft_stack, x, params)
 % epsilon is an error bound.
 %
 % Implemented mostly as described in
-% A Greedy Approach to l_0,? Based Convolutional Sparse Coding
+% A Greedy Approach to l_0, Based Convolutional Sparse Coding
 % by Elad Plaut and Raja Giryes
 %
 %  Different in that we will use 
@@ -26,6 +26,7 @@ function a = GCMP(A0ft_stack, x, params)
 % A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
 % params - struct containing the following field
 %   epsilon - error parameter in (0,1)
+%   zeroMask - indices of unobserved pixels
 %   isNonnegative - flag to enforce nonnegative solution
 %   showImage - flag to display image as each spot is placed
 %
@@ -38,6 +39,7 @@ R = x;
 k = 0;
 [m,n,t,r] = size(A0ft_stack);
 
+zMask = params.zeroMask;
 if params.showImage
     uplim = prctile(x(:),99);
     figure(1)
@@ -68,7 +70,7 @@ while norm(R(:))/x_norm > params.epsilon
         a(i_star) = a(i_star) + bi_star;
 
         if params.showImage
-            fit = Ax_ft_2D(A0ft_stack,a);
+            fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,a),zMask);
             figure(1)
             subplot(2,1,2)
             imshow(fit,'DisplayRange',[0 uplim],'Colormap',jet)
@@ -105,10 +107,10 @@ while norm(R(:))/x_norm > params.epsilon
 
     end
     % Update residual
-    newR = x - Ax_ft_2D(A0ft_stack,a);
+    newR = x - forceMaskToZero(Ax_ft_2D(A0ft_stack,a),zMask);
     
     % Break if residual is not changing
-    if norm(R(:)-newR(:))/norm(R(:)) < 2e-3
+    if (norm(R(:))-norm(newR(:)))/x_norm < 5e-3
        break 
     end
     
@@ -117,6 +119,7 @@ while norm(R(:))/x_norm > params.epsilon
     fprintf('%3.3f\n', norm(R(:))/x_norm)
     k = k + 1;
 end
+
 
 end
 
