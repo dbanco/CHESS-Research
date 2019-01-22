@@ -26,7 +26,7 @@ function a = GCMP(A0ft_stack, x, params)
 % A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
 % params - struct containing the following field
 %   epsilon - error parameter in (0,1)
-%   zeroMask - indices of unobserved pixels
+%   zeroMask - (#pixels x 2) indices of unobserved pixels 
 %   isNonnegative - flag to enforce nonnegative solution
 %   showImage - flag to display image as each spot is placed
 %

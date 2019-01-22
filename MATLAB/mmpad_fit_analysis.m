@@ -5,7 +5,7 @@ for img_num = 1:546
     display(img_num)
     frame = [];
     for ring_num = 1:4
-        fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
+        fName = sprintf('gcmp_fit_%i_%i.mat',ring_num,img_num);
         fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg4'];
         load(fullfile(fDir,fName))
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
