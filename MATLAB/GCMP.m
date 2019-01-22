@@ -25,7 +25,8 @@ function a = GCMP(A0ft_stack, x, params)
 % x - (m x n) polar ring image
 % A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
 % params - struct containing the following field
-%   epsilon - error parameter in (0,1)
+%   epsilon - relative error stopping parameter in (0,1)
+%   delta - change in relative error stopping parameter in (0,1)
 %   zeroMask - (#pixels x 2) indices of unobserved pixels 
 %   isNonnegative - flag to enforce nonnegative solution
 %   showImage - flag to display image as each spot is placed
@@ -110,7 +111,7 @@ while norm(R(:))/x_norm > params.epsilon
     newR = x - forceMaskToZero(Ax_ft_2D(A0ft_stack,a),zMask);
     
     % Break if residual is not changing
-    if (norm(R(:))-norm(newR(:)))/x_norm < 5e-3
+    if (norm(R(:))-norm(newR(:)))/x_norm < params.delta
        break 
     end
     

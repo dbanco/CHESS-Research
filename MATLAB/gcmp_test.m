@@ -32,6 +32,7 @@ B = 100*B1 + 20*B2;
 %% Run GCMP
 x = B;
 params.epsilon = 0.1;
+params.delta = 5e-3;
 params.showImage = 1;
 params.isNonnegative = 1;
 params.zeroMask = [];
