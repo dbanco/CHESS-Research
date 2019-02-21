@@ -115,7 +115,6 @@ while keep_going && (nIter < maxIter)
     
     t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
-    
 
     % Track and display error, objective, sparsity
     prev_f = f;

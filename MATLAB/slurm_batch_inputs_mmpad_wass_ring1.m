@@ -7,17 +7,16 @@ ringName = 'ring1_zero';
 ring_num  = 1;
 prefix = 'mmpad_img';
 
+% Init directory
+initdir = fullfile('/cluster','shared','dbanco02','mmpad_ring1_zero_fit_wass_init');
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_reg6']);
+outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_wass_reg']);
 mkdir(outputdir)
 
 % Function
-funcName1 = 'wrap_FISTA_Circulant';
-funcName2 = 'wrap_wass_reg_FISTA_Circulant';
-jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_wass_init']);
-jobDir2 = fullfile(datadir,['job_mmpad_',ringName,'_wass']);
+funcName1 = 'wrap_wass_reg_FISTA_Circulant';
+jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_wass']);
 mkdir(jobDir1)
-mkdir(jobDir2)
 
 %% Fixed Parameters
 
@@ -47,15 +46,14 @@ zMask = [r,c];
 
 % fista params
 params.stoppingCriterion = 1;
-params.tolerance = 1e-15;
-params.L = 500;
-params.lambda = 0.01;
-params.wLam = 0.01;
-params.gamma = 0.02;
-params.gamma = 1;
-params.beta = 1.1;
+params.tolerance = 1e-10;
+params.L = 10;
+params.lambda = 0.02;
+params.wLam = 25;
+params.gamma = 0.05;
+params.beta = 1.2;
 params.maxIter = 1000;
-params.maxIterReg = 1000;
+params.maxIterReg = 2000;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
@@ -72,14 +70,9 @@ for img = img_nums
     varin = {fullfile(dataset,ringName,prefix),P,outputdir};
     funcName = funcName1;
     save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
-    funcName = funcName2;
-    save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
     k = k + 1;
 end
 
 % Init script
-slurm_write_bash(k-1,jobDir1,'init_batch_script.sh','0-545')
-% Odd script
-slurm_write_bash(k-1,jobDir2,'odd_batch_script.sh','0-545:2')
-% Even script
-slurm_write_bash(k-1,jobDir2,'even_batch_script.sh','1-545:2')
+slurm_write_bash(k-1,jobDir1,'batch_script.sh','0-545')
+

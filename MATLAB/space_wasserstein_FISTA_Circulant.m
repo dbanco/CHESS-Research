@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,var_theta,var_rad,x_init,params)
+function [x_hat, err, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -98,16 +98,22 @@ while keep_going && (nIter < maxIter)
 
     % Wasserstein regularizer gradient update
     vdf = squeeze(sum(sum(zk,1),2));
-    vdf = vdf/sum(vdf(:)); 
-    gradW = zeros(t*r,1);
-    for i = 1:numel(neighbors_vdf)
-        gradW = gradW + WassersteinGrad( vdf(:), neighbors_vdf{i}(:), wLam, D );
+    vdf = vdf/sum(vdf(:));
+    if(sum(vdf(:)) == 0)
+        error('VDF is not defined (all zeors)')
     end
-   gradW = reshape(gradW,[t,r]);
+    gradW = zeros(t*r,1);
+    wObj_zk = 0;
+    for i = 1:numel(neighbors_vdf)
+        [gradWi, Wdi] = WassersteinGrad( vdf(:), neighbors_vdf{i}(:), wLam, D );
+        gradW = gradW + gradWi;
+        wObj_zk = wObj_zk + Wdi;
+    end
+   gradW = reshape(gradW,[t,r])./numel(neighbors_vdf);
     for i = 1:t
         for j = 1:r
             grad(:,:,i,j) = grad(:,:,i,j) + ...
-            params.gamma*gradW(i,j)./sum(zk(:)).*(1-vdf(i,j));
+            params.gamma*(gradW(i,j)./sum(zk(:)) - sum(gradW(:).*vdf(:))./sum(zk(:)));
         end
     end
 
@@ -132,9 +138,8 @@ while keep_going && (nIter < maxIter)
         fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
         vdf_zk = squeeze(sum(sum(zk,1),2));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
-        wObj = WassersteinObjective(vdf_zk(:),neighbors_vdf(:),wLam,D);
         temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
-            0.5*params.gamma*wObj +...
+            0.5*params.gamma*wObj_zk +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         
@@ -143,12 +148,24 @@ while keep_going && (nIter < maxIter)
             stop_backtrack = 1 ;
         else
             L = L*beta ;
+            if L > 1e50
+                keep_going = 0;
+                stop_backtrack = 1;
+            end
         end
+    end
+    
+    if ~keep_going
+        x_hat = xk;
+        err = err(1:nIter) ;
+        obj = obj(1:nIter) ;
+        l_0 = l_0(1:nIter) ;
+        return
     end
     
     t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);  
-           
+
     % Track and display error, objective, sparsity
     prev_f = f;
     f_data = 0.5*norm(b-fit)^2;
@@ -188,7 +205,7 @@ while keep_going && (nIter < maxIter)
         title('zk')
         
         subplot(2,3,4)
-        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zPad);
+        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zMask);
         imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('gk')
         

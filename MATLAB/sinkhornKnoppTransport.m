@@ -1,16 +1,16 @@
-function [Wd, r, c, T] = sinkhornKnoppTransport(D,lam,r,c)
+function [Wd, r, c, T] = sinkhornKnoppTransport(r, c, lam, D)
 %sinkhornKnoppTransport
 
 iter = 1;
 Ind = r > 0;
 r = r(Ind);
 D = D(Ind,:);
-K = exp(-lam*D);
+K = exp(-lam*D-1);
 
 x = ones(size(r));
 x_old = x/2;
 
-while 1
+while 1 && (numel(r) > 0)
     e = c./(K'*(1./x));
     x = diag(1./r)*K*e;
 

@@ -5,7 +5,7 @@ y = ones(5,5)/25;
 h = h/sum(h(:));
 y = y/sum(y(:));
 
-lam = 10;
+
 % Construct distance matrix
 N = 25;
 THRESHOLD = 25;
@@ -22,10 +22,20 @@ for i = 1:5
     end
 end
 
-[ gradW ] = WassersteinGrad( y(:), h(:), lam, D );
-gradW = gradW/sum(abs(gradW));
+deltaX = 1e-8;
+lam = 10;
+dFdX = zeros(size(h));
 
+[ gradW ] = WassersteinGrad( h(:), y(:), lam, D );
+[grad_a,grad_b] = WassersteinGrad2(h(:),y(:),lam,D);
+[gradFD,~] = WassersteinGradFD(h(:),y(:),lam,D);
 
+gradW = reshape(gradW,size(y));
+grad_a = reshape(grad_a,size(y))
+grad_b = reshape(grad_b,size(y))
+gradW
+gradFD*max(gradW(:))/max(gradFD(:))
+%%
 figure(1)
 subplot(2,2,1)
 imagesc(h)
