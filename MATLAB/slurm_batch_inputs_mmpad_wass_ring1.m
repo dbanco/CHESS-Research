@@ -9,6 +9,7 @@ prefix = 'mmpad_img';
 
 % Init directory
 initdir = fullfile('/cluster','shared','dbanco02','mmpad_ring1_zero_fit_wass_init');
+
 % Output directory
 outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_wass_reg']);
 mkdir(outputdir)
@@ -19,7 +20,6 @@ jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_wass']);
 mkdir(jobDir1)
 
 %% Fixed Parameters
-
 % Ring sampling parameters
 load(fullfile(dataset,ringName,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);

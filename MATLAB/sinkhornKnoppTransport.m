@@ -2,13 +2,20 @@ function [Wd, r, c, T] = sinkhornKnoppTransport(r, c, lam, D)
 %sinkhornKnoppTransport
 
 iter = 1;
-Ind = r > 0;
-r = r(Ind);
-D = D(Ind,:);
+
+% Remove 0 probability points from each distribution
+Indr = r > 0;
+r = r(Indr);
+r = r./sum(r(:));
+
+Indc = c > 0;
+c = c(Indc);
+c = c./sum(c(:));
+
+D = D(Indr,Indc);
 K = exp(-lam*D-1);
 
-x = ones(size(r));
-x_old = x/2;
+x = ones(size(r))/2;
 
 while 1 && (numel(r) > 0)
     e = c./(K'*(1./x));
@@ -18,7 +25,6 @@ while 1 && (numel(r) > 0)
     if sum(abs(check ))<1e-8
         break
     end
-    x_old = x;
 end
 
 u = 1./x; 

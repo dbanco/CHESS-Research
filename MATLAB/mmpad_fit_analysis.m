@@ -75,7 +75,7 @@ end
 img_num = 25;
 ring_num = 1;
 
-fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_wass_init';
+fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_wass_reg';
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
@@ -117,6 +117,25 @@ for i = 1:P.num_var_r
     pause
 end
 
+%% Construct distance matrix
+N = P.num_var_t*P.num_var_r;
+THRESHOLD = 32;
+
+D = ones(N,N).*THRESHOLD;
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+                ind1 = i + (j-1)*P.num_var_t;
+                ind2 = ii + (jj-1)*P.num_var_t;
+                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+            end
+        end
+    end
+end
+D = D./max(D(:));
+
+
 %% Compute time varying spread and error functions
 P.num_var_t = 12;
 P.num_var_r = 8;
@@ -126,9 +145,10 @@ for ring_num = 1
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
     sparsity = zeros(546,1);
+    wass_dist = zeros(546,1);
     var_signal = zeros(546,P.num_var_t,P.num_var_r);
-    k = 1;
-    for img_num = 1:546
+    for img_num = [2:28,32:546]
+        k = img_num;
         fprintf('Image %i\n',k)
         fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
         load(fullfile(fDir,fName))
@@ -143,14 +163,20 @@ for ring_num = 1
         az_spread(k) = sqrt(P.var_rad)*az_var_signal'/var_sum;
         rad_spread(k) = sqrt(P.var_theta)*rad_var_signal/var_sum;
         sparsity(k) = sum(x_hat(:)>0);
+        
+        if k > 2
+            wass_dist(k) = sinkhornKnoppTransport(var_signal_k(:),vdf_last(:),P.params.wLam,D);
+        end
+
         k = k + 1;
+        vdf_last = var_signal_k;
     end
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_fit_wass.mat';
+    outFile = 'spread_mmpad_ring%i_zero_fit_wass_init.mat';
     save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
-        'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')
+        'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity','wass_dist')
 end    
 %% Load spread data
 spreadDir = fullfile('D:','MMPAD_data','spread_results');
@@ -164,7 +190,7 @@ end
 
 figure(1)
 for j = 1
-    plot(ring_data{j}.rad_spread(1:200),'-o','MarkerSize',2)
+    plot(ring_data{j}.rad_spread(1:546),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -173,7 +199,7 @@ xlabel('Time')
 
 figure(2)
 for j = 1
-    plot(ring_data{j}.az_spread(1:200),'-o','MarkerSize',2)
+    plot(ring_data{j}.az_spread(1:546),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -197,6 +223,15 @@ for j = 1
 end
 %legend(num2str(mean(ring_data{1}.sparsity)),num2str(mean(ring_data{2}.sparsity)),'Location','Best')
 title('Sparsity')
+xlabel('Time')
+
+figure(6)
+for j = 1
+    plot(ring_data{j}.wass_dist,'-')
+    hold on
+end
+legend('1','2','3','4','Location','Best')
+title('Wasserstein distance to neighbor')
 xlabel('Time')
 
 %% Show evolving var_signal
