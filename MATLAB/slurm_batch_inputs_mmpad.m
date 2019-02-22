@@ -8,7 +8,7 @@ ring_num  = 1;
 prefix = 'mmpad_img';
 
 % Function
-funcName = 'wrap_mmpad_norm2_FISTA_Circulant';
+funcName = 'wrap_FISTA_Circulant';
 
 %% Fixed Parameters
 % Ring sampling parameters
