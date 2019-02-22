@@ -53,7 +53,7 @@ img_nums = 1:546;
 
 for ring_num = 1
     k = 1;
-    ringName = sprintf('ring%i',ring_num);
+    ringName = sprintf('ring%i_zero',ring_num);
     
     % Output directory
     outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit']);
@@ -66,7 +66,7 @@ for ring_num = 1
     for img = img_nums
         P.img = img;
         P.set = ring_num;
-        varin = {fullfile(dataset,ringName),P,outputdir};
+        varin = {fullfile(dataset,ringName,prefix),P,outputdir};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
     end
