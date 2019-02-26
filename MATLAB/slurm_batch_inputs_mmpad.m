@@ -24,6 +24,7 @@ P.num_var_t = 12;
 P.num_var_r = 8;
 P.var_theta = linspace(P.dtheta/2,32,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  6,P.num_var_r).^2;
+P.basis = 'norm2';
 
 % Zero padding and mask
 maskCols = 129:133;
