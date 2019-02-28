@@ -1,12 +1,12 @@
-function wrap_wass_reg_FISTA_Circulant( data_dir,P,output_dir )
+function wrap_wass_reg_FISTA_Circulant( init_dir,P,output_dir )
 %wrap_space_awmv_FISTA_Circulant Runs FISTA_Circulant loading input files and saving
 % ouput files
 
 % Load solution
 baseFileName = 'fista_fit_%i_%i.mat';
-fileData = load(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)));
+fileData = load(fullfile(init_dir,sprintf(baseFileName,P.set,P.img)));
 polar_image = fileData.polar_image;
-P = fileData.P;
+
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
 % Scale image by 2-norm
@@ -33,11 +33,18 @@ for i = 1:P.num_var_t
         end
     end
 end
+D = D./max(D(:));
 
 
 %% Run FISTA updating solution and error array
-vdfs = load_neighbors_vdf(output_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,P.var_theta,P.var_rad,fileData.x_hat,P.params);
+vdfs = load_neighbors_vdf(init_dir,baseFileName,P);
+x_init = zeros(size(A0ft_stack));
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
+    end
+end
+[x_hat, err_new, ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
 err = [fileData.err(:);err_new(:)];
 
 %% Save outputs, updating the coefficients of the previous iteration

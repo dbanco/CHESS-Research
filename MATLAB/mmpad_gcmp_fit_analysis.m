@@ -4,12 +4,12 @@ video_norm = cell(546,1);
 for img_num = 1:546
     display(img_num)
     frame = [];
-    for ring_num = 1:4
+    for ring_num = 1
         fName = sprintf('gcmp_fit_%i_%i.mat',ring_num,img_num);
-        fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg4'];
+        fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_gcmp'];
         load(fullfile(fDir,fName))
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
-        img_fit = Ax_ft_2D(A0ft_stack,x_hat)*norm(polar_image(:));
+        img_fit = Ax_ft_2D(A0ft_stack,x_hat);
         
         % Append polar_images and fits
         frame = [frame,polar_image,img_fit];
@@ -29,7 +29,7 @@ end
 
 %% Create gif
 h = figure;
-filename = 'mmpad_norm_fit4.gif';
+filename = 'mmpad_gcmp_fit.gif';
 for i = 1:546
     lim1 = 0;
     lim2 = max(video_norm{i}(:));
@@ -48,10 +48,10 @@ for i = 1:546
     % Add whitespace between rings and whiten non detected pixels
     ind = 0;
     pixels = [2,10];
-    for ring_num = 1:4
+    for ring_num = 1
         for dd = 1:2
-            fName = sprintf('fista_fit_%i_%i.mat',ring_num,1);
-            fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_reg4'];
+            fName = sprintf('gcmp_fit_%i_%i.mat',ring_num,1);
+            fDir = ['D:\MMPAD_data\mmpad_ring',num2str(ring_num),'_zero_fit_gcmp'];
             load(fullfile(fDir,fName))
             n_cols = size(polar_image,2);
             ind = ind + n_cols;
@@ -72,25 +72,29 @@ for i = 1:546
 end
 
 %% Load mmpad fit
-img_num = 25;
+img_num = 19;
 ring_num = 1;
 
-fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_wass_reg';
-fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
+fDir = 'D:\MMPAD_data\mmpad_ring1_zero_fit_gcmp';
+fName = sprintf('gcmp_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 
+sparsity = sum(x_hat(:)>0);
+
 lim1 = 0;
-lim2 = 300000;
+lim2 = max(img_fit(:));
 % Plot both images
 figure(1)
-subplot(1,2,1)
+subplot(2,1,1)
 imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-subplot(1,2,2)
-imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
+title(sprintf('Data at t = %i',img_num))
 
+subplot(2,1,2)
+imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+title(sprintf('Fit with %i functions',sparsity))
 %% View basis function
 figure(2)
 A0_stack = unshifted_basis_matrix_stack_norm2(P);
@@ -117,71 +121,47 @@ for i = 1:P.num_var_r
     pause
 end
 
-%% Construct distance matrix
-N = P.num_var_t*P.num_var_r;
-THRESHOLD = 32;
-
-D = ones(N,N).*THRESHOLD;
-for i = 1:P.num_var_t
-    for j = 1:P.num_var_r
-        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                ind1 = i + (j-1)*P.num_var_t;
-                ind2 = ii + (jj-1)*P.num_var_t;
-                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
-            end
-        end
-    end
-end
-D = D./max(D(:));
-
-
 %% Compute time varying spread and error functions
 P.num_var_t = 12;
 P.num_var_r = 8;
 for ring_num = 1
-    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_wass_init'];
+    fDir = ['D:\MMPAD_data\mmpad_ring',sprintf('%i',ring_num),'_zero_fit_gcmp'];
     az_spread = zeros(546,1);
     rad_spread = zeros(546,1);
     rel_err = zeros(546,1);
     sparsity = zeros(546,1);
-    wass_dist = zeros(546,1);
     var_signal = zeros(546,P.num_var_t,P.num_var_r);
-    for img_num = [2:28,32:546]
-        k = img_num;
+    k = 1;
+    for img_num = 1:546
         fprintf('Image %i\n',k)
-        fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
-        load(fullfile(fDir,fName))
-        A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
-        img_fit = Ax_ft_2D(A0ft_stack,x_hat);
-        rel_err(k) = err(end);
-        var_signal_k = squeeze(sum(sum(x_hat,1),2));
-        var_signal(k,:,:) =  var_signal_k;
-        rad_var_signal = squeeze(sum(var_signal_k,2));
-        az_var_signal = squeeze(sum(var_signal_k,1));
-        var_sum = sum(var_signal_k(:));
-        az_spread(k) = sqrt(P.var_rad)*az_var_signal'/var_sum;
-        rad_spread(k) = sqrt(P.var_theta)*rad_var_signal/var_sum;
-        sparsity(k) = sum(x_hat(:)>0);
-        
-        if k > 2
-            wass_dist(k) = sinkhornKnoppTransport(var_signal_k(:),vdf_last(:),P.params.wLam,D);
+        fName = sprintf('gcmp_fit_%i_%i.mat',ring_num,img_num);
+        try
+            load(fullfile(fDir,fName))
+            A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
+            img_fit = Ax_ft_2D(A0ft_stack,x_hat);
+            rel_err(k) = norm(img_fit(:)-polar_image(:))/norm(polar_image(:));
+            var_signal_k = squeeze(sum(sum(x_hat,1),2));
+            var_signal(k,:,:) =  var_signal_k;
+            rad_var_signal = squeeze(sum(var_signal_k,2));
+            az_var_signal = squeeze(sum(var_signal_k,1));
+            var_sum = sum(var_signal_k(:));
+            az_spread(k) = sqrt(P.var_rad)*az_var_signal'/var_sum;
+            rad_spread(k) = sqrt(P.var_theta)*rad_var_signal/var_sum;
+            sparsity(k) = sum(x_hat(:)>0);
         end
-
         k = k + 1;
-        vdf_last = var_signal_k;
     end
 
     spreadDir = fullfile('D:','MMPAD_data','spread_results');
     mkdir(spreadDir)
-    outFile = 'spread_mmpad_ring%i_zero_fit_wass_init.mat';
+    outFile = 'spread_mmpad_ring%i_gcmp.mat';
     save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
-        'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity','wass_dist')
+        'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')
 end    
 %% Load spread data
 spreadDir = fullfile('D:','MMPAD_data','spread_results');
 for i = 1
-    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_zero_fit_wass_init.mat',i)));
+    ring_data{i} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring%i_gcmp.mat',i)));
 end
 
 % ring_data{2} = load(fullfile(spreadDir,sprintf('spread_mmpad_ring1_zero_fit5_reg5_lambda_0.010.mat',i)));
@@ -190,7 +170,7 @@ end
 
 figure(1)
 for j = 1
-    plot(ring_data{j}.rad_spread(1:546),'-o','MarkerSize',2)
+    plot(ring_data{j}.rad_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -199,7 +179,7 @@ xlabel('Time')
 
 figure(2)
 for j = 1
-    plot(ring_data{j}.az_spread(1:546),'-o','MarkerSize',2)
+    plot(ring_data{j}.az_spread(1:200),'-o','MarkerSize',2)
     hold on
 end
 legend('1','2','3','4','Location','Best')
@@ -225,22 +205,13 @@ end
 title('Sparsity')
 xlabel('Time')
 
-figure(6)
-for j = 1
-    plot(ring_data{j}.wass_dist,'-')
-    hold on
-end
-legend('1','2','3','4','Location','Best')
-title('Wasserstein distance to neighbor')
-xlabel('Time')
-
 %% Show evolving var_signal
 
 for i = 1:546
     im_vdf = video_norm_diff{i};
     lim1 = min(im_vdf(:));
     lim2 = max(im_vdf(:));
-    imshow(im_vdf,'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+    imshow(im_vdf,'DisplayRange',[-0.5 0.5],'Colormap',jet,'InitialMagnification','fit');
     pause(0.2)
 end
 

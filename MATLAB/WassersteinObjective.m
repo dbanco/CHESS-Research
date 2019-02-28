@@ -5,7 +5,7 @@ wObj = 0;
 
 for i = 1:numel(vdfs)
     neighbor_vdf = vdfs{i};
-    Wd = sinkhornKnoppTransport(D, lam, vdf, neighbor_vdf(:));
+    Wd = sinkhornKnoppTransport(vdf, neighbor_vdf(:), lam, D);
     wObj = wObj + Wd; 
 end
 

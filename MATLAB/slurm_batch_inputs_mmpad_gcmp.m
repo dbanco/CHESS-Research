@@ -7,19 +7,17 @@ ringName = 'ring1_zero';
 ring_num  = 1;
 prefix = 'mmpad_img';
 
-% Init directory
-initdir = fullfile('/cluster','shared','dbanco02','mmpad_ring1_zero_fit_wass_init');
-
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_wass_reg']);
+outputdir = fullfile('/cluster','shared','dbanco02',['mmpad_',ringName,'_fit_gcmp']);
 mkdir(outputdir)
 
 % Function
-funcName1 = 'wrap_wass_reg_FISTA_Circulant';
-jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_wass']);
+funcName1 = 'wrap_GCMP';
+jobDir1 = fullfile(datadir,['job_mmpad_',ringName,'_gcmp']);
 mkdir(jobDir1)
 
 %% Fixed Parameters
+
 % Ring sampling parameters
 load(fullfile(dataset,ringName,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);
@@ -45,20 +43,11 @@ zMask = onePad(zMask,zPad);
 zMask = [r,c];
 
 % fista params
-params.stoppingCriterion = 1;
-params.tolerance = 1e-10;
-params.L = 10;
-params.lambda = 0.02;
-params.wLam = 25;
-params.gamma = 0.05;
-params.beta = 1.2;
-params.maxIter = 1000;
-params.maxIterReg = 2000;
+params.epsilon = 0.2;
 params.isNonnegative = 1;
-params.zeroPad = zPad;
+params.showImage = 0;
+% params.zeroPad = zPad;
 params.zeroMask = zMask;
-params.noBacktrack = 0;
-params.plotProgress = 0;
 P.params = params;
 
 %% Parameters to vary
@@ -67,12 +56,11 @@ k = 0;
 for img = img_nums
     P.img = img;
     P.set = ring_num;
-    varin = {initdir,P,outputdir};
+    varin = {fullfile(dataset,ringName,prefix),P,outputdir};
     funcName = funcName1;
     save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
     k = k + 1;
 end
 
 % Init script
-slurm_write_bash(k-1,jobDir1,'batch_script.sh','0-545')
-
+slurm_write_bash(k-1,jobDir1,'gcmp_batch_script.sh','0-545')
