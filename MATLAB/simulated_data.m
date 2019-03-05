@@ -1,5 +1,5 @@
-saveDir = 'C:\Users\Dan\CHESS_data\simulated_data\';
-
+saveDir = 'D:\CHESS_data\simulated_data2\';
+mkdir(saveDir)
 %% Randomized spot example
 num_spots = 100;
 % Ring sampling parameters
@@ -47,15 +47,17 @@ synth_sample = cell(100,1);
 VDF = cell(100,1);
 evar_az = zeros(100,1);
 evar_rad = zeros(100,1);
+
+theta_means = (rand(num_spots,1)-0.5)*max_az_mean + min_az_mean;
+rad_means = rand(num_spots,1)*width_rad_mean + center_rad_mean;
+amplitudes = rand(num_spots,1)*max_amp + min_amp;
+
 for i = 1:size(positions,1)
 % for i = [1,50,100]
     % Generate diffraction spot parameters
     std_theta = randn(num_spots,1).*width_az_std + start_center_az_std*(1-dist(i)/100) + end_center_az_std*(dist(i)/100);
-    std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/100) + end_center_rad_std*(dist(i)/100);
-    theta_mean = (rand(num_spots,1)-0.5)*max_az_mean + min_az_mean;
-    rad_mean = rand(num_spots,1)*width_rad_mean + center_rad_mean;
-    amplitudes = rand(num_spots,1)*max_amp + min_amp;
-    
+    std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/100) + end_center_rad_std*(dist(i)/100); 
+
     VDF{i} = hist3([std_theta,std_rad],'Ctrs',{P.var_theta',P.var_rad'});
     figure(1)
     imagesc(VDF{i})
@@ -64,8 +66,8 @@ for i = 1:size(positions,1)
     B = zeros(num_rad,num_theta);
     for j = 1:num_spots
         B = B + amplitudes(j)*...
-            gaussian_basis_wrap_2D_norm2( num_theta,dtheta,round(theta_mean(j)),std_theta(j)^2,...
-                                          num_rad,drad,round(rad_mean(j)),std_rad(j) );
+            gaussian_basis_wrap_2D_norm2( num_theta,dtheta,round(theta_means(j)),std_theta(j)^2,...
+                                          num_rad,drad,round(rad_means(j)),std_rad(j) );
     end
     % Add noise
     B = B + randn(num_rad,num_theta)*mean(amplitudes)/100;
@@ -79,8 +81,8 @@ for i = 1:size(positions,1)
     sample.image = B;
     sample.std_theta = std_theta;
     sample.std_rad = std_rad;
-    sample.theta_mean = theta_mean;
-    sample.rad_mean = rad_mean;
+    sample.theta_mean = theta_means;
+    sample.rad_mean = rad_means;
     sample.amplitudes = amplitudes;
     sample.vdf = VDF{i};
     
@@ -100,8 +102,18 @@ for i = 1:size(positions,1)
     
     % Save out image files
     save(im_name,'polar_image')
+    
+    % Perturb spots
+    theta_mean_deltas = randn(num_spots,1)*2;
+    rad_mean_deltas = randn(num_spots,1)*0.25;
+    amplitude_deltas = randn(num_spots,1)*8;
+    
+    theta_means = theta_means + theta_mean_deltas;
+    rad_means = rad_means + rad_mean_deltas;
+    amplitudes = amplitudes + amplitude_deltas;
+    
 end
-save([saveDir,'synth_data1.mat'],'synth_sample','VDF')
+save([saveDir,'synth_data2.mat'],'synth_sample','VDF')
 
 %% View Expected Variance
 % figure(2)

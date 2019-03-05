@@ -2,7 +2,7 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'simulated_data');
+dataset = fullfile(datadir,'simulated_data2');
 prefix = 'polar_image';
 
 % Function
@@ -46,11 +46,11 @@ P.params = params;
 img_nums = 1:100;
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02',['simulated_data_fit']);
+outputdir = fullfile('/cluster','shared','dbanco02',['simulated_data2_fit']);
 mkdir(outputdir)
 
 % Job directory
-jobDir = fullfile('/cluster','home','dbanco02',['job_simulated_data_fit']);
+jobDir = fullfile('/cluster','home','dbanco02',['job_simulated_data2_fit']);
 mkdir(jobDir)
 
 for img = img_nums
