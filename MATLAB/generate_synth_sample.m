@@ -1,5 +1,7 @@
+saveDir = 'C:\Users\Dan\CHESS_data\simulated_data\';
+
 %% Randomized spot example
-num_spots = 100;
+num_spots = 180;
 % Ring sampling parameters
 ring_width = 20;
 num_theta= 2048;
@@ -23,22 +25,20 @@ max_rad_var = 4;
 d_weight = max_az_var/5;
 
 % Setup sample positions and 
-positions = zeros(25,2);
-dist = zeros(25,1);
+positions = zeros(100,1);
+dist = zeros(100,1);
 center = [1,1];
 k = 1;
-for i = 1:5
-    for j = 1:5
+for i = 1:100
         positions(k,1) = i;
-        positions(k,2) = j;
-        dist(k) = sqrt( (j-center(2))^2);
+        dist(k) = sqrt( (i-1)^2 );
         k = k + 1;
-    end
 end
 
 % Produce 5x5 array of ring images
-synth_sample = cell(5,5);
-evar_image = zeros(5,5);
+synth_sample = cell(100,1);
+expected_var_az = zeros(100,1);
+expected_var_rad = zeros(100,1);
 for i = 1:size(positions,1)
     row = positions(i,1);
     col = positions(i,2);
@@ -92,14 +92,14 @@ for i = 1:size(positions,1)
     
     % Add sample to 5x5 cell array 
     synth_sample{row,col} = sample;
-    im_name = sprintf('F:\\CHESS_data\\synth_data2\\polar_image_0_%i.mat',i-1);
+    im_name = [saveDir,sprintf('polar_image_0_%i.mat',i-1)];
     polar_image = B;
     
     % Save out image files
     save(im_name,'polar_image')
 end
 
-save('F:\CHESS_data\synth_data2\synth_data2.mat','synth_sample')
+save([saveDir,'synth_data1.mat'],'synth_sample')
 
 %% View Expected Variance
 figure(2)
