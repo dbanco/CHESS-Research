@@ -10,7 +10,7 @@ funcName = 'wrap_FISTA_Circulant';
 
 %% Fixed Parameters
 % Ring sampling parameters
-load(fullfile(dataset,ringName,[prefix,'_1.mat']));
+load(fullfile(dataset,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
@@ -55,9 +55,9 @@ mkdir(jobDir)
 
 for img = img_nums
     P.img = img;
-    P.set = ring_num;
-    varin = {fullfile(dataset,ringName,prefix),P,outputdir};
-    save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+    P.set = 1;
+    varin = {fullfile(dataset,prefix),P,outputdir};
+    save(fullfile(jobDir,['varin_',num2str(img),'.mat']),'varin','funcName')
 end
-slurm_write_bash(k-1,jobDir,'full_batch_script.sh','1-100')
+slurm_write_bash(100,jobDir,'full_batch_script.sh','1-100')
 
