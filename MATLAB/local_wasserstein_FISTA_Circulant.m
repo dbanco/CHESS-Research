@@ -79,8 +79,8 @@ vdf = vdf/sum(vdf(:));
 
 % Compute vdf to match
 [ind_theta,ind_rad] = find(vdf);
-mean_theta = sum(vdf(:)*ind_theta);
-mean_rad = sum(vdf(:)*ind_rad);
+mean_theta = sum(vdf(:).*ind_theta);
+mean_rad = sum(vdf(:).*ind_rad);
 vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
 
 % Add entropic reg wasserstein distance vdf term  
@@ -113,8 +113,8 @@ while keep_going && (nIter < maxIter)
     
     % Update vdf to match
     [ind_theta,ind_rad] = find(vdf);
-    mean_theta = sum(vdf(:)*ind_theta);
-    mean_rad = sum(vdf(:)*ind_rad);
+    mean_theta = sum(vdf(:).*ind_theta);
+    mean_rad = sum(vdf(:).*ind_rad);
     vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
     
     gradW = zeros(t*r,1);
@@ -142,7 +142,7 @@ while keep_going && (nIter < maxIter)
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
         vdf_xk = squeeze(sum(sum(xk,1),2));
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
-        wObj_xk = WassersteinObjective(vdf_xk(:),neighbors_vdf(:),wLam,D);
+        wObj_xk = WassersteinObjective(vdf_xk(:),vdf_match(:),wLam,D);
         temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
