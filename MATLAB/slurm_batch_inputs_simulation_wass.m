@@ -2,7 +2,7 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'simulated_data');
+dataset = fullfile(datadir,'simulated_data2');
 prefix = 'polar_image';
 
 % Init directory
@@ -14,12 +14,13 @@ mkdir(outputdir)
 
 % Function
 funcName = 'wrap_wass_reg_FISTA_Circulant';
-jobDir1 = fullfile(datadir,['job_simulated_data2_wass']);
-mkdir(jobDir1)
+
+jobDir = fullfile(datadir,['job_simulated_data2_wass']);
+mkdir(jobDir)
 
 %% Fixed Parameters
 % Ring sampling parameters
-load(fullfile(dataset,ringName,[prefix,'_1.mat']));
+load(fullfile(dataset,[prefix,'_1.mat']));
 P.num_theta = size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
