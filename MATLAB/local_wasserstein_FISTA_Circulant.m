@@ -78,7 +78,7 @@ vdf = squeeze(sum(sum(x_init,1),2));
 vdf = vdf/sum(vdf(:)); 
 
 % Compute vdf to match
-[ind_theta,ind_rad] = find(vdf);
+[ind_theta,ind_rad] = find(ones(size(vdf)));
 mean_theta = sum(vdf(:).*ind_theta);
 mean_rad = sum(vdf(:).*ind_rad);
 vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
@@ -112,7 +112,6 @@ while keep_going && (nIter < maxIter)
     end
     
     % Update vdf to match
-    [ind_theta,ind_rad] = find(vdf);
     mean_theta = sum(vdf(:).*ind_theta);
     mean_rad = sum(vdf(:).*ind_rad);
     vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
