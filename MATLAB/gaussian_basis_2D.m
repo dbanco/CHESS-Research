@@ -20,8 +20,8 @@ function B = gaussian_basis_2D(num_theta,  mean_theta,var_theta,...
 
 % Compute theta distances without wrapping
 [ind_t,ind_r] = find(ones(num_theta,num_rad));
-dist_sq_theta = (ind_t - mean_theta)^2; 
-dist_sq_rad = (ind_r - mean_rad)^2;
+dist_sq_theta = (ind_t - mean_theta).^2; 
+dist_sq_rad = (ind_r - mean_rad).^2;
 
 % Compute values
 B = exp(-dist_sq_theta/(2*var_theta) - dist_sq_rad/(2*var_rad));
