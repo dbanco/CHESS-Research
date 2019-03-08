@@ -2,20 +2,19 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'simulated_data2');
+dataset = fullfile(datadir,'simulated_data');
 prefix = 'polar_image';
 
 % Init directory
 initdir = fullfile('/cluster','shared','dbanco02','simulated_data2_fit');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','simulated_data2_fit_wass_reg');
+outputdir = fullfile('/cluster','shared','dbanco02','simulated_data2_fit_wass_local');
 mkdir(outputdir)
 
 % Function
-funcName = 'wrap_wass_reg_FISTA_Circulant';
-
-jobDir = fullfile(datadir,['job_simulated_data2_wass']);
+funcName = 'wrap_wass_local_reg_FISTA_Circulant';
+jobDir = fullfile(datadir,['job_simulated_data2_wass_local']);
 mkdir(jobDir)
 
 %% Fixed Parameters
