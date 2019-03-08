@@ -81,7 +81,7 @@ vdf = vdf/sum(vdf(:));
 [ind_theta,ind_rad] = find(ones(size(vdf)));
 mean_theta = sum(vdf(:).*ind_theta);
 mean_rad = sum(vdf(:).*ind_rad);
-vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
+vdf_match = {gaussian_basis_2D(t,mean_theta,0.25, r,mean_rad,0.25)};
 
 % Add entropic reg wasserstein distance vdf term  
 wObj = WassersteinObjective(vdf(:), vdf_match(:), wLam, D);
@@ -114,7 +114,7 @@ while keep_going && (nIter < maxIter)
     % Update vdf to match
     mean_theta = sum(vdf(:).*ind_theta);
     mean_rad = sum(vdf(:).*ind_rad);
-    vdf_match = {gaussian_basis_2D(t,mean_theta,1, r,mean_rad,1)};
+    vdf_match = {gaussian_basis_2D(t,mean_theta,0.25, r,mean_rad,0.25)};
     
     gradW = zeros(t*r,1);
     wObj_zk = 0;

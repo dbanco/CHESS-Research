@@ -1,7 +1,7 @@
 datasetName = 'simulated_data2';
-fitName = '_fit_wass_reg';
+fitName = '_fit_wass_local';
 
-%% Load mmpad fit
+%% Load fit
 img_num = 100;
 ring_num = 1;
 
@@ -78,7 +78,7 @@ sparsity = zeros(100,1);
 %wass_dist = zeros(100,1);
 var_signal = zeros(100,P.num_var_t,P.num_var_r);
 
-for img_num = 2:100
+for img_num = 1:100
     k = img_num;
     fprintf('Image %i\n',k)
     fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
@@ -123,7 +123,6 @@ for i = 1:100
     truth_awmv_az(i) = sum(vdf_i,1)*sqrt(P.var_rad)';
 end
 %% Plot time varying spread and error functions
-
 figure(1)
 for j = 1
     plot(ring_data{j}.rad_spread(1:100),'-o','MarkerSize',3)
@@ -173,12 +172,32 @@ xlabel('Time')
 % xlabel('Time')
 
 %% Show evolving var_signal
-
+figure()
+% Load truth vdf
+load(['D:\CHESS_data\',datasetName,'\synth_data.mat'])
 for i = 1:100
     im_vdf = video_norm_diff{i};
+    im_vdf = im_vdf/sum(im_vdf(:));
     lim1 = min(im_vdf(:));
     lim2 = max(im_vdf(:));
+    subplot(1,3,1)
     imshow(im_vdf,'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+    
+    % Compute matching vdf
+    [ind_theta,ind_rad] = find(ones(size(im_vdf)));
+    mean_theta = sum(im_vdf(:).*ind_theta);
+    mean_rad = sum(im_vdf(:).*ind_rad);
+    vdf_match = gaussian_basis_2D(size(im_vdf,1),mean_theta,0.25, size(im_vdf,2),mean_rad,0.25);
+    vdf_match = reshape(vdf_match,size(im_vdf));
+    subplot(1,3,2)
+    imshow(vdf_match,'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+    
+    % Display true vdf
+    vdf_true = VDF{i};
+    vdf_true = vdf_true/sum(vdf_true(:));
+    subplot(1,3,3)
+    imshow(vdf_true,'DisplayRange',[lim1 lim2],'Colormap',jet,'InitialMagnification','fit');
+    
     pause(0.2)
 end
 
