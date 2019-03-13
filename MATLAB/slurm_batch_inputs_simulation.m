@@ -2,7 +2,7 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'simulated_data2');
+dataset = fullfile(datadir,'simulated_data_60');
 prefix = 'polar_image';
 
 % Function

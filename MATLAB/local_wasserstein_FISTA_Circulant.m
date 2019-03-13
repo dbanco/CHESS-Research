@@ -50,6 +50,7 @@ tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
 wLam = params.wLam;
+wGamma = 0;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
@@ -79,13 +80,16 @@ vdf = vdf/sum(vdf(:));
 
 % Compute vdf to match
 [ind_theta,ind_rad] = find(ones(size(vdf)));
-mean_theta = sum(vdf(:).*ind_theta);
-mean_rad = sum(vdf(:).*ind_rad);
+% mean_theta = sum(vdf(:).*ind_theta);
+% mean_rad = sum(vdf(:).*ind_rad);
+[mean_theta,mean_rad] = find(max(vdf(:))==vdf);
+mean_theta = mean(mean_theta);
+mean_rad = mean(mean_rad);
 vdf_match = {gaussian_basis_2D(t,mean_theta,0.25, r,mean_rad,0.25)};
 
 % Add entropic reg wasserstein distance vdf term  
 wObj = WassersteinObjective(vdf(:), vdf_match(:), wLam, D);
-f = f + 0.5*params.gamma*wObj;
+f = f + 0.5*wGamma*wObj;
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -101,6 +105,12 @@ nIter = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
+    % Begin to enforce monomodality by Wasserstein distance    
+    if nIter == 10
+       wGamma = params.gamma; 
+       L = params.L;
+    end
+    
     % Data matching gradient update
     grad = AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
 
@@ -112,8 +122,11 @@ while keep_going && (nIter < maxIter)
     end
     
     % Update vdf to match
-    mean_theta = sum(vdf(:).*ind_theta);
-    mean_rad = sum(vdf(:).*ind_rad);
+%     mean_theta = sum(vdf(:).*ind_theta);
+%     mean_rad = sum(vdf(:).*ind_rad);
+    [mean_theta,mean_rad] = find(max(vdf(:))==vdf);
+    mean_theta = mean(mean_theta);
+    mean_rad = mean(mean_rad);
     vdf_match = {gaussian_basis_2D(t,mean_theta,0.25, r,mean_rad,0.25)};
     
     gradW = zeros(t*r,1);
@@ -124,7 +137,7 @@ while keep_going && (nIter < maxIter)
     for i = 1:t
         for j = 1:r
             grad(:,:,i,j) = grad(:,:,i,j) + ...
-            params.gamma*(gradW(i,j)./sum(zk(:)) - sum(gradW(:).*vdf(:))./sum(zk(:)));
+            wGamma*(gradW(i,j)./sum(zk(:)) - sum(gradW(:).*vdf(:))./sum(zk(:)));
         end
     end
     
@@ -149,7 +162,7 @@ while keep_going && (nIter < maxIter)
         vdf_zk = squeeze(sum(sum(zk,1),2));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
         temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
-            0.5*params.gamma*wObj_zk +...
+            0.5*wGamma*wObj_zk +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         
@@ -211,13 +224,14 @@ while keep_going && (nIter < maxIter)
         title('xk')
         
         subplot(2,3,3)
-        imshow(fit2,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('zk')
+        vdf_lim1 = max(vdf(:));
+        imshow(vdf,'DisplayRange',[0 vdf_lim1],'Colormap',jet);
+        title('vdf')
         
         subplot(2,3,4)
-        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zMask);
-        imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('gk')
+        vdf_lim2 = max(vdf_match{1}(:));
+        imshow(reshape(vdf_match{1},size(vdf)),'DisplayRange',[0 vdf_lim2],'Colormap',jet);
+        title('vdf match')
         
         subplot(2,3,5)
         imshow(abs(b-fit),'DisplayRange',[lim1 lim2],'Colormap',jet);

@@ -261,7 +261,7 @@ end
 video_norm_diff = cell(100,1);
 
 fDir = ['D:\CHESS_data\',datasetName,fitName];
-for img_num = 2:100
+for img_num = 1:100
     display(img_num)
     frame = [];
     for ring_num = 1

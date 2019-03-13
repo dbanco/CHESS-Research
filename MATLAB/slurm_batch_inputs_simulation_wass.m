@@ -2,20 +2,20 @@
 datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
-dataset = fullfile(datadir,'simulated_data2');
+dataset = fullfile(datadir,'simulated_data_60');
 prefix = 'polar_image';
 
 % Init directory
-initdir = fullfile('/cluster','shared','dbanco02','simulated_data2_fit');
+initdir = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit');
 
 % Output directory
-outputdir = fullfile('/cluster','shared','dbanco02','simulated_data2_fit_wass_reg');
+outputdir = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg');
 mkdir(outputdir)
 
 % Function
 funcName = 'wrap_wass_reg_FISTA_Circulant';
 
-jobDir = fullfile(datadir,['job_simulated_data2_wass']);
+jobDir = fullfile(datadir,['job_simulated_data_60_wass']);
 mkdir(jobDir)
 
 %% Fixed Parameters
@@ -44,7 +44,7 @@ params.tolerance = 1e-10;
 params.L = 10;
 params.lambda = 0.02;
 params.wLam = 25;
-params.gamma = 0.05;
+params.gamma = 0.08;
 params.beta = 1.2;
 params.maxIter = 1000;
 params.maxIterReg = 2000;

@@ -1,7 +1,7 @@
-saveDir = 'D:\CHESS_data\simulated_data2\';
+saveDir = 'D:\CHESS_data\simulated_data_80\';
 mkdir(saveDir)
 %% Randomized spot example
-num_spots = 100;
+num_spots = 80;
 % Ring sampling parameters
 ring_width = 20;
 num_theta= 2048;
@@ -113,7 +113,7 @@ for i = 1:size(positions,1)
     amplitudes = amplitudes + amplitude_deltas;
     
 end
-save([saveDir,'synth_data2.mat'],'synth_sample','VDF')
+save([saveDir,'synth_data.mat'],'synth_sample','VDF')
 
 %% View Expected Variance
 % figure(2)
