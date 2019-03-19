@@ -1,5 +1,5 @@
-datasetName = 'simulated_data2';
-fitName = '_fit_wass_local';
+datasetName = 'simulated_data_60';
+fitName = '_fit';
 
 %% Load fit
 img_num = 100;
@@ -95,9 +95,9 @@ for img_num = 1:100
     rad_spread(k) = sqrt(P.var_theta)*rad_var_signal/var_sum;
     sparsity(k) = sum(x_hat(:)>0);
 
-    if k > 2
-        wass_dist(k) = sinkhornKnoppTransport(var_signal_k(:),vdf_last(:),P.params.wLam,D);
-    end
+%     if k > 2
+%         wass_dist(k) = sinkhornKnoppTransport(var_signal_k(:),vdf_last(:),P.params.wLam,D);
+%     end
 
     k = k + 1;
     vdf_last = var_signal_k;
