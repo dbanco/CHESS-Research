@@ -13,14 +13,14 @@ P.var_rad   = linspace(P.drad/2,  5,P.num_var_r);
 
 % Ring sampling parameters
 ring_width = 15;
-num_theta= 90;
+num_theta= 160;
 num_rad = 2*ring_width+1;
 dtheta = 1;
 drad = 1;
 
-az_mean1 = 30;
-az_mean2 = 32:0.5:52;
-az_std_both = 0.5:0.5:30;
+az_mean1 = 50;
+az_mean2 = 52:4:112;
+az_std_both = 1:1:15;
 
 rad_mean = 15;
 rad_std = 4;
@@ -38,19 +38,18 @@ for i = 1:n1
         std_theta = randn(num_spots,1).*width_az_std + start_center_az_std*(1-dist(i)/100) + end_center_az_std*(dist(i)/100);
         std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/100) + end_center_rad_std*(dist(i)/100); 
 
-        VDF{i} = histogram(az_std_both(j),{P.var_theta'});
         figure(1)
-        imagesc(VDF{i})
+        VDF{i} = histogram(az_std_both(j),P.var_theta');
 
         % Generate image
         B = zeros(num_rad,num_theta);
-        B = B + gaussian_basis_wrap_2D_norm2( num_theta, dtheta, az_mean1, az_std_both(j)^2,...
-                                              num_rad,   drad,   rad_mean, rad_std^2 );
-        B = B + gaussian_basis_wrap_2D_norm2( num_theta, dtheta, az_mean2(i), az_std_both(j)^2,...
-                                              num_rad,   drad,   rad_mean,    rad_std^2 );
+        B = B + gaussian_basis_2D( num_theta, az_mean1, az_std_both(j)^2,...
+                                   num_rad,   rad_mean, rad_std^2 );
+        B = B + gaussian_basis_2D( num_theta, az_mean2(i), az_std_both(j)^2,...
+                                   num_rad,   rad_mean,    rad_std^2 );
                                           
         % Add noise
-        B = B + randn(num_rad,num_theta)/100;
+%         B = B + randn(num_rad,num_theta)/100;
 
         % Plot image
         figure(2)
@@ -77,7 +76,7 @@ for i = 1:n1
 
         % Add sample to (n1*n2)x1 cell array 
         synth_sample{i} = sample;
-        im_name = [saveDir,sprintf('polar_image_%i.mat',i)];
+        im_name = [saveDir,sprintf('polar_image_%i_%i.mat',i,j)];
         polar_image = B;
 
         % Save out image files
