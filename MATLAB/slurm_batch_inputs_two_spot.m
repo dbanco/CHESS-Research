@@ -52,12 +52,14 @@ mkdir(outputdir)
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_two_spot_fit']);
 mkdir(jobDir)
+jj = 1;
 for set = 1:16
     for img = 1:15
         P.img = img;
         P.set = set;
         varin = {fullfile(dataset,prefix),P,outputdir};
-        save(fullfile(jobDir,['varin_',num2str(img),'.mat']),'varin','funcName')
+        save(fullfile(jobDir,['varin_',num2str(jj),'.mat']),'varin','funcName')
+        jj = jj+1;
     end
 end
 slurm_write_bash(240,jobDir,'full_batch_script.sh','1-240')
