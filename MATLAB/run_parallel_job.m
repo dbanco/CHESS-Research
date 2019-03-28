@@ -1,6 +1,4 @@
-% Run from appropriate job folder
-addpath('../CHESS-Research/MATLAB')
-
-parfor idx = 1:2
+function run_parallel_job(num_jobs)
+parfor idx = 1:num_jobs
     slurm_batch_wrapper(idx);
 end
