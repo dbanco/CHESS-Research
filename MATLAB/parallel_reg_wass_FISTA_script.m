@@ -1,5 +1,4 @@
 % Initialize unregularized solution
-cd '../../job_wass_parallel_init'
 parfor idx = 1:n
     slurm_batch_wrapper(idx);
 end
