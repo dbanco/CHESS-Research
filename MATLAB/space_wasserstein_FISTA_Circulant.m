@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
+function [x_hat, err, t_k, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -86,8 +86,8 @@ x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
 xk = x_init;
 zk = xk;
-t_k = 1;
-t_kp1 = 1;
+t_k = params.tk;
+t_kp1 = params.tk;
 keep_going = 1;
 nIter = 0;
 while keep_going && (nIter < maxIter)
