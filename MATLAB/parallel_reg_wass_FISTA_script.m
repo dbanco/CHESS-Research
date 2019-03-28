@@ -1,3 +1,4 @@
+function parallel_reg_wass_FISTA_script(n)
 % Initialize unregularized solution
 parfor idx = 1:n
     slurm_batch_wrapper(idx);
