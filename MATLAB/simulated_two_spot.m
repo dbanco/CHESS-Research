@@ -24,20 +24,21 @@ az_std_both = 1:1:15;
 
 rad_mean = 15;
 rad_std = 4;
-
+amplitudes = [1,1];
 % Produce 5x5 array of ring images
-n1 = numel(az_mean2);
-n2 = numel(az_std_both);
+n1 = numel(az_mean2); %16
+n2 = numel(az_std_both); %15
 
 synth_sample = cell(n1*n2,1);
 VDF = cell(n1*n2,1);
 evar_az = zeros(n1*n2,1);
+allB = [];
 
-for i = 1:n1
-    for j = 1:n2
-        std_theta = randn(num_spots,1).*width_az_std + start_center_az_std*(1-dist(i)/100) + end_center_az_std*(dist(i)/100);
-        std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/100) + end_center_rad_std*(dist(i)/100); 
+figure(222)
+[ha, pos] = tight_subplot(16,15,[.005 .005],[.01 .01],[.01 .01]); 
 
+for i = 1:16
+    for j = 1:15
         figure(1)
         VDF{i} = histogram(az_std_both(j),P.var_theta');
 
@@ -52,39 +53,41 @@ for i = 1:n1
 %         B = B + randn(num_rad,num_theta)/100;
 
         % Plot image
-        figure(2)
+        
+        ii = ((i-1)*n2 + j);
+        axes(ha(ii));
         uplim = max(B(:));
         imshow(B,'DisplayRange',[0 uplim],'Colormap',jet)
-
-        % Save sample info to structure
-        sample.image = B;
-        sample.std_theta = [az_std_both(j); az_std_both(j)];
-        sample.std_rad = [rad_std; rad_std];
-        sample.theta_mean = [az_mean1; az_mean2(i)];
-        sample.rad_mean = [rad_mean; rad_mean];
-        sample.amplitudes = [1;1];
-        sample.vdf = VDF{i};
-
-        %Compute expected variance
-        total = sum(amplitudes(:));
-        az_signal = amplitudes.*std_theta;
-        rad_signal = amplitudes.*std_rad;
-        expected_var_az = sum(az_signal(:))/total;
-        expected_var_rad = sum(rad_signal(:))/total;
-        evar_az(i) = expected_var_az;
-        evar_rad(i) = expected_var_rad;
-
-        % Add sample to (n1*n2)x1 cell array 
-        synth_sample{i} = sample;
-        im_name = [saveDir,sprintf('polar_image_%i_%i.mat',i,j)];
-        polar_image = B;
+        
+%         % Save sample info to structure
+%         sample.image = B;
+%         sample.std_theta = [az_std_both(j); az_std_both(j)];
+%         sample.std_rad = [rad_std; rad_std];
+%         sample.theta_mean = [az_mean1; az_mean2(i)];
+%         sample.rad_mean = [rad_mean; rad_mean];
+%         sample.amplitudes = [1;1];
+%         sample.vdf = VDF{i};
+% 
+%         %Compute expected variance
+%         total = sum(amplitudes(:));
+%         az_signal = amplitudes.*sample.std_theta;
+%         rad_signal = amplitudes.*std_rad;
+%         expected_var_az = sum(az_signal(:))/total;
+%         expected_var_rad = sum(rad_signal(:))/total;
+%         evar_az(i) = expected_var_az;
+%         evar_rad(i) = expected_var_rad;
+% 
+%         % Add sample to (n1*n2)x1 cell array 
+%         synth_sample{i} = sample;
+%         im_name = [saveDir,sprintf('polar_image_%i_%i.mat',i,j)];
+%         polar_image = B;
 
         % Save out image files
-        save(im_name,'polar_image')
+%         save(im_name,'polar_image')
     end
 end
 
-save([saveDir,'synth_data.mat'],'synth_sample','VDF')
+% save([saveDir,'synth_data.mat'],'synth_sample','VDF')
 
 %% View Expected Variance
 % figure(2)
