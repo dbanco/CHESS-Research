@@ -86,8 +86,8 @@ x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
 xk = x_init;
 zk = xk;
-t_k = params.tk;
-t_kp1 = params.tk;
+t_k = params.t_k;
+t_kp1 = params.t_k;
 keep_going = 1;
 nIter = 0;
 while keep_going && (nIter < maxIter)
