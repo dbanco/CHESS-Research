@@ -20,7 +20,7 @@ P.drad = 1;
 P.sampleDims = [546,1];
 
 % Basis function variance parameters
-P.num_var_t = 12;
+P.num_var_t = 15;
 P.num_var_r = 8;
 P.var_theta = linspace(P.dtheta/2,32,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  6,P.num_var_r).^2;
@@ -39,7 +39,7 @@ zMask = [r,c];
 params.stoppingCriterion = 1;
 params.tolerance = 1e-7;
 params.L = 10;
-params.lambda = 0.005;
+params.lambda = 0.01;
 params.beta = 1.2;
 params.maxIter = 1000;
 params.isNonnegative = 1;
