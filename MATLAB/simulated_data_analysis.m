@@ -1,4 +1,4 @@
-datasetName = 'simulated_data_60';
+datasetName = 'wass_parallel_a';
 fitName = '_fit';
 
 %% Load fit
