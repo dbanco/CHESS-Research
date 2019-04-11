@@ -1,9 +1,9 @@
-datasetName = 'wass_parallel_a';
+datasetName = 'simulated_two_spot';
 fitName = '_fit';
 
 %% Load fit
-img_num = 100;
-ring_num = 1;
+img_num = 10;
+ring_num = 5;
 
 fDir = ['D:\CHESS_data\',datasetName,fitName];
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
@@ -13,7 +13,7 @@ A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 
 lim1 = 0;
-lim2 = 100;
+lim2 = max(polar_image(:));
 % Plot both images
 figure(1)
 subplot(2,1,1)

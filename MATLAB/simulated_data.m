@@ -1,7 +1,7 @@
-saveDir = 'D:\CHESS_data\simulated_data_80\';
+saveDir = 'D:\CHESS_data\simulated_data_nooverlap_60\';
 mkdir(saveDir)
 %% Randomized spot example
-num_spots = 80;
+num_spots = 60;
 % Ring sampling parameters
 ring_width = 20;
 num_theta= 2048;
@@ -111,7 +111,7 @@ for i = 1:size(positions,1)
     theta_means = theta_means + theta_mean_deltas;
     rad_means = rad_means + rad_mean_deltas;
     amplitudes = amplitudes + amplitude_deltas;
-    
+    pause()
 end
 save([saveDir,'synth_data.mat'],'synth_sample','VDF')
 
