@@ -112,5 +112,5 @@ for img = img_nums
 end
 
 % Init script
-slurm_write_matlab(546,jobDir1,'batch_script.sh')
+slurm_write_matlab(546,jobDir1,'parallel_reg_wass_FISTA','batch_script.sh')
 

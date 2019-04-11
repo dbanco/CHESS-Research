@@ -72,5 +72,5 @@ for ring_num = 1
         k = k + 1;
     end
     slurm_write_bash(k-1,jobDir,'full_batch_script.sh','1-546')
-    slurm_write_matlab(k-1,jobDir,'parallel_reg_wass_FISTA','matlab_batch_script.sh')
+    slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
 end
