@@ -8,8 +8,8 @@ ring_num  = 1;
 prefix = 'mmpad_img';
 
 % Output directories
-dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a');
-dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b');
+dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a_fit3');
+dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b_fit3');
 mkdir(dirA)
 mkdir(dirB)
 
@@ -56,7 +56,7 @@ params.L = 10;
 params.t_k = 1;
 params.lambda = 0.01;
 params.wLam = 25;
-params.gamma = 0.05;
+params.gamma = 0.01;
 params.beta = 1.2;
 params.maxIter = 400;
 params.maxIterReg = 50;
