@@ -54,11 +54,11 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-10;
 params.L = 10;
 params.t_k = 1;
-params.lambda = 0.01;
+params.lambda = 0.02;
 params.wLam = 25;
-params.gamma = 0.01;
+params.gamma = 0.05;
 params.beta = 1.2;
-params.maxIter = 400;
+params.maxIter = 600;
 params.maxIterReg = 50;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
@@ -69,7 +69,7 @@ P.params = params;
 
 %% Initialization parameters
 P1 = P;
-P1.params.tolerance = 1e-5;
+P1.params.tolerance = 1e-6;
 
 %% Regularization parameters
 P2 = P;
