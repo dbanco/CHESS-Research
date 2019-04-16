@@ -1,5 +1,4 @@
-function B = gaussian_basis_2D(num_theta,  mean_theta,var_theta,...
-                               num_rad,    mean_rad,  var_rad )
+function B = gaussian_basis_2D(num_theta,  mean_theta,var_theta, num_rad,  mean_rad,var_rad)
 %gaussian_basis_wrap_2D Generates gaussian basis function matrix
 % normalized to sum to 1
 %
