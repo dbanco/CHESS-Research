@@ -39,12 +39,7 @@ D = D./max(D(:));
 
 %% Run FISTA updating solution and error array
 vdfs = load_neighbors_vdf(input_dir,baseFileName,P);
-x_init = zeros(size(A0ft_stack));
-for i = 1:P.num_var_t
-    for j = 1:P.num_var_r
-        x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
-    end
-end
+x_init = fileData.x_hat;
 [x_hat, err_new, t_k,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
 err = [fileData.err(:);err_new(:)];
 P.params.t_k = t_k;
