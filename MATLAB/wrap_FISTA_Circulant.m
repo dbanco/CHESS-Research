@@ -38,8 +38,8 @@ x_init = forceMaskToZeroArray(x_init,P.params.zeroMask);
 b = b/norm(b(:));
 
 %% Call function
-[x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-
+[x_hat, err, obj, l_0, t_k] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
+P.params.t_k = t_k;
 
 %% Save output
 save(fullfile(outputdir,sprintf('fista_fit_%i_%i.mat',P.set,P.img)),'x_hat','err','polar_image','P')

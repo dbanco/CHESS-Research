@@ -16,7 +16,15 @@ P.num_rad = size(b,1);
 P.num_theta = size(b,2);
 
 % Construct dictionary
-A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
+switch P.basis
+    case 'norm2'
+        A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
+    case 'norm1'
+        A0ft_stack = unshifted_basis_matrix_ft_stack_norm(P);
+    case 'max'
+        A0ft_stack = unshifted_basis_matrix_ft_stack(P);
+end
+
 
 % Compute data weights
 wData = Ax_ft_2D(A0ft_stack,weightData.x_hat);

@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0] = FISTA_Circulant(A0ft_stack,b,x_init,params)
+function [x_hat, err, obj, l_0, t_k] = FISTA_Circulant(A0ft_stack,b,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
