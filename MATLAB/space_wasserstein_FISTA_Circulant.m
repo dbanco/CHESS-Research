@@ -1,4 +1,4 @@
-function [x_hat, err, t_k, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
+function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -117,7 +117,6 @@ while keep_going && (nIter < maxIter)
         end
     end
 
-    
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 

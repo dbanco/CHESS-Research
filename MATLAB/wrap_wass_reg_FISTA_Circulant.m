@@ -7,7 +7,7 @@ baseFileName = 'fista_fit_%i_%i.mat';
 fileData = load(fullfile(input_dir,sprintf(baseFileName,P.set,P.img)));
 polar_image = fileData.polar_image;
 P.params.t_k = fileData.P.params.t_k;
-
+P.params.L = fileData.P.params.L;
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
 % Scale image by 2-norm
@@ -48,9 +48,10 @@ D = D./max(D(:));
 %% Run FISTA updating solution and error array
 vdfs = load_neighbors_vdf(input_dir,baseFileName,P);
 x_init = fileData.x_hat;
-[x_hat, err_new, t_k,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
+[x_hat, err_new, t_k, L,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
 err = [fileData.err(:);err_new(:)];
 P.params.t_k = t_k;
+P.params.L = L;
 %% Save outputs, updating the coefficients of the previous iteration
 save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')
 
