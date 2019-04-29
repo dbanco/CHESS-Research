@@ -35,9 +35,9 @@ P.sampleDims = [10,1];
 % Basis function variance parameters
 P.basis = 'norm2';
 P.num_var_t = 15;
-P.num_var_r = 8;
+P.num_var_r = 10;
 P.var_theta   = linspace(P.dtheta/2,  32,P.num_var_t).^2;
-P.var_rad = linspace(P.drad/2,6,P.num_var_r).^2;
+P.var_rad = linspace(P.drad/2,8,P.num_var_r).^2;
 
 % Zero padding and mask
 maskCols = 129:133;
@@ -54,11 +54,11 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-10;
 params.L = 10;
 params.t_k = 1;
-params.lambda = 0.001;
+params.lambda = 0.01;
 params.wLam = 25;
-params.gamma = 0.005;
+params.gamma = 0.01;
 params.beta = 1.2;
-params.maxIter = 100;
+params.maxIter = 50;
 params.maxIterReg = 50;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
@@ -81,7 +81,7 @@ imageDir = fullfile(dataset,ringName,prefix);
 % Initialization jobs
 k = 1;
 for img = img_nums
-    P1.img = img;
+    P1.img = img+10;
     P1.set = ring_num;
     varin = {imageDir,P1,dirA};
     funcName = funcName1;
@@ -92,7 +92,7 @@ end
 % Regularization jobs for dirA->dirB
 k = 1;
 for img = img_nums
-    P2.img = img;
+    P2.img = img+10;
     P2.set = ring_num;
     varin = {dirA,P2,dirB};
     funcName = funcName2;
@@ -103,7 +103,7 @@ end
 % Regularization jobs for dirB->dirA
 k = 1;
 for img = img_nums
-    P2.img = img;
+    P2.img = img+10;
     P2.set = ring_num;
     varin = {dirB,P2,dirA};
     funcName = funcName2;
