@@ -8,8 +8,8 @@ ring_num  = 1;
 prefix = 'mmpad_img';
 
 % Output directories
-dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a_fit6');
-dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b_fit6');
+dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a_fit7');
+dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b_fit7');
 mkdir(dirA)
 mkdir(dirB)
 
@@ -35,9 +35,9 @@ P.sampleDims = [546,1];
 % Basis function variance parameters
 P.basis = 'norm2';
 P.num_var_t = 15;
-P.num_var_r = 8;
+P.num_var_r = 10;
 P.var_theta   = linspace(P.dtheta/2,  32,P.num_var_t).^2;
-P.var_rad = linspace(P.drad/2,6,P.num_var_r).^2;
+P.var_rad = linspace(P.drad/2,8,P.num_var_r).^2;
 
 % Zero padding and mask
 maskCols = 129:133;
@@ -54,7 +54,7 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-10;
 params.L = 10;
 params.t_k = 1;
-params.lambda = 0.001;
+params.lambda = 0.01;
 params.wLam = 25;
 params.gamma = 0.01;
 params.beta = 1.2;
