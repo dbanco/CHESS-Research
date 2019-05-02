@@ -1,9 +1,9 @@
-datasetName = 'simulated_two_spot';
-fitName = '_fit';
+datasetName = 'simulated_data2';
+fitName = '_fit_wass_reg';
 
 %% Load fit
 img_num = 10;
-ring_num = 5;
+ring_num = 1;
 
 fDir = ['D:\CHESS_data\',datasetName,fitName];
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
@@ -113,7 +113,7 @@ spreadDir = fullfile('D:','CHESS_data','spread_results');
 
 ring_data{1} = load(fullfile(spreadDir,['spread_',datasetName,fitName,'.mat']));
 
-load(['D:\CHESS_data\',datasetName,'\synth_data.mat'])
+load(['D:\CHESS_data\','simulated_data1','\synth_data.mat'])
 truth_awmv_az = zeros(100,1);
 truth_awmv_rad = zeros(100,1);
 for i = 1:100
