@@ -81,7 +81,7 @@ imageDir = fullfile(dataset,ringName,prefix);
 % Initialization jobs
 k = 1;
 for img = img_nums
-    P1.img = img+10;
+    P1.img = img;
     P1.set = ring_num;
     varin = {imageDir,P1,dirA};
     funcName = funcName1;
@@ -92,7 +92,7 @@ end
 % Regularization jobs for dirA->dirB
 k = 1;
 for img = img_nums
-    P2.img = img+10;
+    P2.img = img;
     P2.set = ring_num;
     varin = {dirA,P2,dirB};
     funcName = funcName2;
@@ -103,7 +103,7 @@ end
 % Regularization jobs for dirB->dirA
 k = 1;
 for img = img_nums
-    P2.img = img+10;
+    P2.img = img;
     P2.set = ring_num;
     varin = {dirB,P2,dirA};
     funcName = funcName2;
