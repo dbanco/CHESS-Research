@@ -8,6 +8,7 @@ fileData = load(fullfile(input_dir,sprintf(baseFileName,P.set,P.img)));
 polar_image = fileData.polar_image;
 P.params.t_k = fileData.P.params.t_k;
 P.params.L = fileData.P.params.L;
+
 %% Zero pad image
 b = zeroPad(polar_image,P.params.zeroPad);
 % Scale image by 2-norm

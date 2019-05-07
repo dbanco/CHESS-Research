@@ -27,7 +27,7 @@ R = P.num_var_r;
 n_awmv_az = 0;
 n_awmv_rad = 0; 
 
-for i = 1:size(neighbor_imgs,1)
+for i = 1:numel(neighbor_imgs)
     n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img-1));
     load(load_file)
@@ -36,5 +36,5 @@ for i = 1:size(neighbor_imgs,1)
     n_awmv_az = n_awmv_az + awmv_az;
     n_awmv_rad = n_awmv_rad + awmv_rad;
 end
-n_awmv_az = n_awmv_az/size(neighbor_imgs,1);
-n_awmv_rad = n_awmv_rad/size(neighbor_imgs,1);
+n_awmv_az = n_awmv_az/numel(neighbor_imgs);
+n_awmv_rad = n_awmv_rad/numel(neighbor_imgs);
