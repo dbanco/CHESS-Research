@@ -3,7 +3,7 @@ datadir = fullfile('/cluster','home','dbanco02');
 
 % Ring dataset
 dataset = fullfile(datadir,'mmpad_polar');
-ringName = 'ring1_zero_30';
+ringName = 'ring1_zero';
 ring_num  = 1;
 prefix = 'mmpad_img';
 
