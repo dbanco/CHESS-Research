@@ -3,8 +3,8 @@ function vdfs = load_neighbors_vdf(output_dir,baseFileName,P)
 %          of coefficients neighboring point (i,j)
 
 % Get list of possible neighbors
-row = ceil(P.img/(P.sampleDims(2)));
-col = mod(P.img,P.sampleDims(2))+1;
+row = ceil(P.index/(P.sampleDims(2)));
+col = mod(P.index,P.sampleDims(2))+1;
 rows = [row-1;
         row+1; 
         row;
