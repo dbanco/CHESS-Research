@@ -31,6 +31,7 @@ P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
 P.sampleDims = [30,1];
+P.index = 
 
 % Basis function variance parameters
 P.basis = 'norm2';
@@ -82,6 +83,7 @@ imageDir = fullfile(dataset,ringName,prefix);
 k = 1;
 for img = img_nums
     P1.img = img;
+    P1.index = k;
     P1.set = ring_num;
     varin = {imageDir,P1,dirA};
     funcName = funcName1;
@@ -93,6 +95,7 @@ end
 k = 1;
 for img = img_nums
     P2.img = img;
+    P2.index = k;
     P2.set = ring_num;
     varin = {dirA,P2,dirB};
     funcName = funcName2;
@@ -104,6 +107,7 @@ end
 k = 1;
 for img = img_nums
     P2.img = img;
+    P2.index = k;
     P2.set = ring_num;
     varin = {dirB,P2,dirA};
     funcName = funcName2;
