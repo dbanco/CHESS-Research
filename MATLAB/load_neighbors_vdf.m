@@ -18,6 +18,7 @@ cols = [col;
 keep = (rows >= 1).*(rows <=P.sampleDims(1)).*...
        (cols >= 1).*(cols <=P.sampleDims(2));
 neighbor_imgs = [rows(keep==1),cols(keep==1)];
+neighbor_imgs = neighbor_imgs + P.img - P.index;
 
 %Get contributions and vdfs from neighbors
 n = P.num_rad;
