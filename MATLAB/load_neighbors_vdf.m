@@ -18,7 +18,6 @@ cols = [col;
 keep = (rows >= 1).*(rows <=P.sampleDims(1)).*...
        (cols >= 1).*(cols <=P.sampleDims(2));
 neighbor_imgs = [rows(keep==1),cols(keep==1)];
-neighbor_imgs = neighbor_imgs + P.img - P.index;
 
 %Get contributions and vdfs from neighbors
 n = P.num_rad;
@@ -29,6 +28,7 @@ neighbors = zeros(n,m,T,R);
 vdfs = {}; 
 for i = 1:size(neighbor_imgs,1)
     n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
+    n_img = n_img + P.img - P.index;
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img));
     load(load_file)
     x_hat_var = x_hat;
