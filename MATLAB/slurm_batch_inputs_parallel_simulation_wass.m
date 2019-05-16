@@ -10,7 +10,7 @@ initdir = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit');
 
 % Output directories
 dirA = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg_a');
-dirB = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg_a');
+dirB = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg_b');
 mkdir(dirA)
 mkdir(dirB)
 
@@ -71,7 +71,7 @@ for img = img_nums
     P1.img = img;
     P1.index = k;
     P1.set = 1;
-    varin = {initdir,P1,outputdir};
+    varin = {initdir,P1,dirA};
     funcName = funcName1;
     save(fullfile(jobDir,['varin_',num2str(img),'.mat']),'varin','funcName')
     k = k + 1;
@@ -83,7 +83,7 @@ for img = img_nums
     P.img = img;
     P.index = k;
     P.set = 1;
-    varin = {dirA,P2,dirB};
+    varin = {dirA,P,dirB};
     funcName = funcName2;
     save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
     k = k + 1;
@@ -92,10 +92,10 @@ end
 % Regularization jobs for dirB->dirA
 k = 1;
 for img = img_nums
-    P2.img = img;
+    P.img = img;
     P.index = k;
     P.set = 1;
-    varin = {dirB,P2,dirA};
+    varin = {dirB,P,dirA};
     funcName = funcName2;
     save(fullfile(jobDir3,['varin_',num2str(k),'.mat']),'varin','funcName')
     k = k + 1;
