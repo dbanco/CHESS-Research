@@ -73,7 +73,7 @@ for img = img_nums
     P1.set = 1;
     varin = {initdir,P1,dirA};
     funcName = funcName1;
-    save(fullfile(jobDir,['varin_',num2str(img),'.mat']),'varin','funcName')
+    save(fullfile(jobDir1,['varin_',num2str(img),'.mat']),'varin','funcName')
     k = k + 1;
 end
 
