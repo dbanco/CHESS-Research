@@ -5,9 +5,6 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'simulated_data_60');
 prefix = 'polar_image';
 
-% Init directory
-initdir = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit');
-
 % Output directories
 dirA = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg_a');
 dirB = fullfile('/cluster','shared','dbanco02','simulated_data_60_fit_wass_reg_b');
@@ -63,6 +60,8 @@ params.plotProgress = 0;
 P.params = params;
 
 %% Parameters to vary
+imageDir = fullfile(dataset,prefix);
+
 img_nums = 1:100;
 P1 = P;
 P1.params.tolerance = 1e-8;
@@ -71,7 +70,7 @@ for img = img_nums
     P1.img = img;
     P1.index = k;
     P1.set = 1;
-    varin = {initdir,P1,dirA};
+    varin = {imageDir,P1,dirA};
     funcName = funcName1;
     save(fullfile(jobDir1,['varin_',num2str(img),'.mat']),'varin','funcName')
     k = k + 1;
