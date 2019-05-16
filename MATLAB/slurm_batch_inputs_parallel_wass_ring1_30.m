@@ -30,14 +30,14 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [30,1];
+P.sampleDims = [31,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
 P.num_var_t = 15;
-P.num_var_r = 10;
+P.num_var_r = 8;
 P.var_theta   = linspace(P.dtheta/2,  32,P.num_var_t).^2;
-P.var_rad = linspace(P.drad/2,8,P.num_var_r).^2;
+P.var_rad = linspace(P.drad/2,6,P.num_var_r).^2;
 
 % Zero padding and mask
 maskCols = 129:133;
