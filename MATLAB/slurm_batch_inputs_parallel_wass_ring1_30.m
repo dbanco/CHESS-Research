@@ -56,7 +56,7 @@ params.L = 10;
 params.t_k = 1;
 params.lambda = 0.01;
 params.wLam = 30;
-params.gamma = 0.01;
+params.gamma = 0.008;
 params.beta = 1.2;
 params.maxIter = 200;
 params.maxIterReg = 5;
@@ -69,7 +69,7 @@ P.params = params;
 
 %% Initialization parameters
 P1 = P;
-P1.params.tolerance = 1e-6;
+P1.params.tolerance = 1e-8;
 
 %% Regularization parameters
 P2 = P;
