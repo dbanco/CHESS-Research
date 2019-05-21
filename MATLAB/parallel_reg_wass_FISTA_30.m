@@ -6,7 +6,7 @@ parfor idx = 1:n
 end
 
 % 10 pairs of regularized iterations
-for i = 1:200
+for i = 1:500
     cd '../job_wass_parallel_ab_30'
     parfor idx = 1:n
         slurm_batch_wrapper(idx);
