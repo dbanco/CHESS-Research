@@ -30,8 +30,12 @@ switch P.basis
 end
 
 % Initialize solution
-x_init = rand(size(A0ft_stack));
-x_init = x_init/norm(x_init(:));
+x_init = zeros(size(A0ft_stack));
+for i = 1:P.num_var_t
+    for j = 1:P.num_var_r
+        x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
+    end
+end
 x_init = forceMaskToZeroArray(x_init,P.params.zeroMask);
 
 % Scale image by 2-norm

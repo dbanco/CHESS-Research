@@ -37,7 +37,7 @@ P.basis = 'norm2';
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta   = linspace(P.dtheta/2,  32,P.num_var_t).^2;
-P.var_rad = linspace(P.drad/2,8,P.num_var_r).^2;
+P.var_rad = linspace(P.drad/2,6,P.num_var_r).^2;
 
 % Zero padding and mask
 maskCols = 129:133;
@@ -58,8 +58,8 @@ params.lambda = 0.01;
 params.wLam = 25;
 params.gamma = 0.01;
 params.beta = 1.2;
-params.maxIter = 50;
-params.maxIterReg = 50;
+params.maxIter = 200;
+params.maxIterReg = 5;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
@@ -69,7 +69,7 @@ P.params = params;
 
 %% Initialization parameters
 P1 = P;
-P1.params.tolerance = 1e-6;
+P1.params.tolerance = 1e-8;
 
 %% Regularization parameters
 P2 = P;
