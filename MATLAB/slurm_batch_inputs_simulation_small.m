@@ -60,7 +60,7 @@ mkdir(outputdir)
     for img = img_nums
         P.img = img;
         P.set = lambda_i;
-        P.params.lambda = lambdas(lambda_i);
+        P.params.lambda = lambda_vals(lambda_i);
         varin = {fullfile(dataset,prefix),P,outputdir};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
