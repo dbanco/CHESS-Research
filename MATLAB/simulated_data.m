@@ -1,10 +1,11 @@
-saveDir = 'D:\CHESS_data\simulated_data_nooverlap_60\';
+saveDir = 'D:\CHESS_data\simulated_data_small\';
 mkdir(saveDir)
 %% Randomized spot example
-num_spots = 60;
+num_ims = 20;
+num_spots = 15;
 % Ring sampling parameters
 ring_width = 20;
-num_theta= 2048;
+num_theta= 400;
 num_rad = 2*ring_width+1;
 dtheta = 1;
 drad = 1;
@@ -14,7 +15,7 @@ max_amp = 300;
 
 %Azimuthal mean and variance
 min_az_mean = 1;
-max_az_mean = 2047;
+max_az_mean = 399;
 start_center_az_std = 2;
 end_center_az_std = 25;
 width_az_std = 1;
@@ -35,18 +36,18 @@ P.var_theta = linspace(P.dtheta/2,30,P.num_var_t);
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r);
 
 % Setup sample positions and 
-positions = zeros(100,1);
-dist = zeros(100,1);
-for i = 1:100
+positions = zeros(num_ims,1);
+dist = zeros(num_ims,1);
+for i = 1:num_ims
         positions(i) = i;
         dist(i) = sqrt( (i-1)^2 );
 end
 
 % Produce 5x5 array of ring images
-synth_sample = cell(100,1);
-VDF = cell(100,1);
-evar_az = zeros(100,1);
-evar_rad = zeros(100,1);
+synth_sample = cell(num_ims,1);
+VDF = cell(num_ims,1);
+evar_az = zeros(num_ims,1);
+evar_rad = zeros(num_ims,1);
 
 theta_means = (rand(num_spots,1)-0.5)*max_az_mean + min_az_mean;
 rad_means = rand(num_spots,1)*width_rad_mean + center_rad_mean;
@@ -55,8 +56,8 @@ amplitudes = rand(num_spots,1)*max_amp + min_amp;
 for i = 1:size(positions,1)
 % for i = [1,50,100]
     % Generate diffraction spot parameters
-    std_theta = randn(num_spots,1).*width_az_std + start_center_az_std*(1-dist(i)/100) + end_center_az_std*(dist(i)/100);
-    std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/100) + end_center_rad_std*(dist(i)/100); 
+    std_theta = randn(num_spots,1).*width_az_std + start_center_az_std*(1-dist(i)/num_ims) + end_center_az_std*(dist(i)/num_ims);
+    std_rad = randn(num_spots,1).*width_rad_std + start_center_rad_std*(1-dist(i)/num_ims) + end_center_rad_std*(dist(i)/num_ims); 
 
     VDF{i} = hist3([std_theta,std_rad],'Ctrs',{P.var_theta',P.var_rad'});
     figure(1)
