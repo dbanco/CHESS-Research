@@ -15,7 +15,7 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [100,1];
+P.sampleDims = [20,1];
 
 % Basis function variance parameters
 P.num_var_t = 15;

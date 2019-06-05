@@ -2,7 +2,7 @@ datasetName = 'simulated_data_small';
 fitName = '_fit';
 
 num_imgs = 20;
-lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002...
+lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002, linspace(0.00215,0.00485,16),...
                 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
 % Load fit
 img_num = 10;
@@ -104,17 +104,21 @@ for i = 1:num_imgs
 end
 %% Plot time varying spread and error functions
 close all
-colors = jet(20);
+colors = jet(numel(lambda_vals)+1);
 
 figure(1)
-for i = 1:18
+for i = 1:34
     cv = colors(i,:);
     plot(ring_data{1}.rad_spread(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
 end
 plot(truth_awmv_rad,'-x','MarkerSize',2)
-legend('0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
-                '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5','truth','Location','Best')
+leg_str = cell(1,numel(lambda_vals));
+for i = 1:numel(lambda_vals)
+   leg_str{1,i} = num2str(lambda_vals(i));
+end
+leg_str{1,end+1} = 'truth';
+legend(leg_str,'Location','Best')
 title('Radial AWMV')
 xlabel('Time')
 
@@ -124,36 +128,46 @@ legend_vals = ['0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0
                 '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5'];
 
 figure(2)
-for i = 1:18
+for i = 1:34
     cv = colors(i,:);
     plot(ring_data{1}.az_spread(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
 end
 plot(truth_awmv_az,'-x','MarkerSize',2)
-legend('0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
-                '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5','truth','Location','Best')
+leg_str = cell(1,numel(lambda_vals));
+for i = 1:numel(lambda_vals)
+   leg_str{1,i} = num2str(lambda_vals(i));
+end
+leg_str{1,end+1} = 'truth';
+legend(leg_str,'Location','Best')
 title('Azimuthal AWMV')
 xlabel('Time')
 
 figure(3)
-for i = 1:18
+for i = 1:34
     cv = colors(i,:);
     plot(ring_data{1}.rel_err(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
 end
-legend('0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
-                '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5','Location','Best')
+leg_str = cell(1,numel(lambda_vals));
+for i = 1:numel(lambda_vals)
+   leg_str{1,i} = num2str(lambda_vals(i));
+end
+legend(leg_str,'Location','Best')
 title('Relative Error')
 xlabel('Time')
 
 figure(4)
-for i = 1:18
+for i = 1:34
     cv = colors(i,:);
     semilogy(ring_data{1}.sparsity(:,i),'-o','Color',cv)
     hold on
 end
-legend('0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
-                '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5','Location','Best')
+leg_str = cell(1,numel(lambda_vals));
+for i = 1:numel(lambda_vals)
+   leg_str{1,i} = num2str(lambda_vals(i));
+end
+legend(leg_str,'Location','Best')
 title('Sparsity')
 xlabel('Time')
 
