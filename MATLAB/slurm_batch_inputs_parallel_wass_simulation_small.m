@@ -5,21 +5,10 @@ datadir = fullfile('/cluster','home','dbanco02');
 dataset = fullfile(datadir,'simulated_data_small');
 prefix = 'polar_image';
 
-
-% Output directories
-
-mkdir(dirA)
-mkdir(dirB)
-
 % Functions
 funcName1 = 'wrap_FISTA_Circulant';
 funcName2 = 'wrap_wass_reg_FISTA_Circulant';
-jobDir1 = fullfile(datadir,['job_wass_parallel_init']);
-jobDir2 = fullfile(datadir,['job_wass_parallel_ab']);
-jobDir3 = fullfile(datadir,['job_wass_parallel_ba']);
-mkdir(jobDir1)
-mkdir(jobDir2)
-mkdir(jobDir3)
+
 
 %% Universal Parameters
 % Ring sampling parameters
@@ -73,39 +62,54 @@ ring_num = 1;
 gamma_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002,...
                 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
 imageDir = fullfile(dataset,prefix);
-% Initialization jobs
-k = 1;
-for img = img_nums
-    P1.img = img;
-    P1.set = ring_num;
-    varin = {imageDir,P1,dirA};
-    funcName = funcName1;
-    save(fullfile(jobDir1,['varin_',num2str(k),'.mat']),'varin','funcName')
-    k = k + 1;
-end
 
 % Regularization jobs for dirA->dirB
 k = 1;
-for img = img_nums
-    P2.img = img;
-    P2.set = ring_num;
-    varin = {dirA,P2,dirB};
-    funcName = funcName2;
-    save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
-    k = k + 1;
+for i = 1:numel(gamma_vals)
+    inputdir = fullfile('/cluster','shared','dbanco02',...
+                        ['wass_small_fit_a_',num2str(i)]);
+    % Output directory
+    outputdir = fullfile('/cluster','shared','dbanco02',...
+                        ['wass_small_fit_b_',num2str(i)]);
+    mkdir(outputdir)
+    % Job directory
+    jobDir2 = fullfile(datadir,['job_wass_parallel_small_ab',num2str(i)]);
+    mkdir(jobDir2)
+    for img = img_nums
+        P2.img = img;
+        P2.index = img;
+        P2.set = i;
+        P2.params.gamma = gamma_vals(i);
+        varin = {inputdir,P2,outputdir};
+        funcName = funcName2;
+        save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
+        k = k + 1;
+    end
 end
 
 % Regularization jobs for dirB->dirA
 k = 1;
-for img = img_nums
-    P2.img = img;
-    P2.set = ring_num;
-    varin = {dirB,P2,dirA};
-    funcName = funcName2;
-    save(fullfile(jobDir3,['varin_',num2str(k),'.mat']),'varin','funcName')
-    k = k + 1;
+for i = 1:numel(gamma_vals)
+    inputdir = fullfile('/cluster','shared','dbanco02',...
+                        ['wass_small_fit_b_',num2str(i)]);
+    % Output directory
+    outputdir = fullfile('/cluster','shared','dbanco02',...
+                        ['wass_small_fit_a_',num2str(i)]);
+    mkDir(outputdir)
+    % Job directory
+	jobDir3 = fullfile(datadir,['job_wass_parallel_small_ba',num2str(i)]);
+    mkdir(jobDir3)
+    for img = img_nums
+        P2.img = img;
+        P2.index = img;
+        P2.set = i;
+        P2.params.gamma = gamma_vals(i);
+        varin = {inputdir,P2,outputdir};
+        funcName = funcName2;
+        save(fullfile(jobDir3,['varin_',num2str(k),'.mat']),'varin','funcName')
+        k = k + 1;
+    end
 end
-
 % Init script
 slurm_write_matlab(numel(img_nums),jobDir1,'parallel_reg_wass_FISTA','batch_script.sh')
 
