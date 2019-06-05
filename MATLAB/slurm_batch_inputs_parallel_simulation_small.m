@@ -7,8 +7,8 @@ prefix = 'polar_image';
 
 
 % Output directories
-dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a');
-dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b');
+dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_small_a');
+dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_small_b');
 mkdir(dirA)
 mkdir(dirB)
 
@@ -71,6 +71,8 @@ P2 = P;
 %% Parameters to vary
 img_nums = 1:20;
 ring_num = 1;
+gamma_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002,...
+                0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
 imageDir = fullfile(dataset,prefix);
 % Initialization jobs
 k = 1;

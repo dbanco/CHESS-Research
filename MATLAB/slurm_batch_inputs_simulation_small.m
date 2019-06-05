@@ -44,7 +44,7 @@ P.params = params;
 
 %% Parameters to vary
 img_nums = 1:20;
-lambda_vals = linspace(0.00215,0.00485,16)
+lambda_vals = linspace(0.00215,0.00485,16);
 
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_simulated_data_small_fit']);
