@@ -48,13 +48,6 @@ params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
 
-%% Initialization parameters
-P1 = P;
-P1.params.tolerance = 1e-8;
-
-%% Regularization parameters
-P2 = P;
-
 %% Parameters to vary
 img_nums = 1:20;
 ring_num = 1;
@@ -77,11 +70,11 @@ for i = 1:numel(gamma_vals)
     mkdir(jobDir2)
     slurm_write_matlab(numel(img_nums),jobDir2,'parallel_small_wass_FISTA','batch_script.sh',sprintf('wass_parallel_small_%i',i))
     for img = img_nums
-        P2.img = img;
-        P2.index = img;
-        P2.set = i;
-        P2.params.gamma = gamma_vals(i);
-        varin = {inputdir,P2,outputdir};
+        P.img = img;
+        P.index = img;
+        P.set = i;
+        P.params.gamma = gamma_vals(i);
+        varin = {inputdir,P,outputdir};
         funcName = funcName2;
         save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
@@ -101,11 +94,11 @@ for i = 1:numel(gamma_vals)
 	jobDir3 = fullfile(datadir,['job_wass_parallel_small_',num2str(i),'_ba']);
     mkdir(jobDir3)
     for img = img_nums
-        P2.img = img;
-        P2.index = img;
-        P2.set = i;
-        P2.params.gamma = gamma_vals(i);
-        varin = {inputdir,P2,outputdir};
+        P.img = img;
+        P.index = img;
+        P.set = i;
+        P.params.gamma = gamma_vals(i);
+        varin = {inputdir,P,outputdir};
         funcName = funcName2;
         save(fullfile(jobDir3,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
