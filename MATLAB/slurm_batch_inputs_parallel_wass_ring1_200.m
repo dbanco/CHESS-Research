@@ -8,17 +8,17 @@ ring_num  = 1;
 prefix = 'mmpad_img';
 
 % Output directories
-dirA = fullfile('/cluster','shared','dbanco02','awmv_parallel_a');
-dirB = fullfile('/cluster','shared','dbanco02','awmv_parallel_b');
+dirA = fullfile('/cluster','shared','dbanco02','wass_parallel_a');
+dirB = fullfile('/cluster','shared','dbanco02','wass_parallel_b');
 mkdir(dirA)
 mkdir(dirB)
 
 % Functions
 funcName1 = 'wrap_FISTA_Circulant';
 funcName2 = 'wrap_wass_reg_FISTA_Circulant';
-jobDir1 = fullfile(datadir,['job_awmv_parallel_init']);
-jobDir2 = fullfile(datadir,['job_awmv_parallel_ab']);
-jobDir3 = fullfile(datadir,['job_awmv_parallel_ba']);
+jobDir1 = fullfile(datadir,['job_wass_parallel_init_200']);
+jobDir2 = fullfile(datadir,['job_wass_parallel_ab_200']);
+jobDir3 = fullfile(datadir,['job_wass_parallel_ba_200']);
 mkdir(jobDir1)
 mkdir(jobDir2)
 mkdir(jobDir3)

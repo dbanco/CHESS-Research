@@ -24,7 +24,7 @@ mkdir(jobDir3)
 
 %% Universal Parameters
 % Ring sampling parameters
-load(fullfile(dataset,ringName,[prefix,'_1.mat']));
+load(fullfile(dataset,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
@@ -70,8 +70,8 @@ P2 = P;
 
 %% Parameters to vary
 img_nums = 1:20;
-
-imageDir = fullfile(dataset,ringName,prefix);
+ring_num = 1;
+imageDir = fullfile(dataset,prefix);
 % Initialization jobs
 k = 1;
 for img = img_nums
