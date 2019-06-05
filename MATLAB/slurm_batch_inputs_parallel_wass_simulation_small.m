@@ -6,7 +6,6 @@ dataset = fullfile(datadir,'simulated_data_small');
 prefix = 'polar_image';
 
 % Functions
-funcName1 = 'wrap_FISTA_Circulant';
 funcName2 = 'wrap_wass_reg_FISTA_Circulant';
 
 
@@ -66,6 +65,7 @@ imageDir = fullfile(dataset,prefix);
 % Regularization jobs for dirA->dirB
 k = 1;
 for i = 1:numel(gamma_vals)
+    
     inputdir = fullfile('/cluster','shared','dbanco02',...
                         ['wass_small_fit_a_',num2str(i)]);
     % Output directory
@@ -111,5 +111,5 @@ for i = 1:numel(gamma_vals)
     end
 end
 % Init script
-slurm_write_matlab(numel(img_nums),jobDir1,'parallel_reg_wass_FISTA','batch_script.sh')
+slurm_write_matlab(numel(img_nums),jobDir2,'parallel_small_wass_FISTA','batch_script.sh','job_wass_parallel_small')
 
