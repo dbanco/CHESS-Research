@@ -73,8 +73,9 @@ for i = 1:numel(gamma_vals)
                         ['wass_small_fit_b_',num2str(i)]);
     mkdir(outputdir)
     % Job directory
-    jobDir2 = fullfile(datadir,['job_wass_parallel_small_ab',num2str(i)]);
+    jobDir2 = fullfile(datadir,['job_wass_parallel_small_',num2str(i),'_ab']);
     mkdir(jobDir2)
+    slurm_write_matlab(numel(img_nums),jobDir2,'parallel_small_wass_FISTA','batch_script.sh',sprintf('wass_parallel_small_%i',i))
     for img = img_nums
         P2.img = img;
         P2.index = img;
@@ -97,7 +98,7 @@ for i = 1:numel(gamma_vals)
                         ['wass_small_fit_a_',num2str(i)]);
     mkdir(outputdir)
     % Job directory
-	jobDir3 = fullfile(datadir,['job_wass_parallel_small_ba',num2str(i)]);
+	jobDir3 = fullfile(datadir,['job_wass_parallel_small_',num2str(i),'_ba']);
     mkdir(jobDir3)
     for img = img_nums
         P2.img = img;
@@ -111,5 +112,5 @@ for i = 1:numel(gamma_vals)
     end
 end
 % Init script
-slurm_write_matlab(numel(img_nums),jobDir2,'parallel_small_wass_FISTA','batch_script.sh','job_wass_parallel_small')
+
 
