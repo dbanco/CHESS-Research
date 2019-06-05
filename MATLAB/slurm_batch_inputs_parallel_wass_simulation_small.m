@@ -95,7 +95,7 @@ for i = 1:numel(gamma_vals)
     % Output directory
     outputdir = fullfile('/cluster','shared','dbanco02',...
                         ['wass_small_fit_a_',num2str(i)]);
-    mkDir(outputdir)
+    mkdir(outputdir)
     % Job directory
 	jobDir3 = fullfile(datadir,['job_wass_parallel_small_ba',num2str(i)]);
     mkdir(jobDir3)
