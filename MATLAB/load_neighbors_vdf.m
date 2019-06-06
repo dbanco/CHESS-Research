@@ -3,8 +3,8 @@ function vdfs = load_neighbors_vdf(output_dir,baseFileName,P)
 %          of coefficients neighboring point (i,j)
 
 % Get list of possible neighbors
-row = ceil(P.index/(P.sampleDims(2)));
-col = mod(P.index,P.sampleDims(2))+1;
+[row,col] = ind2sub(P.sampleDims,P.img);
+
 rows = [row-1;
         row+1; 
         row;
@@ -27,8 +27,7 @@ R = P.num_var_r;
 neighbors = zeros(n,m,T,R);
 vdfs = {}; 
 for i = 1:size(neighbor_imgs,1)
-    n_img = sub2ind(flip(P.sampleDims),neighbor_imgs(i,2),neighbor_imgs(i,1));
-    n_img = n_img + P.img - P.index;
+    n_img = sub2ind(P.sampleDims,neighbor_imgs(i,1),neighbor_imgs(i,2));
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img));
     load(load_file)
     x_hat_var = x_hat;
