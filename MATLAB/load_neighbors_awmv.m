@@ -3,8 +3,8 @@ function [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(output_dir,baseFileName,P)
 %          of coefficients neighboring point (i,j)
 
 % Get list of possible neighbors
-row = floor(P.img/P.sampleDims(2))+1;
-col = mod(P.img,P.sampleDims(2))+1;
+[row,col] = ind2sub(P.sampleDims,P.img);
+
 rows = [row-1;
         row+1; 
         row;
@@ -20,10 +20,6 @@ keep = (rows >= 1).*(rows <=P.sampleDims(1)).*...
 neighbor_imgs = [rows(keep==1),cols(keep==1)];
 
 %Get contributions and vdfs from neighbors
-n = P.num_rad;
-m = P.num_theta;
-T = P.num_var_t;
-R = P.num_var_r;
 n_awmv_az = 0;
 n_awmv_rad = 0; 
 

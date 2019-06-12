@@ -29,8 +29,11 @@ end
 
 %% Run FISTA updating solution and error array
 [n_awmv_az,n_awmv_rad] = load_neighbors_awmv(input_dir,baseFileName,P);
-[x_hat, err_new, ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,P.var_rad,fileData.x_hat,P.params);
+x_init = fileData.x_hat;
+[x_hat, err_new, t_k, L , ~, ~] = space_ev_FISTA_Circulant(A0ft_stack,b,n_awmv_az,n_awmv_rad,P.var_theta,P.var_rad,x_init,P.params);
 err = [fileData.err(:);err_new(:)];
+P.params.t_k = t_k;
+P.params.L = L;
 
 %% Save outputs, updating the coefficients of the previous iteration
 save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')

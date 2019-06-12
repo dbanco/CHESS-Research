@@ -20,11 +20,7 @@ keep = (rows >= 1).*(rows <=P.sampleDims(1)).*...
 neighbor_imgs = [rows(keep==1),cols(keep==1)];
 
 %Get contributions and vdfs from neighbors
-n = P.num_rad;
-m = P.num_theta;
-T = P.num_var_t;
-R = P.num_var_r;
-neighbors = zeros(n,m,T,R);
+
 vdfs = {}; 
 for i = 1:size(neighbor_imgs,1)
     n_img = sub2ind(P.sampleDims,neighbor_imgs(i,1),neighbor_imgs(i,2));

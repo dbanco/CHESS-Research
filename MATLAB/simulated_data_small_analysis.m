@@ -1,14 +1,15 @@
-datasetName = 'simulated_data_small';
-fitName = '_fit';
+baseDir = 'D:\CHESS_data\wass_small_fit\';
+datasetName = 'wass_small';
+fitName = '_fit_b';
 
 num_imgs = 20;
-lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002, linspace(0.00215,0.00485,16),...
+lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002,...
                 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
 % Load fit
 img_num = 10;
 ring_num = 1;
 
-fDir = ['D:\CHESS_data\',datasetName,fitName];
+fDir = [baseDir,datasetName,fitName];
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile([fDir,'_1'],fName))
@@ -48,7 +49,7 @@ D = D./max(D(:));
 P.num_var_t = 15;
 P.num_var_r = 10;
 
-fDir = ['D:\CHESS_data\',datasetName,fitName];
+fDir = [baseDir,datasetName,fitName];
 az_spread = zeros(num_imgs,numel(lambda_vals));
 rad_spread = zeros(num_imgs,numel(lambda_vals));
 rel_err = zeros(num_imgs,numel(lambda_vals));
@@ -93,7 +94,7 @@ spreadDir = fullfile('D:','CHESS_data','spread_results');
 
 ring_data{1} = load(fullfile(spreadDir,['spread_',datasetName,fitName,'.mat']));
 
-load(['D:\CHESS_data\','simulated_data_small','\synth_data.mat'])
+load([baseDir,'wass_small','\synth_data.mat'])
 truth_awmv_az = zeros(num_imgs,1);
 truth_awmv_rad = zeros(num_imgs,1);
 for i = 1:num_imgs
@@ -106,8 +107,10 @@ end
 close all
 colors = jet(numel(lambda_vals)+1);
 
+num_lines = 18;
+
 figure(1)
-for i = 1:34
+for i = 1:num_lines
     cv = colors(i,:);
     plot(ring_data{1}.rad_spread(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
@@ -122,13 +125,11 @@ legend(leg_str,'Location','Best')
 title('Radial AWMV')
 xlabel('Time')
 
-
-
 legend_vals = ['0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
                 '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5'];
 
 figure(2)
-for i = 1:34
+for i = 1:num_lines
     cv = colors(i,:);
     plot(ring_data{1}.az_spread(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
@@ -144,7 +145,7 @@ title('Azimuthal AWMV')
 xlabel('Time')
 
 figure(3)
-for i = 1:34
+for i = 1:num_lines
     cv = colors(i,:);
     plot(ring_data{1}.rel_err(:,i),'-o','Color',cv,'MarkerSize',3)
     hold on
@@ -158,7 +159,7 @@ title('Relative Error')
 xlabel('Time')
 
 figure(4)
-for i = 1:34
+for i = 1:num_lines
     cv = colors(i,:);
     semilogy(ring_data{1}.sparsity(:,i),'-o','Color',cv)
     hold on
