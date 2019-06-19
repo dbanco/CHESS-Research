@@ -46,6 +46,8 @@ params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
 
+baseFileName = 'fista_fit_%i_%i.mat';
+
 for image_num = 1:20
     P.img = image_num;
     %% Zero pad image
