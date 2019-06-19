@@ -1,29 +1,29 @@
-baseDir = 'D:\CHESS_data\wass_small_fit\';
-datasetName = 'wass_small';
-fitName = '_fit_b';
+baseDir = 'D:\CHESS_data\small_wass_test_results\';
+datasetName = '';
+fitName = '';
 
 num_imgs = 20;
 lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002,...
                 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
 % Load fit
-img_num = 10;
+img_num = 2;
 ring_num = 1;
 
 fDir = [baseDir,datasetName,fitName];
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
-load(fullfile([fDir,'_1'],fName))
+load(fullfile(fDir,fName))
 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 img_fit = Ax_ft_2D(A0ft_stack,x_hat);
 
 lim1 = 0;
 lim2 = max(polar_image(:));
 % Plot both images
-% figure(1)
-% subplot(2,1,1)
-% imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-% subplot(2,1,2)
-% imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
+figure(2)
+subplot(2,1,1)
+imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
+subplot(2,1,2)
+imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
 
 
 % Construct distance matrix
@@ -57,12 +57,12 @@ sparsity = zeros(num_imgs,numel(lambda_vals));
 %wass_dist = zeros(num_imgs,1);
 var_signal = zeros(num_imgs,numel(lambda_vals),P.num_var_t,P.num_var_r);
 
-for lam_num = 1:numel(lambda_vals)
+for lam_num = 1
     for img_num = 1:num_imgs
         k = img_num;
         fprintf('Image %i\n',k)
         fName = sprintf('fista_fit_%i_%i.mat',lam_num,img_num);
-        load(fullfile([fDir,'_',num2str(lam_num)],fName))
+        load(fullfile(fDir,fName))
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
         img_fit = Ax_ft_2D(A0ft_stack,x_hat);
         rel_err(k,lam_num) = err(end);
@@ -90,11 +90,21 @@ end
         'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')%,'wass_dist')
  
 %% Load spread data
+baseDir = 'D:\CHESS_data\small_fit\';
+datasetName = 'simulated_data_small_fit';
+fitName = '';
+
+% baseDir = 'D:\CHESS_data\small_wass_test_results\';
+% datasetName = '';
+% fitName = '';
+
+num_imgs = 20;
+
 spreadDir = fullfile('D:','CHESS_data','spread_results');
 
 ring_data{1} = load(fullfile(spreadDir,['spread_',datasetName,fitName,'.mat']));
 
-load([baseDir,'wass_small','\synth_data.mat'])
+load(['D:\CHESS_data\simulated_data_small\synth_data.mat'])
 truth_awmv_az = zeros(num_imgs,1);
 truth_awmv_rad = zeros(num_imgs,1);
 for i = 1:num_imgs
@@ -104,10 +114,10 @@ for i = 1:num_imgs
     truth_awmv_rad(i) = sum(vdf_i,1)*sqrt(P.var_rad)';
 end
 %% Plot time varying spread and error functions
-close all
-colors = jet(numel(lambda_vals)+1);
 
-num_lines = 18;
+colors = jet(40);
+
+num_lines = 34;
 
 figure(1)
 for i = 1:num_lines

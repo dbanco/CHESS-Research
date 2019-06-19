@@ -76,8 +76,12 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
 % Add entropic reg wasserstein distance vdf term  
 vdf = squeeze(sum(sum(x_init,1),2));
 vdf = vdf/sum(vdf(:)); 
-wObj = WassersteinObjective(vdf(:), neighbors_vdf(:), wLam, D);
+wObj = WassersteinObjective(vdf(:), neighbors_vdf, wLam, D);
 f = f + 0.5*params.gamma*wObj;
+
+figure(55)
+imagesc(neighbors_vdf{1})
+pause(0.02)
 
 % Used to compute gradient
 c = AtR_ft_2D(A0ft_stack,b);
@@ -99,6 +103,7 @@ while keep_going && (nIter < maxIter)
     % Wasserstein regularizer gradient update
     vdf = squeeze(sum(sum(zk,1),2));
     vdf = vdf/sum(vdf(:));
+    
     if(sum(vdf(:)) == 0)
         error('VDF is not defined (all zeors)')
     end
@@ -130,6 +135,7 @@ while keep_going && (nIter < maxIter)
         fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
         vdf_xk = squeeze(sum(sum(xk,1),2));
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
+        
         wObj_xk = WassersteinObjective(vdf_xk(:),neighbors_vdf(:),wLam,D);
         temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
