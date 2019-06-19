@@ -93,7 +93,7 @@ for image_num = 1:20
     % x_init = zeros(size(x_hat));
     % Run FISTA updating solution and error array
     if image_num == 1
-        [x_hat, err, ~, ~,  ~, ~] = wrap_FISTA_Circulant(A0ft_stack,b,x_init,P.params);
+        [x_hat, err, ~, ~,  ~, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
     else
         vdfs = {vdf_previous/sum(vdf_previous(:))};
         [x_hat, err, ~, ~,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
