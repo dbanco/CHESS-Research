@@ -1,4 +1,4 @@
-saveDir = 'D:\CHESS_data\simulated_data_small\';
+saveDir = 'D:\CHESS_data\simulated_data_two_phase\';
 mkdir(saveDir)
 %% Randomized spot example
 num_ims = 20;
@@ -40,7 +40,11 @@ positions = zeros(num_ims,1);
 dist = zeros(num_ims,1);
 for i = 1:num_ims
         positions(i) = i;
-        dist(i) = sqrt( (i-1)^2 );
+        if (i < 11)
+            dist(i) = sqrt( (4)^2 );
+        else
+            dist(i) = sqrt( (16)^2 );
+        end
 end
 
 % Produce 5x5 array of ring images
