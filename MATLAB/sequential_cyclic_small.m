@@ -4,7 +4,7 @@ P.img = 1;
 % dataset = 'D:\CHESS_data\simulated_data_small';
 % output_dir = 'D:\CHESS_data\small_wass_test_results';
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dir = '/cluster/shared/dbanco02/seq_two_phase';
+output_dir = '/cluster/shared/dbanco02/seq_two_phase3';
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -35,7 +35,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.5;
+params.gamma = 1;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
