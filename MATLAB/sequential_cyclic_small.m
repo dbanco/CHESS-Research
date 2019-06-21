@@ -94,7 +94,7 @@ for image_num = 1:20
     end
     % x_init = zeros(size(x_hat));
     % Run FISTA updating solution and error array
-    if image_num == 1
+    if 1
         [x_hat, err, ~, ~,  ~, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
     else
         vdfs = {vdf_previous/sum(vdf_previous(:))};

@@ -1,5 +1,5 @@
-baseDir = 'D:\CHESS_data\small_wass_test_results\';
-datasetName = '';
+baseDir = 'D:\CHESS_data\';
+datasetName = 'seq_two_phase3';
 fitName = '';
 
 num_imgs = 20;
