@@ -87,8 +87,12 @@ for jjj = 1:20
         end
         D = D./max(D(:));
 
-        x_init = f_data.x_hat
-
+        x_init = zeros(size(A0ft_stack));
+        for i = 1:P.num_var_t
+            for j = 1:P.num_var_r
+                x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
+            end
+        end
         % Run FISTA updating solution and error array
         vdfs = load_neighbors_vdf(output_dir,baseFileName,P);
         [x_hat, err, ~, ~,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
