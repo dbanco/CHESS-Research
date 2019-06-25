@@ -52,9 +52,8 @@ for jjj = 1:20
     parfor image_num = 1:20
         f_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num)));
         %% Zero pad image
-        im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         P = f_data.P
-        b = zeroPad(m_data.polar_image,P.params.zeroPad);
+        b = zeroPad(f_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
         P.num_rad = size(b,1);
