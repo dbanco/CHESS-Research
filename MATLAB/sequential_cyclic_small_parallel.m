@@ -50,7 +50,7 @@ baseFileName = 'fista_fit_%i_%i.mat';
 
 for jjj = 1:20
     parfor image_num = 1:20
-        f_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num));
+        f_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num)));
         %% Zero pad image
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         P = f_data.P
