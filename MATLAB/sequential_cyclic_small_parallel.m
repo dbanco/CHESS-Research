@@ -67,8 +67,6 @@ for jjj = 1:20
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
-        P.num_rad = size(b,1);
-        P.num_theta = size(b,2);
 
         % Construct dictionary
         switch P.basis
