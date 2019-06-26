@@ -49,6 +49,7 @@ params.plotProgress = 0;
 P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
+parpool(32)
 
 for jjj = 1:20
     if mod(jjj,2)
