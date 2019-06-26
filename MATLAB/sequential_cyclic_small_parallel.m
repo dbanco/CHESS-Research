@@ -4,8 +4,10 @@ P.img = 1;
 % dataset = 'D:\CHESS_data\simulated_data_small';
 % output_dir = 'D:\CHESS_data\small_wass_test_results';
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dir = '/cluster/shared/dbanco02/seq_two_phase3';
-mkdir(output_dir)
+output_dirA = '/cluster/shared/dbanco02/seq_two_phase3';
+output_dirB = '/cluster/shared/dbanco02/seq_two_phase3a';
+mkdir(output_dirA)
+mkdir(output_dirB)
 prefix = 'polar_image';
 
 %% Universal Parameters
@@ -35,7 +37,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 1;
+params.gamma = 0.2;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -49,8 +51,15 @@ P.params = params;
 baseFileName = 'fista_fit_%i_%i.mat';
 
 for jjj = 1:20
+    if mod(jjj,2)
+        input_dir = output_dirA;
+        output_dir = output_dirB;
+    else
+        input_dir = output_dirB;
+        output_dir = output_dirA;
+    end
     parfor image_num = 1:20
-        f_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num)));
+        f_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num)));
         %% Zero pad image
         P = f_data.P
         b = zeroPad(f_data.polar_image,P.params.zeroPad);
@@ -94,16 +103,19 @@ for jjj = 1:20
             end
         end
         % Run FISTA updating solution and error array
-        vdfs = load_neighbors_vdf(output_dir,baseFileName,P);
-        [x_hat, err, ~, ~,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
+        vdfs = load_neighbors_vdf(input_dir,baseFileName,P);
+        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
 
         save_output(output_dir,baseFileName,x_hat,err,polar_image,P);
+        save_obj(jjj,image_num,obj);
     end
 end
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P');
 end
-
+function save_obj(pass,image_num,obj)
+    save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');
+end
 % % Compare error/ wasserstein distance/ vdfs
 % figure(11)
 % subplot(1,3,1)
