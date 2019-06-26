@@ -3,6 +3,7 @@ P.img = 1;
 
 % dataset = 'D:\CHESS_data\simulated_data_small';
 % output_dir = 'D:\CHESS_data\small_wass_test_results';
+
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
 output_dirA = '/cluster/shared/dbanco02/seq_two_phase3';
 output_dirB = '/cluster/shared/dbanco02/seq_two_phase3a';
@@ -59,10 +60,8 @@ for jjj = 1:20
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    parfor image_num = 1:20
-        f_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num)));
+    for image_num = 1:20
         %% Zero pad image
-        P = f_data.P
         b = zeroPad(f_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
