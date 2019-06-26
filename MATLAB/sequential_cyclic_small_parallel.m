@@ -2,7 +2,8 @@ P.set = 1;
 P.img = 1;
 
 % dataset = 'D:\CHESS_data\simulated_data_small';
-% output_dir = 'D:\CHESS_data\small_wass_test_results';
+% output_dirA = 'D:\CHESS_data\seq_two_phase_testa';
+% output_dirB = 'D:\CHESS_data\seq_two_phase_testb';
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
 output_dirA = '/cluster/shared/dbanco02/seq_two_phase3';
@@ -60,16 +61,17 @@ for jjj = 1:20
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    for image_num = 1:20
+    parfor image_num = 1:20
+        im_data = load(fullfile(dataset,[prefix,'_', num2str(image_num),'.mat']));
         %% Zero pad image
-        b = zeroPad(f_data.polar_image,P.params.zeroPad);
+        b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
         P.num_rad = size(b,1);
         P.num_theta = size(b,2);
 
         % Construct dictionary
-        switch f_data.P.basis
+        switch P.basis
             case 'norm2'
                 A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
             case 'norm1'
@@ -106,7 +108,7 @@ for jjj = 1:20
         vdfs = load_neighbors_vdf(input_dir,baseFileName,P);
         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
 
-        save_output(output_dir,baseFileName,x_hat,err,polar_image,P);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P);
         save_obj(jjj,image_num,obj);
     end
 end
