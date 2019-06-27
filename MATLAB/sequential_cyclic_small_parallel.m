@@ -58,7 +58,7 @@ for ii = 1:20
     vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
 end
 
-parpool(32)
+parpool(20)
 
 for jjj = 1:20
     if mod(jjj,2)
