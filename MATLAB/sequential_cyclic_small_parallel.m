@@ -51,6 +51,13 @@ params.plotProgress = 0;
 P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
+
+vdf_array = cell(20,1);
+for ii = 1:20
+    f_data = load(fullfile(output_dirA,sprintf(baseFileName,1,ii)));
+    vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
+end
+
 parpool(32)
 
 for jjj = 1:20
@@ -103,9 +110,17 @@ for jjj = 1:20
             end
         end
         % Run FISTA updating solution and error array
-        vdfs = load_neighbors_vdf(input_dir,baseFileName,P);
+        if image_num == 1
+            vdfs = {vdf_array{2}};
+        elseif image_num ==20
+            vdfs = {vdf_array{19}};
+        else
+            vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
+        end
         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
-
+        
+        vdf_array{image_num} = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
+        
         save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P);
         save_obj(jjj,image_num,obj);
     end

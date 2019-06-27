@@ -27,7 +27,7 @@ for i = 1:size(neighbor_imgs,1)
     load_file = fullfile(output_dir,sprintf(baseFileName,P.set,n_img));
     fileData = load(load_file);
     x_hat_var = fileData.x_hat;
-    vdf = squeeze(sum(sum(x_hat_var)))/sum(x_hat_var(:));
+    vdf = squeeze(sum(sum(x_hat_var,1),2))/sum(x_hat_var(:));
     vdfs{i} = vdf;
 end
 
