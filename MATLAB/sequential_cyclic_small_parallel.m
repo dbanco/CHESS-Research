@@ -122,15 +122,15 @@ for jjj = 1:20
         
         new_vdf_array{image_num} = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
         
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P);
-        save_obj(jjj,image_num,obj);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
+        save_obj(output_dir,jjj,image_num,obj);
     end
     vdf_array = new_vdf_array;
 end
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,P)
-    save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P');
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
+    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
 end
-function save_obj(pass,image_num,obj)
+function save_obj(output_dir,pass,image_num,obj)
     save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');
 end
 % % Compare error/ wasserstein distance/ vdfs
