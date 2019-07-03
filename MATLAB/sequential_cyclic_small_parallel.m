@@ -6,8 +6,8 @@ P.img = 1;
 % output_dirB = 'D:\CHESS_data\seq_two_phase_testb';
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dirA = '/cluster/shared/dbanco02/seq_two_phase3';
-output_dirB = '/cluster/shared/dbanco02/seq_two_phase3a';
+output_dirA = '/cluster/shared/dbanco02/seq_two_phase6';
+output_dirB = '/cluster/shared/dbanco02/seq_two_phase6a';
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
