@@ -51,9 +51,8 @@ baseFileName = 'fista_fit_%i_%i.mat';
 parpool(20)
 
 parfor image_num = 1:20
-    P.img = image_num;
-    %% Zero pad image
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
+    %% Zero pad image
     b = zeroPad(polar_image,P.params.zeroPad);
     % Scale image by 2-norm
     b = b/norm(b(:));
