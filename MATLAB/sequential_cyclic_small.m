@@ -53,7 +53,7 @@ parpool(20)
 parfor image_num = 1:20
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
-    b = zeroPad(polar_image,P.params.zeroPad);
+    b = zeroPad(im_data.polar_image,P.params.zeroPad);
     % Scale image by 2-norm
     b = b/norm(b(:));
 
