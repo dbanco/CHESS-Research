@@ -4,7 +4,7 @@ P.img = 1;
 % dataset = 'D:\CHESS_data\simulated_data_small';
 % output_dir = 'D:\CHESS_data\small_wass_test_results';
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dir = '/cluster/shared/dbanco02/seq_two_phase3';
+output_dir = '/cluster/shared/dbanco02/unreg_two_phase';
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -48,15 +48,15 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-for image_num = 1:20
+parpool(20)
+
+parfor image_num = 1:20
     P.img = image_num;
     %% Zero pad image
-    load(fullfile(dataset,[prefix,'_',num2str(P.img),'.mat']));
+    im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     b = zeroPad(polar_image,P.params.zeroPad);
     % Scale image by 2-norm
     b = b/norm(b(:));
-    P.num_rad = size(b,1);
-    P.num_theta = size(b,2);
 
     % Construct dictionary
     switch P.basis
@@ -92,108 +92,12 @@ for image_num = 1:20
             x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
         end
     end
-    % x_init = zeros(size(x_hat));
+  
     % Run FISTA updating solution and error array
-    if 1
-        [x_hat, err, ~, ~,  ~, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-    else
-        vdfs = {vdf_previous/sum(vdf_previous(:))};
-        [x_hat, err, ~, ~,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
-    end
-    %f_data_init = load('D:\CHESS_data\small_wass_test_results\wass_reg_solution4');
-    % x_unreg = f_data_init.x_hat;
-    % [x_unreg, err, obj, l_0, t_k, L] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-
-    
-    vdf_previous = squeeze(sum(sum(x_hat,1),2));
-    save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')
+    [x_hat, err, obj, ~,  ~, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
+    save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
 end
 
-% for image_num = 1:20
-%     P.img = image_num;
-%     %% Zero pad image
-%     load(fullfile(dataset,[prefix,'_',num2str(P.img),'.mat']));
-%     b = zeroPad(polar_image,P.params.zeroPad);
-%     % Scale image by 2-norm
-%     b = b/norm(b(:));
-%     P.num_rad = size(b,1);
-%     P.num_theta = size(b,2);
-% 
-%     % Construct dictionary
-%     switch P.basis
-%         case 'norm2'
-%             A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
-%         case 'norm1'
-%             A0ft_stack = unshifted_basis_matrix_ft_stack_norm(P);
-%         case 'max'
-%             A0ft_stack = unshifted_basis_matrix_ft_stack(P);
-%     end
-% 
-%     % Construct distance matrix
-%     N = P.num_var_t*P.num_var_r;
-%     THRESHOLD = 32;
-% 
-%     D = ones(N,N).*THRESHOLD;
-%     for i = 1:P.num_var_t
-%         for j = 1:P.num_var_r
-%             for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-%                 for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-%                     ind1 = i + (j-1)*P.num_var_t;
-%                     ind2 = ii + (jj-1)*P.num_var_t;
-%                     D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
-%                 end
-%             end
-%         end
-%     end
-%     D = D./max(D(:));
-% 
-%     x_init = zeros(size(A0ft_stack));
-%     for i = 1:P.num_var_t
-%         for j = 1:P.num_var_r
-%             x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
-%         end
-%     end
-%     % x_init = zeros(size(x_hat));
-%     % Run FISTA updating solution and error array
-%     if image_num == 1
-%         [x_hat, err, ~, ~,  ~, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-%     else
-%         vdfs = {vdf_previous/sum(vdf_previous(:))};
-%         [x_hat, err, ~, ~,  ~, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
-%     end
-%     %f_data_init = load('D:\CHESS_data\small_wass_test_results\wass_reg_solution4');
-%     % x_unreg = f_data_init.x_hat;
-%     % [x_unreg, err, obj, l_0, t_k, L] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-% 
-%     
-%     vdf_previous = squeeze(sum(sum(x_hat,1),2));
-%     save(fullfile(output_dir,sprintf(baseFileName,P.set,P.img)),'x_hat','err','polar_image','P')
-% end
-
-%% Compare error/ wasserstein distance/ vdfs
-% figure(11)
-% subplot(1,3,1)
-% imagesc(vdf_true)
-% [awmv_az_true,awmv_rad_true] = computeAWMV_vdf(vdf_true,P.var_theta,P.var_rad);
-% title(['AWMV \theta: ',num2str(awmv_az_true),'   AWMV r: ',num2str(awmv_rad_true)])
-% 
-% subplot(1,3,2)
-% vdf_unreg = squeeze(sum(sum(x_unreg,1),2))/sum(x_unreg(:));
-% Wd_unreg = sinkhornKnoppTransport(vdf_true, vdf_unreg, P.params.wLam, D);
-% [awmv_az_unreg,awmv_rad_unreg] = computeAWMV_vdf(vdf_unreg,P.var_theta,P.var_rad);
-% imagesc(vdf_unreg)
-% 
-% title(['Unreg Wd: ',num2str(Wd_unreg),'   AWMV \theta: ',num2str(awmv_az_unreg),'   AWMV r: ',num2str(awmv_rad_unreg)])
-% 
-% subplot(1,3,3)
-% vdf_reg = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
-% Wd_reg = sinkhornKnoppTransport(vdf_true, vdf_reg, P.params.wLam, D);
-% [awmv_az_reg,awmv_rad_reg] = computeAWMV_vdf(vdf_reg,P.var_theta,P.var_rad);
-% imagesc(vdf_reg)
-% title(['Reg Wd: ',num2str(Wd_reg),'   AWMV \theta: ',num2str(awmv_az_reg),'   AWMV r: ',num2str(awmv_rad_reg)])
-% 
-% figure(22)
-% imagesc(polar_image)
-% 
-% 
-% 
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
+    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
+end

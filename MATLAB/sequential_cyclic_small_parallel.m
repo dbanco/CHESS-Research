@@ -6,8 +6,8 @@ P.img = 1;
 % output_dirB = 'D:\CHESS_data\seq_two_phase_testb';
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dirA = '/cluster/shared/dbanco02/seq_two_phase6';
-output_dirB = '/cluster/shared/dbanco02/seq_two_phase6a';
+output_dirA = '/cluster/shared/dbanco02/seq_two_phase7';
+output_dirB = '/cluster/shared/dbanco02/seq_two_phase7a';
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -39,7 +39,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.3;
+params.gamma = 0.4;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -110,6 +110,7 @@ for jjj = 1:20
                 x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
             end
         end
+        
         % Run FISTA updating solution and error array
         if image_num == 1
             vdfs = vdf_array(2);
