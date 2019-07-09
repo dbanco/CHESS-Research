@@ -53,7 +53,7 @@ P.params = params;
 baseFileName = 'fista_fit_%i_%i.mat';
 
 vdf_array = cell(20,1);
-for ii = 1:10
+for ii = 1:20
     f_data = load(fullfile(output_dirA,sprintf(baseFileName,1,ii)));
     vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
 end
