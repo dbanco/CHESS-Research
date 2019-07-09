@@ -5,9 +5,9 @@ P.img = 1;
 % output_dirA = 'D:\CHESS_data\seq_two_phase_testa';
 % output_dirB = 'D:\CHESS_data\seq_two_phase_testb';
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dirA = '/cluster/shared/dbanco02/seq_two_phase7';
-output_dirB = '/cluster/shared/dbanco02/seq_two_phase7a';
+dataset = '/cluster/home/dbanco02/simulated_data_two_phase_b/';
+output_dirA = '/cluster/shared/dbanco02/seq_two_phase8';
+output_dirB = '/cluster/shared/dbanco02/seq_two_phase8a';
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -39,7 +39,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.4;
+params.gamma = 0.5;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -53,7 +53,7 @@ P.params = params;
 baseFileName = 'fista_fit_%i_%i.mat';
 
 vdf_array = cell(20,1);
-for ii = 1:20
+for ii = 1:10
     f_data = load(fullfile(output_dirA,sprintf(baseFileName,1,ii)));
     vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
 end
@@ -61,7 +61,7 @@ new_vdf_array = cell(20,1);
 
 parpool(20)
 
-for jjj = 1:20
+for jjj = 1:10
     if mod(jjj,2)
         input_dir = output_dirA;
         output_dir = output_dirB;
@@ -114,7 +114,7 @@ for jjj = 1:20
         % Run FISTA updating solution and error array
         if image_num == 1
             vdfs = vdf_array(2);
-        elseif image_num ==20
+        elseif image_num == 20
             vdfs = vdf_array(19);
         else
             vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
