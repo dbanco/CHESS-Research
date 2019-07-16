@@ -111,7 +111,7 @@ for image_num = 1:541
     vdfs = {new_vdf};
     
     save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
-%     save_obj(output_dir,jjj,image_num,obj);
+    save_obj(output_dir,jjj,image_num,obj);
 end
 vdf_array = new_vdf_array;
 
