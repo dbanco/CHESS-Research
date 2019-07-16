@@ -7,10 +7,8 @@ P.img = 1;
 
 % dataset = '/cluster/home/dbanco02/simulated_data_two_phase_b/';
 dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
-output_dirA = '/cluster/shared/dbanco02/seq_mmpad';
-output_dirB = '/cluster/shared/dbanco02/seq_mmpad';
-mkdir(output_dirA)
-mkdir(output_dirB)
+output_dir = '/cluster/shared/dbanco02/seq_mmpad';
+mkdir(output_dir)
 prefix = 'mmpad_img';
 
 %% Universal Parameters
