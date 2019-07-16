@@ -2,10 +2,8 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth/';
-output_dirA = '/cluster/shared/dbanco02/unreg_two_spot_growth_a';
-output_dirB = '/cluster/shared/dbanco02/unreg_two_spot_growth_b';
-mkdir(output_dirA)
-mkdir(output_dirB)
+output_dir = '/cluster/shared/dbanco02/unreg_two_spot_growth';
+mkdir(output_dir)
 prefix = 'polar_image';
 
 %% Universal Parameters
