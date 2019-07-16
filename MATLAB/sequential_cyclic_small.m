@@ -3,8 +3,8 @@ P.img = 1;
 
 % dataset = 'D:\CHESS_data\simulated_data_small';
 % output_dir = 'D:\CHESS_data\small_wass_test_results';
-dataset = '/cluster/home/dbanco02/simulated_data_two_phase/';
-output_dir = '/cluster/shared/dbanco02/unreg_two_phase';
+dataset = '/cluster/home/dbanco02/simulated_data_two_phase_b/';
+output_dir = '/cluster/shared/dbanco02/unreg_two_phase_b';
 mkdir(output_dir)
 prefix = 'polar_image';
 
