@@ -2,8 +2,10 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth/';
-output_dir = '/cluster/shared/dbanco02/unreg_two_spot_growth_init';
-mkdir(output_dir)
+output_dirA = '/cluster/shared/dbanco02/unreg_two_spot_growth_a';
+output_dirB = '/cluster/shared/dbanco02/unreg_two_spot_growth_b';
+mkdir(output_dirA)
+mkdir(output_dirB)
 prefix = 'polar_image';
 
 %% Universal Parameters
@@ -99,7 +101,7 @@ for image_num = 1:20
     vdfs = {new_vdf};
     
     save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
-    save_obj(output_dir,jjj,image_num,obj);
+    save_obj(output_dir,0,image_num,obj);
 end
 
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
