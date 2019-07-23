@@ -1,8 +1,6 @@
 function [Wd, r, c, T] = sinkhornKnoppTransport(r, c, lam, D)
 %sinkhornKnoppTransport
 
-iter = 1;
-
 % Remove 0 probability points from each distribution
 Indr = r > 0;
 r = r(Indr);
@@ -13,7 +11,7 @@ c = c(Indc);
 c = c./sum(c(:));
 
 D = D(Indr,Indc);
-K = exp(-lam*D-1);
+K = exp(-D/lam);
 
 x = ones(size(r))/2;
 

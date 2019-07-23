@@ -1,11 +1,11 @@
-saveDir = 'D:\CHESS_data\simulated_data_two_phase\';
+saveDir = 'D:\CHESS_data\simulated_data_two_spot_growth\';
 mkdir(saveDir)
 %% Randomized spot example
 num_ims = 20;
-num_spots = 15;
+num_spots = 1;
 % Ring sampling parameters
-ring_width = 20;
-num_theta= 400;
+ring_width = 10;
+num_theta= 80;
 num_rad = 2*ring_width+1;
 dtheta = 1;
 drad = 1;
@@ -53,8 +53,8 @@ VDF = cell(num_ims,1);
 evar_az = zeros(num_ims,1);
 evar_rad = zeros(num_ims,1);
 
-theta_means = (rand(num_spots,1)-0.5)*max_az_mean + min_az_mean;
-rad_means = rand(num_spots,1)*width_rad_mean + center_rad_mean;
+theta_means = [35,45];
+rad_means = [10,10];
 amplitudes = rand(num_spots,1)*max_amp + min_amp;
 
 for i = 1:size(positions,1)
@@ -109,14 +109,14 @@ for i = 1:size(positions,1)
     save(im_name,'polar_image')
     
     % Perturb spots
-    theta_mean_deltas = randn(num_spots,1)*2;
+    theta_mean_deltas = randn(num_spots,1)*1;
     rad_mean_deltas = randn(num_spots,1)*0.25;
     amplitude_deltas = randn(num_spots,1)*8;
     
-    theta_means = theta_means + theta_mean_deltas;
-    rad_means = rad_means + rad_mean_deltas;
+%     theta_means = theta_means + theta_mean_deltas;
+%     rad_means = rad_means + rad_mean_deltas;
     amplitudes = amplitudes + amplitude_deltas;
-    pause()
+%     pause()
 end
 save([saveDir,'synth_data.mat'],'synth_sample','VDF')
 

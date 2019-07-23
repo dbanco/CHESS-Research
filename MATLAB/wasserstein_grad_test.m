@@ -1,21 +1,22 @@
 %% Wasserstein gradient test
-h = repmat(1:5,[5,1]);
-y = ones(5,5)/25;
+nn = 10;
+h = repmat(1:nn,[nn,1]);
+y = ones(nn,nn)/nn*nn;
 % y = abs(randn(5,5)+0.5);
 h = h/sum(h(:));
 y = y/sum(y(:));
 
 
 % Construct distance matrix
-N = 25;
-THRESHOLD = 25;
+N = nn*nn;
+THRESHOLD = nn*nn;
 D = ones(N,N).*THRESHOLD;
-for i = 1:5
-    for j = 1:5
-        for ii=max([1 i-THRESHOLD+1]):min([5 i+THRESHOLD-1])
-            for jj = max([1 j-THRESHOLD+1]):min([5 j+THRESHOLD-1])
-                ind1 = i + (j-1)*5;
-                ind2 = ii + (jj-1)*5;
+for i = 1:nn
+    for j = 1:nn
+        for ii=max([1 i-THRESHOLD+1]):min([nn i+THRESHOLD-1])
+            for jj = max([1 j-THRESHOLD+1]):min([nn j+THRESHOLD-1])
+                ind1 = i + (j-1)*nn;
+                ind2 = ii + (jj-1)*nn;
                 D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
             end
         end
@@ -26,25 +27,39 @@ deltaX = 1e-8;
 lam = 10;
 dFdX = zeros(size(h));
 
-[ gradW ] = WassersteinGrad( h(:), y(:), lam, D );
-[grad_a,grad_b] = WassersteinGrad2(h(:),y(:),lam,D);
-[gradFD,~] = WassersteinGradFD(h(:),y(:),lam,D);
+% [ gradW ] = WassersteinGrad( h(:), y(:), lam, D );
+% [grad_a,grad_b] = WassersteinGrad2(h(:),y(:),lam,D);
+% [gradFD,~] = WassersteinGradFD(h(:),y(:),lam,D);
 
-gradW = reshape(gradW,size(y));
-grad_a = reshape(grad_a,size(y))
-grad_b = reshape(grad_b,size(y))
-gradW
-gradFD*max(gradW(:))/max(gradFD(:))
+% gradW = reshape(gradW,size(y));
+% grad_a = reshape(grad_a,size(y))
+% grad_b = reshape(grad_b,size(y))
+% gradW
+% gradFD*max(gradW(:))/max(gradFD(:))
+
+beta = 0.01;
+[Wd_ipot,~,~,T1] = InexactProxOT(h,y,D,beta,1);
+[Wd,~,~,T2] = sinkhornKnoppTransport(h,y,beta,D);
+figure(11)
+imagesc(T1)
+title('IPOT')
+
+figure(22)
+imagesc(T2)
+title('Sinkhorn')
+
 %%
 figure(1)
 subplot(2,2,1)
 imagesc(h)
 colorbar()
 title('P_1')
+
 subplot(2,2,2)
 imagesc(y)
 colorbar()
 title('P_2')
+
 subplot(2,2,3)
 imagesc(reshape(gradW,[5,5]))
 colorbar()
