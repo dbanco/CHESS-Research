@@ -43,6 +43,8 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
+parpool(20)
+
 parfor image_num = 1:20
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
