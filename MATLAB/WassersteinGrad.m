@@ -3,9 +3,11 @@ function [ gradW, Wd ] = WassersteinGrad(r, c, lam, D)
 %   Detailed explanation goes here
 
 iter = 1;
+
 Ind = r > 0;
 r = r(Ind);
 r = r./sum(r(:));
+
 D = D(Ind,:);
 K = exp(-D*lam-1);
 

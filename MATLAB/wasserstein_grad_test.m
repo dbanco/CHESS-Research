@@ -1,5 +1,5 @@
 %% Wasserstein gradient test
-nn = 10;
+nn = 5;
 h = repmat(1:nn,[nn,1]);
 y = ones(nn,nn)/nn*nn;
 % y = abs(randn(5,5)+0.5);
@@ -36,10 +36,10 @@ dFdX = zeros(size(h));
 % grad_b = reshape(grad_b,size(y))
 % gradW
 % gradFD*max(gradW(:))/max(gradFD(:))
-
-beta = 0.01;
-[Wd_ipot,~,~,T1] = InexactProxOT(h,y,D,beta,1);
-[Wd,~,~,T2] = sinkhornKnoppTransport(h,y,beta,D);
+lam = 0.01;
+beta = 1;
+[Wd_ipot,~,~,T1,a_t] = InexactProxOT(h,y,D,beta,1);
+[Wd,~,~,T2] = sinkhornKnoppTransport(h,y,lam,D);
 figure(11)
 imagesc(T1)
 title('IPOT')
@@ -47,6 +47,22 @@ title('IPOT')
 figure(22)
 imagesc(T2)
 title('Sinkhorn')
+
+[ gradW ] = WassersteinGrad( h(:), y(:), lam, D );
+alpha_t = {};
+gradIPOT = 0;
+% for i = 1:numel(a_t)
+%   gradIPOT = gradIPOT + (log(a_t{i})-log(sum(a_t{i})./numel(h)))/beta;
+% end
+% gradIPOT = gradIPOT/numel(a_t);
+gradIPOT = gradIPOT + (log(a_t{end})-log(sum(a_t{end})./numel(y)))/beta;
+figure(33)
+imagesc(gradIPOT)
+title('gradIPOT')
+
+figure(44)
+imagesc(gradW)
+title('gradW')
 
 %%
 figure(1)
