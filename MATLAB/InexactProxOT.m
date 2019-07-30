@@ -11,7 +11,7 @@ c = c(Indc);
 c = c./sum(c(:));
 
 D = D(Indr,Indc);
-G = exp(-D/beta);
+G = exp(-D*beta);
 Gamma = ones(size(D));
 
 b = ones(size(r))/numel(r);

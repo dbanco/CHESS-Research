@@ -11,7 +11,7 @@ c = c(Indc);
 c = c./sum(c(:));
 
 D = D(Indr,Indc);
-K = exp(-D/lam-1);
+K = exp(-D*lam-1);
 
 x = ones(size(r))/2;
 
