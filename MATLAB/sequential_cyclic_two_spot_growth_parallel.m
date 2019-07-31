@@ -2,8 +2,8 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_6a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_6b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_7a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_7b';
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -35,7 +35,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.05;
+params.gamma = 0.2;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -65,7 +65,7 @@ for jjj = 1:10
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    for image_num = 1:20
+    parfor image_num = 1:20
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);

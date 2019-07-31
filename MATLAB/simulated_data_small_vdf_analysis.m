@@ -2,10 +2,10 @@
 video_norm = cell(num_imgs,1);
 
 baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_init';
+datasetName = 'two_spot_growth_3a';
 fitName = '';
 fDir = [baseDir,datasetName,fitName];
-
+h = figure(11);
 for img_num = 1:num_imgs
     frame = [];
     fprintf('Image %i\n',img_num)
@@ -17,22 +17,42 @@ for img_num = 1:num_imgs
     err_fit = norm(img_fit-polar_image)/norm(polar_image);
     vdf = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
     % Append polar_images and fits
-    frame = [frame,polar_image];
-    video_norm{img_num} = frame;
-        lim1 = 0;
-        lim2 = max(polar_image(:));
-        lim_vdf = max(vdf(:));
-        % Plot both images
-        figure(11)
-        subplot(1,3,1)
-        imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        subplot(1,3,2)
-        imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title(sprintf('Error = %f',err_fit))
-        subplot(1,3,3)
-        imshow(vdf,'DisplayRange',[0 lim_vdf],'Colormap',jet);
-        title(VDF)
-        pause(0.1)
+    lim1 = 0;
+    lim2 = max(polar_image(:));
+    lim_vdf = max(vdf(:));
+    % Plot both images
+
+    subplot(1,3,1)
+    imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
+    subplot(1,3,2)
+    imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+    title(sprintf('Error = %f',err_fit))
+    subplot(1,3,3)
+    imshow(vdf,'DisplayRange',[0 lim_vdf],'Colormap',jet);
+    title(VDF)
+    
+%     % Write GIF
+%     drawnow
+%     frameg = getframe(h);
+%     im_crop = frame2im(frameg);
+%     % Remove grayspace to crop image
+% %     m_im = mean(im,3);
+% %     im_rows = mean(m_im,1);
+% %     im_cols = mean(m_im,2);
+% %     rows = find(im_cols~=240);
+% %     cols = find(im_rows~=240);
+% %     im_crop = im(rows,cols,:);
+% %     [nn,mm,pp] = size(im_crop);
+% 
+%     [imind,cm] = rgb2ind(im_crop,256,'nodither'); 
+%     % Write to the GIF File 
+%     if img_num == 1 
+%       imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+%     else 
+%       imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',0.1); 
+%     end 
+    pause()
+
 end
 
 %% Create gif
