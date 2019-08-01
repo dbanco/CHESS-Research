@@ -1,8 +1,9 @@
 P.set = 1;
 P.img = 1;
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_init9';
+dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
+output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init1';
+
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -33,7 +34,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.25;
+params.gamma = 0.1;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;

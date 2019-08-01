@@ -1,5 +1,5 @@
 baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_6a';
+datasetName = 'two_spot_growth_9a';
 fitName = '';
 
 num_imgs = 20;
