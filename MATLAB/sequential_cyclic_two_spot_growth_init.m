@@ -2,7 +2,7 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init1';
+output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init2';
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -74,7 +74,10 @@ for image_num = 1:20
                 for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
                     ind1 = i + (j-1)*P.num_var_t;
                     ind2 = ii + (jj-1)*P.num_var_t;
-                    D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+                    D(ind1,ind2)= P.var_theta(i) + P.var_theta(ii) +...
+                                  P.var_rad(j) + P.var_rad(jj) -...
+                                  2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
+                                  2*sqrt(P.var_rad(j)*P.var_rad(jj));
                 end
             end
         end
