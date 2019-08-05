@@ -1,9 +1,11 @@
 P.set = 1;
 P.img = 1;
 
+
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
 output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_1a';
 output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_1b';
+
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
