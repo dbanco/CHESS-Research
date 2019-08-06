@@ -5,7 +5,7 @@ P.img = 1;
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
 output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_2a';
 output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_2b';
-
+num_ims = 25;
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -17,7 +17,7 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [20,1];
+P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
@@ -50,12 +50,12 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-vdf_array = cell(20,1);
-for ii = 1:20
+vdf_array = cell(num_ims,1);
+for ii = 1:num_ims
     f_data = load(fullfile(output_dirA,sprintf(baseFileName,1,ii)));
     vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
 end
-new_vdf_array = cell(20,1);
+new_vdf_array = cell(num_ims,1);
 
 parpool(20)
 
@@ -67,7 +67,7 @@ for jjj = 1:10
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    parfor image_num = 1:20
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
@@ -128,8 +128,8 @@ for jjj = 1:10
          % Run FISTA updating solution and error array
         if image_num == 1
             vdfs = vdf_array(2);
-        elseif image_num == 20
-            vdfs = vdf_array(19);
+        elseif image_num == num_ims
+            vdfs = vdf_array(num_ims-1);
         else
             vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
         end

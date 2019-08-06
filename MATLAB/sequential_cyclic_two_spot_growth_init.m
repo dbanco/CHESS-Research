@@ -3,7 +3,7 @@ P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
 output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init2';
-
+num_ims = 25;
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -14,7 +14,7 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [20,1];
+P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
@@ -47,7 +47,7 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-for image_num = 1:20
+for image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
