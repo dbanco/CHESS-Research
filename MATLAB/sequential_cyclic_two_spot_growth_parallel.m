@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_1a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_1b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_2a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_2b';
 
 mkdir(output_dirA)
 mkdir(output_dirB)
@@ -88,6 +88,19 @@ for jjj = 1:10
         N = P.num_var_t*P.num_var_r;
         THRESHOLD = 32;
 
+%         D = ones(N,N).*THRESHOLD;
+%         for i = 1:P.num_var_t
+%             for j = 1:P.num_var_r
+%                 for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+%                     for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+%                         ind1 = i + (j-1)*P.num_var_t;
+%                         ind2 = ii + (jj-1)*P.num_var_t;
+%                         D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+%                     end
+%                 end
+%             end
+%         end
+%         D = D./max(D(:));
         D = ones(N,N).*THRESHOLD;
         for i = 1:P.num_var_t
             for j = 1:P.num_var_r
@@ -95,7 +108,10 @@ for jjj = 1:10
                     for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
                         ind1 = i + (j-1)*P.num_var_t;
                         ind2 = ii + (jj-1)*P.num_var_t;
-                        D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+                        D(ind1,ind2)= P.var_theta(i) + P.var_theta(ii) +...
+                                      P.var_rad(j) + P.var_rad(jj) -...
+                                      2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
+                                      2*sqrt(P.var_rad(j)*P.var_rad(jj));
                     end
                 end
             end

@@ -94,7 +94,7 @@ for image_num = 1:20
   
     % Run FISTA updating solution and error array
     if image_num == 1
-            [x_hat,err,obj,~,~,~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
+         [x_hat,err,obj,~,~,~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
     else
          [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
     end
