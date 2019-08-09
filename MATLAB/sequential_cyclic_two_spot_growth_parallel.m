@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_2a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_2b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_3a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_3b';
 num_ims = 25;
 mkdir(output_dirA)
 mkdir(output_dirB)
@@ -37,7 +37,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.1;
+params.gamma = 0.2;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
