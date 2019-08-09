@@ -3,9 +3,10 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_3a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_3b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_25_4a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_25_4b';
 num_ims = 25;
+
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -57,7 +58,7 @@ for ii = 1:num_ims
 end
 new_vdf_array = cell(num_ims,1);
 
-parpool(20)
+parpool(num_ims)
 
 for jjj = 1:10
     if mod(jjj,2)
@@ -88,19 +89,6 @@ for jjj = 1:10
         N = P.num_var_t*P.num_var_r;
         THRESHOLD = 32;
 
-%         D = ones(N,N).*THRESHOLD;
-%         for i = 1:P.num_var_t
-%             for j = 1:P.num_var_r
-%                 for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-%                     for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-%                         ind1 = i + (j-1)*P.num_var_t;
-%                         ind2 = ii + (jj-1)*P.num_var_t;
-%                         D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
-%                     end
-%                 end
-%             end
-%         end
-%         D = D./max(D(:));
         D = ones(N,N).*THRESHOLD;
         for i = 1:P.num_var_t
             for j = 1:P.num_var_r
@@ -108,15 +96,29 @@ for jjj = 1:10
                     for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
                         ind1 = i + (j-1)*P.num_var_t;
                         ind2 = ii + (jj-1)*P.num_var_t;
-                        D(ind1,ind2)= P.var_theta(i) + P.var_theta(ii) +...
-                                      P.var_rad(j) + P.var_rad(jj) -...
-                                      2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
-                                      2*sqrt(P.var_rad(j)*P.var_rad(jj));
+                        D(ind1,ind2)= ((i-ii)^2+(j-jj)^2); 
                     end
                 end
             end
         end
         D = D./max(D(:));
+
+%         D = ones(N,N).*THRESHOLD;
+%         for i = 1:P.num_var_t
+%             for j = 1:P.num_var_r
+%                 for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+%                     for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+%                         ind1 = i + (j-1)*P.num_var_t;
+%                         ind2 = ii + (jj-1)*P.num_var_t;
+%                         D(ind1,ind2)= P.var_theta(i) + P.var_theta(ii) +...
+%                                       P.var_rad(j) + P.var_rad(jj) -...
+%                                       2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
+%                                       2*sqrt(P.var_rad(j)*P.var_rad(jj));
+%                     end
+%                 end
+%             end
+%         end
+%         D = D./max(D(:));
 
         x_init = zeros(size(A0ft_stack));
         for i = 1:P.num_var_t
