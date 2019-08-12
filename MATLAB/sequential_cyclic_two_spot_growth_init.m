@@ -2,7 +2,7 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init4';
+output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init5';
 num_ims = 25;
 mkdir(output_dir)
 prefix = 'polar_image';
