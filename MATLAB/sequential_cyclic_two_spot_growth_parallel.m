@@ -22,7 +22,7 @@ P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
-P.cost = 'wass';
+P.cost = 'sqrt';
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
@@ -105,6 +105,7 @@ for jjj = 1:10
                     end
                 end
                 D = D./max(D(:));
+                
             case 'l2'
                 D = ones(N,N).*THRESHOLD;
                 for i = 1:P.num_var_t
@@ -119,6 +120,7 @@ for jjj = 1:10
                     end
                 end
                 D = D./max(D(:));
+                
             case 'wass'
                 D = ones(N,N).*THRESHOLD;
                 for i = 1:P.num_var_t
@@ -131,6 +133,21 @@ for jjj = 1:10
                                               P.var_rad(j) + P.var_rad(jj) -...
                                               2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
                                               2*sqrt(P.var_rad(j)*P.var_rad(jj));
+                            end
+                        end
+                    end
+                end
+                D = D./max(D(:));
+                
+            case 'sqrt'
+                D = ones(N,N).*THRESHOLD;
+                for i = 1:P.num_var_t
+                    for j = 1:P.num_var_r
+                        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+                            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+                                ind1 = i + (j-1)*P.num_var_t;
+                                ind2 = ii + (jj-1)*P.num_var_t;
+                                D(ind1,ind2)= sqrt(sqrt((i-ii)^2+(j-jj)^2));
                             end
                         end
                     end
