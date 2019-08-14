@@ -2,10 +2,12 @@
 video_norm = cell(num_imgs,1);
 
 baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_3a';
+datasetName = 'two_spot_growth_unreg';
 fitName = '';
 fDir = [baseDir,datasetName,fitName];
-h = figure(11);
+filename = [datasetName,fitName,'.gif'];
+
+h = figure(12);
 for img_num = 1:num_imgs
     frame = [];
     fprintf('Image %i\n',img_num)
@@ -22,28 +24,28 @@ for img_num = 1:num_imgs
     lim_vdf = max(vdf(:));
     % Plot both images
 
-    subplot(1,3,1)
+    subplot(1,2,1)
     imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-    subplot(1,3,2)
-    imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
-    title(sprintf('Error = %f',err_fit))
-    subplot(1,3,3)
+%     subplot(1,3,2)
+%     imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
+%     title(sprintf('Error = %f',err_fit))
+    subplot(1,2,2)
     imshow(vdf,'DisplayRange',[0 lim_vdf],'Colormap',jet);
-    title(VDF)
+%     title(VDF)
     
 %     % Write GIF
-%     drawnow
-%     frameg = getframe(h);
-%     im_crop = frame2im(frameg);
-%     % Remove grayspace to crop image
-% %     m_im = mean(im,3);
-% %     im_rows = mean(m_im,1);
-% %     im_cols = mean(m_im,2);
-% %     rows = find(im_cols~=240);
-% %     cols = find(im_rows~=240);
-% %     im_crop = im(rows,cols,:);
-% %     [nn,mm,pp] = size(im_crop);
-% 
+    drawnow
+    frameg = getframe(h);
+    im_crop = frame2im(frameg);
+    % Remove grayspace to crop image
+%     m_im = mean(im,3);
+%     im_rows = mean(m_im,1);
+%     im_cols = mean(m_im,2);
+%     rows = find(im_cols~=240);
+%     cols = find(im_rows~=240);
+%     im_crop = im(rows,cols,:);
+%     [nn,mm,pp] = size(im_crop);
+
 %     [imind,cm] = rgb2ind(im_crop,256,'nodither'); 
 %     % Write to the GIF File 
 %     if img_num == 1 
@@ -114,7 +116,7 @@ for img_num = 1:100
 %         subplot(1,2,2)
 %         imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
 %         title(sprintf('Error = %f',err(end)))
-%         pause
+        pause
 end
 
 %% Create gif

@@ -1,4 +1,4 @@
-function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,neighbors_vdf,D,x_init,params)
+function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,D,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -11,9 +11,9 @@ function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft
 %       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
 %
 % Inputs:
-% b          - (m x n) polar ring images
+% b          - (n) polar ring images
 % neighibors_ev - (scalar) average expected variance of neighboring ring images
-% A0ft_stack - (m x n x t x r) fft2 of unshifted gaussian basis matrices
+% A0ft_stack - (n x t) fft2 of unshifted gaussian basis matrices
 % params     - struct containing the following field
 %   lambda - l1 penalty parameter > 0
 %   gamma - spatial smoothness regularization parameter > 0
@@ -26,7 +26,7 @@ function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant(A0ft
 %   x_init - initial guess of solution
 %
 % Outputs:
-% x_hat - (m x n x t x r) solution 
+% x_hat - (n x t) solution 
 % err - (nIters) relative error of solution at each iteration
 % obj - (nIters) objective value of solution at each iteration
 % l_0 - (nIters) sparsity of solution at each iteration
@@ -55,9 +55,9 @@ maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
-[m,n,t,r] = size(A0ft_stack) ;
+[n,t] = size(A0ft_stack) ;
 
-if ~all(size(x_init)==[m,n,t,r])
+if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
 
@@ -74,13 +74,13 @@ f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add entropic reg wasserstein distance vdf term  
-vdf = squeeze(sum(sum(x_init,1),2));
+vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 wObj = WassersteinObjective(vdf(:), neighbors_vdf, wLam, D);
 f = f + 0.5*params.gamma*wObj;
 
 % Used to compute gradient
-c = AtR_ft_2D(A0ft_stack,b);
+c = AtR_ft_1D(A0ft_stack,b);
 
 x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
@@ -94,28 +94,26 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Data matching gradient update
-    grad = AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask)) - c;
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)) - c;
 
     % Wasserstein regularizer gradient update
-    vdf = squeeze(sum(sum(zk,1),2));
+    vdf = squeeze(sum(zk,1));
     vdf = vdf/sum(vdf(:));
     
     if(sum(vdf(:)) == 0)
         error('VDF is not defined (all zeors)')
     end
-    gradW = zeros(t*r,1);
+    gradW = zeros(t,1);
     wObj_zk = 0;
     for i = 1:numel(neighbors_vdf)
         [gradWi, Wdi] = WassersteinGrad( vdf(:), neighbors_vdf{i}(:), wLam, D );
         gradW = gradW + gradWi;
         wObj_zk = wObj_zk + Wdi;
     end
-   gradW = reshape(gradW,[t,r])./numel(neighbors_vdf);
+   gradW = reshape(gradW,[t,1])./numel(neighbors_vdf);
     for i = 1:t
-        for j = 1:r
-            grad(:,:,i,j) = grad(:,:,i,j) + ...
-            params.gamma*(gradW(i,j)./sum(zk(:)) - sum(gradW(:).*vdf(:))./sum(zk(:)));
-        end
+        grad(:,i) = grad(:,i) + ...
+        params.gamma*(gradW(i)./sum(zk(:)) - sum(gradW(:).*vdf(:))./sum(zk(:)));
     end
 
     % Backtracking
@@ -128,16 +126,16 @@ while keep_going && (nIter < maxIter)
         end
         
         % Compute objective at xk
-        fit = forceMaskToZero(Ax_ft_2D(A0ft_stack,xk),zMask);
-        vdf_xk = squeeze(sum(sum(xk,1),2));
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
+        vdf_xk = squeeze(sum(xk,1));
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
         
         wObj_xk = WassersteinObjective(vdf_xk(:),neighbors_vdf(:),wLam,D);
         temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
-        fit2 = forceMaskToZero(Ax_ft_2D(A0ft_stack,zk),zMask);
-        vdf_zk = squeeze(sum(sum(zk,1),2));
+        fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
+        vdf_zk = squeeze(sum(zk,1));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
         temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
             0.5*params.gamma*wObj_zk +...
@@ -194,28 +192,28 @@ while keep_going && (nIter < maxIter)
         figure(1)
        
         subplot(2,3,1)
-        imshow(b,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        plot(b);
         title('img')
         
         subplot(2,3,2)
-        imshow(Ax_ft_2D(A0ft_stack,xk),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        plot(Ax_ft_1D(A0ft_stack,xk));
         title('xk')
         
         subplot(2,3,3)
-        imshow(fit2,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        plot(fit2);
         title('zk')
         
         subplot(2,3,4)
-        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zMask);
-        imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
+        fit_gk = forceMaskToZero(Ax_ft_1D(A0ft_stack,gk),zMask);
+        plot(fit_gk);
         title('gk')
         
         subplot(2,3,5)
-        imshow(abs(b-fit),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        plot(abs(b-fit));
         title('diff xk')
         
         subplot(2,3,6)
-        imshow(abs(b-fit2),'DisplayRange',[lim1 lim2],'Colormap',jet);
+        plot(abs(b-fit2));
         title('diff zk')
         
         pause(0.05)
@@ -225,7 +223,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zPad)));
+                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zPad)));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative

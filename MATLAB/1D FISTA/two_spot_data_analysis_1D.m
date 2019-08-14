@@ -1,186 +1,201 @@
-baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_25_5a';
-fitName = '';
+datasetName = 'simulated_two_spot_1D';
+fitName = '_fit';
 
-num_imgs = 25;
-
-lambda_vals = [0.00001 0.00002 0.00005 0.0001 0.0002 0.0005  0.001  0.002,...
-                0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5];
-
-% Load fit
-img_num = 2;
+%% Load fit
+img_num = 1;
 ring_num = 1;
 
-fDir = [baseDir,datasetName,fitName];
+fDir = ['D:\CHESS_data\',datasetName,fitName];
 fName = sprintf('fista_fit_%i_%i.mat',ring_num,img_num);
 
 load(fullfile(fDir,fName))
-A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
-img_fit = Ax_ft_2D(A0ft_stack,x_hat);
+A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+img_fit = Ax_ft_1D(A0ft_stack,x_hat);
 
 lim1 = 0;
-lim2 = max(polar_image(:));
+lim2 = max(polar_vector);
 % Plot both images
+figure(1)
+plot(polar_vector);
+hold on
+plot(img_fit*norm(polar_vector));
+
+%% View basis function
 figure(2)
-subplot(2,1,1)
-imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
-subplot(2,1,2)
-imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
+% A0_stack = unshifted_basis_matrix_stack_norm2(P);
+% for i = 1:P.num_var_t
+%     figure(i+10)
+%     for j = 1:P.num_var_r
+%         subplot(1,P.num_var_r,j)
+%         basis_func = shift2D(squeeze(A0_stack(:,:,i,j)),round(P.num_rad/2),round(P.num_theta/2));
+%         imshow(basis_func,'DisplayRange',[lim1 0.2],'Colormap',jet,'InitialMagnification','fit');
+%     end
+%     pause
+% end
+
+%% View basis function
+% figure(2)
+% A0_stack = unshifted_basis_matrix_stack_norm2(P);
+% for i = 1:P.num_var_r
+%     figure(i+10)
+%     for j = 1:P.num_var_t
+%         subplot(1,P.num_var_t,j)
+%         basis_func = shift2D(squeeze(A0_stack(:,:,j,i)),round(P.num_rad/2),round(P.num_theta/2));
+%         imshow(basis_func,'DisplayRange',[lim1 0.2],'Colormap',jet,'InitialMagnification','fit');
+%     end
+%     pause
+% end
+
+%% Construct distance matrix
+% N = P.num_var_t*P.num_var_r;
+% THRESHOLD = 32;
+% 
+% D = ones(N,N).*THRESHOLD;
+% for i = 1:P.num_var_t
+%     for j = 1:P.num_var_r
+%         for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+%             for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
+%                 ind1 = i + (j-1)*P.num_var_t;
+%                 ind2 = ii + (jj-1)*P.num_var_t;
+%                 D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
+%             end
+%         end
+%     end
+% end
+% D = D./max(D(:));
 
 
-% Construct distance matrix
-N = P.num_var_t*P.num_var_r;
-THRESHOLD = 32;
+%% Compute time varying spread and error functions
 
-D = ones(N,N).*THRESHOLD;
-for i = 1:P.num_var_t
-    for j = 1:P.num_var_r
-        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                ind1 = i + (j-1)*P.num_var_t;
-                ind2 = ii + (jj-1)*P.num_var_t;
-                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
-            end
-        end
-    end
-end
-D = D./max(D(:));
+fDir = ['D:\CHESS_data\',datasetName,fitName];
+az_spread = zeros(101,1);
+rel_err = zeros(101,1);
+sparsity = zeros(101,1);
+var_signal = zeros(101,P.num_var_t);
 
-
-% Compute time varying spread and error functions
-P.num_var_t = 15;
-P.num_var_r = 10;
-
-fDir = [baseDir,datasetName,fitName];
-az_spread = zeros(num_imgs,numel(lambda_vals));
-rad_spread = zeros(num_imgs,numel(lambda_vals));
-rel_err = zeros(num_imgs,numel(lambda_vals));
-sparsity = zeros(num_imgs,numel(lambda_vals));
-%wass_dist = zeros(num_imgs,1);
-var_signal = zeros(num_imgs,numel(lambda_vals),P.num_var_t,P.num_var_r);
-
-for lam_num = 1
-    for img_num = 1:num_imgs
+for img_num = 1:91
         k = img_num;
+        j = 1;
         fprintf('Image %i\n',k)
-        fName = sprintf('fista_fit_%i_%i.mat',lam_num,img_num);
+        fName = sprintf('fista_fit_%i_%i.mat',j,k);
         load(fullfile(fDir,fName))
-        A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
-        img_fit = Ax_ft_2D(A0ft_stack,x_hat);
-        rel_err(k,lam_num) = err(end);
-        var_signal_k = squeeze(sum(sum(x_hat,1),2));
-        var_signal(k,lam_num,:,:) =  var_signal_k;
-        rad_var_signal = squeeze(sum(var_signal_k,2));
+        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+        img_fit = Ax_ft_1D(A0ft_stack,x_hat);
+        rel_err(k) = err(end);
+        var_signal_k = squeeze(sum(x_hat,1));
+        var_signal(k,:) =  var_signal_k;
         az_var_signal = squeeze(sum(var_signal_k,1));
         var_sum = sum(var_signal_k(:));
-        rad_spread(k,lam_num) = sqrt(P.var_rad)*az_var_signal'/var_sum;
-        az_spread(k,lam_num) = sqrt(P.var_theta)*rad_var_signal/var_sum;
-        sparsity(k,lam_num) = sum(x_hat(:)>0);
+        az_spread(k) = sum(sqrt(P.var_theta).*az_var_signal)/var_sum;
+        sparsity(k) = sum(x_hat(:)>0);
 
     %     if k > 2
     %         wass_dist(k) = sinkhornKnoppTransport(var_signal_k(:),vdf_last(:),P.params.wLam,D);
     %     end
-
-        k = k + 1;
+    
         vdf_last = var_signal_k;
-    end
 end
-    spreadDir = fullfile('D:','CHESS_data','spread_results');
-    mkdir(spreadDir)
-    outFile = ['spread_',datasetName,fitName,'.mat'];
-    save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
-        'var_signal','rel_err','P','rad_spread','az_spread','rel_err','sparsity')%,'wass_dist')
+
+spreadDir = fullfile('D:','CHESS_data','spread_results');
+mkdir(spreadDir)
+outFile = ['spread_',datasetName,fitName,'.mat'];
+save(fullfile(spreadDir,sprintf(outFile,ring_num)),...
+    'var_signal','rel_err','P','az_spread','rel_err','sparsity')%,'wass_dist')
  
 %% Load spread data
-baseDir = 'D:\CHESS_data\small_fit\';
-datasetName = 'simulated_data_small_fit';
-fitName = '';
-
-% baseDir = 'D:\CHESS_data\small_wass_test_results\';
-% datasetName = '';
-% fitName = '';
-
-num_imgs = 20;
-
 spreadDir = fullfile('D:','CHESS_data','spread_results');
 
 ring_data{1} = load(fullfile(spreadDir,['spread_',datasetName,fitName,'.mat']));
 
-load(['D:\CHESS_data\simulated_data_small\synth_data.mat'])
-truth_awmv_az = zeros(num_imgs,1);
-truth_awmv_rad = zeros(num_imgs,1);
-for i = 1:num_imgs
-    vdf_i = VDF{i};
-    vdf_i = vdf_i/sum(vdf_i(:));
-    truth_awmv_az(i) = sum(vdf_i,2)'*sqrt(P.var_theta)';
-    truth_awmv_rad(i) = sum(vdf_i,1)*sqrt(P.var_rad)';
-end
-%% Plot time varying spread and error functions
 
-colors = jet(40);
-
-num_lines = 34;
-
+%% Plot vdfs
 figure(1)
-for i = 1:num_lines
-    cv = colors(i,:);
-    plot(ring_data{1}.rad_spread(:,i),'-o','Color',cv,'MarkerSize',3)
+[ha, pos] = tight_subplot(11,10,[.005 .005],[.01 .01],[.01 .01]); 
+x = linspace(P.dtheta/2,  32,P.num_var_t);
+for i = 1:101
+        axes(ha(i));
+        im_vdf = squeeze(ring_data{1}.var_signal(i,:));
+        plot(x,im_vdf);
+        legend(num2str(ring_data{1}.az_spread(i)))
+        
+end
+
+%% Plot fits
+figure(5)
+[ha, pos] = tight_subplot(11,10,[.005 .005],[.01 .01],[.01 .01]); 
+for i = 1:91
+        fName = sprintf('fista_fit_%i_%i.mat',1,i);
+        load(fullfile(fDir,fName))
+        axes(ha(i));
+        img_fit = Ax_ft_1D(A0ft_stack,x_hat);
+        plot(polar_vector)
+        hold on
+        plot(img_fit*norm(polar_vector))
+        legend(num2str(ring_data{1}.az_spread(i)))
+end
+
+%% Create VDF video
+vdf_filename = 'overlap_vdf.gif';
+x = sqrt(P.var_theta);
+h = figure(6);
+all_peaks1 = [];
+all_peaks2 = [];
+for i = 1:91
+    im_vdf = squeeze(ring_data{1}.var_signal(i,:));
+    
+    % Find peaks in VDF
+    peaks = find2peaks(im_vdf);
+    if(numel(peaks) > 1)
+        all_peaks1 = [all_peaks1, peaks(1)]
+        all_peaks2 = [all_peaks2, peaks(2)]
+        
+    else
+        all_peaks1 = [all_peaks1, peaks(1)]
+    end
+    plot(x,im_vdf);
     hold on
-end
-plot(truth_awmv_rad,'-x','MarkerSize',2)
-leg_str = cell(1,numel(lambda_vals));
-for i = 1:numel(lambda_vals)
-   leg_str{1,i} = num2str(lambda_vals(i));
-end
-leg_str{1,end+1} = 'truth';
-legend(leg_str,'Location','Best')
-title('Radial AWMV')
-xlabel('Time')
+    plot(x(peaks(1)),im_vdf(peaks(1)),'og')
+    plot(x(all_peaks1),0.18*ones(numel(all_peaks1),1),'-g')
+    if(numel(all_peaks2)>0)
+        plot(x(peaks(2)),im_vdf(peaks(2)),'or')
+        plot(x(all_peaks2),0.17*ones(numel(all_peaks2),1),'-r')
+    end
+%     plot(x(peaks(2)),im_vdf(peaks(2)),'or')
+    ylim([0,0.2])
+    legend(num2str(ring_data{1}.az_spread(i)))
+    drawnow
+    frameg = getframe(h);
+    im = frame2im(frameg);
 
-legend_vals = ['0.00001', '0.00002', '0.00005', '0.0001','0.0002', '0.0005',  '0.001', '0.002',...
-                '0.005', '0.01', '0.02', '0.05', '0.1', '0.2', '0.5', '1', '2', '5'];
+    [imind,cm] = rgb2ind(im,256,'nodither'); 
+    % Write to the GIF File 
+    if i == 1 
+      imwrite(imind,cm,vdf_filename,'gif', 'Loopcount',inf); 
+    else 
+      imwrite(imind,cm,vdf_filename,'gif','WriteMode','append','DelayTime',0.1); 
+    end 
+    cla
+end
 
+%% Plot time varying spread and error functions
 figure(2)
-for i = 1:num_lines
-    cv = colors(i,:);
-    plot(ring_data{1}.az_spread(:,i),'-o','Color',cv,'MarkerSize',3)
-    hold on
-end
-plot(truth_awmv_az,'-x','MarkerSize',2)
-leg_str = cell(1,numel(lambda_vals));
-for i = 1:numel(lambda_vals)
-   leg_str{1,i} = num2str(lambda_vals(i));
-end
-leg_str{1,end+1} = 'truth';
-legend(leg_str,'Location','Best')
+az_sep = 0:1:100;
+plot(az_sep,ring_data{1}.az_spread)
 title('Azimuthal AWMV')
-xlabel('Time')
+xlabel('Spot Separation')
 
 figure(3)
-for i = 1:num_lines
-    cv = colors(i,:);
-    plot(ring_data{1}.rel_err(:,i),'-o','Color',cv,'MarkerSize',3)
-    hold on
-end
-leg_str = cell(1,numel(lambda_vals));
-for i = 1:numel(lambda_vals)
-   leg_str{1,i} = num2str(lambda_vals(i));
-end
-legend(leg_str,'Location','Best')
+plot(ring_data{1}.rel_err,'-')
+legend('1','2','3','4','Location','Best')
 title('Relative Error')
 xlabel('Time')
 
 figure(4)
-for i = 1:num_lines
-    cv = colors(i,:);
-    semilogy(ring_data{1}.sparsity(:,i),'-o','Color',cv)
+for j = 1
+    semilogy(ring_data{j}.sparsity,'o')
     hold on
 end
-leg_str = cell(1,numel(lambda_vals));
-for i = 1:numel(lambda_vals)
-   leg_str{1,i} = num2str(lambda_vals(i));
-end
-legend(leg_str,'Location','Best')
+%legend(num2str(mean(ring_data{1}.sparsity)),num2str(mean(ring_data{2}.sparsity)),'Location','Best')
 title('Sparsity')
 xlabel('Time')
 
@@ -196,8 +211,8 @@ xlabel('Time')
 %% Show evolving var_signal
 figure()
 % Load truth vdf
-% load(['D:\CHESS_data\',datasetName,'\synth_data.mat'])
-for i = 1:100
+load(['D:\CHESS_data\',datasetName,'\synth_data.mat'])
+for i = 1:240
     im_vdf = video_norm_diff{i};
     im_vdf = im_vdf/sum(im_vdf(:));
     lim1 = min(im_vdf(:));
@@ -225,10 +240,10 @@ end
 
 
 %% Show mmpad video
-video_norm = cell(num_imgs,1);
-fDir = ['D:\CHESS_data\',datasetName,fitName,'_1'];
+video_norm = cell(100,1);
+fDir = ['D:\CHESS_data\',datasetName,fitName];
 
-for img_num = 1:num_imgs
+for img_num = 1:100
     display(img_num)
     frame = [];
     fName = sprintf('fista_fit_%i_%i.mat',1,img_num);
@@ -237,7 +252,7 @@ for img_num = 1:num_imgs
     img_fit = Ax_ft_2D(A0ft_stack,x_hat)*norm(polar_image(:));
 
     % Append polar_images and fits
-    frame = [frame,polar_image];
+    frame = [frame,polar_image,img_fit];
     video_norm{img_num} = frame;
 %         lim1 = 0;
 %         lim2 = max(polar_image(:));
@@ -254,7 +269,7 @@ end
 %% Create gif
 h = figure;
 filename = [datasetName,fitName,'.gif'];
-for i = 1:num_imgs
+for i = 1:100
     lim1 = 0;
     lim2 = max(video_norm{i}(:));
     imshow(video_norm{i},'DisplayRange',[lim1 lim2],'Colormap',jet);
@@ -280,7 +295,7 @@ for i = 1:num_imgs
 end
 
 %% Show mmpad vdf video
-video_norm_diff = cell(100,1);
+video_norm_diff = cell(240,1);
 
 fDir = ['D:\CHESS_data\',datasetName,fitName];
 for img_num = 1:100
