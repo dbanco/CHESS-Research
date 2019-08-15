@@ -1,8 +1,12 @@
 P.set = 1;
 P.img = 1;
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_25/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_25_init1';
+dataset = 'D:\CHESS_data\simulated_data_two_spot_growth_1D_25';
+output_dir = 'D:\CHESS_data\two_spot_growth_1D_25_init1';
+
+% dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_25/';
+% output_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_25_init1';
+
 num_ims = 25;
 mkdir(output_dir)
 prefix = 'polar_image';
@@ -63,45 +67,45 @@ for image_num = 1:num_ims
     THRESHOLD = 32;
 
     switch P.cost
-            case 'l1'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1]))
-                        D(i,ii)= abs(i-ii); 
-                    end
+        case 'l1'
+            D = ones(N,N).*THRESHOLD;
+            for i = 1:P.num_var_t
+                for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+                    D(i,ii)= abs(i-ii); 
                 end
-  
-                D = D./max(D(:));
-                
-            case 'l2'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                        D(i,ii)= (i-ii)^2; 
-                    end
-                end
+            end
 
-                D = D./max(D(:));
-                
-            case 'wass'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])                        
-                        D(i,ii)= P.var_theta(i) + P.var_theta(ii) -...
-                                 2*sqrt(P.var_theta(i)*P.var_theta(ii));
-                    end
+            D = D./max(D(:));
+
+        case 'l2'
+            D = ones(N,N).*THRESHOLD;
+            for i = 1:P.num_var_t
+                for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+                    D(i,ii)= (i-ii)^2; 
                 end
-                D = D./max(D(:));
-                
-            case 'sqrt'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                        D(i,ii)= sqrt(abs(i-ii));
-                    end
+            end
+
+            D = D./max(D(:));
+
+        case 'wass'
+            D = ones(N,N).*THRESHOLD;
+            for i = 1:P.num_var_t
+                for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])                        
+                    D(i,ii)= P.var_theta(i) + P.var_theta(ii) -...
+                             2*sqrt(P.var_theta(i)*P.var_theta(ii));
                 end
-                D = D./max(D(:));
-        end
+            end
+            D = D./max(D(:));
+
+        case 'sqrt'
+            D = ones(N,N).*THRESHOLD;
+            for i = 1:P.num_var_t
+                for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
+                    D(i,ii)= sqrt(abs(i-ii));
+                end
+            end
+            D = D./max(D(:));
+    end
 
     x_init = zeros(size(A0ft_stack));
     for i = 1:P.num_var_t

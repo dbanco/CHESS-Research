@@ -70,7 +70,7 @@ obj3 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-f = 0.5*norm(b-Ax_ft_2D(A0ft_stack,x_init))^2 +...
+f = 0.5*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add entropic reg wasserstein distance vdf term  

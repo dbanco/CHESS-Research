@@ -138,10 +138,50 @@ elseif handles.radio_meanvar.Value
         plot_rad_mean_variance(handles)
     end
 elseif handles.radio_sparsity.Value
-    plot_sparsity(handles)
+    plot_az_awmv(handles)
 elseif handles.radio_error.Value
     plot_error(handles)
 end
+
+function plot_az_awmv(handles)
+
+az_var = squeeze(sum(handles.var_signal(:,:,1:5,:,:),2));
+total = squeeze(sum(az_var(:,1:5,:,:),1));
+awmv_var = zeros([size(az_var,2),size(az_var,3),size(az_var,4)]);
+
+for i = 1:size(az_var,2)
+    for j = 1:size(az_var,3)
+        for k = 1:size(az_var,4)
+            awmv_var(i,j,k) = sum(sqrt(handles.P.var_theta')./handles.P.dtheta.*squeeze(az_var(:,i,j,k)))/total(i,j,k);
+        end
+    end
+end
+
+if handles.radio_subtract.Value
+    center = awmv_var(1,handles.r1:handles.rend,:);
+else
+    center = 0;
+end
+if handles.apply_limits
+    handles.max_limit = str2num(handles.edit_max.String);
+    handles.min_limit = str2num(handles.edit_min.String);
+elseif handles.radio_subtract.Value
+    handles.max_limit = 1;
+    handles.min_limit = -1;
+else
+    handles.max_limit = 1;
+    handles.min_limit = 0;
+end
+for i = 1:5
+    eval(sprintf('axes(handles.axes%i)',i)) 
+    handles.viewData{i} = squeeze(awmv_var(i,handles.r1:handles.rend,:)-center);
+    imshow(handles.viewData{i},'DisplayRange',...
+        [handles.min_limit handles.max_limit],'Colormap',jet)
+    title(sprintf('Load %i',i))
+end
+colorbar()  
+
+
 
 function plot_az_spread(handles)
 cutoff = handles.menu_cutoff.Value;
