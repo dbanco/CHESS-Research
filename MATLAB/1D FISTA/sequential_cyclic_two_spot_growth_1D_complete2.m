@@ -5,43 +5,46 @@ num_ims = 25;
 rescale = 100;
 gamma_vals = [0.15 0.1 0.08 0.05 0.02 0.01];
 P_array = cell(size(gamma_vals));
-for iii = 1:numel(gamma_vals)
-    %% Universal Parameters
-    % Ring sampling parameters
-    prefix = 'polar_image';
-    load(fullfile(dataset,[prefix,'_1.mat']));
-    P.num_theta= size(polar_image,2);
-    P.dtheta = 1;
-    P.sampleDims = [num_ims,1];
 
-    % Basis function variance parameters
-    P.basis = 'norm2';
-    P.cost = 'l1';
-    P.num_var_t = 15;
-    P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
+%% Universal Parameters
+% Ring sampling parameters
+prefix = 'polar_image';
+load(fullfile(dataset,[prefix,'_1.mat']));
+P.num_theta= size(polar_image,2);
+P.dtheta = 1;
+P.sampleDims = [num_ims,1];
 
-    % Zero padding and mask\
-    zPad = [0,0];
-    zMask = [];
+% Basis function variance parameters
+P.basis = 'norm2';
+P.cost = 'l1';
+P.num_var_t = 15;
+P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 
-    %% fista params
-    params.stoppingCriterion = 1;
-    params.tolerance = 1e-8;
-    params.L = 1000;
-    params.t_k = 1;
-    params.lambda = 0.0359;
-    params.wLam = 25;
-    params.gamma = gamma_vals(iii);
-    params.beta = 1.2;
-    params.maxIter = 800;
-    params.maxIterReg = 800;
-    params.isNonnegative = 1;
-    params.zeroPad = zPad;
-    params.zeroMask = zMask;
-    params.noBacktrack = 0;
-    params.plotProgress = 0;
-    P.params = params;
-    P_array{iii} = P;
+% Zero padding and mask\
+zPad = [0,0];
+zMask = [];
+
+%% fista params
+params.stoppingCriterion = 1;
+params.tolerance = 1e-8;
+params.L = 1000;
+params.t_k = 1;
+params.lambda = 0.0359;
+params.wLam = 25;
+params.gamma = 0;
+params.beta = 1.2;
+params.maxIter = 800;
+params.maxIterReg = 800;
+params.isNonnegative = 1;
+params.zeroPad = zPad;
+params.zeroMask = zMask;
+params.noBacktrack = 0;
+params.plotProgress = 0;
+P.params = params;
+    
+for i = 1:numel(gamma_vals)
+    P.params.gamma = gamma_vals(i);
+    P_array{i} = P;
 end
 
 baseFileName = 'fista_fit_%i_%i.mat';
@@ -61,7 +64,6 @@ parfor iii = 1:numel(gamma_vals)
     mkdir(output_dirA)
     mkdir(output_dirB)
     
-    %%
     for jjj = 1:11
         % setup io directories
         if jjj == 1
@@ -86,6 +88,7 @@ parfor iii = 1:numel(gamma_vals)
             end
             new_vdf_array = cell(num_ims,1);
         end
+        vdfs = {};
         % iterate over each image
         for image_num = 1:num_ims
             im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
@@ -149,7 +152,7 @@ parfor iii = 1:numel(gamma_vals)
             for i = 1:P.num_var_t
                 x_init(:,i) = b/P.num_var_t;
             end
-
+            
             if jjj == 1
                 % First iteration initializes causally
                 if image_num == 1
