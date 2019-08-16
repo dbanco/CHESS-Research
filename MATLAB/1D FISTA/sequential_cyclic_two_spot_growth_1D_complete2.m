@@ -4,25 +4,11 @@ dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_25';
 num_ims = 25;
 rescale = 100;
 gamma_vals = [0.15 0.1 0.08 0.05 0.02 0.01];
-
-parpool(8)
-parfor iii = 1:numel(gamma_vals)
-
-    init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_init' num2str(iii)];
-    output_dirA = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
-    output_dirB = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_' num2str(iii) 'b'];
-
-    % init_dir = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_init' num2str(iii)];
-    % output_dirA = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
-    % output_dirB = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'b'];
-
-    mkdir(init_dir)
-    mkdir(output_dirA)
-    mkdir(output_dirB)
-    prefix = 'polar_image';
-
+P_array = cell(size(gamma_vals));
+for iii = 1:numel(gamma_vals)
     %% Universal Parameters
     % Ring sampling parameters
+    prefix = 'polar_image';
     load(fullfile(dataset,[prefix,'_1.mat']));
     P.num_theta= size(polar_image,2);
     P.dtheta = 1;
@@ -55,8 +41,26 @@ parfor iii = 1:numel(gamma_vals)
     params.noBacktrack = 0;
     params.plotProgress = 0;
     P.params = params;
+    P_array{iii} = P;
+end
 
-    baseFileName = 'fista_fit_%i_%i.mat';
+baseFileName = 'fista_fit_%i_%i.mat';
+
+parpool(8)
+parfor iii = 1:numel(gamma_vals)
+    P = P_array{iii}
+    init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_init' num2str(iii)];
+    output_dirA = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
+    output_dirB = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_renorm_' num2str(iii) 'b'];
+
+    % init_dir = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_init' num2str(iii)];
+    % output_dirA = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
+    % output_dirB = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'b'];
+
+    mkdir(init_dir)
+    mkdir(output_dirA)
+    mkdir(output_dirB)
+    
     %%
     for jjj = 1:11
         % setup io directories
