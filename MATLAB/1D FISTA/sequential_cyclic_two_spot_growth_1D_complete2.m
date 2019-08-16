@@ -1,18 +1,20 @@
 P.set = 1;
-P.img = 1;
 
 dataset = 'D:\CHESS_data\simulated_data_two_spot_growth_1D_25';
-init_dir = 'D:\CHESS_data\two_spot_growth_1D_25_init1';
-output_dirA = 'D:\CHESS_data\two_spot_growth_1D_25_1a';
-output_dirB = 'D:\CHESS_data\two_spot_growth_1D_25_1b';
+num_ims = 25;
 
-% dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
+rescale = 100;
+iii=1;
+
+init_dir = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_init' num2str(iii)];
+output_dirA = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
+output_dirB = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'b'];
+
 % init_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_25_init1';
 % output_dirA = '/cluster/shared/dbanco02/two_spot_growth_1D_25_1a';
 % output_dirB = '/cluster/shared/dbanco02/two_spot_growth_1D_25_1b';
 
-num_ims = 25;
-
+mkdir(init_dir)
 mkdir(output_dirA)
 mkdir(output_dirB)
 prefix = 'polar_image';
@@ -26,7 +28,7 @@ P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
-P.cost = 'sqrt';
+P.cost = 'l1';
 P.num_var_t = 15;
 P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 
@@ -53,18 +55,13 @@ params.plotProgress = 0;
 P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
-
-vdf_array = cell(num_ims,1);
-for ii = 1:num_ims
-    f_data = load(fullfile(init_dir,sprintf(baseFileName,1,ii)));
-    vdf_array{ii} = squeeze(sum(f_data.x_hat,1))/sum(f_data.x_hat(:));
-end
-new_vdf_array = cell(num_ims,1);
-
-parpool(num_ims)
-
-for jjj = 1:10
+%%
+for jjj = 1:11
+    % setup io directories
     if jjj == 1
+        input_dir = init_dir;
+        output_dir = init_dir;
+    elseif jjj == 2
         input_dir = init_dir;
         output_dir = output_dirA;
     elseif mod(jjj,2)
@@ -74,12 +71,22 @@ for jjj = 1:10
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    parfor image_num = 1:num_ims
+    % extract vdfs if beyond first pass
+    if jjj > 1
+        vdf_array = cell(num_ims,1);
+        for ii = 1:num_ims
+            f_data = load(fullfile(input_dir,sprintf(baseFileName,1,ii)));
+            vdf_array{ii} = squeeze(sum(f_data.x_hat,1))/sum(f_data.x_hat(:));
+        end
+        new_vdf_array = cell(num_ims,1);
+    end
+    % iterate over each image
+    for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
-        b = b/norm(b(:));
+        b = b/rescale;
 
         % Construct dictionary
         switch P.basis
@@ -90,7 +97,7 @@ for jjj = 1:10
         % Construct distance matrix
         N = P.num_var_t;
         THRESHOLD = 32;
-        
+
         switch P.cost
             case 'l1'
                 D = ones(N,N).*THRESHOLD;
@@ -137,23 +144,39 @@ for jjj = 1:10
             x_init(:,i) = b/P.num_var_t;
         end
 
-         % Run FISTA updating solution and error array
-        if image_num == 1
-            vdfs = vdf_array(2);
-        elseif image_num == num_ims
-            vdfs = vdf_array(num_ims-1);
+        if jjj == 1
+            % First iteration initializes causally
+            if image_num == 1
+                 [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
+            else
+                 [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,vdfs,D,x_init,P.params);
+            end
+            new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
+            vdfs = {new_vdf};
+
         else
-            vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
+             % Consecutive iterations use t-1,t+1
+            if image_num == 1
+                vdfs = vdf_array(2);
+            elseif image_num == num_ims
+                vdfs = vdf_array(num_ims-1);
+            else
+                vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
+            end
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,vdfs,D,x_init,P.params);
+
+            new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
-        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,vdfs,D,x_init,P.params);
-        
-        new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
-        
+
+        % Output data
         save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
         save_obj(output_dir,jjj,image_num,obj);
     end
-    vdf_array = new_vdf_array;
-end
+    if jjj > 1
+        vdf_array = new_vdf_array;
+    end
+    end
+
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
 end
