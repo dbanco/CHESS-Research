@@ -1,6 +1,6 @@
 P.set = 1;
 
-dataset = 'D:\MMPAD_data\ring1_zero_subset';
+dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_far';
 num_ims = 25;
 
 %% Universal Parameters
@@ -45,7 +45,7 @@ output_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_independent';
 mkdir(output_dir)
 
 % iterate over each image
-parpool(4)
+parpool(2)
 parfor image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
