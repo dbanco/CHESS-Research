@@ -49,7 +49,7 @@ end
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-parpool(4)
+%parpool(4)
 parfor iii = 1:numel(gamma_vals)
     P = P_array{iii}
     init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_init' num2str(iii)];
