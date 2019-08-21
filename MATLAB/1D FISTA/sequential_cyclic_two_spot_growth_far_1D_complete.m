@@ -1,13 +1,12 @@
 P.set = 1;
 
-dataset = 'D:\MMPAD_data\ring1_zero_subset';
-num_ims = 10;
-gamma_vals = [10 5 1 0.5];
-P_array = cell(size(gamma_vals));
+dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_far';
+num_ims = 25;
+rescale = 100;
 
 %% Universal Parameters
 % Ring sampling parameters
-prefix = 'mmpad_img';
+prefix = 'polar_image';
 load(fullfile(dataset,[prefix,'_1.mat']));
 P.num_theta= size(polar_image,2);
 P.dtheta = 1;
@@ -28,9 +27,9 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
 params.L = 1000;
 params.t_k = 1;
-params.lambda = 0.01;
+params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0;
+params.gamma = 0.075;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -40,20 +39,15 @@ params.zeroMask = zMask;
 params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
-    
-for i = 1:numel(gamma_vals)
-    P.params.gamma = gamma_vals(i);
-    P_array{i} = P;
-end
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-% parpool(4)
-parfor iii = 3
-    P = P_array{iii}
-    init_dir = ['/cluster/shared/dbanco02/mmpad_1D_subset2_init_' num2str(iii)];
-    output_dirA = ['/cluster/shared/dbanco02/mmpad_1D_subset2_' num2str(iii) 'a'];
-    output_dirB = ['/cluster/shared/dbanco02/mmpad_1D_subset2_' num2str(iii) 'b'];
+
+for iii = 1:1
+
+    init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_init' num2str(iii)];
+    output_dirA = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_' num2str(iii) 'a'];
+    output_dirB = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_' num2str(iii) 'b'];
 
     % init_dir = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_init' num2str(iii)];
     % output_dirA = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
@@ -94,9 +88,8 @@ parfor iii = 3
             %% Zero pad image
             b = zeroPad(im_data.polar_image,P.params.zeroPad);
             % Scale image by 2-norm
-            b = b/norm(b(:));
-            % Sum radially
-            b = squeeze(sum(b,1));
+            b = b/rescale;
+
             % Construct dictionary
             switch P.basis
                 case 'norm2'
