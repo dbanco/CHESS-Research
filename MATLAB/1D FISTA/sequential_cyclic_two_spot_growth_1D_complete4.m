@@ -1,6 +1,6 @@
 P.set = 1;
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_25';
+dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_far';
 num_ims = 25;
 rescale = 100;
 gamma_vals = [0.15 0.1 0.08 0.05];
