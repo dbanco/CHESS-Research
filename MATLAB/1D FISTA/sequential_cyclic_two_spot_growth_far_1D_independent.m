@@ -1,6 +1,9 @@
 P.set = 1;
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_far';
+
+% dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_1D_far';
+dataset = 'D:\CHESS_data\simulated_data_two_spot_growth_1D_far';
+
 num_ims = 25;
 
 %% Universal Parameters
@@ -26,7 +29,7 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
 params.L = 1000;
 params.t_k = 1;
-params.lambda = 0.0359;
+params.lambda = 0.03;
 params.wLam = 25;
 params.beta = 1.2;
 params.maxIter = 800;
@@ -41,19 +44,18 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_independent';
+% output_dir = '/cluster/shared/dbanco02/two_spot_growth_1D_independent';
+output_dir = 'D:\CHESS_data\two_spot_growth_far_1D_independent';
 mkdir(output_dir)
 
 % iterate over each image
-parpool(2)
+
 parfor image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
-    % Scale image by 2-norm
-    b = b/norm(b(:));
-    % Sum radially
-    b = squeeze(sum(b,1));
+    b = b/100;
+    
     % Construct dictionary
     switch P.basis
         case 'norm2'
