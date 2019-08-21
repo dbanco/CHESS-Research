@@ -1,8 +1,8 @@
 P.set = 1;
 P.img = 1;
 
-dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_25/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_25_init5';
+dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
+output_dir = '/cluster/shared/dbanco02/two_spot_growth_far_init1';
 num_ims = 25;
 mkdir(output_dir)
 prefix = 'polar_image';
@@ -18,24 +18,29 @@ P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
-P.cost = 'sqrt';
+P.cost = 'l1';
 P.num_var_t = 15;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 
-% Zero padding and mask\
+% Zero padding and mask
+maskCols = 129:133;
 zPad = [0,0];
-zMask = [];
+zMask = zeros(size(zeroPad(polar_image,zPad)));
+zMask(:,maskCols) = 1;
+zMask = onePad(zMask,zPad);
+[r,c] = find(zMask==1);
+zMask = [r,c];
 
 %% fista params
 params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
 params.L = 1000;
 params.t_k = 1;
-params.lambda = 0.0359;
+params.lambda = 0.03;
 params.wLam = 25;
-params.gamma = 0.2;
+params.gamma = 0.25;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
