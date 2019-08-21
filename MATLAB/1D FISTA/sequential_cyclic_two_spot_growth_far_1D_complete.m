@@ -45,9 +45,9 @@ baseFileName = 'fista_fit_%i_%i.mat';
 
 for iii = 1:1
 
-    init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_init' num2str(iii)];
-    output_dirA = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_' num2str(iii) 'a'];
-    output_dirB = ['/cluster/shared/dbanco02/two_spot_growth_1D_25_l2norm_' num2str(iii) 'b'];
+    init_dir = ['/cluster/shared/dbanco02/two_spot_growth_1D_far_init' num2str(iii)];
+    output_dirA = ['/cluster/shared/dbanco02/two_spot_growth_1D_far_' num2str(iii) 'a'];
+    output_dirB = ['/cluster/shared/dbanco02/two_spot_growth_1D_far_' num2str(iii) 'b'];
 
     % init_dir = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_init' num2str(iii)];
     % output_dirA = ['D:\CHESS_data\two_spot_growth_1D_25_renorm_' num2str(iii) 'a'];
@@ -88,6 +88,7 @@ for iii = 1:1
             %% Zero pad image
             b = zeroPad(im_data.polar_image,P.params.zeroPad);
             % Scale image by 2-norm
+            b(b<0) = 0;
             b = b/rescale;
 
             % Construct dictionary
