@@ -24,9 +24,14 @@ P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 
-% Zero padding and mask\
+% Zero padding and mask
+maskCols = 129:133;
 zPad = [0,0];
-zMask = [];
+zMask = zeros(size(zeroPad(polar_image,zPad)));
+zMask(:,maskCols) = 1;
+zMask = onePad(zMask,zPad);
+[r,c] = find(zMask==1);
+zMask = [r,c];
 
 %% fista params
 params.stoppingCriterion = 1;

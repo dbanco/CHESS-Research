@@ -4,9 +4,10 @@ clear all
 num_imgs = 25;
 spreadDir = fullfile('D:','CHESS_data','spread_results');
 
-datasetArray = {'two_spot_growth_far_1D_independent'};
-lines = [1];
-gamma_vals = {[0]};
+datasetArray = {'two_spot_growth_far_1D_independent',
+                'two_spot_growth_far_1D_1a'};
+lines = [1,1];
+gamma_vals = {[0,0.075]};
 
 legend_str = cell(sum(lines)+1,1);
 k = 1;
