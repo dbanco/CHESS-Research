@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_1a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_1b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_2a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_2b';
 num_ims = 25;
 
 mkdir(output_dirA)
@@ -39,7 +39,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.2;
+params.gamma = 0.1;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -55,10 +55,10 @@ baseFileName = 'fista_fit_%i_%i.mat';
 vdf_array = cell(num_ims,1);
 for ii = 1:num_ims
     f_data = load(fullfile(output_dirA,sprintf(baseFileName,1,ii)));
-    vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
+    vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1f),2))/sum(f_data.x_hat(:));
 end
 new_vdf_array = cell(num_ims,1);
-
+g
 parpool(num_ims)
 
 for jjj = 1:10

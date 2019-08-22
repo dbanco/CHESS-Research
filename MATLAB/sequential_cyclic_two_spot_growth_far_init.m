@@ -2,8 +2,9 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
-output_dir = '/cluster/shared/dbanco02/two_spot_growth_far_init1';
+output_dir = '/cluster/shared/dbanco02/two_spot_growth_far_init2';
 num_ims = 25;
+
 mkdir(output_dir)
 prefix = 'polar_image';
 
@@ -25,22 +26,17 @@ P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 
 % Zero padding and mask
-maskCols = 129:133;
 zPad = [0,0];
-zMask = zeros(size(zeroPad(polar_image,zPad)));
-zMask(:,maskCols) = 1;
-zMask = onePad(zMask,zPad);
-[r,c] = find(zMask==1);
-zMask = [r,c];
+zMask = [];
 
 %% fista params
 params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
 params.L = 1000;
 params.t_k = 1;
-params.lambda = 0.03;
+params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.25;
+params.gamma = 0.1;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
