@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_2a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_2b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_4a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_4b';
 num_ims = 25;
 
 mkdir(output_dirA)
