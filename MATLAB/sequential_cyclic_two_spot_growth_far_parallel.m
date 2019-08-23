@@ -39,7 +39,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.2;
+params.gamma = 0.08;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -59,7 +59,7 @@ for ii = 1:num_ims
 end
 new_vdf_array = cell(num_ims,1);
 
-parpool(num_ims)
+parpool(16)
 
 for jjj = 1:10
     if mod(jjj,2)
