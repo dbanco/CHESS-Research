@@ -36,7 +36,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.1;
+params.gamma = 0.2;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -53,8 +53,6 @@ for image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
-    % Scale image by 2-norm
-    b = b/norm(b(:));
 
     % Construct dictionary
     switch P.basis
