@@ -2,12 +2,13 @@ clear all
 close all
 
 baseDir = 'D:\CHESS_data\';
-baseDataset = 'two_spot_growth_far_1D_1a';
+baseDataset = 'two_spot_growth_far_1D_3b';
 suffix = '';
 fitName = '';
 
 gamma_vals = [0]; %[0.005 0.01 0.02 0.05 0.1]; % 0.2 0.5 1];
 num_imgs = 25;
+obj_num = 11
 
 fDir = [baseDir,baseDataset,suffix];
 fName = sprintf('fista_fit_%i_%i.mat',1,1);
@@ -84,7 +85,7 @@ for gam_num = 1
         var_sum = sum(var_signal_k(:));
         az_spread(k,gam_num) = sum(sqrt(P.var_theta(:)).*az_var_signal(:))/var_sum;
         sparsity(k,gam_num) = sum(x_hat(:)>0);
-        objName = sprintf('objective_%i_%i.mat',10,img_num);
+        objName = sprintf('objective_%i_%i.mat',obj_num,img_num);
         load(fullfile(fDir,objName))
         objective(k,gam_num) = obj(end-1);
     %     if k > 2

@@ -1,5 +1,5 @@
 baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_25_7a';
+datasetName = 'two_spot_growth_far_4a';
 fitName = '';
 
 num_imgs = 25;
@@ -25,7 +25,7 @@ figure(2)
 subplot(2,1,1)
 imshow(polar_image,'DisplayRange',[lim1 lim2],'Colormap',jet);
 subplot(2,1,2)
-imshow(img_fit*norm(polar_image(:)),'DisplayRange',[lim1 lim2],'Colormap',jet);
+imshow(img_fit,'DisplayRange',[lim1 lim2],'Colormap',jet);
 
 
 % Construct distance matrix
