@@ -49,8 +49,9 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-for image_num = num_ims:-1:1
-    im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
+for image_num = 1:num_ims
+    img_num = 26-image_num;
+    im_data = load(fullfile(dataset,[prefix,'_',num2str(img_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
 
@@ -150,8 +151,8 @@ for image_num = num_ims:-1:1
     new_vdf = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
     vdfs = {new_vdf};
     
-    save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
-    save_obj(output_dir,0,image_num,obj);
+    save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,img_num);
+    save_obj(output_dir,0,img_num,obj);
 end
 
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
