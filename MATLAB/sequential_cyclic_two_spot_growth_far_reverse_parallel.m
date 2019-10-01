@@ -70,8 +70,7 @@ for jjj = 1:10
         output_dir = output_dirA;
     end
     parfor image_num = 1:num_ims
-        img_num = 26-image_num;
-        im_data = load(fullfile(dataset,[prefix,'_',num2str(img_num),'.mat']));
+        im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
@@ -168,14 +167,14 @@ for jjj = 1:10
         elseif img_num == num_ims
             vdfs = vdf_array(num_ims-1);
         else
-            vdfs = {vdf_array{img_num-1},vdf_array{img_num+1}};
+            vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
         end
         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
         
-        new_vdf_array{img_num} = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
+        new_vdf_array{image_num} = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
         
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,img_num);
-        save_obj(output_dir,jjj,img_num,obj);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
+        save_obj(output_dir,jjj,image_num,obj);
     end
     vdf_array = new_vdf_array;
 end
