@@ -58,7 +58,7 @@ baseFileName = 'fista_fit_%i_%i.mat';
 % end
 % new_vdf_array = cell(20,1);
 
-for image_num = 1:541
+for image_num = 120:541
     im_data = load(fullfile(dataset,[prefix,'_', num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
@@ -101,8 +101,11 @@ for image_num = 1:541
     end
 
     % Run FISTA updating solution and error array
-    if image_num == 1
-            [x_hat,err,obj,~,~,~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
+    if image_num == 120
+         prev_im_data = load(fullfile(dataset,[prefix,'_', num2str(image_num-1),'.mat']));
+         new_vdf = squeeze(sum(sum(prev_im_data.x_hat,1),2))/sum(prev_im_data.x_hat(:));
+         vdfs = {new_vdf};
+         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
     else
          [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
     end
