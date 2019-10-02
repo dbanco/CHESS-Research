@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_3a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_3b';
 num_ims = 25;
 
 mkdir(output_dirA)
@@ -162,9 +162,9 @@ for jjj = 1:10
         end
 
          % Run FISTA updating solution and error array
-        if img_num == 1
+        if image_num == 1
             vdfs = vdf_array(2);
-        elseif img_num == num_ims
+        elseif image_num == num_ims
             vdfs = vdf_array(num_ims-1);
         else
             vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
