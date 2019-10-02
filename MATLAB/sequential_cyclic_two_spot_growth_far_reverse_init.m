@@ -54,7 +54,9 @@ for image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(img_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
-
+    % Normalize by 2 norm
+    b = b./norm(b(:));
+    
     % Construct dictionary
     switch P.basis
         case 'norm2'
