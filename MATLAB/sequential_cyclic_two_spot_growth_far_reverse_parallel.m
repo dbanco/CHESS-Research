@@ -3,8 +3,8 @@ P.img = 1;
 
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_2a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_2b';
 num_ims = 25;
 
 mkdir(output_dirA)
@@ -74,7 +74,8 @@ for jjj = 1:10
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
-
+        b = b/norm(b(:));
+        
         % Construct dictionary
         switch P.basis
             case 'norm2'
