@@ -7,7 +7,7 @@ P.img = 1;
 
 % dataset = '/cluster/home/dbanco02/simulated_data_two_phase_b/';
 dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
-output_dir = '/cluster/shared/dbanco02/seq_mmpad';
+output_dir = '/cluster/shared/dbanco02/seq_mmpad_init2';
 mkdir(output_dir)
 prefix = 'mmpad_img';
 
@@ -18,7 +18,7 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [20,1];
+P.sampleDims = [541,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
@@ -38,7 +38,7 @@ params.L = 1000;
 params.t_k = 1;
 params.lambda = 0.0359;
 params.wLam = 25;
-params.gamma = 0.5;
+params.gamma = 0.2;
 params.beta = 1.2;
 params.maxIter = 800;
 params.maxIterReg = 800;
@@ -102,7 +102,7 @@ for image_num = 120:541
 
     % Run FISTA updating solution and error array
     if image_num == 120
-         prev_im_data = load(fullfile(dataset,[prefix,'_', num2str(image_num-1),'.mat']));
+         prev_im_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num-1)));
          new_vdf = squeeze(sum(sum(prev_im_data.x_hat,1),2))/sum(prev_im_data.x_hat(:));
          vdfs = {new_vdf};
          [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
@@ -114,7 +114,7 @@ for image_num = 120:541
     vdfs = {new_vdf};
     
     save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
-    save_obj(output_dir,jjj,image_num,obj);
+    save_obj(output_dir,0,image_num,obj);
 end
 vdf_array = new_vdf_array;
 
