@@ -1,5 +1,5 @@
 saveDir = 'D:\CHESS_data\simulated_two_spot_1D_noise2';
-
+load
 %% Randomized spot example
 num_ims = 10;
 num_spots = 2;
@@ -42,8 +42,13 @@ for k = 1:numel(noise_std)
 
             % Add noise
             for j = 1:numel(B)
+                norm(B)
+                norm(randn(1)*noise_std(k)*sqrt(B(j)))
                 Bn(j) = B(j) + randn(1)*noise_std(k)*sqrt(B(j));
             end
+            
+            Bn = max(Bn, 0);
+            
 %             B = B + randn(num_rad,num_theta)/100;
 %             rel_error = norm(Bn-B)/norm(B)
 %             snr = norm(B)^2/norm(Bn-B)^2
@@ -52,7 +57,6 @@ for k = 1:numel(noise_std)
             try
                 axes(ha(kk));
                 kk = kk + 1
-
                 plot(Bn)
             catch
                 
@@ -71,13 +75,13 @@ for k = 1:numel(noise_std)
             evar_az(i) = expected_var_az;
     
             % Add sample to (n1*n2)x1 cell array 
-            synth_sample{i} = sample;
-            im_name = [saveDir,sprintf('_%i/',k),sprintf('polar_vector_%i.mat',i)];
-            mkdir([saveDir,sprintf('_%i/',k)])
-            polar_vector = Bn;
-
-            % Save out image files
-            save(im_name,'polar_vector')
+%             synth_sample{i} = sample;
+%             im_name = [saveDir,sprintf('_%i/',k),sprintf('polar_vector_%i.mat',i)];
+%             mkdir([saveDir,sprintf('_%i/',k)])
+%             polar_vector = Bn;
+% 
+%             % Save out image files
+%             save(im_name,'polar_vector')
     end
 end
 

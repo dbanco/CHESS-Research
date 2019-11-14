@@ -143,14 +143,13 @@ while keep_going && (nIter < maxIter)
             (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
-        if temp1 <= temp2
+        if params.noBacktrack
             stop_backtrack = 1 ;
+        elseif temp1 <= temp2
+            stop_backtrack = 1;
+            params.noBacktrack = 1;
         else
             L = L*beta ;
-            if L > 1e50
-                keep_going = 0;
-                stop_backtrack = 1;
-            end
         end
     end
     

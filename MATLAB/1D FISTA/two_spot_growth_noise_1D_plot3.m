@@ -4,15 +4,16 @@ clear all
 num_imgs = 10;
 spreadDir = fullfile('D:','CHESS_data','spread_results');
 
-datasetArray = {'simulated_two_spot_1D_noise_independent',...
-                'noise_1D_11_2a',...
-                'noise_1D_11_1a'};
+datasetArray = {'simulated_two_spot_1D_noise2_independent',...
+                'simulated_two_spot_1D_noise2_independent_quadratic',...
+                'noise2_1D_8_1b',...
+                'noise_1D_Quadratic_8_1b'};
 
-line = [11,1,1];
+line = [8,8,1,1];
 
-noise_std = [0.08 0.1 0.12 0.14 0.16 0.18 0.2 0.22 0.24 0.26 0.28 0.3];
+noise_std = 0.08:0.04:0.52;
 
-legend_str = {'Unreg','Reg 0.25','Reg 0.2','Truth'};
+legend_str = {'Unreg','Unreg Quad','Reg','Reg Quad','Truth'};
 
 n = numel(datasetArray);
 colors = jet(numel(legend_str));
@@ -23,7 +24,7 @@ for i = 1:n
 end
 
 %% Load truth
-load(['D:\CHESS_data\simulated_two_spot_1D_noise_12\synth_data.mat'])
+load(['D:\CHESS_data\simulated_two_spot_1D_noise2_12\synth_data.mat'])
 truth_awmv_az = zeros(num_imgs,1);
 
 for i = 1:num_imgs
@@ -44,26 +45,26 @@ for i = 1:n
         title('Azimuthal AWMV')
         xlabel('Time')
 
-%         figure(3)
-%         cv = colors(cv_i,:);
-%         plot(ring_data{i}.rel_err(:,ii),'-o','Color',cv,'MarkerSize',3)
-%         hold on
-%         title('Relative Error')
-%         xlabel('Time')
-% 
-%         figure(4)
-%         cv = colors(cv_i,:);
-%         semilogy(ring_data{i}.sparsity(:,ii),'-o','Color',cv)
-%         hold on
-%         title('Sparsity')
-%         xlabel('Time')
-%         
-%         figure(5)
-%         cv = colors(cv_i,:);
-%         semilogy(ring_data{i}.objective(:,ii),'-o','Color',cv)
-%         hold on
-%         title('Objective')
-%         xlabel('Time')
+        figure(3)
+        cv = colors(cv_i,:);
+        plot(ring_data{i}.rel_err(:,ii),'-o','Color',cv,'MarkerSize',3)
+        hold on
+        title('Relative Error')
+        xlabel('Time')
+
+        figure(4)
+        cv = colors(cv_i,:);
+        semilogy(ring_data{i}.sparsity(:,ii),'-o','Color',cv)
+        hold on
+        title('Sparsity')
+        xlabel('Time')
+        
+        figure(5)
+        cv = colors(cv_i,:);
+        semilogy(ring_data{i}.objective(:,ii),'-o','Color',cv)
+        hold on
+        title('Objective')
+        xlabel('Time')
         
         cv_i = cv_i + 1;
     end
@@ -74,14 +75,14 @@ figure(2)
 plot(truth_awmv_az,'-x','MarkerSize',2)
 legend(legend_str,'Location','Best')
 
-% figure(3)
-% legend(legend_str,'Location','Best')
-% 
-% figure(4)
-% legend(legend_str,'Location','Best')
-% 
-% figure(5)
-% legend(legend_str,'Location','Best')
+figure(3)
+legend(legend_str,'Location','Best')
+
+figure(4)
+legend(legend_str,'Location','Best')
+
+figure(5)
+legend(legend_str,'Location','Best')
 % figure(6)
 % for j = 1
 %     plot(ring_data{j}.wass_dist,'-')

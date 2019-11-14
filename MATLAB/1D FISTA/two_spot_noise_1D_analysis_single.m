@@ -2,7 +2,7 @@ clear all
 close all
 
 baseDir = 'D:\CHESS_data\';
-baseDataset = 'noise_1D_Quadratic_11_1b';
+baseDataset = 'noise2_1D_8_1b';
 
 num_imgs = 10;
 

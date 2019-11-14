@@ -2,7 +2,7 @@ clear all
 close all
 
 baseDir = 'D:\CHESS_data\';
-baseDataset = 'simulated_two_spot_1D_noise_independent_quadratic';
+baseDataset = 'simulated_two_spot_1D_noise2_independent_quadratic';
 
 num_imgs = 10;
 

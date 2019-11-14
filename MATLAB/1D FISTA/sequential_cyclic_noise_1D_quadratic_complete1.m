@@ -1,6 +1,6 @@
 P.set = 1;
 
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_10';
+dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_1';
 num_ims = 10;
 rescale = 1;
 
@@ -44,9 +44,9 @@ baseFileName = 'fista_fit_%i_%i.mat';
 
 iii = 1;
 
-init_dir = ['D:\CHESS_data\noise_1D_Quadratic_10_init' num2str(iii)];
-output_dirA = ['D:\CHESS_data\noise_1D_Quadratic_10_' num2str(iii) 'a'];
-output_dirB = ['D:\CHESS_data\noise_1D_Quadratic_10_' num2str(iii) 'b'];
+init_dir = ['D:\CHESS_data\noise_1D_Quadratic_1_init' num2str(iii)];
+output_dirA = ['D:\CHESS_data\noise_1D_Quadratic_1_' num2str(iii) 'a'];
+output_dirB = ['D:\CHESS_data\noise_1D_Quadratic_1_' num2str(iii) 'b'];
 
 mkdir(init_dir)
 mkdir(output_dirA)

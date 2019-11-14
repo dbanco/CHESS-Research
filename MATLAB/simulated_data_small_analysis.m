@@ -1,5 +1,5 @@
 baseDir = 'D:\CHESS_data\';
-datasetName = 'two_spot_growth_far_4a';
+datasetName = 'two_spot_growth_far_reverse_1a';
 fitName = '';
 
 num_imgs = 25;
@@ -70,11 +70,11 @@ for lam_num = 1
         rel_err(k,lam_num) = err(end);
         var_signal_k = squeeze(sum(sum(x_hat,1),2));
         var_signal(k,lam_num,:,:) =  var_signal_k;
-        rad_var_signal = squeeze(sum(var_signal_k,2));
-        az_var_signal = squeeze(sum(var_signal_k,1));
+        rad_var_signal = squeeze(sum(var_signal_k,1));
+        az_var_signal = squeeze(sum(var_signal_k,2));
         var_sum = sum(var_signal_k(:));
-        rad_spread(k,lam_num) = sqrt(P.var_rad)*az_var_signal'/var_sum;
-        az_spread(k,lam_num) = sqrt(P.var_theta)*rad_var_signal/var_sum;
+        rad_spread(k,lam_num) = sqrt(P.var_rad)*rad_var_signal'/var_sum;
+        az_spread(k,lam_num) = sqrt(P.var_theta)*az_var_signal/var_sum;
         sparsity(k,lam_num) = sum(x_hat(:)>0);
 
     %     if k > 2

@@ -59,7 +59,7 @@ for ii = 1:num_ims
 end
 new_vdf_array = cell(num_ims,1);
 
-parpool(32)
+parpool(16)
 
 for jjj = 1:10
     if mod(jjj,2)

@@ -3,16 +3,17 @@ close all
 
 baseDir = 'D:\CHESS_data\';
 
-datasetArray = {'simulated_two_spot_1D_noise_independent_11',...
-                'noise_1D_11_1a',...
-                'noise_1D_Quadratic_11_1b'};
+datasetArray = {'simulated_two_spot_1D_noise2_independent_8',...
+                'simulated_two_spot_1D_noise2_independent_quadratic_8',...
+                'noise2_1D_8_1b',...
+                'noise_1D_Quadratic_8_1b'};
 
 num_imgs = 10;
 
 figure(222)
-[ha1, pos1] = tight_subplot(3,10,[.005 .005],[.01 .01],[.01 .01]); 
+[ha1, pos1] = tight_subplot(4,10,[.005 .005],[.01 .01],[.01 .01]); 
 figure(223)
-[ha2, pos2] = tight_subplot(3,10,[.1 .02],[.05 .05],[.05 .05]); 
+[ha2, pos2] = tight_subplot(4,10,[.1 .02],[.05 .05],[.05 .05]); 
 kk = 1;
 
 for i = 1:numel(datasetArray)

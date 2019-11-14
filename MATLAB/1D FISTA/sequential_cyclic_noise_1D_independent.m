@@ -1,12 +1,12 @@
 P.set = 1;
 
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise';
+dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2';
 num_ims = 10;
 
 %% Universal Parameters
 % Ring sampling parameters
 prefix = 'polar_vector';
-load(fullfile(dataset,[prefix,'_1.mat']));
+load(fullfile([dataset,'_1'],[prefix,'_1.mat']));
 P.num_theta= size(polar_vector,1);
 P.dtheta = 1;
 P.sampleDims = [num_ims,1];
@@ -26,7 +26,7 @@ params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
 params.L = 1000;
 params.t_k = 1;
-params.lambda = 0.05;
+params.lambda = 0.08;
 params.wLam = 25;
 params.beta = 1.2;
 params.maxIter = 800;
@@ -41,7 +41,7 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise_independent_quadratic';
+output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_independent';
 
 % iterate over each image
 for k = 1:12
@@ -64,7 +64,7 @@ for k = 1:12
             x_init(:,i) = b/P.num_var_t;
         end
 
-        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Quadratic(A0ft_stack,b,x_init,P.params);
+        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
 
         % Output data
         mkdir([output_dir,dir_num])
