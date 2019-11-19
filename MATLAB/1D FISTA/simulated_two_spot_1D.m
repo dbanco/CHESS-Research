@@ -1,10 +1,11 @@
-saveDir = 'D:\CHESS_data\simulated_two_spot_1D\';
+saveDir = 'D:\CHESS_data\simulated_two_spot_1D_noise\';
 mkdir(saveDir)
 
 %% Randomized spot example
+num_ims = 10;
+num_spots = 2;
 
 % Basis function variance parameters
-P.num_var_t = 300;
 P.dtheta = 1;
 
 % Ring sampling parameters
@@ -22,6 +23,13 @@ synth_sample = cell(num_ims,1);
 VDF = cell(num_ims,1);
 evar_az = zeros(num_ims,1);
 allB = [];
+
+theta_means = [45,95];
+rad_means = [10,10];
+amplitudes = [100;100];
+
+theta_stds = [2,2,linspace(2,24,16),24,24,24,24,24,24,24];
+rad_stds = ones(num_ims,1)*2;
 
 figure(222)
 [ha, pos] = tight_subplot(11,10,[.005 .005],[.01 .01],[.01 .01]); 

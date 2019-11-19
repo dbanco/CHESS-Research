@@ -83,8 +83,7 @@ while keep_going && (nIter < maxIter)
     % Compute gradient of f
     grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)) - c; % gradient of f at zk
     
-    % Backtracking Line Search
-    stop_backtrack = 0 ;
+    stop_backtrack = 0;
     while ~stop_backtrack 
         
         %l1/nonnegative-proximal
@@ -104,16 +103,18 @@ while keep_going && (nIter < maxIter)
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
-        if temp1 <= temp2
+        if params.noBacktrack
             stop_backtrack = 1 ;
-        elseif params.noBacktrack
+        elseif temp1 <= temp2
             stop_backtrack = 1;
+            params.noBacktrack = 1;
         else
             L = L*beta ;
         end
     end
     
-    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
+    t_k = t_kp1;
+    t_kp1 = 0.5*(1 + sqrt(1+4*t_k^2));
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
 
     % Track and display error, objective, sparsity
@@ -181,7 +182,6 @@ while keep_going && (nIter < maxIter)
     end
     
     % Update indices
-    t_k = t_kp1;
     xkm1 = xk;
 end
 

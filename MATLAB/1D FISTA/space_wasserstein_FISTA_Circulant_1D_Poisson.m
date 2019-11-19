@@ -1,4 +1,4 @@
-function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,D,x_init,params)
+function [x_hat, err, t_k, L, obj, l_0] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,neighbors_vdf,D,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -61,6 +61,9 @@ if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
 
+% Poisson noise model
+b_tilde = (conv(b,[1 2 1]/4,'same'))+1;
+
 % Track error, objective, and sparsity
 err = nan(1,maxIter);
 obj = nan(1,maxIter);
@@ -70,7 +73,7 @@ obj3 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-f = 0.5*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
+f = 0.5*norm((b-Ax_ft_1D(A0ft_stack,x_init))./sqrt(b_tilde))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add entropic reg wasserstein distance vdf term  
@@ -80,7 +83,7 @@ wObj = WassersteinObjective(vdf(:), neighbors_vdf, wLam, D);
 f = f + 0.5*params.gamma*wObj;
 
 % Used to compute gradient
-c = AtR_ft_1D(A0ft_stack,b);
+c = AtR_ft_1D(A0ft_stack,b./b_tilde);
 
 x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
@@ -94,7 +97,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Data matching gradient update
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)) - c;
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk)./b_tilde,zMask)) - c;
 
     % Wasserstein regularizer gradient update
     vdf = squeeze(sum(zk,1));
@@ -126,7 +129,7 @@ while keep_going && (nIter < maxIter)
         end
         
         % Compute objective at xk
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask)./b_tilde;
         vdf_xk = squeeze(sum(xk,1));
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
         
@@ -134,7 +137,7 @@ while keep_going && (nIter < maxIter)
         temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
-        fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
+        fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)./b_tilde;
         vdf_zk = squeeze(sum(zk,1));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
         temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
@@ -222,7 +225,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zPad)));
+                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1)./b_tilde,zPad)));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
