@@ -5,11 +5,11 @@ P.img = 1;
 dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero';
 output_dirA = '/cluster/shared/dbanco02/seq_mmpad_ring1_1a';
 output_dirB = '/cluster/shared/dbanco02/seq_mmpad_ring1_1b';
-num_ims = 119;
+num_ims = 250;
 
 mkdir(output_dirA)
 mkdir(output_dirB)
-prefix = 'polar_image';
+prefix = 'mmpad_img';
 
 %% Universal Parameters
 % Ring sampling parameters
@@ -59,9 +59,9 @@ for ii = 1:num_ims
 end
 new_vdf_array = cell(num_ims,1);
 
-parpool(32)
+parpool(16)
 
-for jjj = 1:10
+for jjj = 7:10
     if mod(jjj,2)
         input_dir = output_dirA;
         output_dir = output_dirB;
