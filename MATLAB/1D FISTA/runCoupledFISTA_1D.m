@@ -107,11 +107,16 @@ for jjj = 1:num_outer_iters
         end
         
         if jjj == 1
-            % First iteration initializes causally
-            if image_num == 1
-                [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
-            else
-                [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+            % Initialization 
+            switch Pc.initialization
+                case 'causal'
+                    if image_num == 1
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
+                    else
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+                    end
+                case 'simultaneous'
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
             end
             new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
             vdfs = {new_vdf};

@@ -2,13 +2,16 @@
 clear all
 close all
 P.set = 1;
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2';
+dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_1';
+output_dir = 'D:\CHESS_data\noise_1D_indep_param_1';
+param_dir = 'D:\CHESS_data\param_search_1D\';
+mkdir(output_dir)
 num_ims = 10;
 
 % Universal Parameters
 % Ring sampling parameters
 prefix = 'polar_vector';
-load(fullfile([dataset,'_1'],[prefix,'_1.mat']));
+load(fullfile([dataset],[prefix,'_1.mat']));
 P.num_theta = size(polar_vector,1);
 P.dtheta = 1;
 P.sampleDims = [num_ims,1];
@@ -40,17 +43,13 @@ params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
    
-
 baseFileName = 'fista_fit_%i_%i.mat';
-
-output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_independent';
 
 % Lambda values
 lambda_vals = 0.005:0.005:0.15; 
 N = numel(lambda_vals);
 
 % Select noise level
-dir_num = sprintf('_%i',1);
 obj_gcv = zeros(N,num_ims);
 err_gcv = zeros(N,num_ims);
 
@@ -62,7 +61,7 @@ end
 A0 = unshifted_basis_vector_stack_norm2(P);
 %% Run grid search
 for image_num = 1:num_ims
-    im_data = load(fullfile([dataset,dir_num],[prefix,'_',num2str(image_num),'.mat']));
+    im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
     b = im_data.polar_vector;
     % Scale image by 2-norm
@@ -76,18 +75,21 @@ for image_num = 1:num_ims
     
     for ii = 1:N
         P.params.lambda = lambda_vals(ii);
-        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Quadratic(A0ft_stack,bn,x_init,P.params);
+        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,bn,x_init,P.params);
         obj_gcv(ii,image_num) = obj(end-1);
         err_gcv(ii,image_num) = err(end-1);
     end
 end
-save('param_search_discrep_1.mat','err_gcv','obj_gcv','P','lambda_vals')
+save([param_dir,'param_search_discrep_noise1.mat'],'err_gcv','obj_gcv','P','lambda_vals')
 
 %% Select lambda values
-load('param_search_discrep_1.mat') 
+load([param_dir,'param_search_discrep_noise1.mat']) 
 lambda_indices = zeros(num_ims,1);
+noise_max = zeros(num_ims,1);
+norm_data = zeros(num_ims,1);
+noise_eta = zeros(num_ims,1);
 for image_num = 1:num_ims
-    im_data = load(fullfile([dataset,dir_num],[prefix,'_',num2str(image_num),'.mat']));
+    im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
     b = im_data.polar_vector;
     % Scale image by 2-norm
@@ -100,12 +102,16 @@ for image_num = 1:num_ims
     kernel = kernel./sum(kernel(:));
 
     bn_hat = conv(bn,kernel,'same');
-    noise_eta = norm(bn-bn_hat)
-    discrep_crit = abs(squeeze(err_gcv(:,image_num))-noise_eta);
-    lambda_indices(image_num) = find(discrep_crit == min(discrep_crit));
+    noise_max(image_num) = norm(bn-bn_hat);
+    norm_data(image_num) = norm(b);
 end
-param_select = lambda_vals(lambda_indices)
-save('lambda_select1.mat','param_select')
+
+noise_eta = norm_data./max(norm_data).*max(noise_max);
+discrep_crit = abs(err_gcv'-repmat(noise_eta,1,N));
+[lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
+param_select = lambda_vals(lambda_indices);
+plot(param_select)
+save([param_dir,'lambda_select_noise1.mat'],'param_select')
 %% Compute true awmv
 load(['D:\CHESS_data\simulated_two_spot_1D_noise2_12\synth_data.mat'])
 truth_awmv_az = zeros(num_ims,1);
@@ -117,11 +123,13 @@ for i = 1:num_ims
 end
 
 %% Fit with selected parameters and plot
+output_dir = 'D:\CHESS_data\noise_1D_indep_param_1';
+load([param_dir,'lambda_select_noise1.mat'])
 figure(222)
 [ha1, pos1] = tight_subplot(2,5,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az = zeros(num_ims,1);
 for image_num = 1:num_ims
-    im_data = load(fullfile([dataset,dir_num],[prefix,'_',num2str(image_num),'.mat']));
+    im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
     b = im_data.polar_vector;
     % Scale image by 2-norm
@@ -134,11 +142,14 @@ for image_num = 1:num_ims
     end
     
     P.params.lambda = param_select(image_num);
-    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Quadratic(A0ft_stack,bn,x_init,P.params);
+    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,bn,x_init,P.params);
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     var_signal = squeeze(sum(x_hat,1));
     var_sum = sum(var_signal(:));
     awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*var_signal(:))/var_sum;
+    polar_image = polar_vector;
+    
+    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P')
     
     % Plot
     axes(ha1(image_num))
@@ -159,7 +170,7 @@ figure(333)
 awmv_az = zeros(num_ims,1);
 P.params.lambda = mean(param_select);
 for image_num = 1:num_ims
-    im_data = load(fullfile([dataset,dir_num],[prefix,'_',num2str(image_num),'.mat']));
+    im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
     b = im_data.polar_vector;
     % Scale image by 2-norm
@@ -194,7 +205,7 @@ ylabel('AWMV')
 xlabel('t')
 
 %% Plot parameter search curves
-load('param_search_discrep.mat')
+load([param_dir,'param_search_discrep.mat'])
 % lambda_vals = logspace(-3,0,500)
 close all
 
