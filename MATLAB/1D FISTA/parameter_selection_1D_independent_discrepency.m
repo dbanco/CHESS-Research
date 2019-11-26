@@ -83,9 +83,9 @@ end
 save([param_dir,'param_search_discrep_noise1.mat'],'err_gcv','obj_gcv','P','lambda_vals')
 
 %% Select lambda values
-load([param_dir,'param_search_discrep_noise1.mat']) 
+load([param_dir,'param_search_discrep_noise8.mat']) 
 lambda_indices = zeros(num_ims,1);
-noise_max = zeros(num_ims,1);
+noise_est = zeros(num_ims,1);
 norm_data = zeros(num_ims,1);
 noise_eta = zeros(num_ims,1);
 for image_num = 1:num_ims
@@ -102,16 +102,20 @@ for image_num = 1:num_ims
     kernel = kernel./sum(kernel(:));
 
     bn_hat = conv(bn,kernel,'same');
-    noise_max(image_num) = norm(bn-bn_hat);
+    noise_est(image_num) = norm(bn-bn_hat);
     norm_data(image_num) = norm(b);
 end
+% norm scaling method
+noise_eta = norm_data./max(norm_data).*max(noise_est);
+% purely residual based method
+% noise_eta = noise_est;
 
-noise_eta = norm_data./max(norm_data).*max(noise_max);
 discrep_crit = abs(err_gcv'-repmat(noise_eta,1,N));
 [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
 param_select = lambda_vals(lambda_indices);
+figure(2)
 plot(param_select)
-save([param_dir,'lambda_select_noise1.mat'],'param_select')
+save([param_dir,'lambda_select_noise8.mat'],'param_select')
 %% Compute true awmv
 load(['D:\CHESS_data\simulated_two_spot_1D_noise2_12\synth_data.mat'])
 truth_awmv_az = zeros(num_ims,1);
@@ -123,8 +127,8 @@ for i = 1:num_ims
 end
 
 %% Fit with selected parameters and plot
-output_dir = 'D:\CHESS_data\noise_1D_indep_param_1';
-load([param_dir,'lambda_select_noise1.mat'])
+output_dir = 'D:\CHESS_data\noise_1D_indep_param_8';
+load([param_dir,'lambda_select_noise8.mat'])
 figure(222)
 [ha1, pos1] = tight_subplot(2,5,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az = zeros(num_ims,1);

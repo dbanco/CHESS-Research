@@ -136,7 +136,7 @@ for jjj = 1:num_outer_iters
         end
         
         % Output data
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P,image_num);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P,Pc,image_num);
         save_obj(output_dir,jjj,image_num,obj);
     end
     if jjj > 1
@@ -144,8 +144,8 @@ for jjj = 1:num_outer_iters
     end
 end
 
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
-    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,Pc,image_num)
+    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P','Pc');
 end
 function save_obj(output_dir,pass,image_num,obj)
     save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');

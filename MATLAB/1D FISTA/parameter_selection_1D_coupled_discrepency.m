@@ -3,13 +3,15 @@ clear all
 close all
 P.set = 1;
 datadir = 'D:\CHESS_data\';
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_2';
+dataset_num = '8';
+dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise2_',dataset_num,'\'];
+param_dir = 'D:\CHESS_data\param_search_1D\';
 num_ims = 10;
 
 % Universal Parameters
 % Ring sampling parameters
 prefix = 'polar_vector';
-load(fullfile([dataset,'_1'],[prefix,'_1.mat']));
+load([dataset,prefix,'_1.mat']);
 P.num_theta = size(polar_vector,1);
 P.dtheta = 1;
 P.sampleDims = [num_ims,1];
@@ -44,7 +46,7 @@ params.plotProgress = 0;
 P.params = params;
 
 % coupled params
-load('lambda_select1.mat')
+load([param_dir,'lambda_select_noise8'])
 Pc.lambda_values = param_select;
 Pc.initialization = 'simultaneous';
 Pc.wLam = 25;
@@ -56,7 +58,7 @@ Pc.num_ims = num_ims;
 Pc.prefix = 'polar_vector';
 Pc.dataset = [dataset];
 % Gamma values
-gamma_vals = [0.05,0.1, 0.2, 0.3,0.4,0.5,0.8,1,2]; 
+gamma_vals = [ 0.05,0.1, 0.2,0.01, 0.025, 0.035]; 
 N = numel(gamma_vals);
 
 % Select noise level
@@ -71,23 +73,26 @@ end
 A0 = unshifted_basis_vector_stack_norm2(P);
 %% Run grid search
 for i = 6
-    Pc.init_dir = [datadir,'noise_1D_coupled_simul_init',num2str(i)];
-    Pc.output_dirA = [datadir,'noise_1D_coupled_simul_',num2str(i),'a'];
-    Pc.output_dirB = [datadir,'noise_1D_coupled_simul_',num2str(i),'b'];
+    Pc.init_dir = [datadir,'noise_1D_coupled_simul_',dataset_num,'_init',num2str(i)];
+    Pc.output_dirA = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'a'];
+    Pc.output_dirB = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'b'];
     mkdir(Pc.init_dir)
     mkdir(Pc.output_dirA)
     mkdir(Pc.output_dirB)
     Pc.gamma = gamma_vals(i);
     runCoupledFISTA_1D(P,Pc)
 end
-% save('param_search_coupled_discrep_1.mat','err_gcv','obj_gcv','P','lambda_vals')
+% save([param_dir,'param_search_coupled_discrep_8.mat'],'err_gcv','obj_gcv','P','lambda_vals')
 
 %% Select lambda values
+N=6;
 err_discrep = zeros(num_ims,N);
 noise_eta = zeros(num_ims,N);
+total_norm = zeros(N,1);
+total_err = zeros(N,1);
 for i = 1:N
     for image_num = 1:num_ims
-        im_data = load([datadir,'noise_1D_coupled_',num2str(i),'a\',sprintf(Pc.baseFileName,1,image_num)]);
+        im_data = load([datadir,'noise_1D_coupled_',dataset_num,'_',num2str(i),'a\',sprintf(Pc.baseFileName,1,image_num)]);
         err_discrep(image_num,i) = im_data.err(end-1);
         b = im_data.polar_image;
         % Scale image by 2-norm
@@ -102,8 +107,11 @@ for i = 1:N
         bn_hat = conv(bn,kernel,'same');
         noise_eta(image_num,i) = norm(bn-bn_hat);
     end
+    total_norm(i) = total_norm(i) + norm(b(:)).^2;
+    total_err(i) = norm(err_discrep(:,i).^2);
+    total_noise_est = 
 end
-discrep_crit = abs(squeeze(mean(err_discrep-noise_eta,1)))
+
 gamma_index = find(discrep_crit == min(discrep_crit));
 
 
@@ -128,7 +136,7 @@ for image_num = 1:num_ims
     % Scale image by 2-norm
     bn = b/norm(b(:));
     
-    load(fullfile([datadir,'noise_1D_coupled_',num2str(1),'a'],...
+    load(fullfile([datadir,'noise_1D_coupled_1a'],...
          sprintf(Pc.baseFileName,1,image_num)))
     
     fit = Ax_ft_1D(A0ft_stack,x_hat);
@@ -142,13 +150,24 @@ for image_num = 1:num_ims
     
     plot(bn)
     plot(fit)
+    
+    % load independent
+    load(fullfile([datadir,'noise_1D_indep_param_8'],...
+     sprintf(Pc.baseFileName,1,image_num)))
+    
+    var_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(var_signal(:));
+    awmv_az2(image_num) = sum(sqrt(P.var_theta(:)).*var_signal(:))/var_sum;
+    
+
 end
 
 figure(1)
 hold on
 plot(awmv_az)
+plot(awmv_az2)
 plot(truth_awmv_az)
 
 % Also load up 
 
-legend('coupled','truth')
+legend('coupled','indep','truth')
