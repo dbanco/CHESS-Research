@@ -1,4 +1,4 @@
-function runCoupledFISTA_1D( P, Pc )
+function runCoupledFISTA( P, Pc )
 %runCoupledFISTA 
 
 P.params.wLam = Pc.wLam;
@@ -17,53 +17,10 @@ prefix = Pc.prefix;
 % Construct dictionary
 switch P.basis
     case 'norm2'
-        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+        A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 end
 
-% Construct distance matrix
-N = P.num_var_t;
-THRESHOLD = 32;
-
-switch P.cost
-    case 'l1'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= abs(i-ii);
-            end
-        end
-
-        D = D./max(D(:));
-
-    case 'l2'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= (i-ii)^2;
-            end
-        end
-
-        D = D./max(D(:));
-
-    case 'wass'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= P.var_theta(i) + P.var_theta(ii) -...
-                    2*sqrt(P.var_theta(i)*P.var_theta(ii));
-            end
-        end
-        D = D./max(D(:));
-
-    case 'sqrt'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= sqrt(abs(i-ii));
-            end
-        end
-        D = D./max(D(:));
-end
+D = constructDistanceMatrix(P,Threshold);
 
 for jjj = 1:num_outer_iters
     % setup io directories
@@ -94,7 +51,7 @@ for jjj = 1:num_outer_iters
     for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
-        b = zeroPad(im_data.polar_vector,P.params.zeroPad);
+        b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
         
@@ -103,7 +60,9 @@ for jjj = 1:num_outer_iters
  
         x_init = zeros(size(A0ft_stack));
         for i = 1:P.num_var_t
-            x_init(:,i) = b/P.num_var_t;
+            for j = 1:P.num_var_r
+                x_init(:,:,i,j) = b/(P.num_var_t*P.num_var_r);
+            end
         end
         
         if jjj == 1
@@ -111,9 +70,9 @@ for jjj = 1:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_Poisson(A0ft_stack,b,x_init,P.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
                     end
                 case 'simultaneous'
                     [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_poisson(A0ft_stack,b,x_init,P.params);
@@ -130,7 +89,7 @@ for jjj = 1:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
