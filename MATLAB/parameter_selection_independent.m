@@ -5,6 +5,7 @@ P.set = 1;
 dataset = ['D:\MMPAD_data\ring1_zero_subset\'];
 output_dir = 'D:\CHESS_data\mmpad_subset_indep_param_1';
 param_dir = 'D:\CHESS_data\param_search_mmpad\';
+mkdir(param_dir)
 mkdir(output_dir)
 num_ims = 10;
 
@@ -97,17 +98,15 @@ noise_eta = zeros(num_ims,1);
 for image_num = 1:num_ims
     im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
-    b = im_data.polar_vector;
+    b = im_data.polar_image;
     % Scale image by 2-norm
     bn = b/norm(b(:));
     
-%     kernel = [0.0003 0.1329 0.9822 0.1329 0.0003];
-   	kernel = [0.0001 0.0003 0.0012 0.0042 0.0127 0.0329,...
-              0.0740 0.1434 0.2399 0.3466 0.4322 0.4652];
-    kernel = [kernel,fliplr(kernel(1:end-1))];
+    [rN,cN] = size(b);
+    kernel = shift2D(A0(:,:,1,1),round(rN/2),round(cN/2));
     kernel = kernel./sum(kernel(:));
-
-    bn_hat = conv(bn,kernel,'same');
+    kernel = kernel(1:35,:);
+    bn_hat = conv2(bn,kernel,'same');
     noise_est(image_num) = norm(bn-bn_hat);
     norm_data(image_num) = norm(b);
 end
@@ -121,7 +120,7 @@ discrep_crit = abs(err_gcv'-repmat(noise_eta,1,N));
 param_select = lambda_vals(lambda_indices);
 figure(2)
 plot(param_select)
-save([param_dir,'lambda_select_noise8.mat'],'param_select')
+save([param_dir,'lambda_select_mmpad_subset1.mat'],'param_select')
 %% Compute true awmv
 load(['D:\CHESS_data\simulated_two_spot_1D_noise2_12\synth_data.mat'])
 truth_awmv_az = zeros(num_ims,1);
