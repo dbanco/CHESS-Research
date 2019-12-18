@@ -2,11 +2,13 @@
 clear all
 close all
 P.set = 1;
-dataset = ['/cluster/home/dbanco02/ring1_zero_subset/'];
-output_dir = '/cluster/shared/dbanco02/mmpad_subset_indep_param_1/';
-param_dir = '/cluster/shared/dbanco02/param_search_mmpad/';
-mkdir(param_dir)
-mkdir(output_dir)
+% dataset = ['/cluster/home/dbanco02/ring1_zero_subset/'];
+% output_dir = '/cluster/shared/dbanco02/mmpad_subset_indep_param_1/';
+% param_dir = '/cluster/shared/dbanco02/param_search_mmpad/';
+
+dataset = 'D:\MMPAD_data\ring1_zero_subset\'
+output_dir = 'D:\CHESS_data\mmpad_subset_indep_param_1\'
+
 num_ims = 10;
 
 % Universal Parameters
@@ -83,6 +85,7 @@ lambda_indices = zeros(num_ims,1);
 noise_est = zeros(num_ims,1);
 norm_data = zeros(num_ims,1);
 noise_eta = zeros(num_ims,1);
+norm_ratio = zeros(num_ims,1);
 for image_num = 1:num_ims
     im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
@@ -97,22 +100,25 @@ for image_num = 1:num_ims
     bn_hat = conv2(bn,kernel,'same');
     noise_est(image_num) = norm(bn-bn_hat);
     norm_data(image_num) = norm(b);
+    norm_ratio(image_num) = norm(b)/norm(b,1);
 end
 % norm scaling method
-noise_eta = norm_data./max(norm_data).*max(noise_est);
+% noise_eta = norm_data./max(norm_data).*max(noise_est);
+
 % purely residual based method
 % noise_eta = noise_est;
+
+% some other method
+noise_eta = max(noise_est)*norm_ratio;
 
 discrep_crit = abs(err_select'-repmat(noise_eta,1,N));
 [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
 param_select = lambda_vals(lambda_indices);
 figure(2)
-plot(param_select)
-save([param_dir,'lambda_select_mmpad_subset1.mat'],'param_select')
+plot(lambda_indices)
+
 
 %% Load with selected parameters and plot
-dataset = ['/cluster/home/dbanco02/ring1_zero_subset/'];
-output_dir = '/cluster/shared/dbanco02/mmpad_subset_indep_param_1/';
 
 figure(211)
 [ha1, pos1] = tight_subplot(2,5,[.005 .005],[.01 .01],[.01 .01]); 
@@ -128,14 +134,12 @@ for image_num = 1:num_ims
 end
 
 %% Load with selected parameters and plot
-dataset = ['/cluster/home/dbanco02/ring1_zero_subset/'];
-output_dir = '/cluster/shared/dbanco02/mmpad_subset_indep_param_1/';
 
 figure(222)
 [ha2, pos2] = tight_subplot(2,5,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az = zeros(num_ims,1);
 for image_num = 1:num_ims
-    load(fullfile(output_dir,sprintf(baseFileName,1,image_num)))
+    load(fullfile(output_dir,sprintf(baseFileName,lambda_indices(image_num),image_num)))
     
     fit = Ax_ft_2D(A0ft_stack,x_hat);
     var_signal = squeeze(sum(sum(x_hat,1),2));

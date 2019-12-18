@@ -6,7 +6,7 @@ function [x_hat, err, obj, l_0, t_k, L] = FISTA_Circulant_1D(A0ft_stack,b,x_init
 %   convolutional subroutines for circulant matrix computations as
 %   described in:
 %   A. Beck and M. Teboulle, â€œA Fast Iterative Shrinkage-Thresholding 
-%       Algorithm for Linear Inverse Problems,â€? SIAM Journal on Imaging 
+%       Algorithm for Linear Inverse Problems,ï¿½? SIAM Journal on Imaging 
 %       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
 %
 % Inputs:
@@ -113,7 +113,7 @@ while keep_going && (nIter < maxIter)
         end
     end
     
-    t_k = t_kp1;
+    
     t_kp1 = 0.5*(1 + sqrt(1+4*t_k^2));
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
 
@@ -182,6 +182,7 @@ while keep_going && (nIter < maxIter)
     end
     
     % Update indices
+    t_k = t_kp1;
     xkm1 = xk;
 end
 
