@@ -6,7 +6,7 @@ function [x_hat, err, obj, l_0, t_k, L] = FISTA_Circulant_1D_Poisson(A0ft_stack,
 %   convolutional subroutines for circulant matrix computations as
 %   described in:
 %   A. Beck and M. Teboulle, â€œA Fast Iterative Shrinkage-Thresholding 
-%       Algorithm for Linear Inverse Problems,â€? SIAM Journal on Imaging 
+%       Algorithm for Linear Inverse Problems,ï¿½? SIAM Journal on Imaging 
 %       Sciences, vol. 2, no. 1, pp. 183202, Jan. 2009.
 %
 % Inputs:
@@ -98,12 +98,12 @@ while keep_going && (nIter < maxIter)
         end
         
         % Compute objective at xk
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask)./b_tilde;
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
         
         % Compute quadratic approximation at yk
-        fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)./b_tilde;
-        temp1 = 0.5*sum((b(:)-fit(:)).^2)  + lambda*sum(abs(xk(:)));
-        temp2 = 0.5*sum((b(:)-fit2(:)).^2) + lambda*sum(abs(zk(:))) +...
+        fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
+        temp1 = 0.5*sum(((b(:)-fit(:))./sqrt(b_tilde)).^2)  + lambda*sum(abs(xk(:)));
+        temp2 = 0.5*sum(((b(:)-fit2(:))./sqrt(b_tilde)).^2) + lambda*sum(abs(zk(:))) +...
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
@@ -123,7 +123,7 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     prev_f = f;
     f = 0.5*norm((b-fit)./sqrt(b_tilde))^2 + lambda * norm(xk(:),1);
-    err(nIter) = norm(b(:)-fit(:).*b_tilde)/norm(b(:));
+    err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
     l_0(nIter) = sum(abs(xk(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...

@@ -21,51 +21,18 @@ switch P.basis
 end
 
 % Construct distance matrix
-N = P.num_var_t;
-THRESHOLD = 32;
+Threshold = 32;
+D = constructDistanceMatrix_1D(P,Threshold);
 
-switch P.cost
-    case 'l1'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= abs(i-ii);
-            end
-        end
 
-        D = D./max(D(:));
-
-    case 'l2'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= (i-ii)^2;
-            end
-        end
-
-        D = D./max(D(:));
-
-    case 'wass'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= P.var_theta(i) + P.var_theta(ii) -...
-                    2*sqrt(P.var_theta(i)*P.var_theta(ii));
-            end
-        end
-        D = D./max(D(:));
-
-    case 'sqrt'
-        D = ones(N,N).*THRESHOLD;
-        for i = 1:P.num_var_t
-            for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                D(i,ii)= sqrt(abs(i-ii));
-            end
-        end
-        D = D./max(D(:));
+if Pc.preInitialized
+   start_ind = 2;
+else
+    start_ind = 1;
 end
+    
 
-for jjj = 1:num_outer_iters
+for jjj = start_ind:num_outer_iters
     % setup io directories
     if jjj == 1
         input_dir = init_dir;
@@ -91,19 +58,21 @@ for jjj = 1:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    for image_num = 1:num_ims
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
-        b = zeroPad(im_data.polar_vector,P.params.zeroPad);
-        % Scale image by 2-norm
-        b = b/norm(b(:));
+        b = squeeze(sum(zeroPad(im_data.polar_image,P.params.zeroPad),1));
         
+        % Scale image by 2-norm
+        b = b/norm(b(:))*100;
+        
+        P_local = P;
         % Use selected lambda
-        P.params.lambda = lambda_values(image_num);
+        P_local.params.lambda = lambda_values(image_num);
  
         x_init = zeros(size(A0ft_stack));
-        for i = 1:P.num_var_t
-            x_init(:,i) = b/P.num_var_t;
+        for i = 1:P_local.num_var_t
+            x_init(:,i) = b/P_local.num_var_t;
         end
         
         if jjj == 1
@@ -111,12 +80,12 @@ for jjj = 1:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_poisson(A0ft_stack,b,x_init,P.params);
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P_local.params);
             end
             new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
             vdfs = {new_vdf};
@@ -130,13 +99,13 @@ for jjj = 1:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
         
         % Output data
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P,Pc,image_num);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
         save_obj(output_dir,jjj,image_num,obj);
     end
     if jjj > 1
@@ -144,13 +113,12 @@ for jjj = 1:num_outer_iters
     end
 end
 
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,Pc,image_num)
+end
+
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,Pc,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P','Pc');
 end
 function save_obj(output_dir,pass,image_num,obj)
     save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');
-end
-
-
 end
 

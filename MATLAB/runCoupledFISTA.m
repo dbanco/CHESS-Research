@@ -20,9 +20,17 @@ switch P.basis
         A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(P);
 end
 
+Threshold = 32;
 D = constructDistanceMatrix(P,Threshold);
 
-for jjj = 1:num_outer_iters
+if Pc.preInitialized
+   start_ind = Pc.preInitialized;
+else
+    start_ind = 1;
+end
+    
+    
+for jjj = start_ind:num_outer_iters
     % setup io directories
     if jjj == 1
         input_dir = init_dir;
@@ -42,21 +50,23 @@ for jjj = 1:num_outer_iters
         vdf_array = cell(num_ims,1);
         for ii = 1:num_ims
             f_data = load(fullfile(input_dir,sprintf(baseFileName,1,ii)));
-            vdf_array{ii} = squeeze(sum(f_data.x_hat,1))/sum(f_data.x_hat(:));
+            vdf_array{ii} = squeeze(sum(sum(f_data.x_hat,1),2))/sum(f_data.x_hat(:));
         end
         new_vdf_array = cell(num_ims,1);
     end
     vdfs = {};
     % iterate over each image
-    for image_num = 1:num_ims
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
         b = zeroPad(im_data.polar_image,P.params.zeroPad);
         % Scale image by 2-norm
         b = b/norm(b(:));
         
+        P_local = P;
+        P_local.set = 1;
         % Use selected lambda
-        P.params.lambda = lambda_values(image_num);
+        P_local.params.lambda = lambda_values(image_num);
  
         x_init = zeros(size(A0ft_stack));
         for i = 1:P.num_var_t
@@ -70,14 +80,14 @@ for jjj = 1:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_Poisson(A0ft_stack,b,x_init,P.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_Poisson(A0ft_stack,b,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_poisson(A0ft_stack,b,x_init,P.params);
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_Poisson(A0ft_stack,b,x_init,P_local.params);
             end
-            new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
+            new_vdf = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
             vdfs = {new_vdf};
             
         else
@@ -89,18 +99,20 @@ for jjj = 1:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
         
         % Output data
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P,Pc,image_num);
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
         save_obj(output_dir,jjj,image_num,obj);
     end
     if jjj > 1
         vdf_array = new_vdf_array;
     end
+end
+
 end
 
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,Pc,image_num)
@@ -109,7 +121,3 @@ end
 function save_obj(output_dir,pass,image_num,obj)
     save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');
 end
-
-
-end
-

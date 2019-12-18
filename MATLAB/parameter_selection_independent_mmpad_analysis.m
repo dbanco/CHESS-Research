@@ -62,15 +62,6 @@ switch P.basis
 end
 A0 = unshifted_basis_matrix_stack_norm2(P);
 
-load('fista_fit_5_1.mat')
-figure(1)
-imagesc(polar_image)
-figure(2)
-imagesc(Ax_ft_2D(A0ft_stack,x_hat))
-
-
-%%
-
 % Select noise level
 % obj_gcv = zeros(N,num_ims);
 err_select = zeros(N,num_ims);

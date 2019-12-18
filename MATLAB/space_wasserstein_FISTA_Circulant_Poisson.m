@@ -61,6 +61,10 @@ if ~all(size(x_init)==[m,n,t,r])
     error('The dimension of the initial xk does not match.');
 end
 
+% Poisson noise model
+gauss_kernel = [1 2 1; 1 4 1; 1 2 1]/16;
+b_tilde = conv2(b,gauss_kernel,'same')+1;
+
 % Track error, objective, and sparsity
 err = nan(1,maxIter);
 obj = nan(1,maxIter);
