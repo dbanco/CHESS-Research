@@ -121,13 +121,31 @@ end
 
 figure(1)
 plot(err_chose,'o')
+title('error')
 
 figure(2)
 plot(l0_chose,'o')
+title('l_0 norm')
 
 figure(3)
-plot(lambdas_chose,'o')
+plot(l1_chose,'o')
+title('l_1 norm')
 
+figure(4)
+plot(lambdas_chose,'o')
+title('\lambda values')
+
+%% Inspect fits for chosen parameters
+
+figure(4)
+img =21;
+e_data = load(fullfile(indep_dir,sprintf(baseFileName,lambda_ind(img),img)),'x_hat','polar_image');
+cla
+hold on
+plot(squeeze(sum(e_data.polar_image,1)))
+plot(Ax_ft_1D(A0ft_stack,e_data.x_hat)*norm(polar_image))
+title(sprintf('err = %0.4f',err_select(lambda_ind(img),img)))
+legend('data','fit')
 %% Estimate noise and select parameters
 
 for image_num = 1:num_ims
