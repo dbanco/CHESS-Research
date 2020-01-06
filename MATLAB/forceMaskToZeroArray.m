@@ -7,7 +7,7 @@ if numel(size(x)) == 4
     end
 else
     if(max(size(zeroMask))>0)
-        x(zeroMask(:,2),:) = 0;
+        x(zeroMask,:) = 0;
     end
 end
 
