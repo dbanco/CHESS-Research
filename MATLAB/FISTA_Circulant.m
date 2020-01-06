@@ -146,7 +146,7 @@ while keep_going && (nIter < maxIter)
         title('zk')
         
         subplot(2,3,4)
-        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zPad);
+        fit_gk = forceMaskToZero(Ax_ft_2D(A0ft_stack,gk),zMask);
         imshow(fit_gk,'DisplayRange',[lim1 lim2],'Colormap',jet);
         title('gk')
         
@@ -166,7 +166,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zPad));
+                 AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zMask));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative

@@ -6,7 +6,7 @@ P.set = 1;
 % output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/';
 
 dataset = 'D:\MMPAD_data\ring1_zero\';
-output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_1\';
+output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_3\';
 
 mkdir(output_dir)
 num_ims = 500;
@@ -30,7 +30,7 @@ P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 % Zero padding and mask\
 zPad = [0,0];
-zMask = [];
+zMask = [129:133];
 
 % fista params
 params.stoppingCriterion = 1;
@@ -82,7 +82,7 @@ end
 %     save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj')
 % end
 
-%% Select lambda values
+%% Compute selection criteria
 
 lambda_indices = zeros(num_ims,1);
 noise_est = zeros(num_ims,1);
@@ -99,28 +99,39 @@ for image_num = 1:num_ims
     
     [~,cN] = size(b);
     kernel = shift1D(A0(:,1),round(cN/2));
-    kernel = kernel./sum(kernel(:));
 %     kernel = kernel(1:35,:);
-    bn_hat = conv2(bn,kernel,'same');
+    bn_hat = conv(bn,kernel,'same');
     noise_est(image_num) = norm(bn-bn_hat);
     norm_data(image_num) = norm(b);
     norm_ratio(image_num) = norm(b)/norm(b,1);
 end
+
+%%  Select paramters 
+
 % norm scaling method
 % noise_eta = norm_data./max(norm_data).*max(noise_est);
 
 % purely residual based method
-% noise_eta = noise_est;
+noise_eta = noise_est - 0.15;
 
 % some other method
-noise_eta = max(noise_est)*norm_ratio;
+% noise_eta = max(noise_est)*norm_ratio;
 
 discrep_crit = abs(err_select'-repmat(noise_eta,1,N));
 [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
 param_select = lambda_vals(lambda_indices);
-figure(2)
-plot(lambda_indices)
 
+figure(4)
+plot(noise_eta)
+title('Noise estimate')
+
+figure(3)
+plot(noise_est)
+title('norm(b-b_t)')
+
+figure(2)
+plot(param_select)
+title('Paramters selected')
 %% Load with selected parameters and plot
 
 figure(222)
@@ -152,7 +163,7 @@ hold on
 plot(awmv_az,'o')
 
 
-%%
+%% Plot resulting AWMV
 
 figure(1)
 hold on
@@ -160,6 +171,14 @@ plot(awmv_az)
 legend('Fit Discrep','Truth','Fit Single \lambda','Location','best')
 ylabel('AWMV')
 xlabel('t')
+
+%% Plot basis functions
+figure(5)
+for i = 1:15
+   kernel = shift1D(A0(:,i),round(cN/2));
+   hold on
+   plot(kernel)
+end
 
 %% Plot parameter search curves
 load([param_dir,'param_search_discrep.mat'])
