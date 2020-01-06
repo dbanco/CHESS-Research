@@ -12,11 +12,11 @@ if size(zeroPad) > 1
         img_pad = img;
     end
 else
-    n = numel(img);
+    [n,m] = size(img);
     if(max(zeroPad > 0))
         % Pad image
-        img_pad = zeros(2*zeroPad+n);
-        img_pad(zeroPad+1:zeroPad+n) = img;
+        img_pad = zeros(1,2*zeroPad+m);
+        img_pad(zeroPad+1:zeroPad+m) = img;
     else
         % Do not pad
         img_pad = img;
