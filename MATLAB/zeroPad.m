@@ -1,7 +1,7 @@
 function img_pad = zeroPad( img, zeroPad )
 %zeroPad Zero pads image
 
-if min(size(zeroPad)) > 1
+if numel(zeroPad) > 1
     [n,m] = size(img);
     if(max(zeroPad > 0))
         % Pad image
