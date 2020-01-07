@@ -21,7 +21,7 @@ P.sampleDims = [num_ims,1];
 % Basis function variance parameters
 P.basis = 'norm2';
 P.cost = 'l1';
-P.num_var_t = 25;
+P.num_var_t = 20;
 P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta/2,100,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
