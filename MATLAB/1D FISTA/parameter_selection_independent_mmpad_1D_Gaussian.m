@@ -65,7 +65,7 @@ for image_num = 1:num_ims
     % Zero pad image
     b = squeeze(sum(im_data.polar_image,1));
     % Scale image by 2-norm
-    bn = zeroPad(b/norm(b(:)),zPad);
+    bn = b/norm(b(:));
     
     % Initial solution
     x_init = zeros(size(A0ft_stack));

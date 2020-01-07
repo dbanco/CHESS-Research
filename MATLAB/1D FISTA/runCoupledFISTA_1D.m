@@ -1,6 +1,7 @@
 function runCoupledFISTA_1D( P, Pc )
 %runCoupledFISTA 
 
+% Unpack parameters
 P.params.wLam = Pc.wLam;
 P.params.gamma = Pc.gamma;
 P.params.maxIterReg = Pc.maxIterReg;
@@ -17,7 +18,7 @@ prefix = Pc.prefix;
 % Construct dictionary
 switch P.basis
     case 'norm2'
-        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+        A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
 end
 
 % Construct distance matrix
@@ -26,7 +27,7 @@ D = constructDistanceMatrix_1D(P,Threshold);
 
 
 if Pc.preInitialized
-   start_ind = 2;
+   start_ind = Pc.preInitialized;
 else
     start_ind = 1;
 end
@@ -61,18 +62,19 @@ for jjj = start_ind:num_outer_iters
     parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         %% Zero pad image
-        b = squeeze(sum(zeroPad(im_data.polar_image,P.params.zeroPad),1));
+        b = squeeze(sum(im_data.polar_image,1));
         
         % Scale image by 2-norm
-        b = b/norm(b(:))*100;
+        bn = b/norm(b(:));
         
         P_local = P;
+        P_local.set = 1;
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
  
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
-            x_init(:,i) = b/P_local.num_var_t;
+            x_init(:,i) = bn/P_local.num_var_t;
         end
         
         if jjj == 1
@@ -80,12 +82,12 @@ for jjj = start_ind:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P_local.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_Poisson(A0ft_stack,b,x_init,P_local.params);
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
             end
             new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
             vdfs = {new_vdf};
@@ -99,7 +101,7 @@ for jjj = start_ind:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D_Poisson(A0ft_stack,b,vdfs,D,x_init,P_local.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end

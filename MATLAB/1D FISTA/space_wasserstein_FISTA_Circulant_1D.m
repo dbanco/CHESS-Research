@@ -69,6 +69,8 @@ obj2 = nan(1,maxIter);
 obj3 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
+b = zeroPad(b,zPad);
+
 % Initial sparsity and objective
 f = 0.5*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);

@@ -57,6 +57,8 @@ if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
 
+b = zeroPad(b,zPad);
+
 % Track error, objective, and sparsity
 err = nan(1,maxIter);
 obj = nan(1,maxIter);
