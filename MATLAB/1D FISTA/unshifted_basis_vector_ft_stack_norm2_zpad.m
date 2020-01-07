@@ -12,7 +12,7 @@ function A0_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P)
 % A0ft_stack - (n x t) array
 %             n = num_theta
 %             t = numel(var_theta)
-A0_stack = zeros(P.num_theta,numel(P.var_theta));
+A0_stack = zeros(P.num_theta + 2*P.params.zeroPad, numel(P.var_theta));
 for t = 1:numel(P.var_theta)
     A0 = gaussian_basis_wrap_1D_norm2(P.num_theta, 0, P.var_theta(t));                      
     A0_stack(:,t) = fft(zeroPad(A0,P.params.zeroPad));

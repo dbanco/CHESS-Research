@@ -14,13 +14,20 @@ if numel(zeroPad) > 1
 else
     [n,m] = size(img);
     if(max(zeroPad > 0))
+        
         % Pad image
-        img_pad = zeros(1,2*zeroPad+m);
-        img_pad(zeroPad+1:zeroPad+m) = img;
+        if m > n % column vector
+            img_pad = zeros(1,2*zeroPad+m);
+            img_pad(zeroPad+1:zeroPad+m) = img;
+        else % row vector
+            img_pad = zeros(2*zeroPad+n,1);
+            img_pad(zeroPad+1:zeroPad+n) = img;
+        end
     else
         % Do not pad
         img_pad = img;
     end  
+ 
 end
 
 end
