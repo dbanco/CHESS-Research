@@ -74,7 +74,7 @@ for jjj = start_ind:num_outer_iters
  
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
-            x_init(:,i) = bn/P_local.num_var_t;
+            x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
         end
         
         if jjj == 1
@@ -117,7 +117,7 @@ end
 
 end
 
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,Pc,image_num)
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,Pc,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P','Pc');
 end
 function save_obj(output_dir,pass,image_num,obj)
