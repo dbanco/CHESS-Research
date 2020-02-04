@@ -2,6 +2,7 @@
 clear all
 close all
 P.set = 1;
+dataset_num = '5';
 datadir = 'D:\CHESS_data\';
 dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise2_',dataset_num,'\'];
 param_dir = 'D:\CHESS_data\param_search_1D\';

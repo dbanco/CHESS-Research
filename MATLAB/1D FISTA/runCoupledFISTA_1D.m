@@ -25,7 +25,6 @@ end
 Threshold = 32;
 D = constructDistanceMatrix_1D(P,Threshold);
 
-
 if Pc.preInitialized
    start_ind = Pc.preInitialized;
 else
@@ -59,10 +58,15 @@ for jjj = start_ind:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    parfor image_num = 1:num_ims
+    for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
-        %% Zero pad image
-        b = squeeze(sum(im_data.polar_image,1));
+        
+        % Reduce image to vector 
+        try
+            b = squeeze(sum(im_data.polar_image,1));
+        catch
+            b = im_data.polar_vector;
+        end
         
         % Scale image by 2-norm
         bn = b/norm(b(:));
@@ -107,9 +111,15 @@ for jjj = start_ind:num_outer_iters
         end
         
         % Output data
-        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
-        save_obj(output_dir,jjj,image_num,obj);
+        try
+            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
+            save_obj(output_dir,jjj,image_num,obj);
+        catch
+            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P_local,Pc,image_num);
+            save_obj(output_dir,jjj,image_num,obj);
+        end
     end
+    
     if jjj > 1
         vdf_array = new_vdf_array;
     end

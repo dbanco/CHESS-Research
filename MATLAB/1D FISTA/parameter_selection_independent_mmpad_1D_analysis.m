@@ -6,7 +6,7 @@ close all
 % output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/';
 
 dataset = 'D:\MMPAD_data\ring1_zero\';
-output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_5\';
+output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_8\';
 num_ims = 500;
 baseFileName = 'fista_fit_%i_%i.mat';
 
@@ -24,9 +24,9 @@ polar_image = zeroPad(polar_image,P.params.zeroPad);
 % Construct dictionary
 switch P.basis
     case 'norm2'
-        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+        A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
 end
-A0 = unshifted_basis_vector_stack_norm2(P);
+A0 = unshifted_basis_vector_stack_norm2_zpad(P);
 
 % Get error and sparsity
 err_select = zeros(N,num_ims);
@@ -159,7 +159,7 @@ xlabel('t')
 %% Plot basis functions
 figure(5)
 for i = 1:P.num_var_t
-   kernel = shift1D(A0(:,i),round(cN/2));
+   kernel = shift1D(A0(:,i),round(cN/2)+50);
    hold on
    plot(kernel)
 end

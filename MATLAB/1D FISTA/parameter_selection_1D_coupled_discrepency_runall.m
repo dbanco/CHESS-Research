@@ -4,7 +4,7 @@ clear all
 close all
 P.set = 1;
 datadir = 'D:\CHESS_data\';
-for d_num = 1:8
+for d_num = 4
     dataset_num = num2str(d_num);
     dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise2_',dataset_num,'\'];
     param_dir = 'D:\CHESS_data\param_search_1D\';
@@ -51,6 +51,7 @@ for d_num = 1:8
     load([param_dir,'lambda_select_noise8'])
     Pc.lambda_values = param_select;
     Pc.initialization = 'simultaneous';
+    Pc.preInitialized = 0;
     Pc.wLam = 25;
     Pc.gamma = 1;
     Pc.maxIterReg = 800;
@@ -60,7 +61,9 @@ for d_num = 1:8
     Pc.prefix = 'polar_vector';
     Pc.dataset = [dataset];
     % Gamma values
-    gamma_vals = [ 0.01,0.02,0.03 0.04 0.05,0.08,0.1,0.15,0.2]; 
+    gamma_vals = [0.00025,0.0005,0.00075,0.001,0.0025,0.005,0.0075,...
+                  0.01,0.02,0.03 0.04 0.05,0.08,0.1,0.15,0.2,0.25,...
+                  0.3,0.4,0.5,0.75,1,2,5,10]; 
     N = numel(gamma_vals);
 
     % Select noise level
@@ -70,14 +73,14 @@ for d_num = 1:8
     % Construct dictionary
     switch P.basis
         case 'norm2'
-            A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+            A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
     end
-    A0 = unshifted_basis_vector_stack_norm2(P);
+    A0 = unshifted_basis_vector_stack_norm2_zpad(P);
 
-    for i = 1:N
-        Pc.init_dir = [datadir,'noise_1D_coupled_simul_',dataset_num,'_init',num2str(i)];
-        Pc.output_dirA = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'a'];
-        Pc.output_dirB = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'b'];
+    for i = 18:N
+        Pc.init_dir = [datadir,'noise_1D_coupled_simul_',dataset_num,'_init4aa'];
+        Pc.output_dirA = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'aa'];
+        Pc.output_dirB = [datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'bb'];
         mkdir(Pc.init_dir)
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
@@ -99,7 +102,7 @@ obj_values = zeros(8,N);
 err_values = zeros(8,N);
 err_est_values = zeros(8,1);
 norm_values = zeros(8,1);
-for d_num = 1:8
+for d_num = 4
     for i = 1:N
         norm_total = 0;
         err_total = 0;

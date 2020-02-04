@@ -3,7 +3,7 @@ clear all
 close all
 P.set = 1;
 dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
-output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_8/';
+output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_ring2_1/';
 mkdir(output_dir)
 num_ims = 500;
 
@@ -27,7 +27,7 @@ P.var_theta = linspace(P.dtheta/2,100,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 % Zero padding and mask\
 zPad = 50;
-zMask = [1:50,(129:133)+50,(261+1+50):261+100];
+zMask = [1:zPad,(129:133)+zPad,(P.num_theta+1+zPad):P.num_theta+2*zPad];
 
 % fista params
 params.stoppingCriterion = 1;
