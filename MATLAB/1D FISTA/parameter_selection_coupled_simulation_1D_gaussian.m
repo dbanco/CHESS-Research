@@ -3,34 +3,37 @@ clear all
 close all
 disp('Setup parms')
 P.set = 1;
-datadir = '/cluster/shared/dbanco02/';
-dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
-indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_3/';
-output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_3/';
+% datadir = '/cluster/shared/dbanco02/';
+% dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
+% indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_3/';
+% output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_3/';
+
+datadir = 'D:\CHESS_data\';
+dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
+indep_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_coupled_6';
 
 mkdir(output_dir)
-num_ims = 500;
+num_ims = 10;
 
 
 % Universal Parameters
 % Ring sampling parameters
-prefix = 'mmpad_img';
-load([dataset,prefix,'_1.mat']);
-P.num_theta = size(polar_image,2);
-P.num_rad = size(polar_image,1);
+prefix = 'polar_vector';
+load(fullfile([dataset],[prefix,'_1.mat']));
+P.num_theta = size(polar_vector,1);
 P.dtheta = 1;
-P.drad = 1;
 P.sampleDims = [num_ims,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = 20;
-P.var_theta = linspace(P.dtheta/2,100,P.num_var_t).^2;
+P.var_theta = linspace(P.dtheta/2,500,P.num_var_t).^2;
 
-% Zero padding and mask
-zPad = 50;
-zMask = [1:zPad,(129:133)+zPad,(P.num_theta+1+zPad):P.num_theta+2*zPad];
+% Zero padding and mask\
+zPad = [0,0];
+zMask = [];
 
 % fista params
 params.stoppingCriterion = 1;
@@ -38,10 +41,8 @@ params.tolerance = 1e-8;
 params.L = 1;
 params.t_k = 1;
 params.lambda = 0.08;
-params.wLam = 25;
 params.beta = 1.2;
 params.maxIter = 800;
-params.maxIterReg = 800;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
@@ -87,9 +88,12 @@ for i = 1:N
     fprintf('%i of %i \n',i,N)
     for j = 1:num_ims
         e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err');
-        err_select(i,j) = e_data.err(end-1);
+        err_select(i,j) = e_data.err(end);
     end
 end
+
+err_select(err_select>1)=0;
+imagesc(err_select)
 
 noise_est = zeros(num_ims,1);
 norm1 = zeros(num_ims,1);

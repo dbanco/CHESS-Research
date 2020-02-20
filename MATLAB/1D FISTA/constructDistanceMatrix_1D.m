@@ -1,4 +1,4 @@
-function [ D ] = constructDistanceMatrix_1D( P, Threshold )
+function [ D ] = constructDistanceMatrix_1D( P, Threshold, maxNorm )
 %constructDistanceMatrix_1D Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,9 +11,7 @@ switch P.cost
             for ii=max([1 i-Threshold+1]):min([P.num_var_t i+Threshold-1])
                 D(i,ii)= abs(i-ii);
             end
-        end
-
-        D = D./max(D(:));
+        end  
 
     case 'l2'
         D = ones(N,N).*Threshold;
@@ -23,8 +21,6 @@ switch P.cost
             end
         end
 
-        D = D./max(D(:));
-
     case 'wass'
         D = ones(N,N).*Threshold;
         for i = 1:P.num_var_t
@@ -33,7 +29,6 @@ switch P.cost
                     2*sqrt(P.var_theta(i)*P.var_theta(ii));
             end
         end
-        D = D./max(D(:));
 
     case 'sqrt'
         D = ones(N,N).*Threshold;
@@ -42,6 +37,10 @@ switch P.cost
                 D(i,ii)= sqrt(abs(i-ii));
             end
         end
-        D = D./max(D(:));
 end
+
+if(maxNorm)
+    D = D./max(D(:));
+end
+
 end

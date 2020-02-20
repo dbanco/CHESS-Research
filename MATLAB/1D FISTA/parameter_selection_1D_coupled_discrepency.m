@@ -2,7 +2,7 @@
 clear all
 close all
 P.set = 1;
-dataset_num = '5';
+dataset_num = '6';
 datadir = 'D:\CHESS_data\';
 dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise2_',dataset_num,'\'];
 param_dir = 'D:\CHESS_data\param_search_1D\';
@@ -68,9 +68,9 @@ err_gcv = zeros(N,num_ims);
 % Construct dictionary
 switch P.basis
     case 'norm2'
-        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
+        A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
 end
-A0 = unshifted_basis_vector_stack_norm2(P);
+A0 = unshifted_basis_vector_stack_norm2_zpad(P);
 %% Run grid search
 for i = 6
     Pc.init_dir = [datadir,'noise_1D_coupled_simul_',dataset_num,'_init',num2str(i)];
@@ -85,14 +85,17 @@ end
 % save([param_dir,'param_search_coupled_discrep_8.mat'],'err_gcv','obj_gcv','P','lambda_vals')
 
 %% Select lambda values
-N=6;
+load([param_dir,'param_search_coupled_discrep_8.mat'])
+
+
+N=30;
 err_discrep = zeros(num_ims,N);
 noise_eta = zeros(num_ims,N);
 total_norm = zeros(N,1);
 total_err = zeros(N,1);
 for i = 1:N
     for image_num = 1:num_ims
-        im_data = load([datadir,'noise_1D_coupled_',dataset_num,'_',num2str(i),'a\',sprintf(Pc.baseFileName,1,image_num)]);
+        im_data = load([datadir,'noise_1D_coupled_simul_',dataset_num,'_',num2str(i),'a\',sprintf(Pc.baseFileName,1,image_num)]);
         err_discrep(image_num,i) = im_data.err(end-1);
         b = im_data.polar_image;
         % Scale image by 2-norm
@@ -109,7 +112,6 @@ for i = 1:N
     end
     total_norm(i) = total_norm(i) + norm(b(:)).^2;
     total_err(i) = norm(err_discrep(:,i).^2);
-    total_noise_est = 
 end
 
 gamma_index = find(discrep_crit == min(discrep_crit));
@@ -159,7 +161,6 @@ for image_num = 1:num_ims
     var_sum = sum(var_signal(:));
     awmv_az2(image_num) = sum(sqrt(P.var_theta(:)).*var_signal(:))/var_sum;
     
-
 end
 
 figure(1)
