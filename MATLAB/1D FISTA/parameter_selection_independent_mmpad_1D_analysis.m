@@ -2,11 +2,11 @@
 clear all
 close all
 
-% dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
-% output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/';
+dataset = '/cluster/home/dbanco02/mmpad_polar/ring2_zero/';
+output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_ring2_1/';
 
-dataset = 'D:\MMPAD_data\ring1_zero\';
-output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_8\';
+% dataset = 'D:\MMPAD_data\ring2_zero\';
+% output_dir = 'D:\CHESS_data\mmpad_1D_indep_param_ring2_1\';
 num_ims = 500;
 baseFileName = 'fista_fit_%i_%i.mat';
 

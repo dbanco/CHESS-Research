@@ -2,7 +2,7 @@
 clear all
 close all
 P.set = 1;
-dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
+dataset = ['/cluster/home/dbanco02/mmpad_polar/ring2_zero/'];
 output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_ring2_1/';
 mkdir(output_dir)
 num_ims = 500;
@@ -70,7 +70,7 @@ for image_num = 1:num_ims
     % Initial solution
     x_init = zeros(size(A0ft_stack));
     for i = 1:P.num_var_t
-        x_init(:,i) = bn/(P.num_var_t);
+        x_init(:,i) = zeroPad(bn,zPad)/(P.num_var_t);
     end 
  
     parfor ii = 1:N

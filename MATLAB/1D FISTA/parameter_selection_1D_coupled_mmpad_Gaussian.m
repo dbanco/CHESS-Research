@@ -1,12 +1,14 @@
 %% Parameter selection
 clear all
 close all
-disp('Setup parms')
+disp('Setup params')
 P.set = 1;
 datadir = '/cluster/shared/dbanco02/';
 dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
-indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_8/';
-output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_8/';
+indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_ring2_1/';
+output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_ring2_1/';
+init_dir = [datadir,'mmpad_1D_coupled_simul_ring2_init'];
+mkdir(init_dir)
 mkdir(output_dir)
 
 num_ims = 500;
@@ -65,22 +67,20 @@ Pc.lambda_values = param_select;
 
 %% Move independent fits to init directory (done)
 
-init_dir = [datadir,'mmpad_1D_coupled_simul_init'];
-% mkdir(init_dir)
-% for i = 1:num_ims
-%     src = fullfile(indep_dir,sprintf(baseFileName,lambda_indices(i),i));
-%     dest = fullfile(init_dir,sprintf(baseFileName,1,i));
-%     copyfile(src,dest)
-% end
+for i = 1:num_ims
+    src = fullfile(indep_dir,sprintf(baseFileName,lambda_indices(i),i));
+    dest = fullfile(init_dir,sprintf(baseFileName,1,i));
+    copyfile(src,dest)
+end
 
 %% Run coupled grid search
 
 disp('Begin grid search')
 
-for i = 11:13
+for i = 1:13
     Pc.init_dir = init_dir;
-    Pc.output_dirA = [datadir,'mmpad_1D_coupled_simul_',num2str(i),'a'];
-    Pc.output_dirB = [datadir,'mmpad_1D_coupled_simul_',num2str(i),'b'];
+    Pc.output_dirA = [datadir,'mmpad_1D_coupled_simul_ring2',num2str(i),'a'];
+    Pc.output_dirB = [datadir,'mmpad_1D_coupled_simul_ring2',num2str(i),'b'];
     mkdir(Pc.init_dir)
     mkdir(Pc.output_dirA)
     mkdir(Pc.output_dirB)

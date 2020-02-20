@@ -1,7 +1,6 @@
-function runCoupledFISTA_1D( P, Pc )
+function runCoupledGaussianFISTA_1D( P, Pc )
 %runCoupledFISTA 
 
-% Unpack parameters
 P.params.wLam = Pc.wLam;
 P.params.gamma = Pc.gamma;
 P.params.maxIterReg = Pc.maxIterReg;
@@ -18,12 +17,13 @@ prefix = Pc.prefix;
 % Construct dictionary
 switch P.basis
     case 'norm2'
-        A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
+        A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
 end
 
 % Construct distance matrix
 Threshold = 32;
 D = constructDistanceMatrix_1D(P,Threshold);
+
 
 if Pc.preInitialized
    start_ind = Pc.preInitialized;
@@ -58,27 +58,21 @@ for jjj = start_ind:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    parfor image_num = 1:num_ims
+    for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
-        
-        % Reduce image to vector 
-        try
-            b = squeeze(sum(im_data.polar_image,1));
-        catch
-            b = im_data.polar_vector;
-        end
+        %% Zero pad image
+        b = squeeze(sum(zeroPad(im_data.polar_image,P.params.zeroPad),1));
         
         % Scale image by 2-norm
-        bn = b/norm(b(:));
+        b = b/norm(b(:));
         
         P_local = P;
-        P_local.set = 1;
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
  
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
-            x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
+            x_init(:,i) = b/P_local.num_var_t;
         end
         
         if jjj == 1
@@ -86,12 +80,12 @@ for jjj = start_ind:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,vdfs,D,x_init,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P_local.params);
             end
             new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
             vdfs = {new_vdf};
@@ -105,21 +99,15 @@ for jjj = start_ind:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant_1D(A0ft_stack,b,vdfs,D,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
         
         % Output data
-        try
-            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
-            save_obj(output_dir,jjj,image_num,obj);
-        catch
-            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P_local,Pc,image_num);
-            save_obj(output_dir,jjj,image_num,obj);
-        end
+        save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
+        save_obj(output_dir,jjj,image_num,obj);
     end
-    
     if jjj > 1
         vdf_array = new_vdf_array;
     end
@@ -127,7 +115,7 @@ end
 
 end
 
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,Pc,image_num)
+function save_output(output_dir,baseFileName,x_hat,err,polar_image,Pc,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P','Pc');
 end
 function save_obj(output_dir,pass,image_num,obj)
