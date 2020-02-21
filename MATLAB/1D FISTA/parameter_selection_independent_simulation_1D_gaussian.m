@@ -2,10 +2,16 @@
 clear all
 close all
 P.set = 1;
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
-output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+% dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
+% output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6';
+output_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_indep_6/';
+
 mkdir(output_dir)
 num_ims = 10;
+
+
+
 
 % Universal Parameters
 % Ring sampling parameters
