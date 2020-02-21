@@ -2,12 +2,15 @@
 clear all
 close all
 P.set = 1;
+
 % dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
 % output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+
 dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6';
-output_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_indep_6/';
+output_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_6_indep/';
 
 mkdir(output_dir)
+
 num_ims = 10;
 
 
@@ -37,10 +40,8 @@ params.tolerance = 1e-8;
 params.L = 1;
 params.t_k = 1;
 params.lambda = 0.08;
-params.wLam = 25;
 params.beta = 1.2;
 params.maxIter = 800;
-params.maxIterReg = 800;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
@@ -75,7 +76,7 @@ for image_num = 1:num_ims
         x_init(:,i) = bn/P.num_var_t;
     end
     
-    for ii = 1:N
+    parfor ii = 1:N
         P_local = P;
         P_local.params.lambda = lambda_vals(ii);
         P_local.set = ii;

@@ -4,11 +4,13 @@ close all
 disp('Setup params')
 P.set = 1;
 datadir = '/cluster/shared/dbanco02/';
+
 dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
 indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_ring2_1/';
 output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_ring2_1/';
 init_dir = [datadir,'mmpad_1D_coupled_simul_ring2_init'];
 mkdir(init_dir)
+
 mkdir(output_dir)
 
 num_ims = 500;
