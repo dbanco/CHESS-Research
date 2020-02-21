@@ -3,19 +3,19 @@ clear all
 close all
 disp('Setup parms')
 P.set = 1;
-% datadir = '/cluster/shared/dbanco02/';
-% dataset = ['/cluster/home/dbanco02/mmpad_polar/ring1_zero/'];
-% indep_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_3/';
-% output_dir = '/cluster/shared/dbanco02/mmpad_1D_coupled_param_3/';
 
-datadir = 'D:\CHESS_data\';
-dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
-indep_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
-output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_coupled_6';
+datadir = '/cluster/shared/dbanco02/';
+dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6/';
+indep_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_indep_6/';
+output_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_coupled_6/';
+
+% datadir = 'D:\CHESS_data\';
+% dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
+% indep_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+% output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_coupled_6';
 
 mkdir(output_dir)
 num_ims = 10;
-
 
 % Universal Parameters
 % Ring sampling parameters
