@@ -4,13 +4,13 @@ close all
 disp('Setup parms')
 P.set = 1;
 
-datadir = '/cluster/shared/dbanco02/';
-dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6/';
-indep_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_indep_6/';
+% datadir = '/cluster/shared/dbanco02/';
+% dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6/';
+% indep_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_indep_6/';
 
-% datadir = 'D:\CHESS_data\';
-% dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6\';
-% indep_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6_indep\';
+datadir = 'D:\CHESS_data\';
+dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6\';
+indep_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6_indep\';
 
 init_dir = [datadir,'simulated_two_spot_1D_noise2_6_simul_init'];
 

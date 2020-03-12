@@ -4,10 +4,10 @@ close all
 
 % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
 % output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/';
-
-dataset = 'D:\MMPAD_data\ring1_zero\';
-init_dir = 'D:\CHESS_data\mmpad_1D_coupled_simul_ring1_init';
-output_dir = 'D:\CHESS_data\mmpad_1D_coupled_simul_ring1';
+ring_num = '1';
+dataset = ['D:\MMPAD_data\ring',ring_num,'_zero\'];
+init_dir = ['D:\CHESS_data\mmpad_coupled_allrings\mmpad_1D_coupled_simul_ring',ring_num,'_init'];
+output_dir = ['D:\CHESS_data\mmpad_coupled_allrings\mmpad_1D_coupled_simul_ring',ring_num];
 num_ims = 500;
 baseFileName = 'fista_fit_%i_%i.mat';
 
@@ -52,7 +52,7 @@ for k = 1:M
     fprintf('%i of %i\n',k,M)
     for j = 1:num_ims
         load(fullfile([output_dir,num2str(k),'a\'],sprintf(baseFileName,1,j)))
-        
+        gamma_vals(k) = Pc.gamma;
         % Fit objective
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
         polar_vector = squeeze(sum(polar_image,1));
@@ -76,7 +76,7 @@ for k = 1:M
 end
 
 %%
-% Pc.wLam = 2;
+Pc.wLam = 10;
 
 % Compute Wasserstein objective
 for k = 1:M
@@ -111,7 +111,7 @@ for j = 1:num_ims-1
     wass_indep(j) = wass_dist;
 end
 
-%% Plot error, std, difference from indep awmv
+%% Plot awmv
 close all
 [sort_gamma, sort_i] = sort(gamma_vals);
 % Plot AWMV
@@ -152,14 +152,14 @@ plot(sort_gamma,mean_l1(sort_i),'o-')
 ylabel('l1-norm')
 xlabel('Coupling parameter')
 
-% Plot number nonzeros coefficients
-mean_l0 = mean(l0_select,2);
-figure(4)
-hold on
-plot(0,mean(l0_indep),'o')
-plot(sort_gamma,mean_l0(sort_i),'o-')
-ylabel('l0-norm')
-xlabel('Coupling parameter')
+% % Plot number nonzeros coefficients
+% mean_l0 = mean(l0_select,2);
+% figure(4)
+% hold on
+% plot(0,mean(l0_indep),'o')
+% plot(sort_gamma,mean_l0(sort_i),'o-')
+% ylabel('l0-norm')
+% xlabel('Coupling parameter')
 
 % Plot wass dist
 wass_total = sum(obj3,2);
@@ -173,12 +173,35 @@ xlabel('Coupling parameter')
 
 obj_part1_sum = mean_l1(sort_i)+ 10*mean_err(sort_i);
 
-% Plot wass dist over imsages
-figure(441)
-hold on
-plot(wass_indep,'-')
-plot(obj3(6,:),'-')
+% % Plot wass dist over imsages
+% figure(441)
+% hold on
+% plot(wass_indep,'-')
+% plot(obj3(6,:),'-')
+% ylabel('Wasserstein distance')
+
+% % Plot L-curve 1
+% figure(6)
+% plot(obj2(sort_i),obj1(sort_i),'o-')
+% xlabel('l1-norm')
+% ylabel('Error')
+
+% Plot L-curve 2
+figure(7)
+loglog(obj1(sort_i),sum(obj3(sort_i,:),2),'o-')
 ylabel('Wasserstein distance')
+xlabel('Error')
+
+miny = min(sum(obj3(sort_i,:),2));
+minx = min(obj1(sort_i));
+coord = [obj1(sort_i)./minx,sum(obj3(sort_i,:),2)./miny];
+origin_dist = coord-1;
+[val,select_ind] = min(sum(origin_dist.^2,2));
+
+selectx = obj1(sort_i(select_ind));
+selecty = sum(obj3(sort_i(select_ind),:),2);
+hold on
+loglog(selectx,selecty,'s','Markersize',14)
 
 % Plot AWMV
 figure(5)
@@ -187,7 +210,7 @@ legend_str{1} = 'indep';
 hold on
 plot(awmv_az_init,'-')
 kk = 2;
-for k = [4,5,M]
+for k = [5,M]
     hold on
     plot(awmv_az(sort_i(k),:),'-')
     legend_str{kk} = sprintf('%0.04f',sort_gamma(k));
@@ -195,35 +218,24 @@ for k = [4,5,M]
 end
 legend(legend_str,'Location','Best')
 
-% Plot L-curve 1
-figure(6)
-plot(obj2(sort_i),obj1(sort_i),'o-')
-xlabel('l1-norm')
-ylabel('Error')
 
-% Plot L-curve 2
-figure(7)
-plot(obj1(sort_i),sum(obj3(sort_i,:),2),'o-')
-ylabel('Wasserstein distance')
-xlabel('Error')
+% % Plot L-curve 3
+% figure(8)
+% plot(obj2(sort_i),obj3(sort_i),'o-')
+% ylabel('Wasserstein distance')
+% xlabel('l1-norm')
 
-% Plot L-curve 3
-figure(8)
-plot(obj2(sort_i),obj3(sort_i),'o-')
-ylabel('Wasserstein distance')
-xlabel('l1-norm')
-
-% Plot L-curve 4
-figure(9)
-loglog(obj_part1_sum,sum(obj3(sort_i,:),2),'o-')
-ylabel('Wasserstein distance')
-xlabel('Error+l1-norm')
+% % Plot L-curve 4
+% figure(9)
+% loglog(obj_part1_sum,sum(obj3(sort_i,:),2),'o-')
+% ylabel('Wasserstein distance')
+% xlabel('Error+l1-norm')
 
 %% Plot fits
 
 figure(222)
 [ha2, pos2] = tight_subplot(5,10,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az = zeros(num_ims,1);
+awmv_az_fits = zeros(num_ims,1);
 im_ind = 1;
 trial_k = 4;
 for image_num = 1:5:250
@@ -234,7 +246,7 @@ for image_num = 1:5:250
     fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
-    awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    awmv_az_fits(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     b = zeroPad(polar_vector,P.params.zeroPad);
     % Plot
     axes(ha2(im_ind))
@@ -248,7 +260,7 @@ end
 %% Plot vdfs
 figure(333)
 [ha3, pos3] = tight_subplot(5,10,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az = zeros(num_ims,1);
+awmv_az_vdfs = zeros(num_ims,1);
 im_ind = 1;
 trial_k = 5;
 for image_num = 1:5:250
@@ -270,7 +282,7 @@ end
 %% Plot vdfs
 figure(334)
 [ha3, pos3] = tight_subplot(6,6,[.01 .01],[.04 .04],[.04 .04]); 
-awmv_az = zeros(num_ims,1);
+awmv_az_vdfs = zeros(num_ims,1);
 im_ind = 1;
 col_map = jet(6);
 kk = 1;
@@ -285,7 +297,7 @@ for trial_k = [1,5,7:M-3]
         fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
         az_signal = squeeze(sum(x_hat,1));
         var_sum = sum(az_signal(:));
-        awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+        awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         
         % Plot
         axes(ha3(im_ind))
@@ -300,28 +312,100 @@ for trial_k = [1,5,7:M-3]
     end
     kk = mod(kk+1,7);
 end
-%% Plot vdfs
-figure(333)
-[ha3, pos3] = tight_subplot(5,5,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az = zeros(num_ims,1);
-im_ind = 1;
-for trial_k = [5,7:M-3]
-    for image_num = [1,40,50,70,100]
 
-        load(fullfile([output_dir,'init\'],sprintf(baseFileName,1,image_num)))
+%% Plot vdfs
+figure(334)
+[ha3, pos3] = tight_subplot(6,6,[.01 .01],[.04 .04],[.04 .04]); 
+awmv_az_vdfs = zeros(num_ims,1);
+im_ind = 1;
+col_map = jet(6);
+kk = 1;
+for trial_k = [1,5,7:M-3]
+ 
+    for image_num = [40,50,100,130,160,190]
+        
+
+        load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = squeeze(sum(polar_image,1));
         fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
         az_signal = squeeze(sum(x_hat,1));
         var_sum = sum(az_signal(:));
-        awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+        awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+        
         % Plot
         axes(ha3(im_ind))
-        plot(az_signal/var_sum,'LineWidth',1.5)
-    %     legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
+        
+        plot(az_signal/var_sum,'LineWidth',1.5,'Color',col_map(kk,:))
+        set(gca,'YTickLabel',[]);
+        set(gca,'XTickLabel',[]);
+        
+        ylim([0 0.8])
+%         legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
         im_ind = im_ind + 1;
     end
+    kk = mod(kk+1,7);
 end
+
+%% Plot vdf surface
+figure(56)
+[ha3, pos3] = tight_subplot(1,3,[0.1 0.03],[.02 .08],[.02 .02]); 
+select_ind  = 1;
+% vdf_time = zeros(M,num_ims,P.num_var_t);
+im_ind = 1;
+
+for trial_k = [1,5,9]
+    fprintf('%i of %i\n',trial_k,M)
+    for image_num = 1:num_ims
+
+        load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
+
+        polar_vector = squeeze(sum(polar_image,1));
+        fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
+        az_signal = squeeze(sum(x_hat,1));
+        az_signal(16:end) = sum(az_signal(16:end));
+        var_sum = sum(az_signal(:));
+        vdf_time(trial_k,image_num,:) = az_signal/var_sum;
+    end
+    
+    % Plot surface
+    axes(ha3(im_ind))
+    surf(squeeze(vdf_time(trial_k,:,:)))
+	shading interp
+    caxis([0 0.2])
+    colormap(jet)
+    
+    title(['\gamma = ',sprintf('%1.1d',gamma_vals(sort_i(trial_k)))])
+    ylabel('t')
+    xlabel('\sigma')
+    
+    im_ind = im_ind + 1;
+end
+
+figure(566)
+trial_k = select_ind;
+fprintf('%i of %i\n',trial_k,M)
+
+for image_num = 1:num_ims
+
+    load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
+
+    polar_vector = squeeze(sum(polar_image,1));
+    fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
+    az_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(az_signal(:));
+    vdf_time(trial_k,image_num,:) = az_signal/var_sum;
+end
+% Plot surface
+surf(squeeze(vdf_time(trial_k,:,:)))
+shading interp
+caxis([0 0.2])
+colormap(jet)
+
+title(['\gamma = ',sprintf('%1.1d',gamma_vals(sort_i(trial_k)))])
+ylabel('t')
+xlabel('\sigma')
+
 %% Compute selection criteria
 lambda_indices = zeros(num_ims,1);
 noise_est = zeros(num_ims,1);
@@ -389,52 +473,5 @@ for i = 1:500
    plot(param_select(i),err_select(lambda_indices(i),i),'o') 
 end
 title('Error')
-%% Load with selected parameters and plot
 
-figure(222)
-[ha2, pos2] = tight_subplot(5,10,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az = zeros(num_ims,1);
-im_ind = 1;
-for image_num = 1:5:250
-    
-    load(fullfile(output_dir,sprintf(baseFileName,lambda_indices(image_num),image_num)))
-    
-    polar_vector = squeeze(sum(polar_image,1));
-    fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    
-    
-    % Plot
-    axes(ha2(im_ind))
-    hold on
-    plot(polar_vector)
-    plot(fit(51:end))
-    legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
-    im_ind = im_ind + 1;
-end
-
-%% Plot resulting AWMV
-for image_num = 1:500
-    load(fullfile(output_dir,sprintf(baseFileName,lambda_indices(image_num),image_num)))
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-end
-
-figure(1)
-hold on
-plot(awmv_az,'-')
-legend('Fit Discrep','Truth','Fit Single \lambda','Location','best')
-ylabel('AWMV')
-xlabel('t')
-
-%% Plot basis functions
-figure(5)
-for i = 1:P.num_var_t
-   kernel = shift1D(A0(:,i),round(cN/2)+50);
-   hold on
-   plot(kernel)
-end
 
