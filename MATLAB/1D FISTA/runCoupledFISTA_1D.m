@@ -69,7 +69,7 @@ for jjj = start_ind:num_outer_iters
         end
         
         % Scale image by 2-norm
-        bn = b/norm(b(:));
+        bn = b;
         
         P_local = P;
         P_local.set = 1;

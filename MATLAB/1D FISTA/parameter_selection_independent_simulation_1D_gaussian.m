@@ -6,14 +6,15 @@ P.set = 1;
 % dataset = 'D:\CHESS_data\simulated_two_spot_1D_noise2_6';
 % output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
 
-dataset = '/cluster/home/dbanco02/simulated_two_spot_1D_noise2_6';
-output_dir = '/cluster/shared/dbanco02/simulated_two_spot_1D_noise2_6_indep/';
+num_ims = 20;
+dset_name = 'gnoise4';
+
+for jjj = 1:11
+dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+output_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep_nonorm/'];
+
 
 mkdir(output_dir)
-
-num_ims = 10;
-
-
 
 
 % Universal Parameters
@@ -68,7 +69,7 @@ for image_num = 1:num_ims
     % Zero pad image
     b = im_data.polar_vector;
     % Scale image by 2-norm
-    bn = b/norm(b(:));
+    bn = b;
       
     % Initial solution
     x_init = zeros(size(A0ft_stack));
@@ -89,7 +90,7 @@ for image_num = 1:num_ims
     end
 end
 
-
+end
 
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
