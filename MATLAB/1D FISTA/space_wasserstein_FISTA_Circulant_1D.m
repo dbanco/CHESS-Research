@@ -70,9 +70,10 @@ obj3 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 b = zeroPad(b,zPad);
+bnorm = norm(b);
 
 % Initial sparsity and objective
-f = 0.5*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
+f = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add entropic reg wasserstein distance vdf term  
@@ -82,7 +83,7 @@ wObj = WassersteinObjective(vdf(:), neighbors_vdf, wLam, D);
 f = f + 0.5*params.gamma*wObj;
 
 % Used to compute gradient
-c = AtR_ft_1D(A0ft_stack,b);
+c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
 x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
@@ -96,7 +97,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Data matching gradient update
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)) - c;
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c;
 
     % Wasserstein regularizer gradient update
     vdf = squeeze(sum(zk,1));
@@ -133,13 +134,13 @@ while keep_going && (nIter < maxIter)
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
         
         wObj_xk = WassersteinObjective(vdf_xk(:),neighbors_vdf(:),wLam,D);
-        temp1 = 0.5*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
+        temp1 = 0.5/bnorm*norm(b(:)-fit(:))^2 + 0.5*params.gamma*wObj_xk;
         
         % Compute quadratic approximation at zk
         fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
         vdf_zk = squeeze(sum(zk,1));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
-        temp2 = 0.5*norm(b(:)-fit2(:))^2 +...
+        temp2 = 0.5/bnorm*norm(b(:)-fit2(:))^2 +...
             0.5*params.gamma*wObj_zk +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
@@ -172,11 +173,11 @@ while keep_going && (nIter < maxIter)
 
     % Track and display error, objective, sparsity
     prev_f = f;
-    f_data = 0.5*norm(b-fit)^2;
+    f_data = 0.5/bnorm*norm(b-fit)^2;
     f_sparse = lambda * norm(xk(:),1);
     f_wasserstein = 0.5*params.gamma*wObj_xk;
     f = f_data + f_sparse + f_wasserstein;   
-    err(nIter) = norm(b(:)-fit(:))/norm(b(:));
+    err(nIter) = norm(b(:)-fit(:));
     obj(nIter) = f;
     obj1(nIter) = f_data;
     obj2(nIter) = f_sparse;
@@ -228,7 +229,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zPad)));
+                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zPad)))/bnorm;
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative

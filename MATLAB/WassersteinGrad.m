@@ -12,8 +12,8 @@ D = D(Ind,:);
 K = exp(-D*lam-1);
 
 x = ones(size(r))/2;
-
-while 1 && (numel(r) > 0)
+k = 0;
+while (k < 100) && (numel(r) > 0)
     e = c./(K'*(1./x));
     x = diag(1./r)*K*e;
 
@@ -21,6 +21,7 @@ while 1 && (numel(r) > 0)
     if sum(abs(check ))<1e-8
         break
     end
+    k = k + 1;
 end
 
 u = 1./x;

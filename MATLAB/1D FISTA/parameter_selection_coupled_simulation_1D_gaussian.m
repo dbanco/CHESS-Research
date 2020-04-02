@@ -2,7 +2,7 @@ noise_std = 0:0.03:0.30;
 % n_eta_levels = (0.5*sqrt(180.*noise_std.^2));
 n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
-for n_level = 5
+for n_level = 1:11
 
     % Parameter selection
     disp('Setup parms')
@@ -11,17 +11,17 @@ for n_level = 5
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
     
-%     datadir = '/cluster/shared/dbanco02/';
-%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-%     indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
-%     init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    datadir = '/cluster/shared/dbanco02/';
+    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+    indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
+    init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+    output_dir = ['gnoise4_coupled6/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
-    datadir = 'E:\CHESS_data\';
-    dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-    indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
-    init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+%     datadir = 'E:\CHESS_data\';
+%     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+%     indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
+%     init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+%     output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
     
     % Universal Parameters
     % Ring sampling parameters
@@ -42,7 +42,7 @@ for n_level = 5
     Pc.num_ims = num_ims;
     Pc.prefix = 'polar_vector';
     Pc.dataset = [dataset];
-
+    Pc.distScale = 0;
     % Lambda values
     lambda_vals = logspace(-3,1,30); 
     N = numel(lambda_vals);

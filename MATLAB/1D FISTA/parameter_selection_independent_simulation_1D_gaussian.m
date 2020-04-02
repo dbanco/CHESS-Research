@@ -7,14 +7,11 @@ P.set = 1;
 % output_dir = 'D:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
 
 num_ims = 20;
-dset_name = 'gnoise4';
+dset_name = 'gnoise4_nonorm';
 
 for jjj = 1:11
 dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-output_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep_nonorm/'];
-
-
-mkdir(output_dir)
+output_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep/'];
 
 
 % Universal Parameters
