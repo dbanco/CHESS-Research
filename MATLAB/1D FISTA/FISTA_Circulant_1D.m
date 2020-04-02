@@ -58,6 +58,7 @@ if ~all(size(x_init)==[n,t])
 end
 
 b = zeroPad(b,zPad);
+bnorm = norm(b(:));
 
 % Track error, objective, and sparsity
 err = nan(1,maxIter);
@@ -65,11 +66,11 @@ obj = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-f = 0.5*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
+f = 0.5/bnorm*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
 % Used to compute gradient
-c = AtR_ft_1D(A0ft_stack,b);
+c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
 x_init = forceMaskToZeroArray(x_init,zMask);
 xkm1 = x_init;
@@ -83,7 +84,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask)) - c; % gradient of f at zk
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c; % gradient of f at zk
     
     stop_backtrack = 0;
     while ~stop_backtrack 
@@ -100,8 +101,8 @@ while keep_going && (nIter < maxIter)
         
         % Compute quadratic approximation at yk
         fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
-        temp1 = 0.5*sum((b(:)-fit(:)).^2)  + lambda*sum(abs(xk(:)));
-        temp2 = 0.5*sum((b(:)-fit2(:)).^2) + lambda*sum(abs(zk(:))) +...
+        temp1 = 0.5*sum((b(:)-fit(:)).^2)/bnorm  + lambda*sum(abs(xk(:)));
+        temp2 = 0.5*sum((b(:)-fit2(:)).^2)/bnorm + lambda*sum(abs(zk(:))) +...
             (xk(:)-zk(:))'*grad(:) + (L/2)*norm(xk(:)-zk(:))^2;
         
         % Stop backtrack if objective <= quadratic approximation
@@ -125,7 +126,7 @@ while keep_going && (nIter < maxIter)
 
     % Track and display error, objective, sparsity
     prev_f = f;
-    f = 0.5*norm(b-fit)^2 + lambda * norm(xk(:),1);
+    f = 0.5/bnorm*norm(b-fit)^2 + lambda * norm(xk(:),1);
     err(nIter) = norm(b(:)-fit(:))/norm(b(:));
     obj(nIter) = f;
     l_0(nIter) = sum(abs(xk(:))>eps*10);
@@ -173,7 +174,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zMask));
+                 AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zMask))/bnorm;
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative

@@ -23,7 +23,7 @@ end
 
 % Construct distance matrix
 Threshold = 32;
-D = constructDistanceMatrix_1D(P,Threshold,1);
+D = constructDistanceMatrix_1D(P,Threshold,Pc.distScale);
 
 if Pc.preInitialized
    start_ind = Pc.preInitialized;

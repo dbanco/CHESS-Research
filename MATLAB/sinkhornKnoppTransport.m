@@ -14,6 +14,7 @@ x = ones(size(r))/2;
 
 k = 0;
 while numel(r) > (k < 1000)
+
     e = c./(K'*(1./x));
     x = diag(1./r)*K*e;
 
@@ -22,6 +23,7 @@ while numel(r) > (k < 1000)
         break
     end
     k = k + 1;
+
 end
 
 u = 1./x; 

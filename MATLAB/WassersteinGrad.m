@@ -13,7 +13,9 @@ K = exp(-D*lam-1);
 
 x = ones(size(r))/2;
 k = 0;
+
 while (k < 1000) && (numel(r) > 0)
+
     e = c./(K'*(1./x));
     x = diag(1./r)*K*e;
 
