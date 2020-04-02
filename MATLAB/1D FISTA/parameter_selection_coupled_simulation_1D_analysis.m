@@ -1,19 +1,19 @@
 %% Parameter selection
 clear all
-for ijk = 4:11
+for ijk = 1:11
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
-    % output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/';
+    % output_dir = '/cluster/shared/dbanco02/mmpad_1D_indep_param_1/'.;
 
-    dset_name = 'gnoise4';
+    dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-
-    dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
-    datadir = ['D:\CHESS_data\',dset_name,'_coupled2\'];
-    init_dir = ['D:\CHESS_data\',dset_name,'_coupled2\simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
-    output_dir = [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
+    datadir = ['E:\CHESS_data\',dset_name,'_coupled6\'];
+    
+    dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
+    init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
+    output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
 
     % dataset_num = '3';
     % dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise3_osc_',dataset_num,'\'];
@@ -26,7 +26,8 @@ for ijk = 4:11
     baseFileName = 'fista_fit_%i_%i.mat';
 
     % Gamma values
-    gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
+%     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
+    gamma_vals = logspace(-1,3,10);
     M = numel(gamma_vals);
 
     % Universal Parameters
@@ -44,8 +45,10 @@ for ijk = 4:11
 
     % Construct distance matrix
     Threshold = 32;
-    maxNorm = 1;
+    maxNorm = 0;
     D = constructDistanceMatrix_1D(P,Threshold,maxNorm);
+%     maxNorm = 1;
+%     D2 = constructDistanceMatrix_1D(P,Threshold,maxNorm);
 
     % Get error, sparsity, awmv
     err_select = zeros(M,num_ims);
@@ -56,7 +59,8 @@ for ijk = 4:11
     obj1 = zeros(M,1);
     obj2 = zeros(M,1);
     obj3 = zeros(M,num_ims-1);
-
+    obj3b = zeros(M,num_ims-1);
+    
     for k = 1:M
         fprintf('%i of %i\n',k,M)
         for j = 1:num_ims
@@ -65,7 +69,7 @@ for ijk = 4:11
             % Fit objective
             fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
             polar_vector = polar_image;
-            b = polar_vector./norm(polar_vector(:));
+            b = polar_vector;
             b = zeroPad(b,P.params.zeroPad);
 
             err_select(k,j) = norm(b(:)-fit(:));
@@ -88,7 +92,7 @@ for ijk = 4:11
     for k = 1:M
         fprintf('Wasserstein %i of %i\n',k,M)
         for j = 1:num_ims-1
-            wass_dist = WassersteinObjective(vdfs(:,k,j),{vdfs(:,k,j+1)},Pc.wLam,D);
+            [wass_dist,~] = WassersteinObjective(vdfs(:,k,j),{vdfs(:,k,j+1)},10,D);
             obj3(k,j) = wass_dist;
         end
     end
@@ -101,27 +105,28 @@ for ijk = 4:11
     vdfs_indep = zeros(P.num_var_t,num_ims);
     wass_indep = zeros(num_ims,1);
     
-%     for j = 1:num_ims
-%         load(fullfile(init_dir,sprintf(baseFileName,1,j)))
-%         err_indep(j) = err(end-1);
-%         l0_indep(j) = sum(x_hat(:)>0);
-%         l1_indep(j) = sum(x_hat(:));
-%         az_signal = squeeze(sum(x_hat,1));
-%         var_sum = sum(az_signal(:));
-%         vdfs_indep(:,j) = az_signal./var_sum;
-%         awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     end
-% 
-%     wass_indep = zeros(num_ims-1,1);
-%     for j = 1:num_ims-1
-%         wass_dist = WassersteinObjective(vdfs_indep(:,j),{vdfs_indep(:,j+1)},Pc.wLam,D);
-%         wass_indep(j) = wass_dist;
-%     end
+    for j = 1:num_ims
+        load(fullfile(init_dir,sprintf(baseFileName,1,j)))
+        err_indep(j) = err(end-1);
+        l0_indep(j) = sum(x_hat(:)>0);
+        l1_indep(j) = sum(x_hat(:));
+        az_signal = squeeze(sum(x_hat,1));
+        var_sum = sum(az_signal(:));
+        vdfs_indep(:,j) = az_signal./var_sum;
+        awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    end
+
+    wass_indep = zeros(num_ims-1,1);
+    for j = 1:num_ims-1
+        wass_dist = WassersteinObjective(vdfs_indep(:,j),{vdfs_indep(:,j+1)},Pc.wLam,D);
+        wass_indep(j) = 0;
+    end
 
     %% Plot awmv
-    figure_dir = ['C:\Users\dbanco02\Desktop\',dset_name,'_figures\'];
+    figure_dir = ['C:\Users\dan\Desktop\',dset_name,'_figures\'];
+    mkdir(figure_dir)
     % Load truth AWMV
-    load(['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_11\synth_data.mat'])
+    load(['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_11\synth_data.mat'])
     awmv_truth = zeros(num_ims,1);
     for i = 1:num_ims
         awmv_truth(i) = mean(synth_sample{i}.std_theta); 
@@ -183,8 +188,8 @@ for ijk = 4:11
     wass_total(wass_total<0)=0;
     figure(44)
     hold on
-    plot(0,sum(wass_indep),'o')
-    plot(sort_gamma,wass_total(sort_i),'o-')
+%     plot(0,sum(wass_indep),'o')
+    loglog(sort_gamma,wass_total(sort_i),'o-')
     ylabel('Wasserstein distance')
     xlabel('Coupling parameter')
 
@@ -195,22 +200,23 @@ for ijk = 4:11
     hold on
     plot(wass_indep,'-')
     plot(sum(obj3,1),'-')
+    legend('indep','regularized')
     ylabel('Wasserstein distance')
-
-    % Plot AWMV
-    figure(5)
-    legend_str = {};
-    legend_str{1} = 'indep';
-    hold on
-    plot(awmv_az_init,'-','LineWidth',1.5)
-    kk = 2;
-    for k = [4,5,M]
-        hold on
-        plot(awmv_az(sort_i(k),:),'-','LineWidth',1.5)
-        legend_str{kk} = sprintf('%0.04f',sort_gamma(k));
-        kk = kk + 1;
-    end
-    legend(legend_str,'Location','Best')
+    xlabel('time')
+%     % Plot AWMV
+%     figure(5)
+%     legend_str = {};
+%     legend_str{1} = 'indep';
+%     hold on
+%     plot(awmv_az_init,'-','LineWidth',1.5)
+%     kk = 2;
+%     for k = [4,5,M]
+%         hold on
+%         plot(awmv_az(sort_i(k),:),'-','LineWidth',1.5)
+%         legend_str{kk} = sprintf('%0.04f',sort_gamma(k));
+%         kk = kk + 1;
+%     end
+%     legend(legend_str,'Location','Best')
 
     % % Plot L-curve 1
     % figure(6)
@@ -224,7 +230,13 @@ for ijk = 4:11
     plot(obj1(sort_i),sum(obj3(sort_i,:),2),'o-')
     ylabel('Wasserstein distance')
     xlabel('Error')
-
+    
+    Lcurve_fig2 = figure(77);
+    plot(obj1(sort_i),sum(obj3b(sort_i,:),2),'o-')
+    ylabel('Wasserstein distance')
+    xlabel('Error')
+    
+    %%
     miny = min(sum(obj3(sort_i,:),2));
     minx = min(obj1(sort_i));
     coord = [obj1(sort_i)./minx,sum(obj3(sort_i,:),2)./miny];
@@ -344,7 +356,7 @@ for ijk = 4:11
         load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = polar_image;
-        fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
+        fit = Ax_ft_1D(A0ft_stack,x_hat);
         az_signal = squeeze(sum(x_hat,1));
         var_sum = sum(az_signal(:));
         awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
@@ -358,7 +370,7 @@ for ijk = 4:11
         legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
         im_ind = im_ind + 1;
     end
-    saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',dataset_num,'.png'])
+%     saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',dataset_num,'.png'])
 
 
     %% Plot vdfs
