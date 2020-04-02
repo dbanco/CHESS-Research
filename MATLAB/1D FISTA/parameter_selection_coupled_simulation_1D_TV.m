@@ -106,7 +106,7 @@ for n_level = 1:11
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
         Pc.gamma = gamma_vals(i);
-        runCoupledFISTA_1D(P,Pc)
+        runCoupledFISTA_1D_TV(P,Pc)
     end
     
 end
