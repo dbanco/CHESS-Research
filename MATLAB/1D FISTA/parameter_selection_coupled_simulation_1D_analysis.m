@@ -9,10 +9,10 @@ for ijk = 1:11
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    datadir = ['E:\CHESS_data\',dset_name,'_coupled6\'];
+    datadir = ['E:\CHESS_data\',dset_name,'_coupled_W2\'];
     
     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
-    init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
+    init_dir =      ['E:\CHESS_data\gnoise4_subdir\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
     output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
 
     % dataset_num = '3';
@@ -33,7 +33,7 @@ for ijk = 1:11
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'mmpad_img';
-    load([output_dir,'4a\',sprintf(baseFileName,1,1)])
+    load([output_dir,'1a\',sprintf(baseFileName,1,1)])
     polar_image = zeroPad(polar_image,P.params.zeroPad);
 
     % Construct dictionary
@@ -92,7 +92,7 @@ for ijk = 1:11
     for k = 1:M
         fprintf('Wasserstein %i of %i\n',k,M)
         for j = 1:num_ims-1
-            [wass_dist,~] = WassersteinObjective(vdfs(:,k,j),{vdfs(:,k,j+1)},10,D);
+            [wass_dist,~] = WassersteinObjective(vdfs(:,k,j),{vdfs(:,k,j+1)},Pc.wLam,D);
             obj3(k,j) = wass_dist;
         end
     end
@@ -280,7 +280,7 @@ for ijk = 1:11
     ylabel('AWMV_\eta','FontSize',20)
     xlabel('t','FontSize',20)
     legend(legend_str,'location','best','FontSize',16)
-    saveas(select_fig,[figure_dir,'awmv_select_',dset_name,'_',dataset_num,'.png'])
+%     saveas(select_fig,[figure_dir,'awmv_select_',dset_name,'_',dataset_num,'.png'])
 
     %% Plot vdf surface
     vdf_time_all_fig = figure(56);
@@ -340,7 +340,7 @@ for ijk = 1:11
     title(['\gamma = ',sprintf('%1.1d',gamma_vals(sort_i(trial_k)))])
     ylabel('t')
     xlabel('\sigma')
-    saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
+%     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
 
 
 

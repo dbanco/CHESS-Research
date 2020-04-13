@@ -101,7 +101,7 @@ for jjj = start_ind:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
