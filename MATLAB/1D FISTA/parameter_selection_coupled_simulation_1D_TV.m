@@ -36,10 +36,10 @@ for n_level = 2
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
-    Pc.tvBeta = 1 + 1e-8;
 
-    Pc.gamma = 1;
-    
+    Pc.tvBeta = 1e-8;
+    Pc.gamma = 1e-2;
+
     Pc.maxIterReg = 800;
     Pc.num_outer_iters = 10;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
