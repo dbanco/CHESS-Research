@@ -1,6 +1,6 @@
 %% Parameter selection
 clear all
-for ijk = 1:11
+for ijk = 2
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
@@ -9,19 +9,16 @@ for ijk = 1:11
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    datadir = ['E:\CHESS_data\',dset_name,'_coupled6\'];
-    
-    dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
-    init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
-    output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
+%     datadir = ['E:\CHESS_data\',dset_name,'_coupled_TV\'];
+%     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
+%     init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
+%     output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
 
-    % dataset_num = '3';
-    % dataset = ['D:\CHESS_data\simulated_two_spot_1D_noise3_osc_',dataset_num,'\'];
-    % 
-    % datadir = 'D:\CHESS_data\noise3_osc_coupled\';
-    % init_dir = ['D:\CHESS_data\noise3_osc_coupled\simulated_two_spot_1D_noise3_osc_',dataset_num,'_simul_init\'];
-    % output_dir = [datadir,'simulated_two_spot_1D_noise3_osc_',dataset_num,'_coupled_'];
-    % num_ims = 100;
+    datadir = ['/cluster/shared/dbanco02/',dset_name,'_coupled_TV1/'];
+    dataset = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',dataset_num,'/'];
+    init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init/'];
+    output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
+    
 
     baseFileName = 'fista_fit_%i_%i.mat';
 
@@ -33,7 +30,7 @@ for ijk = 1:11
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'mmpad_img';
-    load([output_dir,'4a\',sprintf(baseFileName,1,1)])
+    load([output_dir,'1a\',sprintf(baseFileName,1,1)])
     polar_image = zeroPad(polar_image,P.params.zeroPad);
 
     % Construct dictionary
