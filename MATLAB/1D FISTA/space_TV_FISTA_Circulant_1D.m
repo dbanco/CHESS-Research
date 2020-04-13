@@ -1,4 +1,4 @@
-function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,D,x_init,params)
+function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
@@ -112,8 +112,8 @@ while keep_going && (nIter < maxIter)
     tvObj_zk = 0;
     for i = 1:numel(neighbors_vdf)
         vdfDiff = vdf(:)-neighbors_vdf{i}(:);
-        tvObj = 1/p*sum(abs(vdfDiff).^pNorm)^(1/pNorm - 1);
-        gradTV = tvObj*pNorm*sign(vdfDiff)*abs(vdfDiff).^(pNorm-1);
+        tvObj = 1/pNorm*sum(abs(vdfDiff).^pNorm)^(1/pNorm - 1);
+        gradTV = tvObj*pNorm.*sign(vdfDiff).*abs(vdfDiff).^(pNorm-1);
         gradTV = reshape(gradTV,[t,1])./numel(neighbors_vdf);
         for j = 1:t
             grad(:,j) = grad(:,j) + ...
@@ -182,13 +182,13 @@ while keep_going && (nIter < maxIter)
     prev_f = f;
     f_data = 0.5/bnorm*norm(b-fit)^2;
     f_sparse = lambda * norm(xk(:),1);
-    f_wasserstein = 0.5*params.gamma*wObj_xk;
-    f = f_data + f_sparse + f_wasserstein;   
+    f_tv = params.gamma*tvObj_xk;
+    f = f_data + f_sparse + f_tv;   
     err(nIter) = norm(b(:)-fit(:));
     obj(nIter) = f;
     obj1(nIter) = f_data;
     obj2(nIter) = f_sparse;
-    obj3(nIter) = f_wasserstein;
+    obj3(nIter) = f_tv;
     l_0(nIter) = sum(abs(xk(:))>0);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
