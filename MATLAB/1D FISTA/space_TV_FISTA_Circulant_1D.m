@@ -180,7 +180,7 @@ while keep_going && (nIter < maxIter)
 %             params.noBacktrack = 1;
         else
             L = L*beta ;
-            if L > 1e50
+            if L > 1e15
                 keep_going = 0;
                 stop_backtrack = 1;
             end
