@@ -2,7 +2,7 @@ function runCoupledFISTA_1D_TV( P, Pc )
 %runCoupledFISTA 
 
 % Unpack parameters
-P.params.pNorm = Pc.pNorm;
+P.params.tvBeta = Pc.tvBeta;
 P.params.gamma = Pc.gamma;
 P.params.maxIterReg = Pc.maxIterReg;
 dataset = Pc.dataset;

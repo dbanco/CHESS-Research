@@ -34,7 +34,7 @@ for n_level = 2
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
-    Pc.pNorm = 1 + 1e-8;
+    Pc.tvBeta = 1e-8;
     Pc.gamma = 1e-2;
     Pc.maxIterReg = 800;
     Pc.num_outer_iters = 10;
@@ -49,7 +49,7 @@ for n_level = 2
 
     % Gamma values
 %     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-5,-1,5);
+    gamma_vals = logspace(-1,0.4,10);
     M = numel(gamma_vals);
 
     % Construct dictionary
