@@ -54,7 +54,7 @@ for jjj = start_ind:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    for image_num = 1:num_ims
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         
         % Reduce image to vector 
@@ -84,7 +84,7 @@ for jjj = start_ind:num_outer_iters
                     if image_num == 1
                         [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
                     end
                 case 'simultaneous'
                     [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
@@ -101,7 +101,7 @@ for jjj = start_ind:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,D,x_init,P_local.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
