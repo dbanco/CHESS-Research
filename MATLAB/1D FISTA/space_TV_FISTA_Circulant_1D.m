@@ -36,7 +36,7 @@ function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
 COEF_CHANGE = 3;
-
+deltaX = 0.5
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
 % maxIter = 200 ;
@@ -49,7 +49,7 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
-pNorm = params.pNorm;
+tvBeta = params.tvBeta;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
@@ -72,6 +72,13 @@ l_0 = nan(1,maxIter);
 b = zeroPad(b,zPad);
 bnorm = norm(b);
 
+if numel(neighbors_vdf) == 2
+    D =  [-1 1 0;... 
+          0 -1 1];
+else
+    D = [-1 1];
+end
+
 % Initial sparsity and objective
 f = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
@@ -81,7 +88,7 @@ vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
 for i = 1:numel(neighbors_vdf)
-    tvObj = tvObj + sum(abs(vdf(:)-neighbors_vdf{i}(:)).^pNorm)^(1/pNorm);
+    tvObj = tvObj + sum(abs(vdf(:)-neighbors_vdf{i}(:)));
 end
 f = f + params.gamma*tvObj;
 % Used to compute gradient
@@ -103,25 +110,34 @@ while keep_going && (nIter < maxIter)
 
     % TV regularizer gradient update
     vdf = squeeze(sum(zk,1));
-    vdf = vdf/sum(vdf(:));
+    total = sum(zk(:));
+    vdf = vdf/total;
     
     if(sum(vdf(:)) == 0)
         error('VDF is not defined (all zeors)')
     end
-    gradTV = zeros(t,1);
-    tvObj_zk = 0;
-    for i = 1:numel(neighbors_vdf)
-        vdfDiff = vdf(:)-neighbors_vdf{i}(:);
-        tvObj = 1/pNorm*sum(abs(vdfDiff).^pNorm)^(1/pNorm - 1);
-        gradTV = tvObj*pNorm.*sign(vdfDiff).*abs(vdfDiff).^(pNorm-1);
-        gradTV = reshape(gradTV,[t,1])./numel(neighbors_vdf);
-        for j = 1:t
-            grad(:,j) = grad(:,j) + ...
-            params.gamma*gradTV(j)*( 1./sum(zk(:)) - vdf(j)./sum(zk(:)) );
-        end
-        tvObj_zk = tvObj_zk + sum(abs(vdf(:)-neighbors_vdf{i}(:)).^pNorm)^(1/pNorm);
+    
+    if numel(neighbors_vdf) == 2
+    	f_tv = [neighbors_vdf{1}; vdf; neighbors_vdf{2}]; 
+    else
+        f_tv = [neighbors_vdf{1}; vdf]; 
     end
-
+    
+    psi_prime = 1./sqrt((D*f_tv).^2 + tvBeta^2);
+    gradTV = 0;
+    for j = 1:numel(vdf)
+        L_f = deltaX*D'*diag(psi_prime(:,j))*D;
+        gradJ = L_f*f_tv(:,j);
+        for k = 1:numel(vdf)
+            if j == k
+                gradTV = gradTV + gradJ(2)*( 1./total - vdf(j)./total );
+            else
+                gradTV = gradTV - gradJ(2)*vdf(j)./total;
+            end     
+        end
+        grad(:,j) = grad(:,j) + params.gamma*gradTV;
+    end
+        
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
@@ -135,10 +151,9 @@ while keep_going && (nIter < maxIter)
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
         vdf_xk = squeeze(sum(xk,1));
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
-        
         tvObj_xk = 0;
         for i = 1:numel(neighbors_vdf)
-            tvObj_xk = tvObj_xk + sum(abs(vdf(:)-neighbors_vdf{i}(:)).^pNorm)^(1/pNorm);
+            tvObj_xk = tvObj_xk + sum( abs(vdf(:)-neighbors_vdf{i}(:)) );
         end
         
         temp1 = 0.5/bnorm*norm(b(:)-fit(:))^2 + params.gamma*tvObj_xk;
@@ -147,8 +162,13 @@ while keep_going && (nIter < maxIter)
         fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
         vdf_zk = squeeze(sum(zk,1));
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
+        tvObj_zk = 0;
+        for i = 1:numel(neighbors_vdf)
+            tvObj_zk = tvObj_zk + sum( abs(vdf(:)-neighbors_vdf{i}(:)) );
+        end
+        
         temp2 = 0.5/bnorm*norm(b(:)-fit2(:))^2 +...
-            0.5*params.gamma*tvObj_zk +...
+            params.gamma*tvObj_zk +...
             (xk(:)-zk(:))'*grad(:) +...
             (L/2)*norm(xk(:)-zk(:))^2;
         
@@ -160,7 +180,7 @@ while keep_going && (nIter < maxIter)
 %             params.noBacktrack = 1;
         else
             L = L*beta ;
-            if L > 1e50
+            if L > 1e15
                 keep_going = 0;
                 stop_backtrack = 1;
             end

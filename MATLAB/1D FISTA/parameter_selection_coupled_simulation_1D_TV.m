@@ -2,7 +2,7 @@ noise_std = 0:0.03:0.30;
 n_eta_levels = 0.5*sqrt(180.*noise_std.^2) + 0.1;
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
-for n_level = 1:11
+for n_level = 2
 
     % Parameter selection
     disp('Setup parms')
@@ -10,7 +10,7 @@ for n_level = 1:11
 
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
-    
+
     datadir = '/cluster/shared/dbanco02/';
     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
     indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
@@ -23,6 +23,7 @@ for n_level = 1:11
 %     indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
 %     init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
 %     output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+
     
     % Universal Parameters
     % Ring sampling parameters
@@ -35,8 +36,10 @@ for n_level = 1:11
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
-    Pc.pNorm = 1 + 1e-8;
+    Pc.tvBeta = 1 + 1e-8;
+
     Pc.gamma = 1;
+    
     Pc.maxIterReg = 800;
     Pc.num_outer_iters = 10;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
@@ -50,7 +53,7 @@ for n_level = 1:11
 
     % Gamma values
 %     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-3,0,10);
+    gamma_vals = logspace(-1,0.4,10);
     M = numel(gamma_vals);
 
     % Construct dictionary

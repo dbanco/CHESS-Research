@@ -54,7 +54,7 @@ zMask = params.zeroMask;
 [n,t] = size(A0ft_stack) ;
 
 if ~all(size(x_init)==[n,t])
-    error('The dimension of the initial xk does not match.');
+    error('The dimension of the initial x_init does not match.');
 end
 
 b = zeroPad(b,zPad);
