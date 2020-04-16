@@ -36,7 +36,7 @@ function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
 COEF_CHANGE = 3;
-deltaX = 0.5
+
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
 % maxIter = 200 ;
@@ -75,8 +75,10 @@ bnorm = norm(b);
 if numel(neighbors_vdf) == 2
     D =  [-1 1 0;... 
           0 -1 1];
+    deltaX = 0.5;
 else
     D = [-1 1];
+    deltaX = 1;
 end
 
 % Initial sparsity and objective
@@ -119,7 +121,9 @@ while keep_going && (nIter < maxIter)
     
     if numel(neighbors_vdf) == 2
     	f_tv = [neighbors_vdf{1}; vdf; neighbors_vdf{2}]; 
-    else
+    elseif params.imageNum == 1
+        f_tv = [vdf; neighbors_vdf{1}]; 
+    elseif params.imageNum == params.numIms
         f_tv = [neighbors_vdf{1}; vdf]; 
     end
     
