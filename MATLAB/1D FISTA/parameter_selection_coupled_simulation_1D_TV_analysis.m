@@ -1,6 +1,6 @@
 %% Parameter selection
 clear all
-for ijk = 2
+for ijk = 4
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
@@ -85,15 +85,15 @@ for ijk = 2
             awmv_az(k,j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         end
     end
-
+    tvBeta = P.params.tvBeta;
     % Compute Wasserstein objective
-%     for k = 1:M
-%         fprintf('Wasserstein %i of %i\n',k,M)
-%         for j = 1:num_ims-1
-%             [wass_dist,~] = WassersteinObjective(vdfs(:,k,j),{vdfs(:,k,j+1)},Pc.wLam,D);
-%             obj3(k,j) = wass_dist;
-%         end
-%     end
+    for k = 1:M
+        fprintf('TV %i of %i\n',k,M)
+        for j = 1:num_ims-1
+            tv_dist = sum( sqrt( (vdfs(:,k,j) - vdfs(:,k,j+1)).^2 + tvBeta^2) );
+            obj3(k,j) = tv_dist;
+        end
+    end
 
     % Load statistics for independently fit data
     awmv_az_init = zeros(num_ims,1);
@@ -101,7 +101,7 @@ for ijk = 2
     l0_indep = zeros(num_ims,1);
     l1_indep = zeros(num_ims,1);
     vdfs_indep = zeros(P.num_var_t,num_ims);
-    wass_indep = zeros(num_ims,1);
+    tv_indep = zeros(num_ims,1);
     
     for j = 1:num_ims
         load(fullfile(init_dir,sprintf(baseFileName,1,j)))
@@ -114,10 +114,10 @@ for ijk = 2
         awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     end
 
-    wass_indep = zeros(num_ims-1,1);
+    tv_indep = zeros(num_ims-1,1);
 %     for j = 1:num_ims-1
-%         wass_dist = WassersteinObjective(vdfs_indep(:,j),{vdfs_indep(:,j+1)},Pc.wLam,D);
-%         wass_indep(j) = 0;
+%         tv_dist = sum( sqrt( (vdfs_indep(:,j)-vdfs_indep(:,j+1)).^2 + tvBeta^2) );
+%         tv_indep(j) = tv_dist;
 %     end
 
     %% Plot awmv
@@ -184,11 +184,12 @@ for ijk = 2
     % Plot wass dist
     wass_total = sum(obj3,2);
     wass_total(wass_total<0)=0;
+    
     figure(44)
     hold on
 %     plot(0,sum(wass_indep),'o')
     loglog(sort_gamma,wass_total(sort_i),'o-')
-    ylabel('Wasserstein distance')
+    ylabel('TV')
     xlabel('Coupling parameter')
 
     obj_part1_sum = mean_l1(sort_i)+ 10*mean_err(sort_i);
@@ -196,10 +197,10 @@ for ijk = 2
     % Plot wass dist over imsages
     figure(441)
     hold on
-    plot(wass_indep,'-')
+    plot(tv_indep,'-')
     plot(sum(obj3,1),'-')
     legend('indep','regularized')
-    ylabel('Wasserstein distance')
+    ylabel('TV')
     xlabel('time')
 %     % Plot AWMV
 %     figure(5)
@@ -226,12 +227,12 @@ for ijk = 2
 
     Lcurve_fig = figure(7);
     plot(obj1(sort_i),sum(obj3(sort_i,:),2),'o-')
-    ylabel('Wasserstein distance')
+    ylabel('TV')
     xlabel('Error')
     
     Lcurve_fig2 = figure(77);
     plot(obj1(sort_i),sum(obj3b(sort_i,:),2),'o-')
-    ylabel('Wasserstein distance')
+    ylabel('TV')
     xlabel('Error')
     
     %%
@@ -240,7 +241,7 @@ for ijk = 2
     coord = [obj1(sort_i)./minx,sum(obj3(sort_i,:),2)./miny];
     origin_dist = coord-1;
     [val,select_ind] = min(sum(origin_dist.^2,2));
-
+    
     selectx = obj1(sort_i(select_ind));
     selecty = sum(obj3(sort_i(select_ind),:),2);
     hold on

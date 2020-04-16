@@ -3,9 +3,9 @@ P.img = 1;
 
 dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero';
 output_dir = '/cluster/shared/dbanco02/seq_mmpad_ring1_independent';
-num_ims = 200;
+num_ims = 119;
 mkdir(output_dir)
-prefix = 'polar_image';
+prefix = 'mmpad_img';
 
 %% Universal Parameters
 % Ring sampling parameters
@@ -48,7 +48,7 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-parpool(16)
+%parpool(16)
 parfor image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image

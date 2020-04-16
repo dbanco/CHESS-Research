@@ -4,8 +4,8 @@ P.img = 1;
 
 dataset = '/cluster/home/dbanco02/simulated_data_two_spot_growth_far/';
 
-output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_3a';
-output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_3b';
+output_dirA = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1a';
+output_dirB = '/cluster/shared/dbanco02/two_spot_growth_far_reverse_1b';
 
 num_ims = 25;
 

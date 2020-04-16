@@ -75,7 +75,7 @@ for i = 1:numel(gamma_vals)
         P.params.gamma = gamma_vals(i);
         varin = {inputdir,P,outputdir};
         funcName = funcName2;
-        save(fullfile(jobDir2,['varin_',num2str(k),'.mat']),'varin','funcName')
+        save(fullfile(jobDir2,['varin_',num2str(img),'.mat']),'varin','funcName')
         k = k + 1;
     end
 end
@@ -99,7 +99,7 @@ for i = 1:numel(gamma_vals)
         P.params.gamma = gamma_vals(i);
         varin = {inputdir,P,outputdir};
         funcName = funcName2;
-        save(fullfile(jobDir3,['varin_',num2str(k),'.mat']),'varin','funcName')
+        save(fullfile(jobDir3,['varin_',num2str(img),'.mat']),'varin','funcName')
         k = k + 1;
     end
 end

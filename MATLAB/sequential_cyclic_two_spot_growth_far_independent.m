@@ -25,13 +25,8 @@ P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 
 % Zero padding and mask
-maskCols = 129:133;
 zPad = [0,0];
-zMask = zeros(size(zeroPad(polar_image,zPad)));
-zMask(:,maskCols) = 1;
-zMask = onePad(zMask,zPad);
-[r,c] = find(zMask==1);
-zMask = [r,c];
+zMask = [];
 
 %% fista params
 params.stoppingCriterion = 1;
@@ -53,7 +48,7 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-for image_num = 1:num_ims
+parfor image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);

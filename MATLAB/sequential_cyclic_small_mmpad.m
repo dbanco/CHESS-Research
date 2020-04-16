@@ -18,7 +18,7 @@ P.num_theta= size(polar_image,2);
 P.num_rad = size(polar_image,1);
 P.dtheta = 1;
 P.drad = 1;
-P.sampleDims = [541,1];
+P.sampleDims = [250,1];
 
 % Basis function variance parameters
 P.basis = 'norm2';
@@ -27,9 +27,14 @@ P.num_var_r = 10;
 P.var_theta = linspace(P.dtheta/2,30,P.num_var_t).^2;
 P.var_rad   = linspace(P.drad/2,  5,P.num_var_r).^2;
 
-% Zero padding and mask\
+% Zero padding and mask
+maskCols = 129:133;
 zPad = [0,0];
-zMask = [];
+zMask = zeros(size(zeroPad(polar_image,zPad)));
+zMask(:,maskCols) = 1;
+zMask = onePad(zMask,zPad);
+[r,c] = find(zMask==1);
+zMask = [r,c];
 
 %% fista params
 params.stoppingCriterion = 1;
@@ -58,7 +63,7 @@ baseFileName = 'fista_fit_%i_%i.mat';
 % end
 % new_vdf_array = cell(20,1);
 
-for image_num = 120:541
+for image_num = 1:250
     im_data = load(fullfile(dataset,[prefix,'_', num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
@@ -101,11 +106,8 @@ for image_num = 120:541
     end
 
     % Run FISTA updating solution and error array
-    if image_num == 120
-         prev_im_data = load(fullfile(output_dir,sprintf(baseFileName,1,image_num-1)));
-         new_vdf = squeeze(sum(sum(prev_im_data.x_hat,1),2))/sum(prev_im_data.x_hat(:));
-         vdfs = {new_vdf};
-         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
+    if image_num == 1
+         [x_hat, err, ~, ~,  obj, ~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
     else
          [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
     end

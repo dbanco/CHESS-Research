@@ -49,6 +49,8 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
+parpool(16)
+
 for image_num = 1:num_ims
     img_num = 26-image_num;
     im_data = load(fullfile(dataset,[prefix,'_',num2str(img_num),'.mat']));

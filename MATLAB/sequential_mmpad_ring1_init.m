@@ -2,10 +2,10 @@ P.set = 1;
 P.img = 1;
 
 dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero';
-output_dir = '/cluster/shared/dbanco02/seq_mmpad_ring1_init1';
+output_dir = '/cluster/shared/dbanco02/seq_mmpad_ring1_independent';
 num_ims = 200;
 mkdir(output_dir)
-prefix = 'polar_image';
+prefix = 'mmpad_img';
 
 %% Universal Parameters
 % Ring sampling parameters
@@ -48,7 +48,7 @@ P.params = params;
 
 baseFileName = 'fista_fit_%i_%i.mat';
 
-for image_num = 1:num_ims
+parfor image_num = 1:num_ims
     im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
     %% Zero pad image
     b = zeroPad(im_data.polar_image,P.params.zeroPad);
@@ -65,74 +65,6 @@ for image_num = 1:num_ims
             A0ft_stack = unshifted_basis_matrix_ft_stack(P);
     end
 
-    % Construct distance matrix
-    N = P.num_var_t*P.num_var_r;
-    THRESHOLD = 32;
-
-    switch P.cost
-            case 'l1'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for j = 1:P.num_var_r
-                        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                                ind1 = i + (j-1)*P.num_var_t;
-                                ind2 = ii + (jj-1)*P.num_var_t;
-                                D(ind1,ind2)= sqrt((i-ii)^2+(j-jj)^2); 
-                            end
-                        end
-                    end
-                end
-                D = D./max(D(:));
-                
-            case 'l2'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for j = 1:P.num_var_r
-                        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                                ind1 = i + (j-1)*P.num_var_t;
-                                ind2 = ii + (jj-1)*P.num_var_t;
-                                D(ind1,ind2)= ((i-ii)^2+(j-jj)^2); 
-                            end
-                        end
-                    end
-                end
-                D = D./max(D(:));
-                
-            case 'wass'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for j = 1:P.num_var_r
-                        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                                ind1 = i + (j-1)*P.num_var_t;
-                                ind2 = ii + (jj-1)*P.num_var_t;
-                                D(ind1,ind2)= P.var_theta(i) + P.var_theta(ii) +...
-                                              P.var_rad(j) + P.var_rad(jj) -...
-                                              2*sqrt(P.var_theta(i)*P.var_theta(ii)) - ...
-                                              2*sqrt(P.var_rad(j)*P.var_rad(jj));
-                            end
-                        end
-                    end
-                end
-                D = D./max(D(:));
-                
-            case 'sqrt'
-                D = ones(N,N).*THRESHOLD;
-                for i = 1:P.num_var_t
-                    for j = 1:P.num_var_r
-                        for ii=max([1 i-THRESHOLD+1]):min([P.num_var_t i+THRESHOLD-1])
-                            for jj = max([1 j-THRESHOLD+1]):min([P.num_var_r j+THRESHOLD-1])
-                                ind1 = i + (j-1)*P.num_var_t;
-                                ind2 = ii + (jj-1)*P.num_var_t;
-                                D(ind1,ind2)= sqrt(sqrt((i-ii)^2+(j-jj)^2));
-                            end
-                        end
-                    end
-                end
-                D = D./max(D(:));
-        end
 
     x_init = zeros(size(A0ft_stack));
     for i = 1:P.num_var_t
@@ -142,14 +74,8 @@ for image_num = 1:num_ims
     end
   
     % Run FISTA updating solution and error array
-    if image_num == 1
-         [x_hat,err,obj,~,~,~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
-    else
-         [x_hat, err, ~, ~,  obj, ~] = space_wasserstein_FISTA_Circulant(A0ft_stack,b,vdfs,D,x_init,P.params);
-    end
-       
-    new_vdf = squeeze(sum(sum(x_hat,1),2))/sum(x_hat(:));
-    vdfs = {new_vdf};
+
+    [x_hat,err,obj,~,~,~] = FISTA_Circulant(A0ft_stack,b,x_init,P.params);
     
     save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P,image_num);
     save_obj(output_dir,0,image_num,obj);

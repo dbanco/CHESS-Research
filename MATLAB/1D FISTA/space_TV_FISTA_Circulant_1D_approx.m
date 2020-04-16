@@ -94,7 +94,7 @@ vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
 for i = 1:numel(neighbors_vdf)
-    tvObj = tvObj + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta^2 ));
+    tvObj = tvObj + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta.^2 ));
 end
 f_obj = f_obj + params.gamma*tvObj;
 % Used to compute gradient
@@ -112,7 +112,8 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Data matching gradient update
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c;
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm -...
+        c + lambda./sqrt(zk.^2 + tvBeta^8);
 
     % TV regularizer gradient update
     vdf = squeeze(sum(zk,1));
@@ -148,8 +149,7 @@ while keep_going && (nIter < maxIter)
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
-        gk = zk - (1/L)*grad ;
-        xk = soft(gk,lambda/L) ;
+        xk = zk - (1/L)*grad ;
         if isNonnegative
             xk(xk<0) = 0;
         end
@@ -160,7 +160,7 @@ while keep_going && (nIter < maxIter)
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
         tvObj_xk = 0;
         for i = 1:numel(neighbors_vdf)
-            tvObj_xk = tvObj_xk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta^2 ));
+            tvObj_xk = tvObj_xk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta.^2 ));
         end
         
         temp1 = 0.5/bnorm*norm(b(:)-fit(:))^2 + params.gamma*tvObj_xk;
@@ -171,7 +171,7 @@ while keep_going && (nIter < maxIter)
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
         tvObj_zk = 0;
         for i = 1:numel(neighbors_vdf)
-            tvObj_zk = tvObj_zk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta^2 ));
+            tvObj_zk = tvObj_zk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta.^2 ));
         end
         
         temp2 = 0.5/bnorm*norm(b(:)-fit2(:))^2 +...
