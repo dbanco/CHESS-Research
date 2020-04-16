@@ -1,7 +1,7 @@
 function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
-%                         gamma sum_{adjacent_xi}^4 (1/4)||xn-x||^2
+%                         gamma sum_{adjacent_xi}^2 (1/4)||xn-x||^2
 %
 %   Implementation of Fast Iterative Shrinkage-Thresholding Algorithm using 
 %   convolutional subroutines for circulant matrix computations as
@@ -36,7 +36,7 @@ function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack
 STOPPING_OBJECTIVE_VALUE = 1;
 STOPPING_SUBGRADIENT = 2;
 COEF_CHANGE = 3;
-deltaX = 0.5
+
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
 % maxIter = 200 ;
@@ -55,8 +55,12 @@ maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
-[n,t] = size(A0ft_stack) ;
+tvBeta = params.tvBeta;
+numIms = params.numIms;
+imageNum = params.imageNum;
 
+[n,t] = size(A0ft_stack) ;
+deltaX = 1/numIms;
 if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
@@ -75,12 +79,14 @@ bnorm = norm(b);
 if numel(neighbors_vdf) == 2
     D =  [-1 1 0;... 
           0 -1 1];
-else
+elseif imageNum == 1
     D = [-1 1];
+elseif imageNum == numIms
+    D = [1 -1];
 end
 
 % Initial sparsity and objective
-f = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
+f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
 
 % Add entropic reg wasserstein distance vdf term  
@@ -88,9 +94,9 @@ vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
 for i = 1:numel(neighbors_vdf)
-    tvObj = tvObj + sum(abs(vdf(:)-neighbors_vdf{i}(:)));
+    tvObj = tvObj + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:))^2 + tvBeta^2 ));
 end
-f = f + params.gamma*tvObj;
+f_obj = f_obj + params.gamma*tvObj;
 % Used to compute gradient
 c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
@@ -119,20 +125,19 @@ while keep_going && (nIter < maxIter)
     
     if numel(neighbors_vdf) == 2
     	f_tv = [neighbors_vdf{1}; vdf; neighbors_vdf{2}]; 
-    else
+    elseif imageNum == 1
         f_tv = [neighbors_vdf{1}; vdf]; 
+    elseif imageNum == numIms
+        f_tv = [vdf; neighbors_vdf{1}];
     end
     
-    psi_prime = 1./sqrt((D*f_tv).^2 + tvBeta^2);
-    gradTV = 0;
+    gradJ = gradientTV(f_tv,deltaX,tvBeta,D);
     for j = 1:numel(vdf)
-        L_f = deltaX*D'*diag(psi_prime(:,j))*D;
-        gradJ = L_f*f_tv(:,j);
         for k = 1:numel(vdf)
             if j == k
-                gradTV = gradTV + gradJ(2)*( 1./total - vdf(j)./total );
+                gradTV = gradTV + gradJ(k)*( 1./total - vdf(j)./total );
             else
-                gradTV = gradTV - gradJ(2)*vdf(j)./total;
+                gradTV = gradTV - gradJ(k)*vdf(j)./total;
             end     
         end
         grad(:,j) = grad(:,j) + params.gamma*gradTV;
@@ -153,7 +158,7 @@ while keep_going && (nIter < maxIter)
         vdf_xk = vdf_xk/sum(vdf_xk(:)); 
         tvObj_xk = 0;
         for i = 1:numel(neighbors_vdf)
-            tvObj_xk = tvObj_xk + sum( abs(vdf(:)-neighbors_vdf{i}(:)) );
+            tvObj_xk = tvObj_xk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:))^2 + tvBeta^2 ));
         end
         
         temp1 = 0.5/bnorm*norm(b(:)-fit(:))^2 + params.gamma*tvObj_xk;
@@ -164,7 +169,7 @@ while keep_going && (nIter < maxIter)
         vdf_zk = vdf_zk/sum(vdf_zk(:)); 
         tvObj_zk = 0;
         for i = 1:numel(neighbors_vdf)
-            tvObj_zk = tvObj_zk + sum( abs(vdf(:)-neighbors_vdf{i}(:)) );
+            tvObj_zk = tvObj_zk + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:))^2 + tvBeta^2 ));
         end
         
         temp2 = 0.5/bnorm*norm(b(:)-fit2(:))^2 +...
@@ -199,13 +204,13 @@ while keep_going && (nIter < maxIter)
     zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);  
 
     % Track and display error, objective, sparsity
-    prev_f = f;
+    prev_f = f_obj;
     f_data = 0.5/bnorm*norm(b-fit)^2;
     f_sparse = lambda * norm(xk(:),1);
     f_tv = params.gamma*tvObj_xk;
-    f = f_data + f_sparse + f_tv;   
+    f_obj = f_data + f_sparse + f_tv;   
     err(nIter) = norm(b(:)-fit(:));
-    obj(nIter) = f;
+    obj(nIter) = f_obj;
     obj1(nIter) = f_data;
     obj2(nIter) = f_sparse;
     obj3(nIter) = f_tv;
@@ -261,7 +266,7 @@ while keep_going && (nIter < maxIter)
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
-            criterionObjective = abs(f-prev_f);
+            criterionObjective = abs(f_obj-prev_f);
             keep_going =  (criterionObjective > tolerance);
         case COEF_CHANGE
             diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
