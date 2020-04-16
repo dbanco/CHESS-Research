@@ -112,7 +112,8 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
     % Data matching gradient update
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c;
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm -...
+        c + lambda./sqrt(zk.^2 + tvBeta^8);
 
     % TV regularizer gradient update
     vdf = squeeze(sum(zk,1));
@@ -148,8 +149,7 @@ while keep_going && (nIter < maxIter)
     % Backtracking
     stop_backtrack = 0 ;
     while ~stop_backtrack 
-        gk = zk - (1/L)*grad ;
-        xk = soft(gk,lambda/L) ;
+        xk = zk - (1/L)*grad ;
         if isNonnegative
             xk(xk<0) = 0;
         end

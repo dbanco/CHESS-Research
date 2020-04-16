@@ -47,7 +47,7 @@ for j = 1:t
         f22 = [vdf1;vdf22;vdf3];
         J = deltaX*sum(sqrt( (D*f).^2 + tvBeta^2));      
         J22 = deltaX*sum(sqrt( (D*f22).^2 + tvBeta^2));
-        gradF(j) = (J(j)-J22(j))/1e-8;
+        gradF(j) = -(J(j)-J22(j))/1e-8;
 end
 
 gradJ-gradF
@@ -65,7 +65,7 @@ for i = 1:N
         f22 = [vdf1;vdf22;vdf3];
         J = deltaX*sum(sqrt( (D*f).^2 + tvBeta^2));      
         J22 = deltaX*sum(sqrt( (D*f22).^2 + tvBeta^2));
-        gradF2(j) = gradF2(j) + (J(j)-J22(j))/epsi;
+        gradF2(j) = gradF2(j) + -(J(j)-J22(j))/epsi;
     end
 end
 N*gradTV-gradF2'

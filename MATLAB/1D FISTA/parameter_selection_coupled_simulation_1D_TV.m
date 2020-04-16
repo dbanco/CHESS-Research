@@ -11,18 +11,18 @@ for n_level = 2
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
 
-    datadir = '/cluster/shared/dbanco02/';
-    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-    indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
-    init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir = ['gnoise4_coupled_TV1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-    mkdir([datadir,'gnoise4_coupled_TV1'])
+%     datadir = '/cluster/shared/dbanco02/';
+%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+%     indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
+%     init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+%     output_dir = ['gnoise4_coupled_TV1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+%     mkdir([datadir,'gnoise4_coupled_TV1'])
     
-%     datadir = 'E:\CHESS_data\';
-%     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-%     indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
-%     init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    datadir = 'E:\CHESS_data\';
+    dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+    indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
+    init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+    output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
     
     % Universal Parameters
@@ -38,8 +38,7 @@ for n_level = 2
     Pc.preInitialized = 2;
 
     Pc.tvBeta = 1e-8;
-    Pc.gamma = 1e-2;
-
+    Pc.gamma = 1e-2;    
     Pc.maxIterReg = 800;
     Pc.num_outer_iters = 10;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
@@ -110,7 +109,7 @@ for n_level = 2
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
         Pc.gamma = gamma_vals(i);
-        runCoupledFISTA_1D_TV(P,Pc)
+        runCoupledFISTA_1D_TV_approx(P,Pc)
     end
     
 end

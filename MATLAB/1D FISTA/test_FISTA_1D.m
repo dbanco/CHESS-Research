@@ -1,6 +1,6 @@
 % Test 1D FISTA
-inDir = 'D:\CHESS_data\simulated_two_spot_1D\polar_vector';
-outDir = 'D:\CHESS_data\simulated_two_spot_1D_fit_single';
+inDir = 'E:\CHESS_data\simulated_two_spot_1D\polar_vector';
+outDir = 'E:\CHESS_data\simulated_two_spot_1D_fit_single';
 mkdir(outDir)
 
 P.dtheta = 1;
@@ -19,16 +19,16 @@ zMask = [];
 % fista params
 params.stoppingCriterion = 1;
 params.tolerance = 1e-10;
-params.L = 8000;
+params.L = 18000;
 params.t_k = 1;
-params.lambda = 0.06;
+params.lambda = 0.0006;
 params.beta = 1.005;
 params.maxIter = 3000;
 params.maxIterReg = 50;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
-params.noBacktrack = 0;
+params.noBacktrack = 1;
 params.plotProgress = 0;
 P.params = params;
 
@@ -41,3 +41,4 @@ for i = 1
 
     wrap_FISTA_Circulant_1D(inDir,P,outDir)
 end
+yy = Ax_ft_1D(A0ft_stack,

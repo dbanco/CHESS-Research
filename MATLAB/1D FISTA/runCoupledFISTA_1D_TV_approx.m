@@ -1,4 +1,4 @@
-function runCoupledFISTA_1D_TV( P, Pc )
+function runCoupledFISTA_1D_TV_approx( P, Pc )
 %runCoupledFISTA 
 
 % Unpack parameters
@@ -70,10 +70,11 @@ for jjj = start_ind:num_outer_iters
         P_local = P;
         P_local.set = 1;
         % Use selected lambda
-        P_local.params.lambda = lambda_values(image_num);
+        P_local.params.lambda = 0.01*lambda_values(image_num);
         P_local.params.numIms = num_ims;
         P_local.params.imageNum = image_num;
-        
+        P_local.params.L = 1e5;
+        P_local.params.noBacktrack = 1;
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
             x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
@@ -84,12 +85,12 @@ for jjj = start_ind:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_approx(A0ft_stack,bn,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
+                        [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D_approx(A0ft_stack,bn,vdfs,x_init,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_approx(A0ft_stack,bn,x_init,P_local.params);
             end
             new_vdf = squeeze(sum(x_hat,1))/sum(x_hat(:));
             vdfs = {new_vdf};
@@ -103,7 +104,7 @@ for jjj = start_ind:num_outer_iters
             else
                 vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
             end
-            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
+            [x_hat, err, ~, ~,  obj, ~] = space_TV_FISTA_Circulant_1D_approx(A0ft_stack,bn,vdfs,x_init,P_local.params);
             
             new_vdf_array{image_num} = squeeze(sum(x_hat,1))/sum(x_hat(:));
         end
