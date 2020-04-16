@@ -2,6 +2,8 @@ function runCoupledFISTA_1D_TV( P, Pc )
 %runCoupledFISTA 
 
 % Unpack parameters
+P.params.imageNum = Pc.imageNum;
+P.params.numIms = Pc.num_ims;
 P.params.tvBeta = Pc.tvBeta;
 P.params.gamma = Pc.gamma;
 P.params.maxIterReg = Pc.maxIterReg;
@@ -71,7 +73,7 @@ for jjj = start_ind:num_outer_iters
         P_local.set = 1;
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
- 
+        P_local.params.imageNum = image_num;
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
             x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
