@@ -1,6 +1,6 @@
 %% Parameter selection
 clear all
-for ijk = 4
+for ijk = [2,4]
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
@@ -9,7 +9,7 @@ for ijk = 4
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    dset_fit = [dset_name,'_coupled_TV5\'];
+    dset_fit = [dset_name,'_coupled_TV9_approx\'];
     datadir = ['E:\CHESS_data\',dset_fit];
     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
     init_dir = ['E:\CHESS_data\gnoise4_subdir\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
@@ -20,20 +20,16 @@ for ijk = 4
 %     init_dir =      [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init/'];
 %     output_dir =    [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
 
-
     baseFileName = 'fista_fit_%i_%i.mat';
-
-    % Gamma values
-%     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-1,3,10);
-    M = numel(gamma_vals);
 
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'mmpad_img';
     load([output_dir,'1a\',sprintf(baseFileName,1,1)])
     polar_image = zeroPad(polar_image,P.params.zeroPad);
-
+    gamma_vals = Pc.gamma_vals
+    M = numel(gamma_vals);
+    
     % Construct dictionary
     switch P.basis
         case 'norm2'
@@ -121,7 +117,7 @@ for ijk = 4
 %     end
 
     %% Plot awmv
-    figure_dir = ['C:\Users\dan\Desktop\',dset_name,'_figures\'];
+    figure_dir = ['C:\Users\dan\Desktop\',dset_fit,'_figures\'];
     mkdir(figure_dir)
     % Load truth AWMV
     load(['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_11\synth_data.mat'])
