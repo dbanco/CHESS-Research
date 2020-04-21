@@ -49,12 +49,13 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
-tvBeta = params.tvBeta;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
+
 zPad = params.zeroPad;
 zMask = params.zeroMask;
+
 tvBeta = params.tvBeta;
 numIms = params.numIms;
 imageNum = params.imageNum;
@@ -94,7 +95,7 @@ vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
 for i = 1:numel(neighbors_vdf)
-    tvObj = tvObj + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta.^2 ));
+    tvObj = tvObj + sum(sqrt( (vdf(:)-neighbors_vdf{i}(:)).^2 + tvBeta^2 ));
 end
 f_obj = f_obj + params.gamma*tvObj;
 % Used to compute gradient
@@ -113,7 +114,7 @@ while keep_going && (nIter < maxIter)
     
     % Data matching gradient update
     grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm -...
-        c + lambda./sqrt(zk.^2 + tvBeta^8);
+        c + lambda./sqrt(zk.^2 + tvBeta^2);
 
     % TV regularizer gradient update
     vdf = squeeze(sum(zk,1));

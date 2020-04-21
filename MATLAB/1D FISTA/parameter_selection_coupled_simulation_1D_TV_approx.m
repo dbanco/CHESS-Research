@@ -54,7 +54,7 @@ for n_level = [4,2]
 
     % Gamma values
 %     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-3,0,15);
+    gamma_vals = logspace(-5,-3,15);
     M = numel(gamma_vals);
     Pc.gamma_vals = gamma_vals;
     
