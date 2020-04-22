@@ -11,8 +11,8 @@ dset_name = 'gnoise4_nonorm';
 
 for jjj = 1:11
 dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-output_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep/'];
-
+output_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep2/'];
+mkdir(output_dir)
 
 % Universal Parameters
 % Ring sampling parameters
@@ -50,8 +50,9 @@ P.params = params;
 baseFileName = 'fista_fit_%i_%i.mat';
 
 % Lambda values
-lambda_vals = logspace(-3,1,30);
+lambda_vals = logspace(-4,1,30);
 N = numel(lambda_vals);
+P.lambda_values = lambda_vals;
 
 % Construct dictionary
 switch P.basis

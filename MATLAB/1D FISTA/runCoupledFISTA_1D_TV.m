@@ -75,7 +75,9 @@ for jjj = start_ind:num_outer_iters
         P_local.params.lambda = lambda_values(image_num);
         P_local.params.numIms = num_ims;
         P_local.params.imageNum = image_num;
-
+        P_local.params.noBacktrack = 1;
+        P_local.params.L = 10000;
+        
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
             x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
