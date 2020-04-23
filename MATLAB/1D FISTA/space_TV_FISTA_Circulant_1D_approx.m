@@ -90,6 +90,9 @@ end
 f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
 
+old_f = f_obj;
+old_count = 0;
+
 % Add entropic reg wasserstein distance vdf term  
 vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
@@ -276,6 +279,29 @@ while keep_going && (nIter < maxIter)
             keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
+    end
+    % Stop if objective no longer increases
+    if old_count == 0
+        if f_obj > prev_f
+            old_f = prev_f;
+            old_x = xkm1;
+            old_iter = nIter-1;
+            old_count = old_count + 1;
+            
+        end
+    else
+        if f_obj > old_f
+            old_count = old_count + 1;
+            if old_count > 9
+                x_hat = old_x;
+                err = err(1:old_iter) ;
+                obj = obj(1:old_iter) ;
+                l_0 = l_0(1:old_iter) ;
+                return
+            end
+        else
+            old_count = 0;
+        end
     end
     
     % Update indices

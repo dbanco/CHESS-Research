@@ -53,8 +53,10 @@ tvBeta = params.tvBeta;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
+
 zPad = params.zeroPad;
 zMask = params.zeroMask;
+
 tvBeta = params.tvBeta;
 numIms = params.numIms;
 imageNum = params.imageNum;

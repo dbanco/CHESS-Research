@@ -69,6 +69,9 @@ l_0 = nan(1,maxIter);
 f = 0.5/bnorm*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
     lambda * norm(x_init(:),1);
 
+old_f = f;
+old_count = 0;
+
 % Used to compute gradient
 c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
@@ -90,7 +93,7 @@ while keep_going && (nIter < maxIter)
     while ~stop_backtrack 
         
         %l1/nonnegative-proximal
-        xk = zk - (1/L)*grad ;
+        xk = xk - (1/L)*grad ;
         if isNonnegative
             xk(xk<0) = 0;
         end
@@ -118,11 +121,7 @@ while keep_going && (nIter < maxIter)
             end
         end
     end
-    
-    
-    t_kp1 = 0.5*(1 + sqrt(1+4*t_k^2));
-    zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);    
-
+   
     % Track and display error, objective, sparsity
     prev_f = f;
     f = 0.5/bnorm*norm(b-fit)^2 + lambda * norm(xk(:),1);
@@ -186,7 +185,29 @@ while keep_going && (nIter < maxIter)
         otherwise
             error('Undefined stopping criterion.');
     end
-    
+    % Stop if objective no longer increases
+%     if old_count == 0
+%         if f > prev_f
+%             old_f = prev_f;
+%             old_x = xkm1;
+%             old_iter = nIter-1;
+%             old_count = old_count + 1;
+%             
+%         end
+%     else
+%         if f > old_f
+%             old_count = old_count + 1;
+%             if old_count > 9
+%                 x_hat = old_x;
+%                 err = err(1:old_iter) ;
+%                 obj = obj(1:old_iter) ;
+%                 l_0 = l_0(1:old_iter) ;
+%                 return
+%             end
+%         else
+%             old_count = 0;
+%         end
+%     end
     % Update indices
     t_k = t_kp1;
     xkm1 = xk;

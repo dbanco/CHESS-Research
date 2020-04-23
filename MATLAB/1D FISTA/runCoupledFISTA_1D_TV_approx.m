@@ -54,7 +54,7 @@ for jjj = start_ind:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    parfor image_num = 1:num_ims
+    for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         
         % Reduce image to vector 
@@ -69,12 +69,14 @@ for jjj = start_ind:num_outer_iters
         
         P_local = P;
         P_local.set = 1;
+        
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
         P_local.params.numIms = num_ims;
         P_local.params.imageNum = image_num;
-        P_local.params.L = 10000;
         P_local.params.noBacktrack = 1;
+        P_local.params.L = 100000;
+        
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
             x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
@@ -110,6 +112,7 @@ for jjj = start_ind:num_outer_iters
         end
         
         % Output data
+        try
             save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
             save_obj(output_dir,jjj,image_num,obj);
         catch

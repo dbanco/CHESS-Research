@@ -60,43 +60,44 @@ bns = cell(num_ims,1);
 bbs = cell(num_ims,1);
 
 %% Run grid search
-P.params.lambda = 0.25;
+P.params.lambda = 0.0015;
 P.params.noBacktrack = 1;
-params.L = 100;
-for image_num = 1:num_ims
-    im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
-    % Zero pad image
-    b = im_data.polar_vector;
-    % Scale image by 2-norm
-    bn = b;
-      
-    % Initial solution
-    x_init = zeros(size(A0ft_stack));
-    for i = 1:P.num_var_t
-        x_init(:,i) = bn/P.num_var_t;
-    end
-    
-    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P.params);
-    
-    bb = Ax_ft_1D(A0ft_stack,x_hat);
-    xs{image_num} = x_hat;
-    bbs{image_num} = bb;
-    bns{image_num} = bn;
+P.params.L = 10000;
+
+image_num = 1;
+im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
+% Zero pad image
+b = im_data.polar_vector;
+% Scale image by 2-norm
+bn = b;
+
+% Initial solution
+x_init = zeros(size(A0ft_stack));
+for i = 1:P.num_var_t
+    x_init(:,i) = bn/P.num_var_t;
 end
 
+[x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_approx(A0ft_stack,bn,x_init,P.params);
+
+bb = Ax_ft_1D(A0ft_stack,x_hat);
+xs{image_num} = x_hat;
+bbs{image_num} = bb;
+bns{image_num} = bn;
+
 vdfs = zeros(20,10);
-for i = 1:10
-    xi = xs{i};
-    vdfs(:,i) = sum(xi,1)./sum(xi(:)); 
-end
-%% ploot 
+xi = xs{image_num};
+vdfs(:,image_num) = sum(xi,1)./sum(xi(:)); 
+
+%% plot 
+close all
+
 figure(22)
 imagesc(vdfs')
 
 figure(1)
 hold on
-plot(bbs{2})
-plot(bns{2})
+plot(bbs{image_num})
+plot(bns{image_num})
 %%
 function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
     save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');

@@ -71,6 +71,7 @@ for jjj = start_ind:num_outer_iters
         
         P_local = P;
         P_local.set = 1;
+        
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
         P_local.params.numIms = num_ims;

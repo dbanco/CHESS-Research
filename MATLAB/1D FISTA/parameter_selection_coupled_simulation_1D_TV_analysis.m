@@ -9,10 +9,10 @@ for ijk = [2,4]
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    dset_fit = [dset_name,'_coupled_TV9_approx\'];
+    dset_fit = [dset_name,'_coupled_TV9b_approx\'];
     datadir = ['E:\CHESS_data\',dset_fit];
     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
-    init_dir = ['E:\CHESS_data\gnoise4_subdir\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
+    init_dir = ['E:\CHESS_data\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
     output_dir = [datadir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
 
 %     datadir = ['/cluster/shared/dbanco02/',dset_name,'_coupled_TV1/'];

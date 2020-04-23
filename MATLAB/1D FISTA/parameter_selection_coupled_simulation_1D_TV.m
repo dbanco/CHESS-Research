@@ -11,20 +11,20 @@ for n_level = [4,2]
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
 
-    datadir = '/cluster/shared/dbanco02/';
-    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-    indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep2/'];
-    init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir = ['gnoise4_nonorm_coupled_TV8/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-    mkdir([datadir,'gnoise4_nonorm_coupled_TV8'])
+%     datadir = '/cluster/shared/dbanco02/';
+%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+%     indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep2/'];
+%     init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+%     output_dir = ['gnoise4_nonorm_coupled_TV8/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+%     mkdir([datadir,'gnoise4_nonorm_coupled_TV8'])
 
 
-%     datadir = 'E:\CHESS_data\';
-%     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-%     indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
-%     init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-
+    datadir = 'E:\CHESS_data\';
+    dataset =   [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+    indep_dir = [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx\'];
+    init_dir =  [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+    output_dir = ['gnoise4_nonorm_coupled_TV9b_approx\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    mkdir([datadir,'gnoise4_nonorm_coupled_TV9b_approx'])
     
     % Universal Parameters
     % Ring sampling parameters
@@ -54,7 +54,7 @@ for n_level = [4,2]
 
     % Gamma values
 %     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-1.5,0.5,15);
+    gamma_vals = logspace(-3,-0.5,15);
     M = numel(gamma_vals);
     Pc.gamma_vals = gamma_vals;
     
@@ -112,7 +112,7 @@ for n_level = [4,2]
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
         Pc.gamma = gamma_vals(i);
-        runCoupledFISTA_1D_TV(P,Pc)
+        runCoupledFISTA_1D_TV_approx(P,Pc)
     end
     
 end
