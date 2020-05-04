@@ -1,6 +1,6 @@
 %% Parameter selection
 clear all
-for ijk = [2,4]
+for ijk = [1,3,5:11]
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
@@ -9,7 +9,7 @@ for ijk = [2,4]
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    dset_fit = [dset_name,'_coupled_TV9b_approx\'];
+    dset_fit = [dset_name,'_coupled_TV10\'];
     datadir = ['E:\CHESS_data\',dset_fit];
     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
     init_dir = ['E:\CHESS_data\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
@@ -111,10 +111,10 @@ for ijk = [2,4]
     end
 
     tv_indep = zeros(num_ims-1,1);
-%     for j = 1:num_ims-1
-%         tv_dist = sum( sqrt( (vdfs_indep(:,j)-vdfs_indep(:,j+1)).^2 + tvBeta^2) );
-%         tv_indep(j) = tv_dist;
-%     end
+    for j = 1:num_ims-1
+        tv_dist = sum( sqrt( (vdfs_indep(:,j)-vdfs_indep(:,j+1)).^2 + tvBeta^2) );
+        tv_indep(j) = tv_dist;
+    end
 
     %% Plot awmv
     figure_dir = ['C:\Users\dan\Desktop\',dset_fit,'_figures\'];
@@ -280,10 +280,20 @@ for ijk = [2,4]
     %% Plot vdf surface
     vdf_time_all_fig = figure(56);
     [ha3, pos3] = tight_subplot(2,ceil(M/2),[0.1 0.03],[.02 .08],[.02 .02]); 
-
-    % vdf_time = zeros(M,num_ims,P.num_var_t);
     im_ind = 1;
+        % Plot surface
+    axes(ha3(im_ind))
+    imagesc(squeeze(vdfs_indep'))
+    shading interp
+    caxis([0 0.6])
+    colormap(jet)
 
+    title(['\gamma = ','0'])
+    ylabel('t')
+    xlabel('\sigma')
+    
+    im_ind = im_ind + 1;
+    
     for trial_k = 1:M
         fprintf('%i of %i\n',trial_k,M)
         for image_num = 1:num_ims

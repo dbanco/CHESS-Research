@@ -139,9 +139,9 @@ while keep_going && (nIter < maxIter)
         gradTV = 0;
         for k = 1:numel(vdf)
             if j == k
-                gradTV = gradTV + gradJ(k)*( 1./total - vdf(j)./total );
+                gradTV = gradTV + gradJ(k)*( 1./total - vdf(k)./total );
             else
-                gradTV = gradTV - gradJ(k)*vdf(j)./total;
+                gradTV = gradTV - gradJ(k)*vdf(k)./total;
             end     
         end
         grad(:,j) = grad(:,j) + params.gamma*gradTV;
