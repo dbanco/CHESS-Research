@@ -56,7 +56,7 @@ for jjj = start_ind:num_outer_iters
     end
     vdfs = {};
     % iterate over each image
-    for image_num = 1:num_ims
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         
         % Reduce image to vector 

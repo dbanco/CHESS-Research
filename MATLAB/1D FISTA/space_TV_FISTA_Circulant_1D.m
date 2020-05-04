@@ -62,7 +62,7 @@ numIms = params.numIms;
 imageNum = params.imageNum;
 
 [n,t] = size(A0ft_stack) ;
-deltaX = 1/numIms;
+
 if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
@@ -133,7 +133,7 @@ while keep_going && (nIter < maxIter)
         f_tv = [vdf; neighbors_vdf{1}];
     end
     
-    gradJ = gradientTV(f_tv,deltaX,tvBeta,D);
+    gradJ = gradientTV(f_tv,tvBeta,D);
     
     for j = 1:numel(vdf)
         gradTV = 0;
@@ -141,7 +141,7 @@ while keep_going && (nIter < maxIter)
             if j == k
                 gradTV = gradTV + gradJ(k)*( 1./total - vdf(k)./total );
             else
-                gradTV = gradTV - gradJ(k)*vdf(k)./total;
+%                 gradTV = gradTV - gradJ(k)*vdf(k)./total;
             end     
         end
         grad(:,j) = grad(:,j) + params.gamma*gradTV;
