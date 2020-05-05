@@ -49,7 +49,6 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
-tvBeta = params.tvBeta;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
@@ -91,7 +90,7 @@ end
 f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
 
-% Add entropic reg wasserstein distance vdf term  
+% Add vdf tv reg term  
 vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
@@ -141,7 +140,7 @@ while keep_going && (nIter < maxIter)
             if j == k
                 gradTV = gradTV + gradJ(k)*( 1./total - vdf(k)./total );
             else
-%                 gradTV = gradTV - gradJ(k)*vdf(k)./total;
+                gradTV = gradTV - gradJ(k)*vdf(k)./total;
             end     
         end
         grad(:,j) = grad(:,j) + params.gamma*gradTV;

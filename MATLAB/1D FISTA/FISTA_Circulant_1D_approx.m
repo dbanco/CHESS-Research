@@ -49,6 +49,11 @@ lambda = params.lambda;
 beta = params.beta;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
+
+tvBeta = params.tvBeta;
+numIms = params.numIms;
+imageNum = params.imageNum;
+
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 [n,t] = size(A0ft_stack) ;
@@ -87,7 +92,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c + lambda./sqrt(zk.^2 + 1e-8); % gradient of f at zk
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm - c + lambda./sqrt(zk.^2 + tvBeta); % gradient of f at zk
     
     stop_backtrack = 0;
     while ~stop_backtrack 
@@ -186,28 +191,28 @@ while keep_going && (nIter < maxIter)
             error('Undefined stopping criterion.');
     end
     % Stop if objective no longer increases
-%     if old_count == 0
-%         if f > prev_f
-%             old_f = prev_f;
-%             old_x = xkm1;
-%             old_iter = nIter-1;
-%             old_count = old_count + 1;
-%             
-%         end
-%     else
-%         if f > old_f
-%             old_count = old_count + 1;
-%             if old_count > 9
-%                 x_hat = old_x;
-%                 err = err(1:old_iter) ;
-%                 obj = obj(1:old_iter) ;
-%                 l_0 = l_0(1:old_iter) ;
-%                 return
-%             end
-%         else
-%             old_count = 0;
-%         end
-%     end
+    if old_count == 0
+        if f > prev_f
+            old_f = prev_f;
+            old_x = xkm1;
+            old_iter = nIter-1;
+            old_count = old_count + 1;
+            
+        end
+    else
+        if f > old_f
+            old_count = old_count + 1;
+            if old_count > 9
+                x_hat = old_x;
+                err = err(1:old_iter) ;
+                obj = obj(1:old_iter) ;
+                l_0 = l_0(1:old_iter) ;
+                return
+            end
+        else
+            old_count = 0;
+        end
+    end
     % Update indices
     t_k = t_kp1;
     xkm1 = xk;
