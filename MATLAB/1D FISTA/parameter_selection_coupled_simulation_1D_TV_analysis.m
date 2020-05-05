@@ -1,6 +1,6 @@
 %% Parameter selection
 clear all
-for ijk = [1,3,5:11]
+for ijk = [3]
     close all
 
     % dataset = '/cluster/home/dbanco02/mmpad_polar/ring1_zero/';
@@ -9,7 +9,7 @@ for ijk = [1,3,5:11]
     dset_name = 'gnoise4_nonorm';
     dataset_num = num2str(ijk);
     num_ims = 20;
-    dset_fit = [dset_name,'_coupled_TV10\'];
+    dset_fit = [dset_name,'_coupled_TVx1\'];
     datadir = ['E:\CHESS_data\',dset_fit];
     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
     init_dir = ['E:\CHESS_data\','simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
@@ -27,9 +27,9 @@ for ijk = [1,3,5:11]
     prefix = 'mmpad_img';
     load([output_dir,'1a\',sprintf(baseFileName,1,1)])
     polar_image = zeroPad(polar_image,P.params.zeroPad);
-    gamma_vals = Pc.gamma_vals
+    gamma_vals = Pc.gamma_vals;
     M = numel(gamma_vals);
-    
+
     % Construct dictionary
     switch P.basis
         case 'norm2'
@@ -127,9 +127,9 @@ for ijk = [1,3,5:11]
     end
 
     close all
-    [sort_gamma, sort_i] = sort(gamma_vals);
+
     % Plot AWMV
-    awmv_fig = figure(1)
+    awmv_fig = figure(1);
     legend_str = {};
     legend_str{1} = 'truth';
     legend_str{2} = '0';
@@ -139,8 +139,8 @@ for ijk = [1,3,5:11]
     kk = 3;
     for k = 1:M
         hold on
-        plot(awmv_az(sort_i(k),:),'LineWidth',1.5)
-        legend_str{kk} = sprintf('%0.03f',gamma_vals(sort_i(k)));
+        plot(awmv_az(k,:),'LineWidth',1.5)
+        legend_str{kk} = sprintf('%0.03f',gamma_vals(k));
         kk = kk + 1;
     end
     ylim([0 40])
@@ -155,7 +155,7 @@ for ijk = [1,3,5:11]
     figure(2)
     hold on
     plot(0,mean(err_indep),'o')
-    plot(sort_gamma,mean_err(sort_i),'o-')
+    plot(gamma_vals,mean_err,'o-')
     ylabel('Average Error')
     xlabel('Coupling parameter')
 
@@ -164,7 +164,7 @@ for ijk = [1,3,5:11]
     figure(3)
     hold on
     plot(0,mean(l1_indep),'o')
-    plot(sort_gamma,mean_l1(sort_i),'o-')
+    plot(gamma_vals,mean_l1,'o-')
     ylabel('l1-norm')
     xlabel('Coupling parameter')
 
@@ -173,28 +173,27 @@ for ijk = [1,3,5:11]
     figure(4)
     hold on
     plot(0,mean(l0_indep),'o')
-    plot(sort_gamma,mean_l0(sort_i),'o-')
+    plot(gamma_vals,mean_l0,'o-')
     ylabel('l0-norm')
     xlabel('Coupling parameter')
 
-    % Plot wass dist
-    wass_total = sum(obj3,2);
-    wass_total(wass_total<0)=0;
+    % Plot tv
+    tv_total = sum(obj3,2);
     
     figure(44)
     hold on
-%     plot(0,sum(wass_indep),'o')
-    loglog(sort_gamma,wass_total(sort_i),'o-')
+    plot(0,sum(tv_indep),'o')
+    loglog(gamma_vals,tv_total,'o-')
     ylabel('TV')
     xlabel('Coupling parameter')
 
-    obj_part1_sum = mean_l1(sort_i)+ 10*mean_err(sort_i);
+    obj_part1_sum = mean_l1+ 10*mean_err;
 
     % Plot wass dist over imsages
     figure(441)
     hold on
     plot(tv_indep,'-')
-    plot(sum(obj3,1),'-')
+    plot(tv_total,'-')
     legend('indep','regularized')
     ylabel('TV')
     xlabel('time')
@@ -222,24 +221,24 @@ for ijk = [1,3,5:11]
     % Plot L-curve 2
 
     Lcurve_fig = figure(7);
-    plot(obj1(sort_i),sum(obj3(sort_i,:),2),'o-')
+    plot(obj1,sum(obj3,2),'o-')
     ylabel('TV')
     xlabel('Error')
     
     Lcurve_fig2 = figure(77);
-    plot(obj1(sort_i),sum(obj3b(sort_i,:),2),'o-')
+    plot(obj1,sum(obj3b,2),'o-')
     ylabel('TV')
     xlabel('Error')
     
     %%
-    miny = min(sum(obj3(sort_i,:),2));
-    minx = min(obj1(sort_i));
-    coord = [obj1(sort_i)./minx,sum(obj3(sort_i,:),2)./miny];
+    miny = min(sum(obj3,2));
+    minx = min(obj1);
+    coord = [obj1./minx,sum(obj3,2)./miny];
     origin_dist = coord-1;
     [val,select_ind] = min(sum(origin_dist.^2,2));
     
-    selectx = obj1(sort_i(select_ind));
-    selecty = sum(obj3(sort_i(select_ind),:),2);
+    selectx = obj1(select_ind);
+    selecty = sum(obj3(select_ind,:),2);
     hold on
     loglog(selectx,selecty,'s','Markersize',14)
     saveas(Lcurve_fig,[figure_dir,'Lcurve_',dset_name,'_',dataset_num,'.png'])
@@ -267,8 +266,8 @@ for ijk = [1,3,5:11]
     kk = 3;
     for k = [select_ind,M]
         hold on
-        plot(awmv_az(sort_i(k),:),'LineWidth',1.5)
-        legend_str{kk} = sprintf('%0.03f',gamma_vals(sort_i(k)));
+        plot(awmv_az(k,:),'LineWidth',1.5)
+        legend_str{kk} = sprintf('%0.03f',gamma_vals(k));
         kk = kk + 1;
     end
     ylim([0 40])
@@ -298,7 +297,7 @@ for ijk = [1,3,5:11]
         fprintf('%i of %i\n',trial_k,M)
         for image_num = 1:num_ims
 
-            load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
+            load(fullfile([output_dir,num2str(trial_k),'a\'],sprintf(baseFileName,1,image_num)))
 
             polar_vector = squeeze(sum(polar_image,1));
             fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
@@ -314,7 +313,7 @@ for ijk = [1,3,5:11]
         caxis([0 0.6])
         colormap(jet)
 
-        title(['\gamma = ',sprintf('%1.1d',gamma_vals(sort_i(trial_k)))])
+        title(['\gamma = ',sprintf('%1.1d',gamma_vals(trial_k))])
         ylabel('t')
         xlabel('\sigma')
 
@@ -328,7 +327,7 @@ for ijk = [1,3,5:11]
 
     for image_num = 1:num_ims
 
-        load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
+        load(fullfile([output_dir,num2str(trial_k),'a\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = squeeze(sum(polar_image,1));
         fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
@@ -342,7 +341,7 @@ for ijk = [1,3,5:11]
     caxis([0 0.6])
     colormap(jet)
 
-    title(['\gamma = ',sprintf('%1.1d',gamma_vals(sort_i(trial_k)))])
+    title(['\gamma = ',sprintf('%1.1d',gamma_vals(trial_k))])
     ylabel('t')
     xlabel('\sigma')
 %     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
@@ -350,15 +349,14 @@ for ijk = [1,3,5:11]
 
 
     %% Plot fits
-
-    fits_fig = figure(222)
+    fits_fig = figure(222);
     [ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
     awmv_az_vdfs = zeros(num_ims,1);
     im_ind = 1;
     trial_k = 1;
     for image_num = 1:20
 
-        load(fullfile([output_dir,num2str(sort_i(trial_k)),'a\'],sprintf(baseFileName,1,image_num)))
+        load(fullfile([output_dir,num2str(trial_k),'a\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = polar_image;
         fit = Ax_ft_1D(A0ft_stack,x_hat);

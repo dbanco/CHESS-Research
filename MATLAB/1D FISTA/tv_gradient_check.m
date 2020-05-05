@@ -108,10 +108,13 @@ subplot(2,1,1)
 hold on
 plot(gradTV(:),'Linewidth',4)
 plot(gradF2(:),'Linewidth',2)
+title('vdf grad')
 legend('TV','FD')
+
 
 subplot(2,1,2)
 hold on
 plot(gradTVx(:),'Linewidth',4)
 plot(gradF3(:),'Linewidth',2)
+title('x grad')
 legend('TVx','FD')
