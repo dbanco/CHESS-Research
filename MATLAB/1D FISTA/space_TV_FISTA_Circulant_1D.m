@@ -49,7 +49,6 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
-tvBeta = params.tvBeta;
 beta = params.beta;
 maxIter = params.maxIterReg;
 isNonnegative = params.isNonnegative;
@@ -62,7 +61,7 @@ numIms = params.numIms;
 imageNum = params.imageNum;
 
 [n,t] = size(A0ft_stack) ;
-deltaX = 1/numIms;
+
 if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
@@ -91,7 +90,7 @@ end
 f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
     lambda * norm(x_init(:),1);
 
-% Add entropic reg wasserstein distance vdf term  
+% Add vdf tv reg term  
 vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
@@ -133,7 +132,7 @@ while keep_going && (nIter < maxIter)
         f_tv = [vdf; neighbors_vdf{1}];
     end
     
-    gradJ = gradientTV(f_tv,deltaX,tvBeta,D);
+    gradJ = gradientTV(f_tv,tvBeta,D);
     
     for j = 1:numel(vdf)
         gradTV = 0;

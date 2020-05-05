@@ -123,11 +123,11 @@ while keep_going && (nIter < maxIter)
     end
     
     if numel(neighbors_x) == 2
-    	f_tv = [neighbors_x{1}(:); zk(:); neighbors_x{2}(:)]; 
+    	f_tv = [neighbors_x{1}(:), zk(:),  neighbors_x{2}(:)]'; 
     elseif imageNum == 1
-        f_tv = [zk(:); neighbors_x{1}(:)]; 
+        f_tv = [zk(:), neighbors_x{1}(:)]'; 
     elseif imageNum == numIms
-        f_tv = [zk(:); neighbors_x{1}(:)];
+        f_tv = [zk(:), neighbors_x{1}(:)]';
     end
     
     gradTV = params.gamma*gradientTV(f_tv,tvBeta,D);

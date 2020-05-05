@@ -1,4 +1,4 @@
-function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D(A0ft_stack,b,neighbors_vdf,x_init,params)
+function [x_hat, err, t_k, L, obj, l_0] = space_TV_FISTA_Circulant_1D_approx(A0ft_stack,b,neighbors_vdf,x_init,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x ||Ax-b||^2 + lambda||x|| +...
 %                         gamma sum_{adjacent_xi}^2 (1/4)||xn-x||^2
@@ -61,7 +61,7 @@ numIms = params.numIms;
 imageNum = params.imageNum;
 
 [n,t] = size(A0ft_stack) ;
-deltaX = 1/numIms;
+
 if ~all(size(x_init)==[n,t])
     error('The dimension of the initial xk does not match.');
 end
@@ -93,7 +93,7 @@ f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +
 old_f = f_obj;
 old_count = 0;
 
-% Add entropic reg wasserstein distance vdf term  
+% Add vdf tv reg term  
 vdf = squeeze(sum(x_init,1));
 vdf = vdf/sum(vdf(:)); 
 tvObj = 0;
@@ -115,7 +115,7 @@ nIter = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;
     
-    % Data matching gradient update
+    % Data matching and sparsity gradient update
     grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask))/bnorm -...
         c + lambda./sqrt(zk.^2 + tvBeta^2);
 
@@ -136,15 +136,15 @@ while keep_going && (nIter < maxIter)
         f_tv = [vdf; neighbors_vdf{1}];
     end
     
-    gradJ = gradientTV(f_tv,deltaX,tvBeta,D);
+    gradJ = gradientTV(f_tv,tvBeta,D);
     
     for j = 1:numel(vdf)
         gradTV = 0;
         for k = 1:numel(vdf)
             if j == k
-                gradTV = gradTV + gradJ(k)*( 1./total - vdf(j)./total );
+                gradTV = gradTV + gradJ(k)*( 1./total - vdf(kj)./total );
             else
-                gradTV = gradTV - gradJ(k)*vdf(j)./total;
+                gradTV = gradTV - gradJ(k)*vdf(k)./total;
             end     
         end
         grad(:,j) = grad(:,j) + params.gamma*gradTV;
@@ -205,9 +205,6 @@ while keep_going && (nIter < maxIter)
         l_0 = l_0(1:nIter) ;
         return
     end
-    
-    t_kp1 = 0.5*(1+sqrt(1+4*t_k*t_k));
-    zk = xk + ((t_k-1)/t_kp1)*(xk-xkm1);  
 
     % Track and display error, objective, sparsity
     prev_f = f_obj;
