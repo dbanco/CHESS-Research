@@ -14,19 +14,16 @@ P.set = 1;
 dset_name = 'gnoise4_nonorm';
 num_ims = 20;
 
-%     datadir = '/cluster/shared/dbanco02/';
-%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-%     indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
-%     init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_nonorm_coupled_TV5/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-%     mkdir([datadir,'gnoise4_nonorm_coupled_TV5'])
+datadir = '/cluster/shared/dbanco02/';
+dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2/'];
+init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
 
-datadir = 'E:\CHESS_data\';
-dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2\'];
-init_dir = [datadir,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
-output_dir = ['gnoise4_nonorm_coupled_TV5\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
+% datadir = 'E:\CHESS_data\';
+% dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+% indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2\'];
+% init_dir = [datadir,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
 
 % Universal Parameters
 % Ring sampling parameters
@@ -52,7 +49,7 @@ disp('Selecting lambda values')
 
 surf_fig = figure(111);
 [ha1, pos1] = tight_subplot(3,ceil(N/3),[0.1 0.03],[.02 .08],[.02 .02]); 
-set(surf_fig, 'Position',  [600, 500, 1000, 400])
+set(surf_fig, 'Position',  [100, 100, 1000, 400])
 
 vdf_time = zeros(N,num_ims,size(A0,2));
 err_select = zeros(N,num_ims);
@@ -63,7 +60,7 @@ for i = 1:N
     fprintf('%i of %i \n',i,N)
     for j = 1:num_ims
         e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-        err_select(i,j) = e_data.err(end-1)*norm(polar_image);
+        err_select(i,j) = e_data.err(end);
         l0_select(i,j) = sum(e_data.x_hat(:) > 0);
         l1_select(i,j) = sum(e_data.x_hat(:));
     

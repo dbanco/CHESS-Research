@@ -71,9 +71,10 @@ obj = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 
 % Initial sparsity and objective
-f = 0.5/bnorm*norm(b-Ax_ft_1D(A0ft_stack,x_init))^2 +...
+f = 0.5/bnorm*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2) +...
     lambda * sum(sqrt(x_init(:).^2 + tvBeta^2));
 
+prev_f = f;
 min_f = f;
 old_count = 0;
 
@@ -81,11 +82,8 @@ old_count = 0;
 c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
 x_init = forceMaskToZeroArray(x_init,zMask);
-xkm1 = x_init;
 xk = x_init;
 zk = xk;
-t_k = 1;
-t_kp1 = 1;
 keep_going = 1;
 nIter = 0;
 while keep_going && (nIter < maxIter)
@@ -103,14 +101,15 @@ while keep_going && (nIter < maxIter)
             zk(zk<0) = 0;
         end
         
-        % Compute objective at xk/zk
-        f_xk = 0.5/bnorm*forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask) + lambda*sum(sqrt(xk(:).^2 + tvBeta^2));
-        f = 0.5/bnorm*forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask) + lambda*sum(sqrt(zk(:).^2 + tvBeta^2));
+        % Compute objective at xk/zk and criterion to stop backtracking
+        f_xk = 0.5/bnorm*sum((b-forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask)).^2) + lambda*sum(sqrt(xk(:).^2 + tvBeta^2));
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
+        f = 0.5/bnorm*sum((b-fit).^2) + lambda*sum(sqrt(zk(:).^2 + tvBeta^2));
         
         criterion = f_xk - (1/L)*sum(grad(:).^2);
 
         
-        % Stop backtrack if objective <= quadratic approximation
+        % Stop backtrack logic
         if params.noBacktrack
             stop_backtrack = 1 ;
         elseif f <= criterion
@@ -159,7 +158,7 @@ while keep_going && (nIter < maxIter)
             criterionObjective = abs(f-prev_f);
             keep_going =  (criterionObjective > tolerance);
         case COEF_CHANGE
-            diff_x = sum(abs(zk(:)-xkm1(:)))/numel(zk);
+            diff_x = sum(abs(zk(:)-xk(:)))/numel(zk);
             keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
@@ -173,14 +172,15 @@ while keep_going && (nIter < maxIter)
         old_count = old_count + 1;
         if old_count > 20
             x_hat = min_x;
-            err = err(1:old_iter) ;
-            obj = obj(1:old_iter) ;
-            l_0 = l_0(1:old_iter) ;
+            err = err(1:min_iter) ;
+            obj = obj(1:min_iter) ;
+            l_0 = l_0(1:min_iter) ;
             return
         end
     end
     
     % Update indices
+    prev_f = f;
     xk = zk;
 end
 
