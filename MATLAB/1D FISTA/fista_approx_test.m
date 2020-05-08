@@ -1,10 +1,10 @@
 %% Parameter selection
 clear all
-% close all
+close all
 P.set = 1;
 
-dataset = 'E:\CHESS_data\simulated_two_spot_1D_noise2_6';
-output_dir = 'E:\CHESS_data\simulated_two_spot_1D_noise2_indep_6';
+dataset = 'E:\CHESS_data\simulated_two_spot_1D_gnoise4_nonorm_3';
+output_dir = 'E:\CHESS_data\simulated_two_spot_1D_gnosie4_nonorm3_indep11';
 
 num_ims = 10;
 dset_name = 'gnoise4_nonorm';
@@ -28,18 +28,28 @@ zPad = [0,0];
 zMask = [];
 
 % fista params
+params.lambda = 0.08;
+params.beta = 1.01;
+params.maxIter = 800;
+params.tvBeta = 1e-5;
+
+params.isNonnegative = 1;
+params.noBacktrack = 0;
+
 params.stoppingCriterion = 1;
 params.tolerance = 1e-8;
-params.L = 100;
+params.L = 1;
 params.t_k = 1;
-params.lambda = 0.08;
-params.beta = 1.2;
-params.maxIter = 800;
-params.isNonnegative = 1;
+
+params.numIms = 20;
+params.imageNum = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
-params.noBacktrack = 0;
+
 params.plotProgress = 0;
+
+
+
 P.params = params;
    
 baseFileName = 'fista_fit_%i_%i.mat';
@@ -59,49 +69,71 @@ xs = cell(num_ims,1);
 bns = cell(num_ims,1);
 bbs = cell(num_ims,1);
 
-%% Run grid search
-P.params.lambda = 0.0015;
-P.params.noBacktrack = 1;
-P.params.L = 10000;
+%% Run grid search GD
 
 image_num = 1;
 im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
 % Zero pad image
 b = im_data.polar_vector;
-% Scale image by 2-norm
-bn = b;
+
 
 % Initial solution
 x_init = zeros(size(A0ft_stack));
 for i = 1:P.num_var_t
-    x_init(:,i) = bn/P.num_var_t;
+    x_init(:,i) = b/P.num_var_t;
 end
 
-[x_hat,err,obj,~,~,~] = FISTA_Circulant_1D_approx(A0ft_stack,bn,x_init,P.params);
+[x_hat,err,obj,~,~] = GD_Circulant_1D(A0ft_stack,b,x_init,P.params);
 
 bb = Ax_ft_1D(A0ft_stack,x_hat);
 xs{image_num} = x_hat;
 bbs{image_num} = bb;
-bns{image_num} = bn;
+bns{image_num} = b;
 
 vdfs = zeros(20,10);
 xi = xs{image_num};
 vdfs(:,image_num) = sum(xi,1)./sum(xi(:)); 
 
-%% plot 
-close all
-
-figure(22)
-imagesc(vdfs')
-
+% plot 
 figure(1)
 hold on
 plot(bbs{image_num})
 plot(bns{image_num})
+
 %%
-function save_output(output_dir,baseFileName,x_hat,err,polar_image,P,image_num)
-    save(fullfile(output_dir,sprintf(baseFileName,P.set,image_num)),'x_hat','err','polar_image','P');
-end
-function save_obj(output_dir,pass,image_num,obj)
-    save(fullfile(output_dir,sprintf('objective_%i_%i.mat',pass,image_num)),'obj');
-end
+params.tolerance = 1e-6;
+A = rand(4,20); b = rand(4,1); x_in = zeros(20,1);
+[x err obj l_0] = GD_test(A,b,x_in,params);
+[A*x,b]
+%% Run grid search FISTA
+% 
+% image_num = 1;
+% im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
+% % Zero pad image
+% b = im_data.polar_vector;
+% 
+% 
+% % Initial solution
+% x_init = zeros(size(A0ft_stack));
+% for i = 1:P.num_var_t
+%     x_init(:,i) = b/P.num_var_t;
+% end
+% P.params.maxIter = 400;
+% [x_hat,err,obj,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
+% 
+% bb = Ax_ft_1D(A0ft_stack,x_hat);
+% xs{image_num} = x_hat;
+% bbs{image_num} = bb;
+% bns{image_num} = b;
+% 
+% vdfs = zeros(20,10);
+% xi = xs{image_num};
+% vdfs(:,image_num) = sum(xi,1)./sum(xi(:)); 
+% 
+% % plot 
+% 
+% figure(2)
+% hold on
+% plot(bbs{image_num})
+% plot(bns{image_num})
+

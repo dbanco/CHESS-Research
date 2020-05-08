@@ -1,4 +1,4 @@
-function [x_hat, err, obj, l_0, t_k, L] = GD_Circulant_1D(A0ft_stack,b,x_init,params)
+function [x_hat, err, obj, l_0, L] = GD_Circulant_1D(A0ft_stack,b,x_init,params)
 %FISTA_Circulant_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -31,8 +31,8 @@ function [x_hat, err, obj, l_0, t_k, L] = GD_Circulant_1D(A0ft_stack,b,x_init,pa
 
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;
-STOPPING_SUBGRADIENT = 2;
-COEF_CHANGE = 3;
+COEF_CHANGE = 2;
+GRADIENT_NORM = 3;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -74,6 +74,7 @@ l_0 = nan(1,maxIter);
 f = 0.5/bnorm*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2) +...
     lambda * sum(sqrt(x_init(:).^2 + tvBeta^2));
 
+prev_L = 0.5;
 prev_f = f;
 min_f = f;
 old_count = 0;
@@ -90,8 +91,8 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;        
     
     % Compute gradient of f
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask))/bnorm - c - lambda*xk./sqrt(xk.^2 + tvBeta^2);
-    
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask))/bnorm - c + lambda*xk./sqrt(xk.^2 + tvBeta^2);
+
     stop_backtrack = 0;
     while ~stop_backtrack 
         
@@ -102,11 +103,12 @@ while keep_going && (nIter < maxIter)
         end
         
         % Compute objective at xk/zk and criterion to stop backtracking
-        f_xk = 0.5/bnorm*sum((b-forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask)).^2) + lambda*sum(sqrt(xk(:).^2 + tvBeta^2));
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
-        f = 0.5/bnorm*sum((b-fit).^2) + lambda*sum(sqrt(zk(:).^2 + tvBeta^2));
+        fit_xk = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
+        f_xk = 0.5/bnorm*sum((b-fit_xk).^2) + lambda*sum(sqrt(xk(:).^2 + tvBeta^2));
+        fit_zk = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask);
+        f = 0.5/bnorm*sum((b-fit_zk).^2) + lambda*sum(sqrt(zk(:).^2 + tvBeta^2));
         
-        criterion = f_xk - (1/L)*sum(grad(:).^2);
+        criterion = f_xk - (0.25/L)*sum(grad(:).^2);
 
         
         % Stop backtrack logic
@@ -125,33 +127,32 @@ while keep_going && (nIter < maxIter)
     end
    
     % Track and display error, objective, sparsity
-    err(nIter) = norm(b(:)-fit(:))/norm(b(:));
+    err(nIter) = norm(b(:)-fit_zk(:));
     obj(nIter) = f;
     l_0(nIter) = sum(abs(zk(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
           ' L ',       num2str(L),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
+          ' ||x||_1 ',  num2str(sum(abs(zk(:)))),...
           ' RelErr ',  num2str(err(nIter)) ]);
     
     if params.plotProgress
-        lim1 = 0;
-        lim2 = max(b(:));
-        figure(1)
-       
-        subplot(2,3,1)
-        imshow(b,'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('img')
+
+        figure(1)    
+        hold off
+        plot(b)
+        hold on
+        plot(fit)
+        legend('data','fit')
         
-        subplot(2,3,2)
-        imshow(Ax_ft_1D(A0ft_stack,zk),'DisplayRange',[lim1 lim2],'Colormap',jet);
-        title('xk')
-        
-        pause(0.05)
+        pause
     end
     
     % Check stopping criterion
     switch stoppingCriterion
+        case GRADIENT_NORM
+            keep_going = norm(grad(:)) > tolerance;
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
@@ -170,29 +171,18 @@ while keep_going && (nIter < maxIter)
         old_count = 0;
     else
         old_count = old_count + 1;
-        if old_count > 20
-            x_hat = min_x;
-            err = err(1:min_iter) ;
-            obj = obj(1:min_iter) ;
-            l_0 = l_0(1:min_iter) ;
-            return
+        if old_count > 50
+            keep_going = 0;
         end
     end
     
     % Update indices
     prev_f = f;
     xk = zk;
+    
 end
 
-x_hat = xk;
-err = err(1:nIter) ;
-obj = obj(1:nIter) ;
-l_0 = l_0(1:nIter) ;
-
-function y = soft(x,T)
-if sum(abs(T(:)))==0
-    y = x;
-else
-    y = max(abs(x) - T, 0);
-    y = sign(x).*y;
-end
+x_hat = min_x;
+err = err(1:min_iter) ;
+obj = obj(1:min_iter) ;
+l_0 = l_0(1:min_iter) ;

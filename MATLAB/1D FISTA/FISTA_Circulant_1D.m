@@ -127,14 +127,15 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     prev_f = f;
     f = 0.5/bnorm*norm(b-fit)^2 + lambda * norm(xk(:),1);
-    err(nIter) = norm(b(:)-fit(:))/norm(b(:));
+    err(nIter) = norm(b(:)-fit(:));
     obj(nIter) = f;
-    l_0(nIter) = sum(abs(xk(:))>eps*10);
+    l_0(nIter) = sum(abs(zk(:))>eps*10);
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
           ' L ',       num2str(L),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
-          ' RelErr ',  num2str(err(nIter)) ]);
+          ' ||x||_1 ',  num2str(sum(abs(xk(:)))),...
+          ' Err ',  num2str(err(nIter)) ]);
     
     if params.plotProgress
         lim1 = 0;

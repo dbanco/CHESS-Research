@@ -34,8 +34,8 @@ function [x_hat, err, t_k, L, obj, l_0] = space_TVx_FISTA_Circulant_1D(A0ft_stac
 
 % Define stopping criterion
 STOPPING_OBJECTIVE_VALUE = 1;
-STOPPING_SUBGRADIENT = 2;
-COEF_CHANGE = 3;
+COEF_CHANGE = 2;
+STOPPING_SUBGRADIENT = 3;
 
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
@@ -88,7 +88,7 @@ end
 
 % Initial sparsity and objective
 f_obj = 0.5/bnorm*norm(b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask))^2 +...
-    lambda * norm(x_init(:),1);
+        lambda*sum(abs(x_init(:)));
 
 % Add reg term  
 tvObj = 0;
@@ -96,6 +96,14 @@ for i = 1:numel(neighbors_x)
     tvObj = tvObj + sum(sqrt( (x_init(:)-neighbors_x{i}(:)).^2 + tvBeta^2 ));
 end
 f_obj = f_obj + params.gamma*tvObj;
+
+prev_L = 0.5;
+prev_f = f_obj;
+min_f = f_obj;
+min_x = x_init;
+min_iter = 0;
+old_count = 0;
+
 % Used to compute gradient
 c = AtR_ft_1D(A0ft_stack,b)/bnorm;
 
@@ -193,7 +201,8 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     prev_f = f_obj;
     f_data = 0.5/bnorm*norm(b-fit)^2;
-    f_sparse = lambda * norm(xk(:),1);
+    f_sparse = lambda*sum(abs(xk(:)));
+%     f_sparse = lambda*sum(sqrt(xk(:).^2 + tvBeta^2));
     f_tv = params.gamma*tvObj_xk;
     f_obj = f_data + f_sparse + f_tv;   
     err(nIter) = norm(b(:)-fit(:));
@@ -206,6 +215,7 @@ while keep_going && (nIter < maxIter)
           ' Obj ',     num2str(obj(nIter)),...
           ' L ',       num2str(L),...
           ' ||x||_0 ', num2str(l_0(nIter)),...
+          ' ||x||_1 ',  num2str(sum(abs(xk(:)))),...
           ' RelErr ',  num2str(err(nIter)),...
           ' Obj1 ',     num2str(obj1(nIter)),...
           ' Obj2 ',     num2str(obj2(nIter)),...
@@ -248,7 +258,7 @@ while keep_going && (nIter < maxIter)
     switch stoppingCriterion
         case STOPPING_SUBGRADIENT
             sk = L*(xk-xkm1) +...
-                 AtR_ft_2D(A0ft_stack,Ax_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zPad)))/bnorm;
+                 AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zMask))/bnorm;
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
@@ -261,16 +271,27 @@ while keep_going && (nIter < maxIter)
         otherwise
             error('Undefined stopping criterion.');
     end
-    
+    if f_obj < min_f
+        min_x = xk;
+        min_f = f_obj;
+        min_iter = nIter;
+        old_count = 0;
+    else
+        old_count = old_count + 1;
+        if old_count > 50
+            keep_going = 0;
+        end
+    end
     % Update indices
+    prev_f = f_obj;
     t_k = t_kp1;
     xkm1 = xk;
 end
 
-x_hat = xk;
-err = err(1:nIter) ;
-obj = obj(1:nIter) ;
-l_0 = l_0(1:nIter) ;
+x_hat = min_x;
+err = err(1:min_iter) ;
+obj = obj(1:min_iter) ;
+l_0 = l_0(1:min_iter) ;
 
 function y = soft(x,T)
 if sum(abs(T(:)))==0
