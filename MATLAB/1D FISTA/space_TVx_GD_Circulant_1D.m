@@ -154,7 +154,7 @@ while keep_going && (nIter < maxIter)
               lambda*sum(sqrt(xk(:).^2 + tvBeta^2)) +...
               params.gamma*tvObj_xk;
         
-        % Compute quadratic approximation at zk
+        % Compute objective at zk
         fit_zk = forceMaskToZero(Ax_ft_1D(A0ft_stack,zk),zMask); 
         tvObj_zk = 0;
         for i = 1:numel(neighbors_x)

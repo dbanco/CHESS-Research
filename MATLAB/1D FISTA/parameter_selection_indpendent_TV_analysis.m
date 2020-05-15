@@ -5,7 +5,7 @@ noise_std = 0:0.03:0.30;
 n_eta_levels = 0.5*sqrt(180.*noise_std.^2) + 0.10;
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
-n_level = 4;
+n_level = 3;
 
 % Parameter selection
 disp('Setup parms')
@@ -14,16 +14,16 @@ P.set = 1;
 dset_name = 'gnoise4_nonorm';
 num_ims = 20;
 
-datadir = '/cluster/shared/dbanco02/';
-dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2/'];
-init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
+% datadir = '/cluster/shared/dbanco02/';
+% dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+% indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2/'];
+% init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
 
 
-% datadir = 'E:\CHESS_data\';
-% dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-% indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2\'];
-% init_dir = [datadir,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
+datadir = 'E:\CHESS_data\';
+dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2\'];
+init_dir = [datadir,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
 
 % Universal Parameters
 % Ring sampling parameters
@@ -44,6 +44,8 @@ switch P.basis
 end
 A0 = unshifted_basis_vector_stack_norm2_zpad(P);
 
+tvBeta = P.params.tvBeta;
+
 %% Select lambda values
 disp('Selecting lambda values')
 
@@ -55,6 +57,9 @@ vdf_time = zeros(N,num_ims,size(A0,2));
 err_select = zeros(N,num_ims);
 l0_select = zeros(N,num_ims);
 l1_select = zeros(N,num_ims);
+l0_approx = zeros(N,num_ims);
+x_indep = cell(num_ims,1);
+tv_time = zeros(N,num_ims-1);
 im_ind = 1;
 for i = 1:N
     fprintf('%i of %i \n',i,N)
@@ -63,11 +68,17 @@ for i = 1:N
         err_select(i,j) = e_data.err(end);
         l0_select(i,j) = sum(e_data.x_hat(:) > 0);
         l1_select(i,j) = sum(e_data.x_hat(:));
-    
+        l1_approx(i,j) = sum( sqrt( ( e_data.x_hat(:) ).^2 + tvBeta^2) );
         az_signal = squeeze(sum(e_data.x_hat,1));
         var_sum = sum(az_signal(:));
         vdf_time(i,j,:) = az_signal/var_sum;
+        
+%         x_indep{j} = e_data.x_hat;
     end
+%     for j = 1:num_ims-1
+%         tv_dist = sum( sqrt( ( x_indep{j}(:) - x_indep{j+1}(:) ).^2 + tvBeta^2) );
+%         tv_time(i,j) = tv_dist;
+%     end
     axes(ha1(im_ind))
     imagesc(squeeze(vdf_time(i,:,:)))
     shading interp
@@ -94,6 +105,32 @@ Pc.lambda_values = param_select;
 figure(112)
 plot(param_select,'o-')
 
+% Plot
+for image_num = 3;
+figure(2)
+semilogx(lambda_vals,l1_approx(:,image_num),'o-')
+hold on
+xlabel('\lambda')
+ylabel('l_1 term')
+end
+
+% Plot
+for image_num = 3;
+figure(3)
+semilogx(lambda_vals,err_select(:,image_num),'o-')
+hold on
+xlabel('\lambda')
+ylabel('error')
+end
+
+% Plot
+for image_num = 3;
+figure(4)
+semilogx(lambda_vals,l0_select(:,image_num),'o-')
+hold on
+xlabel('\lambda')
+ylabel('l_0')
+end
 %% Plot fits
 % 
 % fits_fig = figure(222);
