@@ -15,7 +15,7 @@ Ax = zeros(size(A0ft_stack,1),1);
 
 x_ft = fft(x);
 
-for tv = 1:size(A0ft_stack,2)
+for tv = 1:size(x,2)
         Ax = Ax + real(ifft(A0ft_stack(:,tv).*x_ft(:,tv)));
 end
 
