@@ -14,8 +14,8 @@ mkdir(out_dir)
 for jjj = 3
 %     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
 %     output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
-    dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-    output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1\'];
+    dataset = ['E:\CHESS_data\ADMM_GD_indep1\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+    output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
     mkdir(output_dir)
 
     % Universal Parameters
@@ -43,7 +43,7 @@ for jjj = 3
     params.t_k = 1;
     params.lambda = 0.08;
     params.rho = 1; 
-    params.maxGradIters = 100;
+    params.gradIters = 100;
     params.gradTolerance = 1e-2;
     params.beta = 1.2;
     params.maxIter = 800;
@@ -86,7 +86,7 @@ for jjj = 3
             P_local = P;
             P_local.params.lambda = lambda_vals(ii);
             P_local.set = ii;
-            [x_hat,err,obj] = convADMM_LASSO_GD_1D(A0ft_stack,bn,x_init,P_local.params);
+            [x_hat,err,obj,~,~,~] = convADMM_LASSO_GD_1D(A0ft_stack,bn,x_init,P_local.params);
             try
                 save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,image_num);
             catch

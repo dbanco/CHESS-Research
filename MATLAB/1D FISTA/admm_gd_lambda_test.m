@@ -69,7 +69,7 @@ lambda_vals  = logspace(-3,1,M);
 
 for i = 1:M
     params.lambda = lambda_vals(i);
-    [x_hat,err,obj] = convADMM_LASSO_GD_1D(A0ft_stack,b,x_init,params);
+    [x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,params);
     l0_norm(i) = sum(x_hat(:) > 0);
 end
 

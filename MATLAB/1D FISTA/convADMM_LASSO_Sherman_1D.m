@@ -48,17 +48,6 @@ end
 b = zeroPad(b,zPad);
 bnorm = norm(b(:));
 
-% Track error and objective
-err = nan(1,maxIter);
-l1_norm = nan(1,maxIter);
-obj = nan(1,maxIter);
-
-
-% Initial objective
-f = 0.5/bnorm*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2) +...
-    lambda * sum(abs(x_init(:)));
-prev_f = f;
-
 % Initialize variables
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
@@ -66,13 +55,23 @@ xkp1 = x_init;
 yk = x_init;
 vk = zeros(size(xk));
 
+% Track error and objective
+err = nan(1,maxIter);
+l1_norm = nan(1,maxIter);
+obj = nan(1,maxIter);
+
+% Initial objective
+err(1) = 0.5/bnorm*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
+l1_norm(1) = lambda*sum(abs(x_init(:)));
+obj(1) = err(1) + l1_norm(1);
+
 keep_going = 1;
-nIter = 0;
+nIter = 1;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolve( A0ft_stack,b,yk,params );
+    xkp1 = circulantLinSolve( A0ft_stack,b,yk,vk,params );
 
     % nonegativity
     if isNonnegative
@@ -116,7 +115,7 @@ while keep_going && (nIter < maxIter)
         case STOPPING_OBJECTIVE_VALUE
             % compute the stopping criterion based on the relative
             % variation of the objective function.
-            criterionObjective = abs(f-prev_f);
+            criterionObjective = abs(obj(nIter)-obj(nIter-1));
             keep_going =  (criterionObjective > tolerance);
         case COEF_CHANGE
             diff_x = sum(abs(xkp1(:)-xk(:)))/numel(xk);
@@ -131,7 +130,6 @@ while keep_going && (nIter < maxIter)
 %     end
 
     % Update indices
-    prev_f = f;
     xk = xkp1; 
 end
 

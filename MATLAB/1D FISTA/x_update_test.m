@@ -29,7 +29,7 @@ zMask = [];
 
 % fista params
 params.lambda = 0.03;
-params.rho = 0.5;
+params.rho = 11;
 
 params.beta = 1.01;
 params.L = 1;
@@ -37,9 +37,9 @@ params.isNonnegative = 0;
 params.noBacktrack = 0;
 
 params.stoppingCriterion = 2;
-params.maxIter = 800;
-params.maxGradIters = 200;
-params.gradTolerance = 1e-1;
+params.maxIter = 2;
+params.maxGradIters = 800;
+params.gradTolerance = 1e-8;
 params.tolerance = 1e-8;
 
 params.numIms = 20;
@@ -69,7 +69,7 @@ bns = cell(num_ims,1);
 bbs = cell(num_ims,1);
 
 %% Run grid search GD
-image_num = 1;
+image_num = 3;
 im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
 
 % Zero pad image
@@ -81,57 +81,16 @@ for i = 1:P.num_var_t
     x_init(:,i) = b/P.num_var_t;
 end
 
-[x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);
-
-bb = Ax_ft_1D(A0ft_stack,x_hat);
-xs{image_num} = x_hat;
-bbs{image_num} = bb;
-bns{image_num} = b;
-
-vdfs = zeros(20,10);
-xi = xs{image_num};
-vdfs(:,image_num) = sum(xi,1)./sum(xi(:)); 
+[x_hat1,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);
+[x_hat2,err,obj] = convADMM_LASSO_GD_1D(A0ft_stack,b,x_init,P.params);
+bb1 = Ax_ft_1D(A0ft_stack,x_hat1);
+bb2 = Ax_ft_1D(A0ft_stack,x_hat2);
 
 % plot 
 figure(1)
 hold on
-plot(bbs{image_num})
-plot(bns{image_num})
-
-%%
-% params.tolerance = 1e-6;
-% A = rand(4,20); b = rand(4,1); x_in = zeros(20,1);
-% [x err obj l_0] = GD_test(A,b,x_in,params);
-% [A*x,b]
-%% Run grid search FISTA
-% 
-% image_num = 1;
-% im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
-% % Zero pad image
-% b = im_data.polar_vector;
-% 
-% 
-% % Initial solution
-% x_init = zeros(size(A0ft_stack));
-% for i = 1:P.num_var_t
-%     x_init(:,i) = b/P.num_var_t;
-% end
-% P.params.maxIter = 400;
-% [x_hat,err,obj,~,~] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
-% 
-% bb = Ax_ft_1D(A0ft_stack,x_hat);
-% xs{image_num} = x_hat;
-% bbs{image_num} = bb;
-% bns{image_num} = b;
-% 
-% vdfs = zeros(20,10);
-% xi = xs{image_num};
-% vdfs(:,image_num) = sum(xi,1)./sum(xi(:)); 
-% 
-% % plot 
-% 
-% figure(2)
-% hold on
-% plot(bbs{image_num})
-% plot(bns{image_num})
+plot(bb1)
+plot(bb2)
+plot(b)
+legend('ISM','GD','Data')
 

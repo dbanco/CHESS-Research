@@ -8,11 +8,15 @@ P.set = 1;
 
 num_ims = 20;
 dset_name = 'gnoise4_nonorm';
-out_dir = '/cluster/shared/dbanco02/FISTA_indep1';
+% out_dir = '/cluster/shared/dbanco02/FISTA_indep1';
+out_dir = 'E:\CHESS_data\FISTA_indep1';
+
 mkdir(out_dir)
 for jjj = 1:11
-dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-output_dir = [out_dir,'/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
+% dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+% output_dir = [out_dir,'/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
+dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+output_dir = [out_dir,'\simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1\'];
 mkdir(output_dir)
 
 % Universal Parameters
@@ -76,7 +80,7 @@ for image_num = 1:num_ims
         x_init(:,i) = bn/P.num_var_t;
     end
     
-    parfor ii = 1:N
+    for ii = 1:N
         P_local = P;
         P_local.params.lambda = lambda_vals(ii);
         P_local.set = ii;
