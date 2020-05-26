@@ -8,11 +8,11 @@ P.set = 1;
 
 num_ims = 20;
 dset_name = 'gnoise4_nonorm';
-out_dir = '/cluster/shared/dbanco02/FISTA_indep1';
+out_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep1/';
 mkdir(out_dir)
 for jjj = 1:11
 dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-output_dir = [out_dir,'/simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
+output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
 mkdir(output_dir)
 
 % Universal Parameters
@@ -80,7 +80,7 @@ for image_num = 1:num_ims
         P_local = P;
         P_local.params.lambda = lambda_vals(ii);
         P_local.set = ii;
-        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+        [x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,bn,x_init,P_local.params);
         try
             save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,image_num);
         catch

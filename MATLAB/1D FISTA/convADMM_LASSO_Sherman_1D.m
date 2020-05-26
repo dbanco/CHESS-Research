@@ -1,4 +1,4 @@
-function [x_hat, err, obj] = convADMM_LASSO_1D(A0ft_stack,b,x_init,params)
+function [x_hat, err, obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
