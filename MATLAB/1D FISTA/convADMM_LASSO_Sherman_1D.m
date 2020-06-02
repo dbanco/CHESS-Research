@@ -34,6 +34,10 @@ stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 lambda = params.lambda;
 rho = params.rho;
+mu = params.mu;
+adaptRho = params.adaptRho;
+tau = params.tau;
+alpha = params.alpha;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
 
@@ -46,13 +50,14 @@ if ~all(size(x_init)==[n,t])
 end
 
 b = zeroPad(b,zPad);
-bnorm = norm(b(:));
+bnormsq = sum((b(:)).^2);
 
 % Initialize variables
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
 xkp1 = x_init;
 yk = x_init;
+ykp1 = x_init;
 vk = zeros(size(xk));
 
 % Track error and objective
@@ -61,7 +66,7 @@ l1_norm = nan(1,maxIter);
 obj = nan(1,maxIter);
 
 % Initial objective
-err(1) = 0.5/bnorm*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
+err(1) = 0.5/bnormsq*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
 l1_norm(1) = lambda*sum(abs(x_init(:)));
 obj(1) = err(1) + l1_norm(1);
 
@@ -71,29 +76,27 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolve( A0ft_stack,b,yk,vk,params );
-
-    % nonegativity
-    if isNonnegative
-    xkp1(xkp1<0) = 0;
-    end
+    xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
 
     % y-update
-    yk = soft(xkp1 + vk,lambda/rho);
-    
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    if isNonnegative
+        ykp1(ykp1<0) = 0;
+    end
     % v-update
-    vk = vk + xkp1 - yk;
+    vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
    
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D(A0ft_stack,xkp1);
     
-    err(nIter) = sum((b(:)-fit(:)).^2)/2/bnorm;
+    err(nIter) = sum((b(:)-fit(:)).^2)/2/bnormsq;
     l1_norm(nIter) = lambda*sum(abs(xkp1(:)));
     f = err(nIter) + l1_norm(nIter); %+ rho/2*sum(abs( xkp1(:)-yk(:)+vk(:) ));
         
     obj(nIter) = f;
     disp(['Iter ',     num2str(nIter),...
           ' Obj ',     num2str(obj(nIter)),...
+          ' Rho ',     num2str(rho),...
           ' RelErr ',  num2str(err(nIter)),...
           ' ||x||_1 ', num2str(l1_norm(nIter)),...
           ' ||x||_0 ', num2str(sum(xkp1(:) >0))
@@ -129,10 +132,28 @@ while keep_going && (nIter < maxIter)
 %         xkp1 = xk;
 %     end
 
-    % Update indices
-    xk = xkp1; 
+if adaptRho
+    sk = rho*norm(ykp1-yk);
+    rk = norm(xkp1-ykp1);
+    if rk > mu*sk
+        rho = rho*tau;
+    elseif sk > mu*rk
+        rho = rho/tau;
+    end
 end
 
+% if criterionObjective < 1e-5
+% 	rho = rho/tau;
+% end
+
+    % Update indices
+    xk = xkp1;
+    yk = ykp1;
+end
+
+if isNonnegative
+    xkp1(xkp1<0) = 0;
+end
 x_hat = xkp1;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;

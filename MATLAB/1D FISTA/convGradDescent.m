@@ -11,23 +11,28 @@ isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 
-bnorm = norm(b);
-c = AtR_ft_1D(A0ft_stack,b)/bnorm;
+bnormsq = sum(b(:).^2);
+c = AtR_ft_1D(A0ft_stack,b)/bnormsq;
 
 for j = 1:maxGradIters
-    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask))/bnorm - c +...
+    grad = AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask))/bnormsq - c +...
            rho*(xk - yk + vk);
 
     % backtracking step size search
     stop_backtrack = 0;
     while ~stop_backtrack 
         xkp1 = xk - (1/L)*grad;
-
+        
+        if isNonnegative
+           xkp1(xkp1<0) = 0; 
+        end
+        
         % Compute objective at xk/xkp1 and criterion to stop backtracking
         fit_xk = forceMaskToZero(Ax_ft_1D(A0ft_stack,xk),zMask);
-        f_xk = 0.5/bnorm*sum((b-fit_xk).^2) + rho/2*sum(( xk(:) - yk(:) + vk(:) ).^2);
+        f_xk = 0.5/bnormsq*sum((b-fit_xk).^2) + rho/2*sum(( xk(:) - yk(:) + vk(:) ).^2);
+        
         fit_xkp1 = forceMaskToZero(Ax_ft_1D(A0ft_stack,xkp1),zMask);
-        err = 0.5/bnorm*sum((b-fit_xkp1).^2);
+        err = 0.5/bnormsq*sum((b-fit_xkp1).^2);
         l1_norm = rho/2*sum(( xkp1(:) - yk(:) + vk(:) ).^2);
         f_xkp1 = err + l1_norm;
         

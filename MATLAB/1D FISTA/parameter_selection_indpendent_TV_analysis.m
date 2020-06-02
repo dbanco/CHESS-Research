@@ -1,8 +1,10 @@
 clear all
 close all
 
+num_theta = 180
 noise_std = 0:0.03:0.30;
-n_eta_levels = 0.5*sqrt(180.*noise_std.^2) + 0.10;
+n_eta_levels = sqrt(num_theta.*noise_std.^2)/100;
+% n_eta_levels = noise_std;
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
 n_level = 3;
@@ -19,10 +21,10 @@ num_ims = 20;
 % indep_dir = ['/cluster/shared/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep_approx2/'];
 % init_dir = [datadir,'gnoise4_subdir/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep_approx2'];
 
-datadir = 'E:\CHESS_data\';
-dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-indep_dir = ['E:\CHESS_data\FISTA_indep1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
-init_dir = ['E:\CHESS_data\FISTA_indep1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep1'];
+datadir = 'D:\CHESS_data\';
+dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+indep_dir = ['D:\CHESS_data\ADMM_Sherman_indep3\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
+init_dir = ['D:\CHESS_data\ADMM_Sherman_indep3\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep1'];
 
 % Universal Parameters
 % Ring sampling parameters
@@ -64,7 +66,7 @@ for i = 1:N
     for j = 1:num_ims
         e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err','x_hat');
         err_select(i,j) = e_data.err(end);
-        l0_select(i,j) = sum(e_data.x_hat(:) > 0);
+        l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4);
         l1_select(i,j) = sum(e_data.x_hat(:));
         l1_approx(i,j) = sum( sqrt( ( e_data.x_hat(:) ).^2 + tvBeta^2) );
         az_signal = squeeze(sum(e_data.x_hat,1));
@@ -102,7 +104,7 @@ Pc.lambda_values = param_select;
 
 figure(112)
 plot(param_select,'o-')
-
+title('Parameters selected')
 %% Plot
 for image_num = 3;
 figure(2)
@@ -157,7 +159,6 @@ end
 % ylabel('l_0')
 % end
 %% Plot fits
-% 
 fits_fig = figure(222);
 [ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(num_ims,1);
@@ -165,7 +166,7 @@ im_ind = 1;
 trial_k = 1;
 for image_num = 1:20
 
-    load(fullfile(indep_dir,sprintf(baseFileName,17,image_num)))
+    load(fullfile(indep_dir,sprintf(baseFileName,lambda_indices(image_num),image_num)))
 
     polar_vector = polar_image;
     fit = Ax_ft_1D(A0ft_stack,x_hat);
@@ -173,12 +174,57 @@ for image_num = 1:20
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     b = zeroPad(polar_vector,P.params.zeroPad);
-
+    
+    final_thresh = 1e-4*sum(x_hat(:));
+    x_hat(x_hat<final_thresh) = 0;
     % Plot
     axes(ha2(im_ind))
     hold on
     plot(b)
     plot(fit)
-    legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
+    legend(sprintf('%i',sum(x_hat(:)>0)),'location','northeast')
     im_ind = im_ind + 1;
+end
+
+%% Plot fits
+fits_fig = figure(223);
+[ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
+awmv_az_vdfs = zeros(num_ims,1);
+im_ind = 1;
+trial_k = 1;
+for image_num = 1:20
+
+    load(fullfile(indep_dir,sprintf(baseFileName,15,image_num)))
+
+    polar_vector = polar_image;
+    fit = Ax_ft_1D(A0ft_stack,x_hat);
+    az_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(az_signal(:));
+    awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    b = zeroPad(polar_vector,P.params.zeroPad);
+    
+%     final_thresh = 1e-4*sum(x_hat(:));
+%     x_hat(x_hat<final_thresh) = 0;
+    % Plot
+    axes(ha2(im_ind))
+    hold on
+    plot(b)
+    plot(fit)
+    legend(sprintf('%i',sum(x_hat(:)>0)),'location','northeast')
+    im_ind = im_ind + 1;
+end
+
+%% Plot AWMV
+% figure(23)
+% plot(awmv_az_vdfs)
+
+%% View convergence
+for i = 1:N
+    fprintf('%i of %i \n',i,N)
+    for j = 1:num_ims
+        load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'obj');
+        figure(99)
+        plot(obj)
+        pause
+    end
 end

@@ -9,12 +9,12 @@ P.set = 1;
 num_ims = 20;
 dset_name = 'gnoise4_nonorm';
 % out_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep1/';
-out_dir = 'E:\CHESS_data\ADMM_Sherman_indep1/';
+out_dir = 'D:\CHESS_data\ADMM_Sherman_indep3/';
 mkdir(out_dir)
 for jjj = 3
 % dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
 % output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
-dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
 output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1\'];
 mkdir(output_dir)
 
@@ -37,14 +37,18 @@ zPad = [0,0];
 zMask = [];
 
 % fista params
-params.stoppingCriterion = 1;
+params.stoppingCriterion = 2;
 params.tolerance = 1e-8;
 params.L = 1;
 params.t_k = 1;
 params.lambda = 0.08;
-params.rho = 1;
-params.beta = 1.2;
-params.maxIter = 800;
+params.rho = 40;
+params.tau = 1.2;
+params.mu = 10;
+params.adaptRho = 1;
+params.alpha = 1.8;
+params.beta = 1.01;
+params.maxIter = 1000;
 params.isNonnegative = 1;
 params.zeroPad = zPad;
 params.zeroMask = zMask;

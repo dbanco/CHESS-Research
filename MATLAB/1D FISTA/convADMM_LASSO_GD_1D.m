@@ -32,12 +32,9 @@ COEF_CHANGE = 2;
 % Get parameters
 stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
-beta = params.beta;
 lambda = params.lambda;
 rho = params.rho;
 maxIter = params.maxIter;
-maxGradIters = params.maxGradIters;
-gradTolerance = params.gradTolerance;
 isNonnegative = params.isNonnegative;
 
 zPad = params.zeroPad;
