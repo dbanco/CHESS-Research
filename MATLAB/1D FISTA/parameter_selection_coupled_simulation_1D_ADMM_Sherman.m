@@ -11,19 +11,19 @@ for n_level = 3
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
     
-%     datadir = '/cluster/shared/dbanco02/';
-%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-%     base_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep3/';
-%     indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
-%     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_coupled_ISM1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-    
-    datadir = 'D:\CHESS_data\';
-    dataset =  [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-    base_dir = [datadir,'ADMM_Sherman_indep3\'];
-    indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
+    datadir = '/cluster/shared/dbanco02/';
+    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+    base_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep3/';
+    indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1/'];
     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir  = ['gnoise4_coupled_ISM1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    output_dir = ['gnoise4_coupled_ISM1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    
+%     datadir = 'D:\CHESS_data\';
+%     dataset =  [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+%     base_dir = [datadir,'ADMM_Sherman_indep3\'];
+%     indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
+%     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+%     output_dir  = ['gnoise4_coupled_ISM1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
     mkdir([datadir,'gnoise4_coupled_ISM1'])    
     % Universal Parameters
@@ -104,7 +104,7 @@ for n_level = 3
         mkdir(Pc.init_dir)
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
-        Pc.gamma = gamma_vals(i);
+        Pc.lambda2 = lambda2_vals(i);
         runCoupledISM_TVx_1D(P,Pc)
     end
     

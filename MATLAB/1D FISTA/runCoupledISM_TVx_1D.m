@@ -45,7 +45,7 @@ for jjj = start_ind:num_outer_iters
     end
     
     % iterate over each image
-    for image_num = 1:num_ims
+    parfor image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
         n_ind = [image_num-1, image_num+1];
         n_ind = n_ind( (n_ind>=1)&(n_ind<=num_ims) );
@@ -66,7 +66,7 @@ for jjj = start_ind:num_outer_iters
         
         P_local = P;
         P_local.set = 1;
-        P_local.params.plotProgress = 1;
+
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
  
