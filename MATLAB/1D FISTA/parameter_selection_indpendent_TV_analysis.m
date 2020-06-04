@@ -66,7 +66,7 @@ for i = 1:N
     for j = 1:num_ims
         e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err','x_hat');
         err_select(i,j) = e_data.err(end);
-        l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4);
+        l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
         l1_approx(i,j) = sum( sqrt( ( e_data.x_hat(:) ).^2 + tvBeta^2) );
         az_signal = squeeze(sum(e_data.x_hat,1));
@@ -105,6 +105,21 @@ Pc.lambda_values = param_select;
 figure(112)
 plot(param_select,'o-')
 title('Parameters selected')
+
+%% Selected VDF
+select_vdf = zeros(num_ims,size(A0,2));
+for i = 1:N
+    for j = 1:num_ims
+        select_vdf(j,:) = vdf_time(lambda_indices(j),j,:);
+    end
+end
+figure(7)
+imagesc(select_vdf)
+shading interp
+caxis([0 0.6])
+colormap(jet)
+title('VDF selected parameters')
+
 %% Plot
 for image_num = 3;
 figure(2)
@@ -122,6 +137,17 @@ hold on
 xlabel('\lambda')
 ylabel('error')
 end
+
+% Plot
+for image_num = 3;
+figure(6)
+plot(mean(l1_approx,2),mean(err_select,2),'o-')
+hold on
+xlabel('time-average l1-norm')
+ylabel('time-average error')
+title('L-curve')
+end
+
 
 % Plot
 for image_num = 3;

@@ -11,18 +11,19 @@ for n_level = 3
     dset_name = 'gnoise4_nonorm';
     num_ims = 20;
     
-    datadir = '/cluster/shared/dbanco02/';
-    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-    indep_dir = ['/cluster/shared/dbanco02/ADMM_Sherman_indep3/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
-    init_dir = ['/cluster/shared/dbanco02/ADMM_Sherman_indep3/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir = ['gnoise4_coupled_ISM1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-
+%     datadir = '/cluster/shared/dbanco02/';
+%     dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
+%     base_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep3/';
+%     indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep/'];
+%     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+%     output_dir = ['gnoise4_coupled_ISM1/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
     
-%     datadir = 'E:\CHESS_data\';
-%     dataset = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-%     indep_dir = ['E:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep\'];
-%     init_dir = [datadir,'gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir = ['gnoise4_subdir\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    datadir = 'D:\CHESS_data\';
+    dataset =  [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
+    base_dir = [datadir,'ADMM_Sherman_indep3\'];
+    indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
+    init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
+    output_dir  = ['gnoise4_coupled_ISM1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
     mkdir([datadir,'gnoise4_coupled_ISM1'])    
     % Universal Parameters
@@ -32,28 +33,25 @@ for n_level = 3
 
     % Load most parameters by loading single output
     load([indep_dir,sprintf(baseFileName,1,1)])
-
+    N = numel(P.lambda_values);
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
-    Pc.wLam = 10;
-    Pc.gamma = 1;
+    Pc.rho2 = 1;
+    Pc.lambda2 = 0.001;
     Pc.maxIterReg = 800;
     Pc.num_outer_iters = 10;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
     Pc.num_ims = num_ims;
     Pc.prefix = 'polar_vector';
-    Pc.dataset = [dataset];
+    Pc.dataset = dataset;
     Pc.distScale = 0;
-    % Lambda values
-    lambda_vals = logspace(-3,1,30); 
-    N = numel(lambda_vals);
 
-    % Gamma values
-%     gamma_vals = [0.0005,0.00075,0.001,0.0025,0.005,0.0075,0.01,0.025 0.05,0.075,0.1,0.15,0.2]; 
-    gamma_vals = logspace(-3,1,10);
-    M = numel(gamma_vals);
-
+    % Lambda2 values
+    lambda2_vals = logspace(-2,-1,10);
+    M = numel(lambda2_vals);
+    Pc.lambda2_values = lambda2_vals;
+    
     % Construct dictionary
     switch P.basis
         case 'norm2'
@@ -85,7 +83,7 @@ for n_level = 3
     discrep_crit = abs(err_select'-noise_eta);
 
     [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
-    param_select = lambda_vals(lambda_indices);
+    param_select = P.lambda_values(lambda_indices);
     Pc.lambda_values = param_select;
 
     %% Move independent fits to init directory
@@ -97,7 +95,6 @@ for n_level = 3
     end
 
     %% Run coupled grid search
-
     disp('Begin grid search')
 
     for i = 1:M
@@ -108,7 +105,7 @@ for n_level = 3
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
         Pc.gamma = gamma_vals(i);
-        runCoupledFISTA_1D(P,Pc)
+        runCoupledISM_TVx_1D(P,Pc)
     end
     
 end

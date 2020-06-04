@@ -1,12 +1,11 @@
-function runCoupledFISTA_1D_TVx( P, Pc )
-%runCoupledFISTA 
+function runCoupledISM_TVx_1D( P, Pc )
+%runCoupledISM_TVx_1D
 
 % Unpack parameters
-P.params.imageNum = Pc.imageNum;
-P.params.numIms = Pc.num_ims;
-P.params.tvBeta = Pc.tvBeta;
-P.params.gamma = Pc.gamma;
+P.params.rho2 = Pc.rho2;
+P.params.lambda2 = Pc.lambda2;
 P.params.maxIterReg = Pc.maxIterReg;
+
 dataset = Pc.dataset;
 lambda_values = Pc.lambda_values;
 num_outer_iters = Pc.num_outer_iters;
@@ -29,7 +28,6 @@ else
     start_ind = 1;
 end
     
-
 for jjj = start_ind:num_outer_iters
     % setup io directories
     if jjj == 1
@@ -45,20 +43,20 @@ for jjj = start_ind:num_outer_iters
         input_dir = output_dirB;
         output_dir = output_dirA;
     end
-    % extract vdfs if beyond first pass
-    if jjj > 1
-        vdf_array = cell(num_ims,1);
-        for ii = 1:num_ims
-            f_data = load(fullfile(input_dir,sprintf(baseFileName,1,ii)));
-            vdf_array{ii} = f_data.x_hat;
-        end
-        new_vdf_array = cell(num_ims,1);
-    end
-    vdfs = {};
+    
     % iterate over each image
-    parfor image_num = 1:num_ims
+    for image_num = 1:num_ims
         im_data = load(fullfile(dataset,[prefix,'_',num2str(image_num),'.mat']));
-        
+        n_ind = [image_num-1, image_num+1];
+        n_ind = n_ind( (n_ind>=1)&(n_ind<=num_ims) );
+        x_n = {};
+        k = 1;
+        for i = n_ind
+            x_data = load(fullfile(input_dir,sprintf(baseFileName,1,i)),'x_hat')
+            x_n{k} = x_data.x_hat;
+            k = k + 1;
+        end
+
         % Reduce image to vector 
         try
             b = squeeze(sum(im_data.polar_image,1));
@@ -66,22 +64,15 @@ for jjj = start_ind:num_outer_iters
             b = im_data.polar_vector;
         end
         
-        % Scale image by 2-norm
-        bn = b;
-        
         P_local = P;
         P_local.set = 1;
-        
+        P_local.params.plotProgress = 1;
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
-        P_local.params.numIms = num_ims;
-        P_local.params.imageNum = image_num;
-        P_local.params.noBacktrack = 1;
-        P_local.params.L = 10000;
-        
+ 
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
-            x_init(:,i) = zeroPad(bn/P_local.num_var_t,P_local.params.zeroPad);
+            x_init(:,i) = zeroPad(b/P_local.num_var_t,P_local.params.zeroPad);
         end
         
         if jjj == 1
@@ -89,28 +80,15 @@ for jjj = start_ind:num_outer_iters
             switch Pc.initialization
                 case 'causal'
                     if image_num == 1
-                        [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
+                        [x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P_local.params);
                     else
-                        [x_hat, err, ~, ~,  obj, ~] = space_TVx_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
+                        [x_hat,err,obj] = convADMM_LASSO_Sherman_TVx_1D(A0ft_stack,b,x_init,x_n,P_local.params);
                     end
                 case 'simultaneous'
-                    [x_hat,err,obj,~,~,~] = FISTA_Circulant_1D(A0ft_stack,bn,x_init,P_local.params);
-            end
-            new_vdf = x_hat;
-            vdfs = {new_vdf};
-            
+                    [x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,bn,x_init,P_local.params);
+            end     
         else
-            % Consecutive iterations use t-1,t+1
-            if image_num == 1
-                vdfs = vdf_array(2);
-            elseif image_num == num_ims
-                vdfs = vdf_array(num_ims-1);
-            else
-                vdfs = {vdf_array{image_num-1},vdf_array{image_num+1}};
-            end
-            [x_hat, err, ~, ~,  obj, ~] = space_TVx_FISTA_Circulant_1D(A0ft_stack,bn,vdfs,x_init,P_local.params);
-            
-            new_vdf_array{image_num} = x_hat;
+            [x_hat,err,obj] = convADMM_LASSO_Sherman_TVx_1D(A0ft_stack,b,x_init,x_n,P_local.params);  
         end
         
         % Output data
@@ -121,10 +99,6 @@ for jjj = start_ind:num_outer_iters
             save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P_local,Pc,image_num);
             save_obj(output_dir,jjj,image_num,obj);
         end
-    end
-    
-    if jjj > 1
-        vdf_array = new_vdf_array;
     end
 end
 

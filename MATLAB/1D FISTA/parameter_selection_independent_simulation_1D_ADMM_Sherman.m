@@ -74,9 +74,7 @@ A0 = unshifted_basis_vector_stack_norm2_zpad(P);
 for image_num = 1:num_ims
     im_data = load(fullfile([dataset],[prefix,'_',num2str(image_num),'.mat']));
     % Zero pad image
-    b = im_data.polar_vector;
-    % Scale image by 2-norm
-    bn = b;
+    bn = im_data.polar_vector;
       
     % Initial solution
     x_init = zeros(size(A0ft_stack));
