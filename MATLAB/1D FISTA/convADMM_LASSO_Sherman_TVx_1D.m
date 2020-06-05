@@ -66,7 +66,7 @@ yk = x_init;
 ykp1 = x_init;
 z1k = x_init;
 z1kp1 = x_init;
-z2k = x_init;
+z2k = zeros(size(x_init));
 z2kp1 = x_init;
 vk = zeros(size(xk));
 u1k = zeros(size(xk));
@@ -89,7 +89,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolveTVx( A0ft_stack,b,ykp1,vk,z1k,z2k,u1k,u2k,params );
+    xkp1 = circulantLinSolveTVx( A0ft_stack,b,ykp1,vk,z1k,z2k,u1k,u2k,params,xEnd );
 
     % y-update
     ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);

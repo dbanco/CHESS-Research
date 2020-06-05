@@ -104,7 +104,7 @@ for n_level = 3
         mkdir(Pc.init_dir)
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
-        Pc.gamma = gamma_vals(i);
+        Pc.lambda2 = lambda2_vals(i);
         runCoupledISM_TVx_1D(P,Pc)
     end
     
