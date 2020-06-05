@@ -50,11 +50,8 @@ zMask = params.zeroMask;
 if ~all(size(x_init)==[n,t])
     error('The dimension of the x_init does not match.');
 end
-if numel(x_n) == 1
-    xEnd = 1;
-else
-    xEnd = 0;
-end
+neighbors = numel(x_n);
+
 b = zeroPad(b,zPad);
 bnormsq = sum((b(:)).^2);
 
@@ -89,7 +86,8 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolveTVx( A0ft_stack,b,ykp1,vk,z1k,z2k,u1k,u2k,params,xEnd );
+    xkp1 = circulantLinSolveTVx( A0ft_stack,b,ykp1,vk,z1k,z2k,u1k,u2k,...
+                                 params,neighbors );
 
     % y-update
     ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
@@ -98,7 +96,7 @@ while keep_going && (nIter < maxIter)
     end
     
     % z-update
-    if xEnd
+    if neighbors == 1
         x_n{2} = xkp1;
     end
     z1kp1 = soft(xkp1 - x_n{1} + u1k,lambda2/rho2);
