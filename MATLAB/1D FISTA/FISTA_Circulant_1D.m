@@ -58,7 +58,7 @@ if ~all(size(x_init)==[n,t])
 end
 
 b = zeroPad(b,zPad);
-bnormsq = sum((b(:)).^2);
+bnormsq = sum(b(:).^2);
 
 % Track error, objective, and sparsity
 err = nan(1,maxIter);

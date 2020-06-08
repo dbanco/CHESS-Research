@@ -79,7 +79,7 @@ while keep_going && (nIter < maxIter)
     xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
 
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/(bnormsq*rho));
     if isNonnegative
         ykp1(ykp1<0) = 0;
     end

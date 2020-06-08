@@ -54,6 +54,8 @@ neighbors = numel(x_n);
 
 b = zeroPad(b,zPad);
 bnormsq = sum((b(:)).^2);
+tm1 = numel(x_n{1}) > 1;
+tp1 = numel(x_n{2}) > 1;
 
 % Initialize variables
 x_init = forceMaskToZeroArray(x_init,zMask);
@@ -61,10 +63,8 @@ xk = x_init;
 xkp1 = x_init;
 yk = x_init;
 ykp1 = x_init;
-z1k = x_init;
-z1kp1 = x_init;
+z1k = zeros(size(x_init));
 z2k = zeros(size(x_init));
-z2kp1 = x_init;
 vk = zeros(size(xk));
 u1k = zeros(size(xk));
 u2k = zeros(size(xk));
@@ -87,41 +87,45 @@ while keep_going && (nIter < maxIter)
     
     % x-update
     xkp1 = circulantLinSolveTVx( A0ft_stack,b,ykp1,vk,z1k,z2k,u1k,u2k,...
-                                 params,neighbors );
+                                 x_n,params);
 
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/(rho*bnormsq));
     if isNonnegative
         ykp1(ykp1<0) = 0;
     end
-    
-    % z-update
-    if neighbors == 1
-        x_n{2} = xkp1;
-    end
-    z1kp1 = soft(xkp1 - x_n{1} + u1k,lambda2/rho2);
-    z2kp1 = soft(xkp1 - x_n{2} + u2k,lambda2/rho2);
-    if isNonnegative
-        z1kp1(z1kp1<0) = 0;
-    end
-    if isNonnegative
-        z2kp1(z2kp1<0) = 0;
-    end
-    
     % v-update
     vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
     
-    % u-update
-    u1k = u1k + xkp1 - z1kp1;
-    u2k = u2k + xkp1 - z2kp1;
+    % z-update and u-update
+    if tm1
+        z1kp1 = soft(alpha*xkp1 + (1-alpha)*z1k - x_n{1} + u1k,lambda2/(rho2*bnormsq));
+        if isNonnegative
+            z1kp1(z1kp1<0) = 0;
+        end
+        u1k = u1k + alpha*xkp1 + (1-alpha)*z1k - z1kp1;
+    else
+        z1kp1 = 0;
+        u1k = 0;
+    end
+    if tp1
+        z2kp1 = soft(alpha*xkp1 + (1-alpha)*z2k - x_n{2} + u2k,lambda2/(rho2*bnormsq));
+        if isNonnegative
+            z2kp1(z2kp1<0) = 0;
+        end
+        u2k = u2k + alpha*xkp1 + (1-alpha)*z2k - z2kp1;
+    else
+        z2kp1 = 0;
+        u2k = 0;
+    end
    
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D(A0ft_stack,xkp1);
         
-    err(nIter) = sum((b(:)-fit(:)).^2)/2/bnormsq;
+    err(nIter) = 0.5*sum((b(:)-fit(:)).^2)/bnormsq;
     l1_norm(nIter) = lambda*sum(abs(xkp1(:)));
-    tv_penalty(nIter) = lambda2*( sum(abs(xkp1(:)-x_n{1}(:))) +...
-                                  sum(abs(xkp1(:)-x_n{2}(:))) );
+    tv_penalty(nIter) = lambda2*( tm1*sum(abs(xkp1(:)-x_n{1}(:))) +...
+                                  tp1*sum(abs(xkp1(:)-x_n{2}(:))) );
                               
     f = err(nIter) + l1_norm(nIter) + tv_penalty(nIter);
         
