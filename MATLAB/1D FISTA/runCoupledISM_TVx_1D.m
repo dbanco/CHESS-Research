@@ -69,7 +69,7 @@ for jjj = start_ind:num_outer_iters
 
         % Use selected lambda
         P_local.params.lambda = lambda_values(image_num);
- 
+        P_local.params.time = image_num;
         x_init = zeros(size(A0ft_stack));
         for i = 1:P_local.num_var_t
             x_init(:,i) = zeroPad(b/P_local.num_var_t,P_local.params.zeroPad);
