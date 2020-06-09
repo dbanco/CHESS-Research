@@ -85,10 +85,10 @@ for jjj = start_ind:num_outer_iters
         
         % Output data
         try
-            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_image,P_local,Pc,image_num);
+            save_output(output_dir,baseFileName,x_hat,err,xt_data.polar_image,P_local,Pc,image_num);
             save_obj(output_dir,jjj,image_num,obj);
         catch
-            save_output(output_dir,baseFileName,x_hat,err,im_data.polar_vector,P_local,Pc,image_num);
+            save_output(output_dir,baseFileName,x_hat,err,xt_data.polar_vector,P_local,Pc,image_num);
             save_obj(output_dir,jjj,image_num,obj);
         end
     end
