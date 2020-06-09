@@ -46,21 +46,24 @@ for jjj = start_ind:num_outer_iters
     
     % iterate over each image
     parfor image_num = 1:num_ims
+        % Load independent solution
         xt_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num)));
         x_init = xt_data.x_hat;
         
+        % Track image number and lambda parameter
         P_local = P;
         P_local.set = 1;
         P_local.params.lambda = lambda_values(image_num);
         P_local.params.time = image_num;
         
-        % Reduce image to vector 
+        % Reduce image to vector if needed
         try
             b = squeeze(sum(xt_data.polar_image,1));
         catch
             b = xt_data.polar_vector;
         end
         
+        % Load image neighbors for total variation
         x_n = {};
         if image_num == 1
             xn_data = load(fullfile(input_dir,sprintf(baseFileName,1,2)),'x_hat')
@@ -77,7 +80,7 @@ for jjj = start_ind:num_outer_iters
             x_n{2} = xn_data.x_hat;
         end
          
-        % Coupled iterations
+        % Solve
         [x_hat,err,obj] = convADMM_LASSO_Sherman_TVx_1D(A0ft_stack,b,x_init,x_n,P_local.params);  
         
         % Output data
