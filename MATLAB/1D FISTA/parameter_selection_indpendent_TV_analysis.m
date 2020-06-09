@@ -3,7 +3,7 @@ close all
 
 num_theta = 180
 noise_std = 0:0.03:0.30;
-n_eta_levels = sqrt(num_theta.*noise_std.^2)/100;
+n_eta_levels = sqrt(num_theta.*noise_std.^2)/10;
 % n_eta_levels = noise_std;
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
@@ -23,8 +23,8 @@ num_ims = 20;
 
 datadir = 'D:\CHESS_data\';
 dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-indep_dir = ['D:\CHESS_data\ADMM_Sherman_indep3\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
-init_dir = ['D:\CHESS_data\ADMM_Sherman_indep3\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep1'];
+indep_dir = ['D:\CHESS_data\ADMM_Sherman_indep4\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
+init_dir = ['D:\CHESS_data\ADMM_Sherman_indep4\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init_indep1'];
 
 % Universal Parameters
 % Ring sampling parameters
@@ -34,7 +34,6 @@ baseFileName = 'fista_fit_%i_%i.mat';
 % Lambda values
 lambda_vals = logspace(-4,1,30); 
 N = numel(lambda_vals);
-tvBeta = 1e-4;
 
 % Load most parameters by loading single output
 load([indep_dir,sprintf(baseFileName,1,1)])
@@ -57,7 +56,6 @@ vdf_time = zeros(N,num_ims,size(A0,2));
 err_select = zeros(N,num_ims);
 l0_select = zeros(N,num_ims);
 l1_select = zeros(N,num_ims);
-l0_approx = zeros(N,num_ims);
 x_indep = cell(num_ims,1);
 tv_time = zeros(N,num_ims-1);
 im_ind = 1;
@@ -68,7 +66,6 @@ for i = 1:N
         err_select(i,j) = e_data.err(end);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
-        l1_approx(i,j) = sum( sqrt( ( e_data.x_hat(:) ).^2 + tvBeta^2) );
         az_signal = squeeze(sum(e_data.x_hat,1));
         var_sum = sum(az_signal(:));
         vdf_time(i,j,:) = az_signal/var_sum;
@@ -123,7 +120,7 @@ title('VDF selected parameters')
 %% Plot
 for image_num = 3;
 figure(2)
-semilogx(lambda_vals,mean(l1_approx,2),'o-')
+semilogx(lambda_vals,mean(l1_select,2),'o-')
 hold on
 xlabel('\lambda')
 ylabel('l_1 term')
@@ -138,15 +135,15 @@ xlabel('\lambda')
 ylabel('error')
 end
 
-% Plot
-for image_num = 3;
-figure(6)
-plot(mean(l1_approx,2),mean(err_select,2),'o-')
-hold on
-xlabel('time-average l1-norm')
-ylabel('time-average error')
-title('L-curve')
-end
+% % Plot
+% for image_num = 3;
+% figure(6)
+% plot(mean(l1_approx,2),mean(err_select,2),'o-')
+% hold on
+% xlabel('time-average l1-norm')
+% ylabel('time-average error')
+% title('L-curve')
+% end
 
 
 % Plot
