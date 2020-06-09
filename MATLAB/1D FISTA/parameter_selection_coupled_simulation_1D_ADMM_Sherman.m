@@ -1,5 +1,5 @@
 noise_std = 0:0.03:0.30;
-n_eta_levels = sqrt(180.*noise_std.^2)/100;
+n_eta_levels = sqrt(180.*noise_std.^2);
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
 for n_level = 3
@@ -9,7 +9,7 @@ for n_level = 3
     P.set = 1;
 
     dset_name = 'gnoise4_nonorm';
-    output_name = 'gnoise4_nonorm_coupled_ISM4';
+    output_name = 'gnoise4_nonorm_coupled_ISM5';
     num_ims = 20;
     
     datadir = '/cluster/shared/dbanco02/';
@@ -24,9 +24,10 @@ for n_level = 3
 %     base_dir = [datadir,'ADMM_Sherman_indep3\'];
 %     indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
 %     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir  = ['gnoise4_coupled_ISM1\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+%     output_dir  = [output_name,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
 
-    mkdir([datadir,output_name])    
+    mkdir([datadir,output_name])  
+    
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'polar_vector';
@@ -40,7 +41,8 @@ for n_level = 3
     Pc.preInitialized = 2;
     Pc.rho2 = 10;
     Pc.lambda2 = 0.001;
-    Pc.maxIterReg = 800;
+    Pc.maxIterReg = 1600;
+    Pc.tolerance = 1e-10;
     Pc.num_outer_iters = 20;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
     Pc.num_ims = num_ims;
@@ -82,7 +84,6 @@ for n_level = 3
     % Criterion 
     noise_eta = n_eta_levels(n_level);
     discrep_crit = abs(err_select'-noise_eta);
-
     [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
     param_select = P.lambda_values(lambda_indices);
     Pc.lambda_values = param_select;

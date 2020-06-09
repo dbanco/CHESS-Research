@@ -36,23 +36,19 @@ P.var_theta = linspace(P.dtheta/2,50,P.num_var_t).^2;
 zPad = [0,0];
 zMask = [];
 
-% fista params
+% ism admm params
 params.stoppingCriterion = 2;
-params.tolerance = 1e-8;
-params.L = 1;
-params.t_k = 1;
 params.lambda = 0.08;
-params.rho = 40;
-params.tau = 1.2;
+params.rho = 4;
+params.tau = 1.05;
 params.mu = 10;
 params.adaptRho = 1;
 params.alpha = 1.8;
-params.beta = 1.01;
-params.maxIter = 1000;
 params.isNonnegative = 1;
+params.maxIter = 1000;
+params.tolerance = 1e-8;
 params.zeroPad = zPad;
 params.zeroMask = zMask;
-params.noBacktrack = 0;
 params.plotProgress = 0;
 P.params = params;
    

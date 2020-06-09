@@ -5,6 +5,7 @@ function runCoupledISM_TVx_1D( P, Pc )
 P.params.rho2 = Pc.rho2;
 P.params.lambda2 = Pc.lambda2;
 P.params.maxIterReg = Pc.maxIterReg;
+P.params.tolerance = Pc.tolerance;
 
 dataset = Pc.dataset;
 lambda_values = Pc.lambda_values;
