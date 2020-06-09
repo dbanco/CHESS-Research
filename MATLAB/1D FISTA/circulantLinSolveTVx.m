@@ -14,11 +14,11 @@ tm1 = numel(x_n{1}) > 1;
 tp1 = numel(x_n{2}) > 1;
 
 if tm1 && tp1
-    const_ft = fft(rho1*(yk-vk)+rho2*(x_n{1}+z1k-u1k)+rho2*(x_n{2}-z2k+u2k));
+    const_ft = fft(rho*(yk-vk)+rho2*(x_n{1}+z1k-u1k)+rho2*(x_n{2}-z2k+u2k));
 elseif tm1
-    const_ft = fft(rho1*(yk-vk)+rho2*(x_n{1}+z1k-u1k));
+    const_ft = fft(rho*(yk-vk)+rho2*(x_n{1}+z1k-u1k));
 elseif tp1
-    const_ft = fft(rho1*(yk-vk)+rho2*(x_n{2}-z2k+u2k));
+    const_ft = fft(rho*(yk-vk)+rho2*(x_n{2}-z2k+u2k));
 end
     
 r_ft = (A0ft_stack'.').*repmat(b_ft,[1,20])/bnormsq + const_ft;

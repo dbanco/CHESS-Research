@@ -9,7 +9,7 @@ P.set = 1;
 num_ims = 20;
 dset_name = 'gnoise4_nonorm';
 % out_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep1/';
-out_dir = 'D:\CHESS_data\ADMM_Sherman_indep3/';
+out_dir = 'D:\CHESS_data\ADMM_Sherman_indep3\';
 mkdir(out_dir)
 for jjj = 3
 % dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
