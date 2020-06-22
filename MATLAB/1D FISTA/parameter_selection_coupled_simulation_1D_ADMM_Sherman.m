@@ -5,28 +5,32 @@ n_eta_levels = sqrt(180.*noise_std.^2);
 for n_level = 3
 
     % Parameter selection
-    disp('Setup parms')
+    disp('Setup params')
     P.set = 1;
 
+    % Parent directory
+    top_dir = 'D:\CHESS_data';
+%     top_dir = '/cluster/shared/dbanco02';
+    
+    % Input dirs
     dset_name = 'gnoise4_nonorm';
-    output_name = 'gnoise4_nonorm_coupled_ISM5';
+    dset_subdir = ['simulated_two_spot_1D_',dset_name,'_',num2str(n_level)];
+    indep_name = 'ADMM_Sherman_indep5';
+    indep_subdir = [dset_subdir,'_indep1'];
+    init_subdir =  [dset_subdir,'_simul_init'];
+    
+    % Output dirs
+    output_name = 'gnoise4_nonorm_coupled_ISM_TVx5';
+    output_subdir = [dset_subdir,'_coupled'];
     num_ims = 20;
     
-    datadir = '/cluster/shared/dbanco02/';
-    dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'/'];
-    base_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep3/';
-    indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1/'];
-    init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-    output_dir = [output_name,'/simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
-    
-%     datadir = 'D:\CHESS_data\';
-%     dataset =  [datadir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'\'];
-%     base_dir = [datadir,'ADMM_Sherman_indep3\'];
-%     indep_dir = [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_indep1\'];
-%     init_dir =  [base_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_simul_init'];
-%     output_dir  = [output_name,'\simulated_two_spot_1D_',dset_name,'_',num2str(n_level),'_coupled'];
+    % Setup directories
+    dataset =  fullfile(top_dir,dset_subdir);
+    indep_dir = fullfile(top_dir,indep_name,indep_subdir);
+    init_dir =  fullfile(top_dir,indep_name,init_subdir);
+    output_dir  = fullfile(output_name,output_subdir);
 
-    mkdir([datadir,output_name])  
+    mkdir([top_dir,output_name])  
     
     % Universal Parameters
     % Ring sampling parameters
@@ -34,7 +38,7 @@ for n_level = 3
     baseFileName = 'fista_fit_%i_%i.mat';
 
     % Load most parameters by loading single output
-    load([indep_dir,sprintf(baseFileName,1,1)])
+    load(fullfile(indep_dir,sprintf(baseFileName,1,1)))
     N = numel(P.lambda_values);
     % coupled params
     Pc.initialization = 'simultaneous';
@@ -43,15 +47,15 @@ for n_level = 3
     Pc.lambda2 = 0.001;
     Pc.maxIterReg = 1600;
     Pc.tolerance = 1e-10;
-    Pc.num_outer_iters = 20;
+    Pc.num_outer_iters = 1;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
     Pc.num_ims = num_ims;
     Pc.prefix = 'polar_vector';
     Pc.dataset = dataset;
-    Pc.distScale = 0;
 
     % Lambda2 values
-    lambda2_vals = logspace(-4,0,30);
+%     lambda2_vals = logspace(-4,0,30);
+    lambda2_vals = [1e-4,1e-3];
     M = numel(lambda2_vals);
     Pc.lambda2_values = lambda2_vals;
     
@@ -72,7 +76,7 @@ for n_level = 3
         fprintf('%i of %i \n',i,N)
         for j = 1:num_ims
             e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-            err_select(i,j) = e_data.err(end-1)*norm(polar_image);
+            err_select(i,j) = e_data.err(end);
             l0_select(i,j) = sum(e_data.x_hat(:) > 0);
             l1_select(i,j) = sum(e_data.x_hat(:));
         end
@@ -101,11 +105,13 @@ for n_level = 3
 
     for i = 1:M
         Pc.init_dir = init_dir;
-        Pc.output_dirA = [datadir,output_dir,'_',num2str(i),'a'];
-        Pc.output_dirB = [datadir,output_dir,'_',num2str(i),'b'];
+        Pc.output_dirA = [fullfile(top_dir,output_dir),'_',num2str(i),'a'];
+        Pc.output_dirB = [fullfile(top_dir,output_dir),'_',num2str(i),'b'];
+        Pc.output_dirFinal = [fullfile(top_dir,output_dir),'_',num2str(i),'_','final'];
         mkdir(Pc.init_dir)
         mkdir(Pc.output_dirA)
         mkdir(Pc.output_dirB)
+        mkdir(Pc.output_dirFinal)
         Pc.lambda2 = lambda2_vals(i);
         runCoupledISM_TVx_1D(P,Pc)
     end

@@ -13,6 +13,7 @@ num_outer_iters = Pc.num_outer_iters;
 init_dir = Pc.init_dir;
 output_dirA = Pc.output_dirA;
 output_dirB = Pc.output_dirB;
+output_dirFinal = Pc.output_dirFinal;
 baseFileName = Pc.baseFileName;
 num_ims = Pc.num_ims;
 prefix = Pc.prefix;
@@ -22,22 +23,13 @@ switch P.basis
     case 'norm2'
         A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
 end
-
-if Pc.preInitialized
-   start_ind = Pc.preInitialized;
-else
-    start_ind = 1;
-end
     
-for jjj = start_ind:num_outer_iters
-    % setup io directories
+for jjj = 1:num_outer_iters
+    % Setup io directories
     if jjj == 1
         input_dir = init_dir;
-        output_dir = init_dir;
-    elseif jjj == 2
-        input_dir = init_dir;
         output_dir = output_dirA;
-    elseif mod(jjj,2)
+    elseif ~mod(jjj,2)
         input_dir = output_dirA;
         output_dir = output_dirB;
     else
@@ -45,7 +37,7 @@ for jjj = start_ind:num_outer_iters
         output_dir = output_dirA;
     end
     
-    % iterate over each image
+    % Iterate over images
     parfor image_num = 1:num_ims
         % Load independent solution
         xt_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num)));
@@ -67,11 +59,11 @@ for jjj = start_ind:num_outer_iters
         % Load image neighbors for total variation
         x_n = {};
         if image_num == 1
-            xn_data = load(fullfile(input_dir,sprintf(baseFileName,1,2)),'x_hat')
+            xn_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num+1)),'x_hat')
             x_n{1} = 0;
             x_n{2} = xn_data.x_hat;
         elseif image_num == num_ims
-            xn_data = load(fullfile(input_dir,sprintf(baseFileName,1,num_ims-1)),'x_hat')
+            xn_data = load(fullfile(input_dir,sprintf(baseFileName,1,image_num-1)),'x_hat')
             x_n{1} = xn_data.x_hat;
             x_n{2} = 0;
         else
@@ -93,6 +85,11 @@ for jjj = start_ind:num_outer_iters
             save_obj(output_dir,jjj,image_num,obj);
         end
     end
+end
+
+% Move solution to final output dir
+for i = 1:num_ims
+    movefile(fullfile(output_dir,sprintf(baseFileName,P.set,i)),output_dirFinal);
 end
 
 end

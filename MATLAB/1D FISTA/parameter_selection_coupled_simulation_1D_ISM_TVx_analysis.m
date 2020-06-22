@@ -13,7 +13,7 @@ for ijk = [3]
     num_ims = 20;
     home_dir = 'D:\CHESS_data\';
     dset_fit = [dset_name,'_coupled_ISM_TVx5'];
-    indep_dir =  'ADMM_Sherman_indep4\';
+    indep_dir =  'ADMM_Sherman_indep5\';
     dataset =    [home_dir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
     init_dir =   [home_dir,indep_dir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
     output_dir = [home_dir,dset_fit,'\simulated_two_spot_1D_',dset_name,'_',dataset_num,'_coupled_'];
@@ -28,11 +28,12 @@ for ijk = [3]
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'mmpad_img';
-    load([output_dir,'6a\',sprintf(baseFileName,1,1)])
+    load([output_dir,'1_final\',sprintf(baseFileName,1,1)])
     polar_image = zeroPad(polar_image,P.params.zeroPad);
     lambda2_vals = Pc.lambda2_values;
     M = numel(lambda2_vals);
-
+    sM = 1;
+    eM = M;
     % Construct dictionary
     switch P.basis
         case 'norm2'
@@ -61,7 +62,7 @@ for ijk = [3]
     for k = sM:eM
         fprintf('%i of %i\n',k,M)
         for j = 1:num_ims
-            load(fullfile([output_dir,num2str(k),'a\'],sprintf(baseFileName,1,j)))
+            load(fullfile([output_dir,num2str(k),'_final\'],sprintf(baseFileName,1,j)))
 
             % Fit objective
             fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
@@ -330,7 +331,7 @@ for ijk = [3]
 
     for image_num = 1:num_ims
 
-        load(fullfile([output_dir,num2str(trial_k),'a\'],sprintf(baseFileName,1,image_num)))
+        load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = squeeze(sum(polar_image,1));
         fit = Ax_ft_1D(A0ft_stack,x_hat)*norm(polar_vector(:));
@@ -356,10 +357,10 @@ for ijk = [3]
     [ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
     awmv_az_vdfs = zeros(num_ims,1);
     im_ind = 1;
-    trial_k = 6;
+    trial_k = 1;
     for image_num = 1:20
 
-        load(fullfile([output_dir,num2str(trial_k),'a\'],sprintf(baseFileName,1,image_num)))
+        load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1,image_num)))
 
         polar_vector = polar_image;
         fit = Ax_ft_1D(A0ft_stack,x_hat);

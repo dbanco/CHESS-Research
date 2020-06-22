@@ -42,7 +42,6 @@ COEF_CHANGE = 3;
 % x_init = ones(m,n,t,r) ;
 
 % Get parameters
-stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 L = params.L;
 lambda = params.lambda;
@@ -172,17 +171,17 @@ while keep_going && (nIter < maxIter)
     
 
     % Check stopping criterion
-    switch stoppingCriterion
-        case STOPPING_OBJECTIVE_VALUE
+    switch params.stoppingCriterion
+        case 'OBJECTIVE_VALUE'
             % compute the stopping criterion based on the relative
             % variation of the objective function.
             criterionObjective = abs(f-prev_f);
             keep_going =  (criterionObjective > tolerance);
-        case STOPPING_SUBGRADIENT
+        case 'SUBGRADIENT'
             sk = L*(xk-xkm1) +...
                  AtR_ft_1D(A0ft_stack,forceMaskToZero(Ax_ft_1D(A0ft_stack,xk-xkm1),zMask))/bnorm;
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
-        case COEF_CHANGE
+        case 'COEF_CHANGE'
             diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
             keep_going = (diff_x > tolerance);
         otherwise

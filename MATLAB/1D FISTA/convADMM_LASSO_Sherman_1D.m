@@ -3,34 +3,31 @@ function [x_hat, err, obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,param
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
 % Inputs:
-% b          - (n) polar ring image
-% A0ft_stack - (n x t) fft of unshifted gaussian basis matrices
-% params     - struct containing the following field
-%   lambda - l1 penalty parameter > 0
-%   rho - admm penalty parameter > 0
-%   L - gradient step size > 0
+%   b          - (n) polar ring image
+%   A0ft_stack - (n x t) fft of unshifted gaussian basis matrices
+%   params     - struct containing the following field
+%   lambda     - l1 penalty parameter > 0
+%   adaptRho   - adaptive rho enable: 1 or 0
+%   rho        - admm penalty parameter > 0
+%   tau        - adaptive rho parameter: 1.01-1.5
+%   mu         - separation factor between primal and dual residual
+%   alpha      - momentum parameter1.1-1.8
 %   isNonnegative - flag to enforce nonnegative solution
 %   x_init - initial guess of solution
-
-%   stoppingCriterion - integer indicated stopping criterion (1,2,3)
+%
+%   stoppingCriterion - 'OBJECTIVE_VALUE' or 'COEF_CHANGE'
 %   tolerance - tolerance for stopping criterion
 %   maxIter - maximum number of iterations
-%   maxGradIter - maximum number of iterations for gradient descent
-
+%
+%   zeroPad         - [row_pad_width,col_pad_width]
+%   zeroMask        - [row_indices,col_indices]
+%   plotProgress    - 0 or 1
 %
 % Outputs:
-% x_hat - (n x t) solution 
-% err - (nIters) relative error of solution at each iteration
-% obj - (nIters) objective value of solution at each iteration
-% l_0 - (nIters) sparsity of solution at each iteration
+%   x_hat - (n x t) solution 
+%   err - (nIters) relative error of solution at each iteration
+%   obj - (nIters) objective value of solution at each iteration
 
-
-% Define stopping criterion
-STOPPING_OBJECTIVE_VALUE = 1;
-COEF_CHANGE = 2;
-
-% Get parameters
-stoppingCriterion = params.stoppingCriterion;
 tolerance = params.tolerance;
 lambda = params.lambda;
 rho = params.rho;
@@ -56,8 +53,8 @@ bnormsq = sum((b(:)).^2);
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
 xkp1 = x_init;
-yk = x_init;
-ykp1 = x_init;
+yk = zeros(size(x_init));
+ykp1 = zeros(size(x_init));
 vk = zeros(size(xk));
 
 % Track error and objective
@@ -66,9 +63,9 @@ l1_norm = nan(1,maxIter);
 obj = nan(1,maxIter);
 
 % Initial objective
-err(1) = 0.5/bnormsq*sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
-l1_norm(1) = lambda*sum(abs(x_init(:)));
-obj(1) = err(1) + l1_norm(1);
+err(1) = sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
+l1_norm(1) = sum(abs(x_init(:)));
+obj(1) = 0.5/bnormsq*err(1) + lambda*l1_norm(1);
 
 keep_going = 1;
 nIter = 1;
@@ -79,7 +76,7 @@ while keep_going && (nIter < maxIter)
     xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
 
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/(bnormsq*rho));
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/(rho));
     if isNonnegative
         ykp1(ykp1<0) = 0;
     end
@@ -89,18 +86,19 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D(A0ft_stack,xkp1);
     
-    err(nIter) = sum((b(:)-fit(:)).^2)/2/bnormsq;
-    l1_norm(nIter) = lambda*sum(abs(xkp1(:)));
-    f = err(nIter) + l1_norm(nIter); %+ rho/2*sum(abs( xkp1(:)-yk(:)+vk(:) ));
-        
+    err(nIter) = sum((b(:)-fit(:)).^2);
+    l1_norm(nIter) = sum(abs(xkp1(:)));
+    f = err(nIter)/(2*bnormsq) + lambda*l1_norm(nIter); %+ rho/2*sum(abs( xkp1(:)-yk(:)+vk(:) ));
     obj(nIter) = f;
-    disp(['Iter ',     num2str(nIter),...
-          ' Obj ',     num2str(obj(nIter)),...
-          ' Rho ',     num2str(rho),...
-          ' RelErr ',  num2str(err(nIter)),...
-          ' ||x||_1 ', num2str(l1_norm(nIter)),...
-          ' ||x||_0 ', num2str(sum(xkp1(:) >0))
-           ]);
+    if params.verbose
+        disp(['Iter ',     num2str(nIter),...
+              ' Obj ',     num2str(obj(nIter)),...
+              ' Rho ',     num2str(rho),...
+              ' RelErr ',  num2str(err(nIter)),...
+              ' ||x||_1 ', num2str(l1_norm(nIter)),...
+              ' ||x||_0 ', num2str(sum(xkp1(:) >0))
+               ]);
+    end
     
     if params.plotProgress
         figure(1)    
@@ -114,13 +112,13 @@ while keep_going && (nIter < maxIter)
     end
     
     % Check stopping criterion
-    switch stoppingCriterion
-        case STOPPING_OBJECTIVE_VALUE
+    switch params.stoppingCriterion
+        case 'OBJECTIVE_VALUE'
             % compute the stopping criterion based on the relative
             % variation of the objective function.
             criterionObjective = abs(obj(nIter)-obj(nIter-1));
             keep_going =  (criterionObjective > tolerance);
-        case COEF_CHANGE
+        case 'COEF_CHANGE'
             diff_x = sum(abs(xkp1(:)-xk(:)))/numel(xk);
             keep_going = (diff_x > tolerance);
         otherwise

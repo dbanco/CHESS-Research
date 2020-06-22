@@ -27,11 +27,11 @@ P.var_theta = linspace(P.dtheta/2,50,P.num_var_t).^2;
 zPad = [0,0];
 zMask = [];
 
-% fista params
+% params
 params.lambda = 0.01;
-params.rho = 40;
+params.rho = 1;
 params.tau = 1.1;
-params.mu = 10;
+params.mu = 2;
 params.adaptRho = 1;
 params.alpha = 1.8;
 
@@ -40,7 +40,7 @@ params.L = 1;
 params.isNonnegative = 1;
 params.noBacktrack = 0;
 
-params.stoppingCriterion = 1;
+params.stoppingCriterion = 'OBJECTIVE_VALUE';
 params.maxIter = 1600;
 params.maxGradIters = 800;
 params.gradTolerance = 1e-12;
@@ -52,7 +52,7 @@ params.zeroPad = zPad;
 params.zeroMask = zMask;
 
 params.plotProgress = 0;
-
+params.verbose = 1;
 P.params = params;
    
 baseFileName = 'fista_fit_%i_%i.mat';
@@ -100,11 +100,12 @@ end
 % plot(bb1)
 % plot(bb2)
 % plot(b)
-legend('ISM','GD','Data')
+% legend('ISM','GD','Data')
  
 %% Run fits
-
+P.params.lambda = 0.01;
 [x_hat1,err,obj1] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);
+P.params.lambda = 0.01;
 [x_hat2,err,obj2] = FISTA_Circulant_1D(A0ft_stack,b,x_init,P.params);
 
 %% Plot results
@@ -113,8 +114,8 @@ legend('ISM','GD','Data')
 % x_hat1(x_hat1(:)<ft) = 0;
 % x_hat2(x_hat2(:)<ft) = 0;
 
-ism_l0=sum(x_hat1(:)>0);
-fista_l0=sum(x_hat2(:)>0);
+ism_l0=sum(x_hat1(:)>1e-6);
+fista_l0=sum(x_hat2(:)>1e-6);
 
 bb1 = Ax_ft_1D(A0ft_stack,x_hat1);
 bb2 = Ax_ft_1D(A0ft_stack,x_hat2);
