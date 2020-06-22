@@ -5,14 +5,16 @@ P.set = 1;
 
 num_ims = 20;
 dset_name = 'gnoise4_nonorm';
+
 % out_dir = '/cluster/shared/dbanco02/ADMM_Sherman_indep1/';
 out_dir = 'D:\CHESS_data\ADMM_CG_indep1\';
 mkdir(out_dir)
+
 for jjj = 3
-% dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-% output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
-dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
-output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1\'];
+dataset = ['/cluster/home/dbanco02/simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep1/'];
+% dataset = ['D:\CHESS_data\simulated_two_spot_1D_',dset_name,'_',num2str(jjj)];
+% output_dir = [out_dir,'simulated_two_spot_1D_',dset_name,'_',num2str(jjj),'_indep\'];
 mkdir(output_dir)
 
 % Universal Parameters

@@ -1,5 +1,5 @@
 noise_std = 0:0.03:0.30;
-n_eta_levels = sqrt(180.*noise_std.^2);
+n_eta_levels = sqrt(180.*noise_std.^2)/10;
 % n_eta_levels = linspace(0.02,0.35,numel(noise_std));
 
 for n_level = 3
@@ -47,15 +47,14 @@ for n_level = 3
     Pc.lambda2 = 0.001;
     Pc.maxIterReg = 1600;
     Pc.tolerance = 1e-10;
-    Pc.num_outer_iters = 1;
+    Pc.num_outer_iters = 2;
     Pc.baseFileName = 'fista_fit_%i_%i.mat';
     Pc.num_ims = num_ims;
     Pc.prefix = 'polar_vector';
     Pc.dataset = dataset;
 
     % Lambda2 values
-%     lambda2_vals = logspace(-4,0,30);
-    lambda2_vals = [1e-4,1e-3];
+    lambda2_vals = logspace(-4,-2,30);
     M = numel(lambda2_vals);
     Pc.lambda2_values = lambda2_vals;
     
