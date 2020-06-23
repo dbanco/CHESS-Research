@@ -16,11 +16,11 @@ for n_level = 3
     dset_name = 'gnoise4_nonorm';
     dset_subdir = ['simulated_two_spot_1D_',dset_name,'_',num2str(n_level)];
     indep_name = 'ADMM_CG_indep1';
-    indep_subdir = [dset_subdir,'_indep1'];
+    indep_subdir = [dset_subdir,'_indep'];
     init_subdir =  [dset_subdir,'_simul_init'];
     
     % Output dirs
-    output_name = 'gnoise4_nonorm_coupled_ISM_TVx5';
+    output_name = 'gnoise4_nonorm_coupled_CG_TVx1';
     output_subdir = [dset_subdir,'_coupled'];
     num_ims = 20;
     
@@ -35,27 +35,26 @@ for n_level = 3
     % Universal Parameters
     % Ring sampling parameters
     prefix = 'polar_vector';
-    baseFileName = 'fista_fit_%i_%i.mat';
+    baseFileName = 'fista_fit_%i.mat';
 
     % Load most parameters by loading single output
-    load(fullfile(indep_dir,sprintf(baseFileName,1,1)))
+    load(fullfile(indep_dir,sprintf(baseFileName,1)))
     N = numel(P.lambda_values);
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
-    Pc.rho2 = 10;
+    Pc.rho2 = 1;
     Pc.lambda2 = 0.001;
-    Pc.maxIterReg = 1600;
-    Pc.tolerance = 1e-10;
+    Pc.maxIterReg = 800;
+    Pc.tolerance = 1e-8;
     Pc.num_outer_iters = 1;
-    Pc.baseFileName = 'fista_fit_%i_%i.mat';
+    Pc.baseFileName = 'fista_fit_%i.mat';
     Pc.num_ims = num_ims;
     Pc.prefix = 'polar_vector';
     Pc.dataset = dataset;
 
     % Lambda2 values
-%     lambda2_vals = logspace(-4,0,30);
-    lambda2_vals = [1e-4,1e-3];
+    lambda2_vals = logspace(-4,0,30);
     M = numel(lambda2_vals);
     Pc.lambda2_values = lambda2_vals;
     
@@ -74,11 +73,14 @@ for n_level = 3
     l1_select = zeros(N,num_ims);
     for i = 1:N
         fprintf('%i of %i \n',i,N)
+        x_data = load(fullfile(indep_dir,sprintf(baseFileName,i)));
         for j = 1:num_ims
-            e_data = load(fullfile(indep_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-            err_select(i,j) = e_data.err(end);
-            l0_select(i,j) = sum(e_data.x_hat(:) > 0);
-            l1_select(i,j) = sum(e_data.x_hat(:));
+            x = x_data.X_hat(:,:,j);
+            fit = Ax_ft_1D(A0ft_stack,x);
+            bb = x_data.polar_image;
+            err_select(i,j) = sum( (fit(:)-bb(:)).^2);
+            l0_select(i,j) = sum(x(:) > 1e-4*sum(x(:)));
+            l1_select(i,j) = sum(x(:));  
         end
     end
     err_select(err_select > 10^10) = 0;
@@ -86,19 +88,24 @@ for n_level = 3
     l1_select(l1_select > 10^10) = 0;
 
     % Criterion 
-    noise_eta = n_eta_levels(n_level);
-    discrep_crit = abs(err_select'-noise_eta);
-    [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
-    param_select = P.lambda_values(lambda_indices);
-    Pc.lambda_values = param_select;
+    total_err = sum(err_select(1:20,:),2);
+    total_l1 = sum(l1_select(1:20,:),2);
+    slopes = (total_l1(2:end) - total_l1(1:end-1))./...
+         (total_err(2:end) - total_err(1:end-1));
+    slope_select = find(abs(slopes)<1);
+    slope_select = slope_select(1);
+
+%     noise_eta = n_eta_levels(n_level);
+%     discrep_crit = abs(err_select'-noise_eta);
+%     [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
+%     param_select = P.lambda_values(lambda_indices);
+%     Pc.lambda_values = param_select;
 
     %% Move independent fits to init directory
     mkdir(init_dir)
-    for i = 1:num_ims
-        src = fullfile(indep_dir,sprintf(baseFileName,lambda_indices(i),i));
-        dest = fullfile(init_dir,sprintf(baseFileName,1,i));
-        copyfile(src,dest)
-    end
+    src = fullfile(indep_dir,sprintf(baseFileName,slope_select));
+    dest = fullfile(init_dir,sprintf(baseFileName,1));
+    copyfile(src,dest)
 
     %% Run coupled grid search
     disp('Begin grid search')
@@ -113,7 +120,7 @@ for n_level = 3
         mkdir(Pc.output_dirB)
         mkdir(Pc.output_dirFinal)
         Pc.lambda2 = lambda2_vals(i);
-        runCoupledISM_TVx_1D(P,Pc)
+        runCoupled_ADMMCG_TVx_1D(P,Pc)
     end
     
 end
