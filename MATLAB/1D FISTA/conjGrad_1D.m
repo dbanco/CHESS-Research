@@ -30,6 +30,9 @@ for i = 1:params.conjGradIter
     alphak = RkRk/sum(Pk(:).*Apk(:));
     Xk = Xk + alphak*Pk;
     Rkp1 = Rk - alphak*Apk;
+    if norm(Rkp1(:)) < params.cgEpsilon
+        break;
+    end
     betak = sum(Rkp1(:).*Rkp1(:))/RkRk;
     Pk = Rkp1 + betak*Pk;
     Rk = Rkp1;

@@ -68,12 +68,6 @@ l1_norm = nan(1,maxIter);
 tv_penalty = nan(1,maxIter);
 obj = nan(1,maxIter);
 
-% Initial objective
-% err(1) = sum((B-Ax_ft_1D_Time(A0ft_stack,X_init)).^2,'all');
-% l1_norm(1) = sum(abs(X_init),'all');
-% tv_penalty(1) = sum(abs(DiffX_1D(X_init)),'all');
-% obj(1) = 0.5/bnormsq*err(1) + lambda1*l1_norm(1) + lambda2*tv_penalty(1);
-
 keep_going = 1;
 nIter = 0;
 while keep_going && (nIter < maxIter)
@@ -90,11 +84,11 @@ while keep_going && (nIter < maxIter)
     Vk = Vk + alpha*Xkp1 + (1-alpha)*Yk - Ykp1;
     
     % z-update and u-update
-    Zkp1 = soft(alpha*DiffX_1D(Xkp1) + (1-alpha)*Zk + Uk, lambda2/(rho2));
-    if isNonnegative
-        Zkp1(Zkp1<0) = 0;
-    end
-    Uk = Uk + alpha*DiffX_1D(Xkp1) + (1-alpha)*Zk - Zkp1;
+    Zkp1 = soft(DiffX_1D(Xkp1) + Uk, lambda2/(rho2));
+%     if isNonnegative
+%         Zkp1(Zkp1<0) = 0;
+%     end
+    Uk = Uk + DiffX_1D(Xkp1) - Zkp1;
     
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D_Time(A0ft_stack,Xkp1);

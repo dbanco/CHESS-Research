@@ -64,7 +64,7 @@ for ijk = [3]
             
             load(fullfile(dataset,[Pc.prefix,'_',num2str(j),'.mat']) )
             b = polar_vector;
-            err_select(k,j) = sum( (b(:)-fit(:)).^2) ;
+            err_select(k,j) = sum( (b(:)-fit(:)).^2 ) ;
             
             % Vdf
             az_signal = squeeze(sum(x,1));
@@ -75,7 +75,6 @@ for ijk = [3]
             % Sparsity objective
             l0_select(k,j) = sum(x(:)>0);
             l1_select(k,j) = sum(x(:));
-            obj2(k) = obj2(k) + l1_select(k,j)*P.params.lambda1;
         end
     end
 
@@ -134,10 +133,10 @@ for ijk = [3]
     plot(awmv_truth,'LineWidth',1.5)
     plot(awmv_az_init,'LineWidth',1.5)
     kk = 3;
-    for k = [1,19,30]
+    for k = [1,17,30]
         hold on
         plot(awmv_az(k,:),'LineWidth',1.5)
-        legend_str{kk} = sprintf('%0.03f',lambda2_vals(k));
+        legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
         kk = kk + 1;
     end
     ylim([0 40])
@@ -148,20 +147,20 @@ for ijk = [3]
     %% Save images
 
     % Plot err
-    mean_err = mean(err_select,2);
+    total_err = sum(err_select,2);
     figure(2)
     hold on
-    plot(0,mean(err_indep),'o')
-    plot(lambda2_vals(sM:eM),mean_err(sM:eM),'o-')
-    ylabel('Average Error')
+    plot(0,sum(err_indep),'o')
+    plot(lambda2_vals(sM:eM),total_err(sM:eM),'o-')
+    ylabel('Error')
     xlabel('Coupling parameter')
 
     % Plot l1 norm
-    mean_l1 = mean(l1_select,2);
+    total_l1 = sum(l1_select,2);
     figure(3)
     hold on
-    plot(0,mean(l1_indep),'o')
-    plot(lambda2_vals(sM:eM),mean_l1(sM:eM),'o-')
+    plot(0,sum(l1_indep),'o')
+    plot(lambda2_vals(sM:eM),total_l1(sM:eM),'o-')
     ylabel('l1-norm')
     xlabel('Coupling parameter')
 
@@ -199,35 +198,32 @@ for ijk = [3]
     % Plot L-curve 2
 
     Lcurve_fig = figure(7);
-    plot(obj1(sM:eM),tv_penalty,'o-')
+    plot(total_err,tv_penalty,'o-')
     ylabel('TV')
     xlabel('Error')
     
-    %
-    miny = min(tv_penalty);
-    minx = min(obj1);
-    coord = [obj1./minx,tv_penalty./miny];
-    origin_dist = coord-1;
-    [val,select_ind] = min(sum(origin_dist.^2,2));
+    total_err = sum(err_select(1:M,:),2);
+    total_l1 = sum(tv_penalty(1:M,:),2);
     
-    selectx = obj1(select_ind);
+    % Find kink in L-cureve method #1
+    slopes = (total_l1(2:end) - total_l1(1:end-1))./...
+         (total_err(2:end) - total_err(1:end-1));
+    slope_select = find(abs(slopes)<1);
+    select_ind = slope_select(1);
+    
+    % Find kink in L-cureve method #2
+%     miny = min(tv_penalty);
+%     minx = min(total_err);
+%     coord = [total_err./minx,tv_penalty./miny];
+%     origin_dist = coord-1;
+%     [val,select_ind] = min(sum(origin_dist.^2,2));
+    
+    selectx = total_err(select_ind);
     selecty = tv_penalty(select_ind,:);
     hold on
     plot(selectx,selecty,'s','Markersize',14)
     plot(sum(err_indep),tv_indep,'*','Markersize',14)
     saveas(Lcurve_fig,[figure_dir,'Lcurve_',dset_name,'_',dataset_num,'.png'])
-
-    % % Plot L-curve 3
-    % figure(8)
-    % plot(obj2(sort_i),obj3(sort_i),'o-')
-    % ylabel('Wasserstein distance')
-    % xlabel('l1-norm')
-    % 
-    % % Plot L-curve 4
-    % figure(9)
-    % loglog(obj_part1_sum,sum(obj3(sort_i,:),2),'o-')
-    % ylabel('Wasserstein distance')
-    % xlabel('Error+l1-norm')
 
     % Plot paramter selected
     select_fig = figure(11);
@@ -238,7 +234,7 @@ for ijk = [3]
     plot(awmv_truth,'LineWidth',1.5)
     plot(awmv_az_init,'LineWidth',1.5)
     kk = 3;
-    for k = [30]
+    for k = [1,10]
         hold on
         plot(awmv_az(k,:),'LineWidth',1.5)
         legend_str{kk} = sprintf('%0.03f',lambda2_vals(k));
@@ -292,27 +288,28 @@ for ijk = [3]
     end
     saveas(vdf_time_all_fig,[figure_dir,'vdf_time_all_',dset_name,'_',dataset_num,'.png'])
 
-    vdf_time_fig = figure(566)
-    trial_k = select_ind;
-    fprintf('%i of %i\n',trial_k,M)
-
-    load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1)))
-    for image_num = 1:num_ims
-        x_hat = x_data.X_hat(:,:,image_num);
-        az_signal = squeeze(sum(x_hat,1));
-        var_sum = sum(az_signal(:));
-        vdf_time(trial_k,image_num,:) = az_signal/var_sum;
-    end
+    vdf_time_fig = figure(566);
     % Plot surface
-    imagesc(squeeze(vdf_time(trial_k,:,:)))
+    imagesc(squeeze(vdf_time(select_ind,:,:)))
     shading interp
     caxis([0 0.6])
     colormap(jet)
 
-    title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(trial_k))])
+    title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(select_ind))])
     ylabel('t')
     xlabel('\sigma')
 %     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
+
+    vdf_indep_fig = figure(567);
+    % Plot surface
+        imagesc(squeeze(vdfs_indep'))
+    shading interp
+    caxis([0 0.6])
+    colormap(jet)
+
+    title(['\lambda_2 = ','0'])
+    ylabel('t')
+    xlabel('\sigma')
 
 
 

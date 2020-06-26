@@ -43,10 +43,12 @@ for n_level = 3
     % coupled params
     Pc.initialization = 'simultaneous';
     Pc.preInitialized = 2;
+    Pc.rho1 = 1;
+    Pc.lambda1 = 0.0036;
     Pc.rho2 = 1;
     Pc.lambda2 = 0.001;
     Pc.maxIterReg = 800;
-    Pc.tolerance = 1e-8;
+    Pc.tolerance = 1e-6;
     Pc.num_outer_iters = 1;
     Pc.baseFileName = 'fista_fit_%i.mat';
     Pc.num_ims = num_ims;
@@ -54,7 +56,7 @@ for n_level = 3
     Pc.dataset = dataset;
 
     % Lambda2 values
-    lambda2_vals = logspace(-4,0,30);
+    lambda2_vals = logspace(-6,0-1,30);
     M = numel(lambda2_vals);
     Pc.lambda2_values = lambda2_vals;
     
@@ -110,7 +112,7 @@ for n_level = 3
     %% Run coupled grid search
     disp('Begin grid search')
 
-    for i = 1:M
+    for i = 23:M
         Pc.init_dir = init_dir;
         Pc.output_dirA = [fullfile(top_dir,output_dir),'_',num2str(i),'a'];
         Pc.output_dirB = [fullfile(top_dir,output_dir),'_',num2str(i),'b'];
