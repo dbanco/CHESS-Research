@@ -18,8 +18,10 @@ R_ft = fft(R);
 
 for tv = 1:size(A0ft_stack,2)
         y = real(ifft(A0ft_stack(:,tv).*R_ft(:)));
-        AtR(:,tv) = shift1D(y,2);
+        AtR(:,tv) = y;
 end
+
+AtR = shift1D_array(AtR,2);
 
 end
 

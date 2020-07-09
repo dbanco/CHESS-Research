@@ -1,4 +1,4 @@
-function Xk = conjGrad_TVx_1D(A0ft_stack,B,X_init,YV,ZU,params)
+function [Xk,cgIters] = conjGrad_TVphi_1D(A0ft_stack,B,X_init,YV,ZU,params)
 %conjGrad_TVx_1D Solves least squares
 %
 % Inputs:
@@ -9,26 +9,28 @@ function Xk = conjGrad_TVx_1D(A0ft_stack,B,X_init,YV,ZU,params)
 % Data normalizing
 BnormSq1 = (sum(B.^2,1));
 BnormSq2 = reshape(BnormSq1,[1,1,numel(BnormSq1)]);
+BnormSq2 = 1;
 
 % ADMM penalty parameter
 rho1 = params.rho1;
 rho2 = params.rho2;
+N = size(A0ft_stack,1);
 
 % Coefficeint Vectors
 Xk = X_init;
 
 % Target Vectors
 AtB = AtB_ft_1D_Time(A0ft_stack,B)./BnormSq2;
-DtZ = DiffTranB_1D(ZU);
+PtDtZ = PhiTranDiffTran_1D(ZU,N);
 
 % Initial Residual
 Rk = AtB - AtAx(A0ft_stack,Xk)./BnormSq2 +...
-     rho2*DtZ - rho2*DtDx(Xk) +...
-     rho1*YV  - rho1*Xk;
+     rho2*PtDtZ - rho2*PtDtDPx(Xk) +...
+     rho1*YV - rho1*Xk;
 Pk = Rk;
 
 for i = 1:params.conjGradIter
-    Apk = AtAx(A0ft_stack,Pk)./BnormSq2 + rho2*DtDx(Pk) + rho1*Pk;
+    Apk = AtAx(A0ft_stack,Pk)./BnormSq2 + rho2*PtDtDPx(Pk) + rho1*Pk;
     RkRk = sum(Rk(:).*Rk(:));
     alphak = RkRk/sum(Pk(:).*Apk(:));
     Xk = Xk + alphak*Pk;
@@ -40,13 +42,14 @@ for i = 1:params.conjGradIter
     Pk = Rkp1 + betak*Pk;
     Rk = Rkp1;
 end
-
+cgIters = i;
 end
 
 function y = AtAx(A0ft_stack,X)
     y = AtB_ft_1D_Time(A0ft_stack,Ax_ft_1D_Time(A0ft_stack,X));
 end
 
-function y = DtDx(X)
-    y = DiffTranB_1D(DiffX_1D(X));
+function y = PtDtDPx(X)
+    N = size(X,1);
+    y = PhiTranDiffTran_1D(DiffPhiX_1D(X),N);
 end

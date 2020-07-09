@@ -1,4 +1,4 @@
-function A0_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P)
+function A0_stack = unshifted_basis_vector_ft_stack_zpad(P)
 %unshifted_basis_matrix_stack_norm Generates fft2 of many zero mean gaussian  
 % basis function matrices that sum to 1 using provided parameters
 %

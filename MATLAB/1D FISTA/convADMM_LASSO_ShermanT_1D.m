@@ -1,4 +1,4 @@
-function [x_hat, obj, err, l1_norm] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,params)
+function [X_hat, obj, err, l1_norm] = convADMM_LASSO_ShermanT_1D(A0ft_stack,B,X_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -41,26 +41,24 @@ isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 
-b = zeroPad(b,zPad);
-bnormsq = sum((b(:)).^2);
+[N,M,T] = size(X_init);
+BnormSq = sqrt(sum(B.^2, 1));
+
+% B = zeroPad(b,zPad);
 
 % Initialize variables
-x_init = forceMaskToZeroArray(x_init,zMask);
-xk = x_init;
-xkp1 = x_init;
-yk = zeros(size(x_init));
-ykp1 = zeros(size(x_init));
-vk = zeros(size(xk));
+X_init = forceMaskToZeroArray(X_init,zMask);
+Xk = X_init;
+
+% L1 norm variable/lagranage multipliers
+Yk = zeros(N,M,T);
+Vk = zeros(N,M,T);
 
 % Track error and objective
 err = nan(1,maxIter);
 l1_norm = nan(1,maxIter);
 obj = nan(1,maxIter);
-
-% Initial objective
-err(1) = sum((b-Ax_ft_1D(A0ft_stack,x_init)).^2);
-l1_norm(1) = sum(abs(x_init(:)));
-obj(1) = 0.5/bnormsq*err(1) + lambda*l1_norm(1);
+Fit = zeros(N,T);
 
 keep_going = 1;
 nIter = 1;
@@ -68,31 +66,34 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
-    xkp1 = forceMaskToZeroArray(xkp1,zMask);
-
+    for t = 1:T
+        Xk(:,:,t) = circulantLinSolve( A0ft_stack,B(:,t),Yk(:,:,t),Vk(:,:,t),params );
+    end
+    
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    Ykp1 = soft(alpha*Xk + (1-alpha)*Yk + Vk,lambda/rho);
     if isNonnegative
-        ykp1(ykp1<0) = 0;
+        Ykp1(Ykp1<0) = 0;
     end
     % v-update
-    vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
+    Vk = Vk + alpha*Xk + (1-alpha)*Yk - Ykp1;
    
     % Track and display error, objective, sparsity
-    fit = Ax_ft_1D(A0ft_stack,xkp1);
+    for t = 1:T
+        Fit(:,t) = Ax_ft_1D(A0ft_stack,Xk);
+    end
     
-    err(nIter) = sum((b(:)-fit(:)).^2)/(2*bnormsq);
-    l1_norm(nIter) = sum(abs(xkp1(:)));
-    f = err(nIter) + lambda*l1_norm(nIter);
+    err(nIter) = 0.5*sum( ((B-Fit).^2)./BnormSq, 'all');
+    l1_norm(nIter) = sum(abs(Xk(:)));
+    f = err(nIter) + lambda*l1_norm(nIter); %+ rho/2*sum(abs( xkp1(:)-yk(:)+vk(:) ));
     obj(nIter) = f;
     if params.verbose
         disp(['Iter ',     num2str(nIter),...
               ' Obj ',     num2str(obj(nIter)),...
               ' Rho ',     num2str(rho),...
-              ' RelErr ',  num2str(err(nIter)),...
+              ' Err ',     num2str(err(nIter)),...
               ' ||x||_1 ', num2str(lambda*l1_norm(nIter)),...
-              ' ||x||_0 ', num2str(sum(xkp1(:) >0))
+              ' ||x||_0 ', num2str(sum(Xk(:) >0))
                ]);
     end
     
@@ -114,21 +115,16 @@ while keep_going && (nIter < maxIter)
             % variation of the objective function.
             criterionObjective = abs(obj(nIter)-obj(nIter-1));
             keep_going =  (criterionObjective > tolerance);
-        case 'COEF_CHANGE'
-            diff_x = sum(abs(xkp1(:)-xk(:)))/numel(xk);
-            keep_going = (diff_x > tolerance);
+%         case 'COEF_CHANGE'
+%             diff_x = sum(abs(Xkp1(:)-Xk(:)))/numel(Xk);
+%             keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
     end
 
-%     if f > prev_f
-%         keep_going = 0;
-%         xkp1 = xk;
-%     end
-
 if adaptRho
-    sk = rho*norm(ykp1-yk);
-    rk = norm(xkp1-ykp1);
+    sk = rho*norm(Ykp1(:)-Yk(:));
+    rk = norm(Xk(:)-Ykp1(:));
     if rk > mu*sk
         rho = rho*tau;
     elseif sk > mu*rk
@@ -136,21 +132,21 @@ if adaptRho
     end
 end
 
-% if criterionObjective < 1e-5
-% 	rho = rho/tau;
-% end
-
     % Update indices
-    xk = xkp1;
-    yk = ykp1;
+    Yk = Ykp1;
+    if obj(nIter) <= min(obj)
+        Xmin = Xk;
+    end
 end
 
+X_hat = Xmin;
 if isNonnegative
-    xkp1(xkp1<0) = 0;
+    X_hat(X_hat<0) = 0;
 end
-x_hat = xkp1;
-err = err(1:nIter) ;
+
 obj = obj(1:nIter) ;
+err = err(1:nIter) ;
+l1_norm = l1_norm(1:nIter);
 
 function y = soft(x,T)
 if sum(abs(T(:)))==0

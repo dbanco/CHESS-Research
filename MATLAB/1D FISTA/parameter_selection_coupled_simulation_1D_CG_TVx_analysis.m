@@ -12,7 +12,7 @@ for ijk = [3]
     dataset_num = num2str(ijk);
     num_ims = 20;
     home_dir = 'D:\CHESS_data\';
-    dset_fit = [dset_name,'_coupled_CG_TVx1'];
+    dset_fit = [dset_name,'_coupled_CG_TVphi2'];
     indep_dir =  'ADMM_CG_indep1\';
     dataset =    [home_dir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'\'];
     init_dir =   [home_dir,indep_dir,'simulated_two_spot_1D_',dset_name,'_',dataset_num,'_simul_init\'];
@@ -83,7 +83,7 @@ for ijk = [3]
     for k = sM:eM
         fprintf('TVx %i of %i\n',k,M)
         x_data = load(fullfile([output_dir,num2str(k),'_final\'],sprintf(baseFileName,1)));
-        tv_penalty(k) = sum(abs(DiffX_1D(x_data.X_hat)),'all');
+        tv_penalty(k) = sum(abs(DiffPhiX_1D(x_data.X_hat)),'all');
     end
 
     % Load statistics for independently fit data
@@ -110,7 +110,7 @@ for ijk = [3]
         awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     end
 
-    tv_indep = sum(abs(DiffX_1D(ind_data.X_hat)),'all');
+    tv_indep = sum(abs(DiffPhiX_1D(ind_data.X_hat)),'all');
 
     %% Plot awmv
     figure_dir = ['C:\Users\dpqb1\OneDrive\Desktop\',dset_fit,'_figures\'];
@@ -133,7 +133,7 @@ for ijk = [3]
     plot(awmv_truth,'LineWidth',1.5)
     plot(awmv_az_init,'LineWidth',1.5)
     kk = 3;
-    for k = [1,17,30]
+    for k = [1,20,25,26,27,30]
         hold on
         plot(awmv_az(k,:),'LineWidth',1.5)
         legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
@@ -210,7 +210,7 @@ for ijk = [3]
          (total_err(2:end) - total_err(1:end-1));
     slope_select = find(abs(slopes)<1);
     select_ind = slope_select(1);
-    
+    select_ind = 26
     % Find kink in L-cureve method #2
 %     miny = min(tv_penalty);
 %     minx = min(total_err);
@@ -234,10 +234,10 @@ for ijk = [3]
     plot(awmv_truth,'LineWidth',1.5)
     plot(awmv_az_init,'LineWidth',1.5)
     kk = 3;
-    for k = [1,10]
+    for k = [17,select_ind,M]
         hold on
         plot(awmv_az(k,:),'LineWidth',1.5)
-        legend_str{kk} = sprintf('%0.03f',lambda2_vals(k));
+        legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
         kk = kk + 1;
     end
     ylim([0 40])
@@ -318,7 +318,7 @@ for ijk = [3]
     [ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
     awmv_az_vdfs = zeros(num_ims,1);
     im_ind = 1;
-    trial_k = 1;
+    trial_k = 26;
     load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1)))
     for image_num = 1:20
         x_hat = x_data.X_hat(:,:,image_num);

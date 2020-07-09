@@ -1,4 +1,4 @@
-function Xk = conjGrad_1D(A0ft_stack,B,X_init,YV,params)
+function [Xk,cgIters] = conjGrad_1D(A0ft_stack,B,X_init,YV,params)
 %conjGrad_TVx_1D Solves least squares
 %
 % Inputs:
@@ -7,7 +7,7 @@ function Xk = conjGrad_1D(A0ft_stack,B,X_init,YV,params)
 %
 
 % Data normalizing
-BnormSq1 = (sum(B.^2,1));
+BnormSq1 = sqrt((sum(B.^2,1)));
 BnormSq2 = reshape(BnormSq1,[1,1,numel(BnormSq1)]);
 
 % ADMM penalty parameter
@@ -37,7 +37,7 @@ for i = 1:params.conjGradIter
     Pk = Rkp1 + betak*Pk;
     Rk = Rkp1;
 end
-
+cgIters = i;
 end
 
 function y = AtAx(A0ft_stack,X)

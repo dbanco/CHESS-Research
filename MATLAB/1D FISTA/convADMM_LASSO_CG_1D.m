@@ -46,7 +46,7 @@ zPad = params.zeroPad;
 zMask = params.zeroMask;
 
 [N,M,T] = size(X_init);
-BnormSq = sum(B.^2, 1);
+BnormSq = sqrt(sum(B.^2, 1));
 
 % Initialize variables
 X_init = forceMaskToZeroArray(X_init,zMask);
@@ -68,7 +68,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1;   
     
     % x-update
-    Xkp1 = conjGrad_1D( A0ft_stack,B,Xk,(Yk-Vk),params);
+    [Xkp1,cgIters] = conjGrad_1D( A0ft_stack,B,Xk,(Yk-Vk),params);
     
     % y-update and v-update
     Ykp1 = soft(alpha*Xkp1 + (1-alpha)*Yk + Vk, lambda1/(rho1));
@@ -89,6 +89,7 @@ while keep_going && (nIter < maxIter)
     obj(nIter) = f;
     if params.verbose
         disp(['Iter ',     num2str(nIter),...
+              ' cgIters ', num2str(cgIters),...
               ' Obj ',     num2str(obj(nIter)),...
               ' Rho1 ',     num2str(rho1),...
               ' Err ',     num2str(0.5*err(nIter)),...
