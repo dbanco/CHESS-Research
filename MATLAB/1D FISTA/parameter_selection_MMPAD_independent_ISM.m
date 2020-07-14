@@ -6,10 +6,10 @@ top_dir = 'D:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero_subset';
+dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM5';
+output_name = '_indep_ISM1';
 output_subdir = [dset_name,output_name];
 
 

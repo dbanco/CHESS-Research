@@ -9,10 +9,10 @@ top_dir = 'D:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero_subset';
+dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM5';
+output_name = '_indep_ISM1';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -52,7 +52,7 @@ for i = 1:M
     for j = 1:T
         b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-        fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,e_data.x_hat),129:133);
         b = P.dataScale*sum(b_data.polar_image,1);
         err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
@@ -62,11 +62,11 @@ for i = 1:M
         vdf_time(i,j,:) = az_signal/var_sum;
     end
     
-    axes(ha1(im_ind))
-    imagesc(squeeze(vdf_time(i,:,:)))
-    shading interp
-    caxis([0 0.6])
-    colormap(jet)
+%     axes(ha1(im_ind))
+%     imagesc(squeeze(vdf_time(i,:,:)))
+%     shading interp
+%     caxis([0 0.6])
+%     colormap(jet)
     
     title(['\lambda = ',sprintf('%1.1d',P.lambda_values(i))])
 %     ylabel('t')
@@ -145,29 +145,50 @@ xlabel('time-average l1-norm')
 ylabel('time-average error')
 title('L-curve')
 
-%% Look at L curve for individual images
-figure(7)
-[ha7, ~] = tight_subplot(2,T/2,[.05 .05],[.01 .01],[.01 .01]); 
+%% L curve parameter selection
 select_indices = zeros(T,1);
 for t = 1:T
-    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    b = P.dataScale*sum(polar_image,1);
     err_t = err_select(1:M,t);
     l1_t = l1_select(1:M,t);
     err_t = err_t;%/max(err_t);
     l1_t = l1_t;%/max(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-    axes(ha7(t))
-    plot(l1_t,err_t,'o-')
-    hold on
-    plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s','MarkerSize',15)
-    hold on
 end
 
-xlabel('l1-norm')
-ylabel('error')
-title('L-curve')
+for t = 1:T
+    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+    b = P.dataScale*sum(polar_image,1);
+    rel_err_t = err_select(1:M,t)/sum(b(:).^2);
+    while rel_err_t(select_indices(t)) > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
+
+% figure(7)
+% [ha7, ~] = tight_subplot(10,11,[.05 .05],[.01 .01],[.01 .01]); 
+% tt = 1;
+% for t = 1:5:T
+%     err_t = err_select(1:M,t);
+%     l1_t = l1_select(1:M,t);
+%     err_t = err_t;%/max(err_t);
+%     l1_t = l1_t;%/max(l1_t);
+%     axes(ha7(tt))
+%     plot(l1_t,err_t,'o-')
+%     hold on
+%     plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s','MarkerSize',15)
+%     hold on
+%     tt = tt + 1;
+% end
+
+% xlabel('l1-norm')
+% ylabel('error')
+% title('L-curve')
 
 %% Selected VDF;
 select_vdf = zeros(T,K);
@@ -175,7 +196,7 @@ for j = 1:T
     select_vdf(j,:) = vdf_time(select_indices(j),j,:);
 end
 figure(8)
-imagesc(select_vdf)
+imagesc(select_vdf')
 shading interp
 caxis([0 0.6])
 colormap(jet)
@@ -183,15 +204,15 @@ title('VDF selected parameters')
 
 %% Plot fits for L-curve selected parameter
 fits_fig = figure(9);
-[ha2, ~] = tight_subplot(2,T/2,[.005 .005],[.01 .01],[.01 .01]); 
+[ha2, ~] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 1:T
+for t = 201:300
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     
     polar_vector = sum(polar_image,1);
-    fit = Ax_ft_1D(A0ft_stack,x_hat);
+    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),129:133);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
@@ -204,7 +225,8 @@ for t = 1:T
     hold on
     plot(b)
     plot(fit)
-    legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),sum((fit(:)-b(:)).^2)),'location','northeast')
+    rel_err = sum((fit(:)-b(:)).^2)./sum(b(:).^2);
+    legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),rel_err),'location','northeast')
     im_ind = im_ind + 1;
 end
 

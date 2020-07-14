@@ -50,7 +50,6 @@ zMask = params.zeroMask;
 
 [N,K,T] = size(X_init);
 BnormSq = sum(B.^2, 1);
-BnormSq = 1;
 
 % Initialize variables
 X_init = forceMaskToZeroArray(X_init,zMask);

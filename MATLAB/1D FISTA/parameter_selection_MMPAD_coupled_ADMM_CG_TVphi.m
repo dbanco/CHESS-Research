@@ -6,15 +6,15 @@ top_dir = 'D:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero_subset';
+dset_name = 'ring1_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM3';
+indep_name = '_indep_ISM1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi2';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -23,34 +23,24 @@ output_dir  = fullfile(top_dir,output_subdir);
 mkdir(output_dir)  
 
 % File Parameters
-P.prefix = 'mmpad_img';
+baseFileName = 'indep_fit_%i_%i.mat';
+load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
 P.baseFileName = 'coupled_fit_%i.mat';
-P.dataset = dataset;
 
-% Data/Dictionary Parameters
+M = 1;
+N = P.num_theta;
+K = P.num_var_t;
+T = P.num_ims;
+
 % Zero padding and mask
 zPad = [0,0];
 zMask = [];
-load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,1)';
 
-N = size(polar_vector,1);
-K = 20;
-M = 30;
-T = 10;
+% Construct dictionary
+A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
-P.num_theta = N;
-P.sampleDims = [T,1];
-P.num_ims = T;
-P.basis = 'norm2';
-P.cost = 'l1';
-P.num_var_t = K;
-P.var_theta = linspace(P.dtheta/2,50,P.num_var_t).^2;
-
-% algorithm parameters
-P.params.rho1 = 1;
-P.params.lambda1 = [];
-P.params.rho2 = 1;
+% Algorithm parameters
+P.params.rho2 = 0.1;
 P.params.lambda2 = 1;
 P.params.tau = 1.05;
 P.params.mu = 2;
@@ -68,10 +58,8 @@ P.params.plotProgress = 0;
 P.params.verbose = 1;
 
 % Lambda1 values: Use L-curve parameter selection
-baseFileName = 'indep_fit_%i_%i.mat';
 indep_data = load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
 lambda1_vals = indep_data.P.lambda_values;
-select_indices = zeros(T,1);
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
@@ -79,30 +67,46 @@ l1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = sum(polar_image,1);
-        e_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'err','x_hat');
-        err_select(m,t) = e_data.err(end)/norm(b).^2;
-        l1_select(m,t) = sum(e_data.x_hat(:))/norm(b);
-        
+        b = P.dataScale*sum(polar_image,1);
+        x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
+        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+        err_select(m,t) = sum((fit(:)-b(:)).^2);
+        l1_select(m,t) = sum(x_data.x_hat(:));
     end
 end
 
+%% L curve parameter selection for l1-norm term
+select_indices = zeros(T,1);
 for t = 1:T
     err_t = err_select(:,t);
     l1_t = l1_select(:,t);
-    sq_origin_dist = l1_t.^2 + err_t.^2;
-    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist) );
+    err_t = err_t;%/max(err_t);
+    l1_t = l1_t;%/max(l1_t);
+    sq_origin_dist = abs(l1_t) + abs(err_t);
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
 end
 
-P.params.lambda1 = select_indices;
+for t = 1:T
+    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+    b = P.dataScale*sum(polar_image,1);
+    rel_err_t = err_select(:,t)/sum(b(:).^2);
+    while rel_err_t(select_indices(t)) > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
+
+P.params.lambda1 = lambda1_vals(select_indices);
+P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-lambda2_vals = logspace(1,5,M);
+lambda2_vals = logspace(-4,0,30);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
-
-% Construct dictionary
-A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
 
 % Load data
 B = zeros(N,T);
@@ -110,11 +114,12 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = sum(b_data.polar_image,1);
+        b = P.dataScale*sum(b_data.polar_image,1);
     catch
-        b = b_data.polar_vector;
+        b = P.dataScale*b_data.polar_vector;
     end
     B(:,j) = b';
+    B(129:133,j) = (b(128) + b(134))/2;
 end
 
 %% Run coupled grid search

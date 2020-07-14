@@ -9,10 +9,10 @@ P.set = 1;
 top_dir = 'D:\MMPAD_data';
 
 % Input dirs
-dset_name = 'ring1_zero_subset';
+dset_name = 'ring1_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM3';
+indep_name = '_indep_ISM1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
@@ -41,13 +41,6 @@ switch P.basis
 end
 T = P.num_ims;
 [N,K] = size(A0ft_stack);
-
-% Get error, sparsity, awmv
-err_select = zeros(M,T);
-l0_select = zeros(M,T);
-l1_select = zeros(M,T);
-awmv_az = zeros(M,T);
-vdfs = zeros(K,M,T);
 
 for k = 1:M
     fprintf('%i of %i\n',k,M)
@@ -88,16 +81,15 @@ err_indep = zeros(T,1);
 l0_indep = zeros(T,1);
 l1_indep = zeros(T,1);
 vdfs_indep = zeros(P.num_var_t,T);
-x_indep = cell(T,1);
-
-ind_data = load(fullfile(indep_dir,sprintf(baseFileName,1)));
-for j = 1:num_ims
-    e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-    load(fullfile(dataset,[Pc.prefix,'_',num2str(j),'.mat']) )
-    x = ind_data.X_hat(:,:,j);
-    x_indep{j} = x;
+X_indep = zeros(N,K,T);
+indepFileName = 'indep_fit_%i_%i.mat';
+for j = 1:T
+    e_data = load(fullfile(indep_dir,sprintf(indepFileName,x_data.P.params.lambda1_indices(j),j)),'err','x_hat');
+    load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
+    x = e_data.x_hat;
+    X_indep(:,:,j) = x;
     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
-    b = polar_vector;
+    b = sum(polar_image,1);
     err_indep(j) = sum((fit(:)-b(:)).^2);
     l0_indep(j) = sum(x(:)>0);
     l1_indep(j) = sum(x(:));
@@ -107,7 +99,7 @@ for j = 1:num_ims
     awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
 end
 
-tv_indep = sum(abs(DiffPhiX_1D(ind_data.X_hat)),'all');
+tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
 
 %% Plot awmv
 figure_dir = ['C:\Users\dpqb1\OneDrive\Desktop\',output_subdir,'_figures\'];
@@ -117,8 +109,10 @@ mkdir(figure_dir)
 awmv_fig = figure(1);
 legend_str = {};
 % legend_str{1} = 'truth';
-% legend_str{2} = '0';
-kk = 1;
+legend_str{1} = '0';
+kk = 2;
+hold on
+plot(awmv_az_init,'LineWidth',1.5)
 for k = 1:M
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
@@ -130,7 +124,6 @@ ylabel('AWMV_\eta','FontSize',20)
 xlabel('t','FontSize',20)
 legend(legend_str,'location','best','FontSize',16)
 %% Save images
-
 % Plot err
 total_err = sum(err_select,2);
 figure(2)
@@ -191,16 +184,14 @@ total_err = sum(err_select,2);
 total_l1 = sum(tv_penalty,2);
 
 % Find kink in L-cureve method #1
-slopes = (total_l1(2:end) - total_l1(1:end-1))./...
-     (total_err(2:end) - total_err(1:end-1));
-slope_select = find(abs(slopes)<1);
-select_ind = slope_select(1);
-select_ind = 26
+% slopes = (total_l1(2:end) - total_l1(1:end-1))./...
+%      (total_err(2:end) - total_err(1:end-1));
+% slope_select = find(abs(slopes)<1);
+% select_ind = slope_select(1);
+select_ind = 1
 % Find kink in L-cureve method #2
-%     miny = min(tv_penalty);
-%     minx = min(total_err);
-%     coord = [total_err./minx,tv_penalty./miny];
-%     origin_dist = coord-1;
+%     miny = min(tv_penalty); minx = min(total_err); coord =
+%     [total_err./minx,tv_penalty./miny]; origin_dist = coord-1;
 %     [val,select_ind] = min(sum(origin_dist.^2,2));
 
 selectx = total_err(select_ind);
@@ -208,24 +199,21 @@ selecty = tv_penalty(select_ind,:);
 hold on
 plot(selectx,selecty,'s','Markersize',14)
 plot(sum(err_indep),tv_indep,'*','Markersize',14)
-saveas(Lcurve_fig,[figure_dir,'Lcurve_',dset_name,'_',dataset_num,'.png'])
 
-% Plot paramter selected
+%% Plot paramter selected
 select_fig = figure(11);
 legend_str = {};
-legend_str{1} = 'truth';
-legend_str{2} = 'indep';
+legend_str{1} = 'indep';
 hold on
-plot(awmv_truth,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
-kk = 3;
-for k = [17,select_ind,M]
+kk = 2;
+for k = [1]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
     kk = kk + 1;
 end
-ylim([0 40])
+
 ylabel('AWMV_\eta','FontSize',20)
 xlabel('t','FontSize',20)
 legend(legend_str,'location','best','FontSize',16)
@@ -248,10 +236,10 @@ xlabel('\sigma')
 
 im_ind = im_ind + 1;
 
-for trial_k = sM:eM
+for trial_k = 1:M
     fprintf('%i of %i\n',trial_k,M)
-    x_data = load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1)));
-    for image_num = 1:num_ims
+    x_data = load(fullfile(output_dir,sprintf(baseFileName,trial_k)));
+    for image_num = 1:T
         x_hat = x_data.X_hat(:,:,image_num);
         az_signal = squeeze(sum(x_hat,1));
         var_sum = sum(az_signal(:));
@@ -300,19 +288,19 @@ xlabel('\sigma')
 
 %% Plot fits
 fits_fig = figure(222);
-[ha2, pos2] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az_vdfs = zeros(num_ims,1);
+[ha2, pos2] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
+awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-trial_k = 26;
-load(fullfile([output_dir,num2str(trial_k),'_final\'],sprintf(baseFileName,1)))
-for image_num = 1:20
+x_data = load(fullfile(output_dir,sprintf(baseFileName,1)));
+for image_num = 1:100
     x_hat = x_data.X_hat(:,:,image_num);
-    load(fullfile(dataset,[Pc.prefix,'_',num2str(image_num),'.mat']) )
+    load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    b = zeroPad(polar_vector,P.params.zeroPad);
+    polar_vector = sum(polar_image,1);
+    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
 
     % Plot
     axes(ha2(im_ind))

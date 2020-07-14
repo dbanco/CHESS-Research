@@ -9,7 +9,6 @@ function [Xk,cgIters] = conjGrad_TVphi_1D(A0ft_stack,B,X_init,YV,ZU,params)
 % Data normalizing
 BnormSq1 = (sum(B.^2,1));
 BnormSq2 = reshape(BnormSq1,[1,1,numel(BnormSq1)]);
-BnormSq2 = 1;
 
 % ADMM penalty parameter
 rho1 = params.rho1;
