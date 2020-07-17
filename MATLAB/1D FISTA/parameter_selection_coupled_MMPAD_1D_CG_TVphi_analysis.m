@@ -9,7 +9,7 @@ P.set = 1;
 top_dir = 'D:\MMPAD_data';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring1_zero_subset';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
