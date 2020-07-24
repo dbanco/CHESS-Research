@@ -6,18 +6,18 @@ close all
 disp('Setup parms')
 P.set = 1;
 % Parent directory
-top_dir = 'D:\MMPAD_data';
+top_dir = 'E:\MMPAD_data';
 
 % Input dirs
-dset_name = 'ring1_zero_subset';
+dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -52,8 +52,8 @@ for k = 1:M
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
 
         load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
-        b = sum(polar_image,1);
-        err_select(k,j) = sum( (b(:)-fit(:)).^2 ) ;
+        b = P.dataScale*sum(polar_image,1);
+        err_select(k,j) = sum( (b(:)-fit(:)).^2 )./sum( b(:).^2 ) ;
 
         % Vdf
         az_signal = squeeze(sum(x,1));
@@ -89,8 +89,8 @@ for j = 1:T
     x = e_data.x_hat;
     X_indep(:,:,j) = x;
     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
-    b = sum(polar_image,1);
-    err_indep(j) = sum((fit(:)-b(:)).^2);
+    b = P.dataScale*sum(polar_image,1);
+    err_indep(j) = sum((fit(:)-b(:)).^2)/sum(b(:).^2);
     l0_indep(j) = sum(x(:)>0);
     l1_indep(j) = sum(x(:));
     az_signal = squeeze(sum(x,1));
@@ -151,6 +151,10 @@ plot(lambda2_vals,mean_l0,'o-')
 ylabel('l0-norm')
 xlabel('Coupling parameter')
 
+figure(8)
+plot(lambda2_vals,tv_penalty,'o-')
+ylabel('tv')
+xlabel('Coupling parameter')
 
 %     % Plot AWMV
 %     figure(5)
@@ -180,19 +184,26 @@ plot(total_err,tv_penalty,'o-')
 ylabel('TV')
 xlabel('Error')
 
+
 total_err = sum(err_select,2);
-total_l1 = sum(tv_penalty,2);
+
 
 % Find kink in L-cureve method #1
 % slopes = (total_l1(2:end) - total_l1(1:end-1))./...
 %      (total_err(2:end) - total_err(1:end-1));
 % slope_select = find(abs(slopes)<1);
 % select_ind = slope_select(1);
-select_ind = 1
+
 % Find kink in L-cureve method #2
 %     miny = min(tv_penalty); minx = min(total_err); coord =
 %     [total_err./minx,tv_penalty./miny]; origin_dist = coord-1;
 %     [val,select_ind] = min(sum(origin_dist.^2,2));
+
+% Find kink in L-cureve method #3
+err_scale = total_err/max(total_err(:));
+tv_scale = tv_penalty/max(tv_penalty(:));
+sq_origin_dist = tv_scale.^2 + err_scale.^2;
+select_ind = find(sq_origin_dist == min(sq_origin_dist));
 
 selectx = total_err(select_ind);
 selecty = tv_penalty(select_ind,:);
@@ -207,7 +218,7 @@ legend_str{1} = 'indep';
 hold on
 plot(awmv_az_init,'LineWidth',1.5)
 kk = 2;
-for k = [1]
+for k = [select_ind]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
@@ -259,30 +270,33 @@ for trial_k = 1:M
 
     im_ind = im_ind + 1;
 end
-saveas(vdf_time_all_fig,[figure_dir,'vdf_time_all_',dset_name,'_',dataset_num,'.png'])
+% saveas(vdf_time_all_fig,[figure_dir,'vdf_time_all_',dset_name,'_',dataset_num,'.png'])
 
+%% 
 vdf_time_fig = figure(566);
+
+subplot(2,1,1)
 % Plot surface
-imagesc(squeeze(vdf_time(select_ind,:,:)))
+imagesc(squeeze(vdf_time(select_ind,1:200,:))')
 shading interp
 caxis([0 0.6])
 colormap(jet)
-
+colorbar()
 title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(select_ind))])
-ylabel('t')
-xlabel('\sigma')
+xlabel('t')
+ylabel('\sigma')
 %     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
 
-vdf_indep_fig = figure(567);
+subplot(2,1,2)
 % Plot surface
-    imagesc(squeeze(vdfs_indep'))
+    imagesc(squeeze(vdfs_indep(:,1:200)))
 shading interp
 caxis([0 0.6])
 colormap(jet)
-
+colorbar()
 title(['\lambda_2 = ','0'])
-ylabel('t')
-xlabel('\sigma')
+xlabel('t')
+ylabel('\sigma')
 
 
 
@@ -291,7 +305,7 @@ fits_fig = figure(222);
 [ha2, pos2] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-x_data = load(fullfile(output_dir,sprintf(baseFileName,1)));
+x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
 for image_num = 1:100
     x_hat = x_data.X_hat(:,:,image_num);
     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
@@ -301,17 +315,91 @@ for image_num = 1:100
     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     polar_vector = sum(polar_image,1);
     b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
-
+    
     % Plot
     axes(ha2(im_ind))
     hold on
     plot(b)
     plot(fit)
-    legend(sprintf('%i',sum(x_hat(:)>1e-4)),'location','northeast')
+    legend(sprintf('%i',image_num),'location','northeast')
     im_ind = im_ind + 1;
 end
 %     saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',dataset_num,'.png'])
 
+%% Analyze some stuff
+fits_fig = figure(888);
+[ha8, pos8] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
+im_ind = 1;
+subT = 100;
+x_data = load( fullfile(output_dir,sprintf(baseFileName,select_ind)) );
+err_b = zeros(subT,1);
+l1_b = zeros(subT,1);
+l0_b = zeros(subT,1);
+bmean = zeros(subT,1);
+awmv_az_b = zeros(subT,1);
+vdfs_b = zeros(K,subT);
+cutoff = K;
+for j = 201:300
+    % Fit objective
+    x = x_data.X_hat(:,:,j);
+    x1 = x;
+    x2 = x;
+    x1(:,cutoff) = 0;
+    x2(:,1:(cutoff-1)) = 0;
+%     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
+%     fit1 = forceMaskToZero(Ax_ft_1D(A0ft_stack,x1),P.params.zeroMask);
+%     fit2 = forceMaskToZero(Ax_ft_1D(A0ft_stack,x2),P.params.zeroMask);
+    
+    load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
+    b = P.dataScale*sum(polar_image,1);
+    err_b(im_ind) = sum( (b(:)-fit(:)).^2 )./sum( b(:).^2 ) ;
+    bnorms(im_ind) = norm(b);
+    bmean(im_ind) = mean(b);
+    % Vdf
+    az_signal = squeeze(sum(x,1));
+    var_sum = sum(az_signal(:));
+    vdfs_b(:,im_ind) = az_signal./var_sum;
+    awmv_az_b(im_ind) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+
+    % Sparsity objective
+    l0_b(im_ind) = sum(x(:)>0);
+    l1_b(im_ind) = sum(x(:));
+    
+    figure(8989)
+%     axes(ha8(im_ind))
+    hold on
+%     plot(b)
+%     plot(fit1)
+    cmap = hot(100);
+    plot(b,'Color',cmap(im_ind,:))
+    legend(sprintf('%i',j),'location','northeast')
+    ylim([0 0.25])
+    im_ind = im_ind + 1;
+    
+end
+
+num_plots = 6;
+figure(88)
+subplot(num_plots,1,1)
+plot(err_select(select_ind,:))
+title('error')
+subplot(num_plots,1,2)
+plot(l1_b)
+title('l1-norm')
+subplot(num_plots,1,3)
+plot(bnorms)
+title('||b||_2')
+subplot(num_plots,1,4)
+plot(P.params.lambda1)
+title('\lambda_1')
+subplot(num_plots,1,5)
+plot(bmean)
+title('bmean')
+subplot(num_plots,1,6)
+plot(awmv_az_b)
+title('awmv')
+figure(89)
+imagesc(vdfs_b,[0 0.05])
 
 %% Plot vdfs
 % figure(333)

@@ -171,12 +171,13 @@ if ~handles.loaded
 end
 % Plot full data iamges
 axes(handles.axis_data)
-handles.im_data = imshow(real(log(handles.polar_image)),'DisplayRange',[0 9],'Colormap',jet);
+upLim = max(handles.polar_image(:))*0.9;
+handles.im_data = imshow(handles.polar_image,'DisplayRange',[0 upLim],'Colormap',jet);
 set(handles.im_data,'ButtonDownFcn',@box_ButtonDownFcn);
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 
 axes(handles.axis_fit)
-handles.im_fit = imshow(real(log(handles.fit_image)),'DisplayRange',[0 9],'Colormap',jet);
+handles.im_fit = imshow(handles.fit_image,'DisplayRange',[0 upLim],'Colormap',jet);
 set(handles.im_fit,'ButtonDownFcn',@box_ButtonDownFcn);
 title('Fit Image')
  
@@ -265,10 +266,11 @@ if ~handles.loaded
 end
 
 axes(handles.axis_region_data)
-imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+upLim = max(handles.polar_image(:))*0.9;
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)
@@ -280,7 +282,7 @@ if handles.fix_var_rad_button.Value
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,i,var_idx),handles.x_hat(:,:,i,var_idx));
-        imshow(real(log(signal_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        imshow(signal_slice(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
     end
@@ -292,7 +294,7 @@ elseif handles.fix_var_theta_button.Value
     for i = 1:numel(variances)
         eval(sprintf('axes(handles.axes%i)',i))
         signal_slice = Ax_ft_2D(handles.A0ft_stack(:,:,var_idx,i),handles.x_hat(:,:,var_idx,i));
-        imshow(real(log(signal_slice(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+        imshow(signal_slice(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
         signal_sum = sum(signal_slice(:));
         title(sprintf('%4d: %6.4f',i,signal_sum));
     end
@@ -304,10 +306,11 @@ if ~handles.loaded
 end
 
 axes(handles.axis_region_data)
-imshow(log(real(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+upLim = max(handles.polar_image(:))*0.9;
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(log(real(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)
@@ -344,12 +347,12 @@ if ~handles.loaded
     return
 end
 P = handles.P;
-
+upLim = max(handles.polar_image(:))*0.9;
 axes(handles.axis_region_data)
-imshow(real(log(handles.polar_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.polar_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title(sprintf('Original. Load: %i, Image: %i',handles.P.load_step,handles.P.img))
 axes(handles.axis_region_fit) 
-imshow(real(log(handles.fit_image(handles.rows,handles.cols))),'DisplayRange',[0 9],'Colormap',jet)
+imshow(handles.fit_image(handles.rows,handles.cols),'DisplayRange',[0 upLim],'Colormap',jet)
 title('Fit')
 
 clear_region_axes(handles)

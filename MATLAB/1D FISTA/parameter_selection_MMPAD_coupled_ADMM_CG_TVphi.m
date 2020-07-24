@@ -2,7 +2,7 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'D:\MMPAD_data';
+top_dir = 'E:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
@@ -124,7 +124,7 @@ end
 
 %% Run coupled grid search
 disp('Begin grid search')
-for i = 1:M
+for i = 7:M
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     

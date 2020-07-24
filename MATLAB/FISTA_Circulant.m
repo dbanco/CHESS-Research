@@ -29,11 +29,6 @@ function [x_hat, err, obj, l_0, t_k, L] = FISTA_Circulant(A0ft_stack,b,x_init,pa
 % l_0 - (nIters) sparsity of solution at each iteration
 
 
-% Define stopping criterion
-STOPPING_OBJECTIVE_VALUE = 1;
-STOPPING_SUBGRADIENT = 2;
-COEF_CHANGE = 3;
-
 % Set default parameter values
 % stoppingCriterion = STOPPING_OBJECTIVE_VALUE;
 % maxIter = 200 ;
@@ -164,16 +159,16 @@ while keep_going && (nIter < maxIter)
 
     % Check stopping criterion
     switch stoppingCriterion
-        case STOPPING_SUBGRADIENT
+        case 'SUBGRADIENT'
             sk = L*(xk-xkm1) +...
                  AtR_ft_2D(A0ft_stack,forceMaskToZero(Ax_ft_2D(A0ft_stack,xk-xkm1),zMask));
             keep_going = norm(sk(:)) > tolerance*L*max(1,norm(xk(:)));
-        case STOPPING_OBJECTIVE_VALUE
+        case 'OBJECTIVE_VALUE'
             % compute the stopping criterion based on the relative
             % variation of the objective function.
             criterionObjective = abs(f-prev_f);
             keep_going =  (criterionObjective > tolerance);
-        case COEF_CHANGE
+        case 'COEF_CHANGE'
             diff_x = sum(abs(xk(:)-xkm1(:)))/numel(xk);
             keep_going = (diff_x > tolerance);
         otherwise
