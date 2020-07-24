@@ -2,14 +2,14 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'D:\MMPAD_data';
-%     top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\MMPAD_data';
+top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring2_zero';
 
 % Output dirs
-output_name = '_indep_ISM1';
+output_name = '_indep_ISM2';
 output_subdir = [dset_name,output_name];
 
 
