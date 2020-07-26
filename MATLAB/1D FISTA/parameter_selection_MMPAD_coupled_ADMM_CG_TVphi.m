@@ -5,16 +5,17 @@ disp('Setup params')
 top_dir = 'E:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
+
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi2';
+output_name = '_coupled_CG_TVphi3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -124,7 +125,8 @@ end
 
 %% Run coupled grid search
 disp('Begin grid search')
-for i = 7:M
+
+for i = 16:30
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     

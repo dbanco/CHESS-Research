@@ -9,7 +9,7 @@ P.set = 1;
 top_dir = 'E:\MMPAD_data';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM2';
@@ -151,10 +151,8 @@ plot(lambda2_vals,mean_l0,'o-')
 ylabel('l0-norm')
 xlabel('Coupling parameter')
 
-figure(8)
-plot(lambda2_vals,tv_penalty,'o-')
-ylabel('tv')
-xlabel('Coupling parameter')
+
+
 
 %     % Plot AWMV
 %     figure(5)
@@ -202,14 +200,35 @@ total_err = sum(err_select,2);
 % Find kink in L-cureve method #3
 err_scale = total_err/max(total_err(:));
 tv_scale = tv_penalty/max(tv_penalty(:));
-sq_origin_dist = tv_scale.^2 + err_scale.^2;
+sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
 select_ind = find(sq_origin_dist == min(sq_origin_dist));
-
+% select_ind = 18;
 selectx = total_err(select_ind);
 selecty = tv_penalty(select_ind,:);
 hold on
 plot(selectx,selecty,'s','Markersize',14)
 plot(sum(err_indep),tv_indep,'*','Markersize',14)
+
+
+figure(8)
+plot(lambda2_vals,tv_penalty,'o-')
+ylabel('tv')
+xlabel('Coupling parameter')
+
+
+% figure(77)
+% plot(err_scale,tv_scale,'o-')
+% ylabel('TV')
+% xlabel('Error')
+
+figure(9)
+plot(err_select(select_ind,:))
+hold on
+plot(err_indep)
+legend('coupled','indep')
+ylabel('error')
+xlabel('time')
+
 
 %% Plot paramter selected
 select_fig = figure(11);
