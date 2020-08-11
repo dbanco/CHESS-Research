@@ -9,15 +9,15 @@ P.set = 1;
 top_dir = 'E:\MMPAD_data';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring3_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM2';
+indep_name = '_indep_ISM4';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi3';
+output_name = '_coupled_CG_TVphi4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -33,7 +33,8 @@ baseFileName = 'coupled_fit_%i.mat';
 load(fullfile(output_dir,sprintf(baseFileName,1)))
 lambda2_vals = P.lambda2_values;
 M = numel(lambda2_vals);
-
+M=11;
+lambda2_vals = lambda2_vals(1:M);
 % Construct dictionary
 switch P.basis
     case 'norm2'
@@ -229,6 +230,35 @@ legend('coupled','indep')
 ylabel('error')
 xlabel('time')
 
+figure(12) % analyze correspondence of l1-parameters to awmv
+cutoff = mean(awmv_az_init(200:end));
+param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
+indep_cut = awmv_az_init > cutoff;
+correspond = param_cut(:) == indep_cut(:);
+plot(P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init))
+% plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
+hold on
+plot(awmv_az_init)
+plot(awmv_az(select_ind,:))
+title('All scaled')
+legend('parameter value','indep','coupled','Location','Best')
+
+figure(13) % analyze correspondence of l1-parameters to awmv
+indep_end = awmv_az_init(200:end);
+coupled_end = awmv_az(select_ind,200:end);
+params_end = P.params.lambda1(200:end)*20 + mean(indep_end);
+
+cutoff = mean(awmv_az_init(200:end));
+param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
+indep_cut = awmv_az_init > cutoff;
+correspond = param_cut(:) == indep_cut(:);
+plot(params_end)
+% plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
+hold on
+plot(indep_end)
+plot(coupled_end)
+title('All scaled')
+legend('parameter value','indep','coupled','Location','Best')
 
 %% Plot paramter selected
 select_fig = figure(11);
@@ -250,6 +280,7 @@ legend(legend_str,'location','best','FontSize',16)
 %     saveas(select_fig,[figure_dir,'awmv_select_',dset_name,'_',dataset_num,'.png'])
 
 %% Plot vdf surface
+
 vdf_time_all_fig = figure(56);
 [ha3, pos3] = tight_subplot(3,ceil(M/3)+1,[0.1 0.03],[.02 .08],[.02 .02]); 
 im_ind = 1;
@@ -419,7 +450,7 @@ plot(awmv_az_b)
 title('awmv')
 figure(89)
 imagesc(vdfs_b,[0 0.05])
-
+%}
 %% Plot vdfs
 % figure(333)
 % [ha3, pos3] = tight_subplot(2,5,[.005 .005],[.01 .01],[.01 .01]); 

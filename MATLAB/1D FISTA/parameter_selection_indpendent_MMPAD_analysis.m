@@ -5,14 +5,14 @@ close all
 disp('Setup params')
 P.set = 1;
 % Parent directory
-top_dir = 'D:\MMPAD_data';
+top_dir = 'E:\MMPAD_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring3_zero';
 
 % Output dirs
-output_name = '_indep_ISM1';
+output_name = '_indep_ISM4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -23,10 +23,16 @@ baseFileName = 'indep_fit_%i_%i.mat';
 
 % Load most parameters by loading single output
 load(fullfile(output_dir,sprintf(baseFileName,1,1)))
+
+% Real lambda values
+lambda_values = P.lambda_values;
+% lambda_values = [logspace(-7,-5.1,10) logspace(-5,1,30)];
+% P.lambda_values = lambda_values;
+
 N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
-M = numel(P.lambda_values);
+M = numel(lambda_values);
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
@@ -207,7 +213,7 @@ fits_fig = figure(9);
 [ha2, ~] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 201:300
+for t = 1:100
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     
