@@ -2,20 +2,20 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'E:\MMPAD_data';
-%     top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'E:\MMPAD_data';
+top_dir = '/cluster/shared/dbanco02';
 
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM2';
+indep_name = '_indep_ISM4';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi3';
+output_name = '_coupled_CG_TVphi4b';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -28,7 +28,6 @@ baseFileName = 'indep_fit_%i_%i.mat';
 load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
 P.baseFileName = 'coupled_fit_%i.mat';
 
-M = 1;
 N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
@@ -105,7 +104,7 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-lambda2_vals = logspace(-4,0,30);
+lambda2_vals = logspace(-6,-4.1,15);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
@@ -126,7 +125,7 @@ end
 %% Run coupled grid search
 disp('Begin grid search')
 
-for i = 16:30
+for i = 1:30
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     

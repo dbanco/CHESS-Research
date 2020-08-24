@@ -6,10 +6,10 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring2_zero';
+dset_name = 'ring4_zero';
 
 % Output dirs
-output_name = '_indep_ISM2';
+output_name = '_indep_ISM4';
 output_subdir = [dset_name,output_name];
 
 
@@ -33,8 +33,8 @@ load(fullfile(dataset,[P.prefix,'_1.mat']));
 polar_vector = sum(polar_image,1)';
 
 N = size(polar_vector,1);
-K = 20;
-M = 30;
+K = 21;
+M = 10;
 T = num_ims;
 
 P.dataScale = 1e-5;
@@ -45,7 +45,7 @@ P.num_ims = T;
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = K;
-P.var_theta = linspace(0.5,50,P.num_var_t).^2;
+P.var_theta = [0.05 linspace(0.5,50,P.num_var_t-1)].^2;
 
 % algorithm parameters
 P.params.rho1 = 1;
