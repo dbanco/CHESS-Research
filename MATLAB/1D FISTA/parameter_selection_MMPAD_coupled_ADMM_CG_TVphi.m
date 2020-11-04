@@ -15,7 +15,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi4b';
+output_name = '_coupled_CG_TVphi8';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -40,7 +40,7 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 0.1;
+P.params.rho2 = 10;
 P.params.lambda2 = 1;
 P.params.tau = 1.05;
 P.params.mu = 2;
@@ -104,7 +104,7 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-lambda2_vals = logspace(-6,-4.1,15);
+lambda2_vals = logspace(-5,1,45);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
@@ -125,7 +125,7 @@ end
 %% Run coupled grid search
 disp('Begin grid search')
 
-for i = 1:30
+for i = 42:45
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     

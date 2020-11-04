@@ -6,10 +6,10 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM4';
+output_name = '_indep_ISM5';
 output_subdir = [dset_name,output_name];
 
 
@@ -37,7 +37,7 @@ K = 21;
 M = 10;
 T = num_ims;
 
-P.dataScale = 1e-5;
+P.dataScale = 1e-6;
 P.lambda_values = logspace(-5,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
