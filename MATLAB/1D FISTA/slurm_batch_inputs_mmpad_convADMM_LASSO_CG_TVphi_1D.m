@@ -32,6 +32,10 @@ N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
 
+% Function
+funcName = 'wrap_convADMM_LASSO_CG_TVphi_1D';
+
+%% Fixed Parameters
 % Zero padding and mask
 zPad = [0,0];
 zMask = [];
@@ -104,46 +108,23 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-M = 45;
-lambda2_vals = logspace(-5,1,M);
+M = 30;
+lambda2_vals = logspace(-4,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
-% Load data
-B = zeros(N,T);
-for j = 1:T
-  b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
-    % Reduce image to vector if needed
-    try
-        b = P.dataScale*sum(b_data.polar_image,2);
-    catch
-        b = P.dataScale*b_data.polar_vector;
-    end
-    B(:,j) = b';
-    B(129:133,j) = (b(128) + b(134))/2;
+%% Parameters to vary
+
+% Job directory
+jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
+mkdir(jobDir)
+
+for img = 1:T
+    P.img = img;
+    P.set = ring_num;
+    varin = {dataset,P,output_dir};
+    save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+    k = k + 1;
 end
-
-%% Run coupled grid search
-disp('Begin grid search')
-
-for i = 1:M
-    P.params.lambda2 = lambda2_vals(i);
-    P.set = i;
-    
-    % Init solution
-    X_init = zeros(N,K,T);
-    
-    % Solve
-    [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params);  
-
-    % Output data
-    save_output(output_dir,X_hat,err,obj,l1_norm,tv_penalty,P);
-end
-
-
-function save_output(output_dir,X_hat,err,obj,l1_norm,tv_penalty,P)
-    save(fullfile(output_dir,sprintf(P.baseFileName,P.set)),'X_hat',...
-        'err','obj','l1_norm','tv_penalty','P');
-end
-
-
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh','1-67')
+slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
