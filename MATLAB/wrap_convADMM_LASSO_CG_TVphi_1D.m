@@ -6,6 +6,9 @@ N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
 
+% Construct dictionary
+A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+
 % Load data
 B = zeros(N,T);
 for j = 1:T
