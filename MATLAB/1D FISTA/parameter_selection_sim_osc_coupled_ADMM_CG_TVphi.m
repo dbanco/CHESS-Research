@@ -2,8 +2,8 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'E:\CHESS_data';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'E:\CHESS_data';
+top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
 dset_name = 'simulated_two_spot_1D_gnoise6_osc_3';
@@ -66,7 +66,7 @@ l1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = P.dataScale*sum(polar_image,1);
+        b = P.dataScale*polar_vector(1:179);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
@@ -105,7 +105,7 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-lambda2_vals = logspace(-4,-1,30);
+lambda2_vals = logspace(-6,1,45);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
@@ -114,19 +114,16 @@ B = zeros(N,T);
 for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
-    try
-        b = P.dataScale*sum(b_data.polar_image,1);
-    catch
-        b = P.dataScale*b_data.polar_vector;
-    end
+
+    b = P.dataScale*b_data.polar_vector(1:179);
+    
     B(:,j) = b';
-    B(129:133,j) = (b(128) + b(134))/2;
 end
 
 %% Run coupled grid search
 disp('Begin grid search')
 
-for i = 1:30
+for i = 1:M
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     
