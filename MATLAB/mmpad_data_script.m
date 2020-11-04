@@ -1,8 +1,8 @@
 %% Load data into single array
-img_array = zeros(546,265,396);
-for i = 1:546
+img_array = zeros(67,265,396);
+for i = 1:67
     fname = sprintf('mmpad_img_%i.mat',i-1);
-    load(fullfile('D:\MMPAD_data\full',fname))
+    load(fullfile('E:\PureTiRD_nr2_c_x39858',fname))
     img_array(i,:,:) = squeeze(sum(mmpad_img,1));
 end
 

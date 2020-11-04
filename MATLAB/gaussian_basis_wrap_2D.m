@@ -54,5 +54,6 @@ end
 
 % Compute values
 B = exp(-all_dist_sq_theta./(2*var_theta) - all_dist_sq_rad./(2*var_rad));
+B = B/max(B(:));
 end
 
