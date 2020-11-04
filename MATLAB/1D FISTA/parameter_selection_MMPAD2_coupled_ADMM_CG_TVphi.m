@@ -2,9 +2,9 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'E:\PureTiRD_nr2_c_x39858';
+% top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
-% top_dir = '/cluster/shared/dbanco02';
+top_dir = '/cluster/shared/dbanco02';
 
 
 % Input dirs
@@ -105,8 +105,8 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-M = 30;
-lambda2_vals = logspace(-4,1,M);
+M = 45;
+lambda2_vals = logspace(-5,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
@@ -127,7 +127,7 @@ end
 %% Run coupled grid search
 disp('Begin grid search')
 
-for i = 1
+for i = 1:M
     P.params.lambda2 = lambda2_vals(i);
     P.set = i;
     
