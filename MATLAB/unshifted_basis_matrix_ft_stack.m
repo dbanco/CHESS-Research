@@ -28,6 +28,15 @@ for t = 1:numel(P.var_theta)
             case 'norm2'
                 A0 = gaussian_basis_wrap_2D_norm2(P.num_theta,1,  0, P.var_theta(t),...
                                                   P.num_rad,  1,  0, P.var_rad(r));
+            case 'max'
+                A0 = gaussian_basis_wrap_2D(P.num_theta,1,  0, P.var_theta(t),...
+                                            P.num_rad,  1,  0, P.var_rad(r));
+            case 'norm1'
+                A0 = gaussian_basis_wrap_2D_norm1(P.num_theta,1,  0, P.var_theta(t),...
+                                                  P.num_rad,  1,  0, P.var_rad(r));
+            case 'norm'
+                A0 = gaussian_basis_wrap_2D_norm(P.num_theta,1,  0, P.var_theta(t),...
+                                                  P.num_rad,  1,  0, P.var_rad(r));
         end
         A0_stack(:,:,t,r) = fft2(A0);
     end

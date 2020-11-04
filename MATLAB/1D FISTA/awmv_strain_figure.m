@@ -22,7 +22,7 @@ end
 
 
 %% Load AWMV
-datadir = 'C:\Users\dpqb1\OneDrive\Desktop\present_figures';
+datadir = 'C:\Users\dpqb1\Desktop\present_figures';
 fileBase = 'ring%i_zero_couple_fit_data.mat';
 outName =  'ring%i_CoM_AWMV.png';
 for ring = 1:4
@@ -43,7 +43,7 @@ for ring = 1:4
 end
 
 %% PLot all awmv
-datadir = 'C:\Users\dpqb1\OneDrive\Desktop\present_figures';
+datadir = 'C:\Users\dpqb1\Desktop\present_figures';
 fileBase = 'ring%i_zero_couple_fit_data.mat';
 outName =  'allAWMV.png';
 fig_out = figure(5);
