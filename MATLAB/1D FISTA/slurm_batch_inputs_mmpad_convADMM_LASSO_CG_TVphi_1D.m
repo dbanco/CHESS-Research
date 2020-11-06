@@ -15,7 +15,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -44,9 +44,9 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 10;
+P.params.rho2 = 0.005;
 P.params.lambda2 = 1;
-P.params.tau = 1.05;
+P.params.tau = 1.1;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
@@ -109,7 +109,7 @@ P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
 M = 30;
-lambda2_vals = logspace(-4,1,M);
+lambda2_vals = logspace(-8,-5,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
@@ -119,12 +119,12 @@ P.lambda2_values = lambda2_vals;
 jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
 mkdir(jobDir)
 
-for img = 1:T
-    P.img = img;
-    P.set = ring_num;
+for k = 1:M
+    P.params.lambda2 = lambda2_vals(k);
+    P.set = k;
     varin = {dataset,P,output_dir};
     save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-    k = k + 1;
 end
-slurm_write_bash(k-1,jobDir,'full_batch_script.sh','1-67')
-slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(M)])
+% slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
