@@ -6,18 +6,18 @@ close all
 disp('Setup parms')
 P.set = 1;
 % Parent directory
-top_dir = 'E:\MMPAD_data';
-
+top_dir = 'E:\PureTiRD_nr2_c_x39858';
+% top_dir = 'E:\MMPAD_data';
 % Input dirs
 dset_name = 'ring1_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM4';
+indep_name = '_indep_ISM1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi8';
+output_name = '_coupled_CG_TVphi4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -53,6 +53,12 @@ for k = 1:M
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
 
         load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
+        if size(polar_image,1) == 261
+            aaa = polar_image';
+            clear polar_image
+            polar_image = aaa;
+            save(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']),'polar_image')
+        end
         b = P.dataScale*sum(polar_image,1);
         err_select(k,j) = sum( (b(:)-fit(:)).^2 )./sum( b(:).^2 ) ;
 
@@ -68,7 +74,7 @@ for k = 1:M
     end
 end
 
-% Compute tv objective
+%% Compute tv objective
 tv_penalty = zeros(M,1);
 for k = 1:M
     fprintf('TVx %i of %i\n',k,M)
@@ -340,7 +346,7 @@ vdf_time_fig = figure(566);
 
 subplot(2,1,1)
 % Plot surface
-imagesc(squeeze(vdf_time(select_ind,1:200,:))')
+imagesc(squeeze(vdf_time(select_ind,:,:))')
 shading interp
 caxis([0 0.6])
 colormap(jet)
@@ -352,7 +358,7 @@ ylabel('\sigma')
 
 subplot(2,1,2)
 % Plot surface
-    imagesc(squeeze(vdfs_indep(:,1:200)))
+    imagesc(squeeze(vdfs_indep))
 shading interp
 caxis([0 0.6])
 colormap(jet)
