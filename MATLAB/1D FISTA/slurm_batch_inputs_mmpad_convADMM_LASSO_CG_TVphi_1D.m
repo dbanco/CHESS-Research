@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring4_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -71,7 +71,7 @@ l1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = P.dataScale*sum(polar_image,1);
+        b = P.dataScale*sum(polar_image,2);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
@@ -92,7 +92,7 @@ end
 
 for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    b = P.dataScale*sum(polar_image,1);
+    b = P.dataScale*sum(polar_image,2);
     rel_err_t = err_select(:,t)/sum(b(:).^2);
     while rel_err_t(select_indices(t)) > 0.02
         if select_indices(t) > 1
@@ -109,7 +109,7 @@ P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
 M = 30;
-lambda2_vals = logspace(-8,-5,M);
+lambda2_vals = logspace(-5,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
