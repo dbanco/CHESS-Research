@@ -1,10 +1,10 @@
 %% Compute center of mass
-top_dir = 'E:\MMPAD_data';
+top_dir = 'E:\PureTiRD_nr2_c_x39858';
 dset_name = 'ring%i_zero';
 prefix = 'mmpad_img_%i.mat';
 
 R = 4;
-N = 546;
+N = 67;
 COM = zeros(R,N);
 for ring = 1:R
     for img = 1:N
@@ -22,7 +22,7 @@ end
 
 
 %% Load AWMV
-datadir = 'C:\Users\dpqb1\Desktop\present_figures';
+datadir = 'C:\Users\dpqb1\Desktop\mmpad2_figures';
 fileBase = 'ring%i_zero_couple_fit_data.mat';
 outName =  'ring%i_CoM_AWMV.png';
 for ring = 1:4
@@ -43,7 +43,7 @@ for ring = 1:4
 end
 
 %% PLot all awmv
-datadir = 'C:\Users\dpqb1\Desktop\present_figures';
+datadir = 'C:\Users\dpqb1\Desktop\mmpad2_figures';
 fileBase = 'ring%i_zero_couple_fit_data.mat';
 outName =  'allAWMV.png';
 fig_out = figure(5);
@@ -71,5 +71,20 @@ for ring = 1:4
     xlabel('time')
 
 end
-legend('ring 1','ring 2','ring 3','ring 4')
+legend('ring 1','ring 2','ring 3','ring 4','Location','Best')
+saveas(fig_out,fullfile(datadir,outName))
+
+%% Plot all Indep AWMVs
+outName =  'indepAWMV.png';
+fig_out = figure(7);
+for ring = 1:4
+    
+    load(fullfile(datadir,sprintf(fileBase,ring)))
+    hold on
+    plot(awmv_az_init,'LineWidth',1.5)
+    ylabel('AWMV')
+    xlabel('time')
+
+end
+legend('ring 1','ring 2','ring 3','ring 4','Location','Best')
 saveas(fig_out,fullfile(datadir,outName))

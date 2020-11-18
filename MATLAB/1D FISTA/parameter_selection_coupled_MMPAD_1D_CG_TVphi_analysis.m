@@ -6,10 +6,10 @@ close all
 disp('Setup parms')
 P.set = 1;
 % Parent directory
-top_dir = 'E:\PureTiRD_nr2_c_x39858';
+top_dir = 'E:\PureTiRD_full';
 % top_dir = 'E:\MMPAD_data';
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring2_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -17,7 +17,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi4';
+output_name = '_coupled_CG_TVphi1';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -120,7 +120,7 @@ legend_str{1} = '0';
 kk = 2;
 hold on
 plot(awmv_az_init,'LineWidth',1.5)
-for k = 20
+for k = 19
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
@@ -367,6 +367,30 @@ title(['\lambda_2 = ','0'])
 xlabel('t')
 ylabel('\sigma')
 
+%% Plot indep fits
+fits_fig = figure(2222);
+[ha2, pos2] = tight_subplot(10,7,[.005 .005],[.01 .01],[.01 .01]); 
+awmv_az_vdfs = zeros(T,1);
+im_ind = 1;
+% x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
+for image_num = 1:T
+    x_hat = X_indep(:,:,image_num);
+    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
+    az_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(az_signal(:));
+    awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
+    polar_vector = sum(polar_image,1);
+    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+    
+    % Plot
+    axes(ha2(im_ind))
+    hold on
+    plot(b)
+    plot(fit)
+    legend(sprintf('%i',image_num),'location','northeast')
+    im_ind = im_ind + 1;
+end
 
 
 %% Plot fits

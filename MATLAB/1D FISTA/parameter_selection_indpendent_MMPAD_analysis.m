@@ -6,7 +6,7 @@ disp('Setup params')
 P.set = 1;
 % Parent directory
 % top_dir = 'E:\MMPAD_data';
-top_dir = 'E:\PureTiRD_nr2_c_x39858';
+top_dir = 'E:\PureTiRD_full';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
@@ -60,7 +60,7 @@ for i = 1:M
         b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,e_data.x_hat),129:133);
-        b = P.dataScale*sum(b_data.polar_image,2);
+        b = P.dataScale*sum(b_data.polar_image,1);
         err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
@@ -214,11 +214,11 @@ fits_fig = figure(9);
 [ha2, ~] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 1:100
+for t = 1:T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     
-    polar_vector = sum(polar_image,2);
+    polar_vector = sum(polar_image,1);
     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),129:133);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));

@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -15,7 +15,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi4';
+output_name = '_coupled_CG_TVphi1';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
