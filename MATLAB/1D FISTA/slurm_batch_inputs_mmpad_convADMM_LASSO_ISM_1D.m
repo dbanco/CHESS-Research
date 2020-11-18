@@ -10,14 +10,13 @@ top_dir = '/cluster/shared/dbanco02';
 dset_name = 'ring1_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Setup directories
 dataset =  fullfile(top_dir,dset_name);
-output_dir  = fullfile(top_dir,output_subdir);
-mkdir(output_dir)  
+
 
 num_ims = numel(dir(fullfile(dataset,'*.mat')));
 
@@ -70,7 +69,7 @@ funcName = 'wrap_convADMM_LASSO_ISM_1D';
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Job directory
-jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
+jobDir = fullfile('/cluster','home','dbanco02',['job_',indep_subdir]);
 mkdir(jobDir)
 
 for k = 1:M
