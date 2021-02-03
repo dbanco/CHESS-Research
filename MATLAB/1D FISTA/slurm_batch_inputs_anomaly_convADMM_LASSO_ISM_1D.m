@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly';
+dset_name = 'simulated_two_spot_1D_anomaly_1';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
