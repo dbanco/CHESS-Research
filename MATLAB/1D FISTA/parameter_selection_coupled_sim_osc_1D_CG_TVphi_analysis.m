@@ -9,7 +9,7 @@ P.set = 1;
 top_dir = 'E:\CHESS_data';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_gnoise6_osc_3';
+dset_name = 'simulated_two_spot_1D_gnoise6_osc_2';
 
 % Indep dirs
 indep_name = '_indep_ISM1';

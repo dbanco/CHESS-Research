@@ -2,8 +2,8 @@
 disp('Setup params')
 
 % Parent directory
-% top_dir = 'E:\CHESS_data';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'E:\CHESS_data';
+% top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
 dset_name = 'simulated_two_spot_1D_gnoise6_osc_3';

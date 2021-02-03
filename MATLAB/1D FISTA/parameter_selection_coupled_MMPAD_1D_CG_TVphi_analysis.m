@@ -9,15 +9,15 @@ P.set = 1;
 top_dir = 'E:\PureTiRD_full';
 % top_dir = 'E:\MMPAD_data';
 % Input dirs
-dset_name = 'ring2_zero';
+dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -120,7 +120,7 @@ legend_str{1} = '0';
 kk = 2;
 hold on
 plot(awmv_az_init,'LineWidth',1.5)
-for k = 19
+for k = 10
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));
@@ -209,7 +209,7 @@ err_scale = total_err/max(total_err(:));
 tv_scale = tv_penalty/max(tv_penalty(:));
 sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
 select_ind = find(sq_origin_dist == min(sq_origin_dist),1);
-select_ind = 22;
+% select_ind = 22;
 selectx = total_err(select_ind);
 selecty = tv_penalty(select_ind,:);
 hold on
@@ -368,165 +368,165 @@ xlabel('t')
 ylabel('\sigma')
 
 %% Plot indep fits
-fits_fig = figure(2222);
-[ha2, pos2] = tight_subplot(10,7,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az_vdfs = zeros(T,1);
-im_ind = 1;
-% x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
-for image_num = 1:T
-    x_hat = X_indep(:,:,image_num);
-    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
-    polar_vector = sum(polar_image,1);
-    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
-    
-    % Plot
-    axes(ha2(im_ind))
-    hold on
-    plot(b)
-    plot(fit)
-    legend(sprintf('%i',image_num),'location','northeast')
-    im_ind = im_ind + 1;
-end
+% fits_fig = figure(2222);
+% [ha2, pos2] = tight_subplot(10,7,[.005 .005],[.01 .01],[.01 .01]); 
+% awmv_az_vdfs = zeros(T,1);
+% im_ind = 1;
+% % x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
+% for image_num = 1:T
+%     x_hat = X_indep(:,:,image_num);
+%     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_hat),P.params.zeroMask);
+%     az_signal = squeeze(sum(x_hat,1));
+%     var_sum = sum(az_signal(:));
+%     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+%     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
+%     polar_vector = sum(polar_image,1);
+%     b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+%     
+%     % Plot
+%     axes(ha2(im_ind))
+%     hold on
+%     plot(b)
+%     plot(fit)
+%     legend(sprintf('%i',image_num),'location','northeast')
+%     im_ind = im_ind + 1;
+% end
 
 
 %% Plot fits
-fits_fig = figure(222);
-[ha2, pos2] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az_vdfs = zeros(T,1);
-im_ind = 1;
-x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
-for image_num = 1:100
-    x_hat = x_data.X_hat(:,:,image_num);
-    load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
-    fit = Ax_ft_1D(A0ft_stack,x_hat);
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    polar_vector = sum(polar_image,1);
-    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
-    
-    % Plot
-    axes(ha2(im_ind))
-    hold on
-    plot(b)
-    plot(fit)
-    legend(sprintf('%i',image_num),'location','northeast')
-    im_ind = im_ind + 1;
-end
+% fits_fig = figure(222);
+% [ha2, pos2] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
+% awmv_az_vdfs = zeros(T,1);
+% im_ind = 1;
+% x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
+% for image_num = 1:100
+%     x_hat = x_data.X_hat(:,:,image_num);
+%     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
+%     fit = Ax_ft_1D(A0ft_stack,x_hat);
+%     az_signal = squeeze(sum(x_hat,1));
+%     var_sum = sum(az_signal(:));
+%     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+%     polar_vector = sum(polar_image,1);
+%     b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+%     
+%     % Plot
+%     axes(ha2(im_ind))
+%     hold on
+%     plot(b)
+%     plot(fit)
+%     legend(sprintf('%i',image_num),'location','northeast')
+%     im_ind = im_ind + 1;
+% end
 %     saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',dataset_num,'.png'])
 
 %% Try connected components analysis
-image_num = 1;
-thresh = 1e-3;
-x_hat = x_data.X_hat(:,:,image_num);
-shift_x = shift2D(x_hat,130,0);
-cc = bwconncomp(shift_x>thresh);
-cc_reg = regionprops(cc,'Centroid');
-
-colors = jet(cc.NumObjects);
-
-load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
-polar_vector = sum(polar_image,1);
-b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
-
-figure(6)
-hold on
-plot(b)
-fit = Ax_ft_1D(A0ft_stack,x_hat);
-plot(fit)
-
-for i = 1:cc.NumObjects
-    aa = cc_reg(i).Centroid(2);
-    bb = cc_reg(i).Centroid(2);
-    patch = b(floor(aa):ceil(bb));
-    patch_max = max(patch(:));
-    plot([aa,bb],[1,1]*patch_max,'o-','Color',colors(i,:))
-
-end
-
-% Compute AWMV for each connected component
-awmv_peaks = zeros(cc.NumObjects,1);
-for i = 1:cc.NumObjects
-    pixelList = cc.PixelIdxList{i};
-    for j = 1:numel(pixelList)
-        [row,col] = ind2sub(size(shift_x),pixelList(j));
-        awmv_peaks(i) = awmv_peaks(i) + shift_x(row,col)*sqrt(P.var_theta(col));
-    end
-    aa = cc_reg(i).Centroid(2);
-    bb = cc_reg(i).Centroid(2);
-    patch = b(floor(aa):ceil(bb));
-    patch_max = max(patch(:));
-    plot([aa,bb],[1,1]*patch_max,'o-','Color',colors(i,:))
-
-end
-
-figure(8)
-subplot(2,1,1)
-imagesc(shift_x>thresh)
-subplot(2,1,2)
-bar(awmv_peaks)
+% image_num = 1;
+% thresh = 1e-3;
+% x_hat = x_data.X_hat(:,:,image_num);
+% shift_x = shift2D(x_hat,130,0);
+% cc = bwconncomp(shift_x>thresh);
+% cc_reg = regionprops(cc,'Centroid');
+% 
+% colors = jet(cc.NumObjects);
+% 
+% load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
+% polar_vector = sum(polar_image,1);
+% b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+% 
+% figure(6)
+% hold on
+% plot(b)
+% fit = Ax_ft_1D(A0ft_stack,x_hat);
+% plot(fit)
+% 
+% for i = 1:cc.NumObjects
+%     aa = cc_reg(i).Centroid(2);
+%     bb = cc_reg(i).Centroid(2);
+%     patch = b(floor(aa):ceil(bb));
+%     patch_max = max(patch(:));
+%     plot([aa,bb],[1,1]*patch_max,'o-','Color',colors(i,:))
+% 
+% end
+% 
+% % Compute AWMV for each connected component
+% awmv_peaks = zeros(cc.NumObjects,1);
+% for i = 1:cc.NumObjects
+%     pixelList = cc.PixelIdxList{i};
+%     for j = 1:numel(pixelList)
+%         [row,col] = ind2sub(size(shift_x),pixelList(j));
+%         awmv_peaks(i) = awmv_peaks(i) + shift_x(row,col)*sqrt(P.var_theta(col));
+%     end
+%     aa = cc_reg(i).Centroid(2);
+%     bb = cc_reg(i).Centroid(2);
+%     patch = b(floor(aa):ceil(bb));
+%     patch_max = max(patch(:));
+%     plot([aa,bb],[1,1]*patch_max,'o-','Color',colors(i,:))
+% 
+% end
+% 
+% figure(8)
+% subplot(2,1,1)
+% imagesc(shift_x>thresh)
+% subplot(2,1,2)
+% bar(awmv_peaks)
 
 %% Evaluate awmv of individual peaks in time
-awmv_peaks = zeros(15,200);
-for image_num = 1:200
-    thresh = 1e-3;
-    x_hat = x_data.X_hat(:,:,image_num);
-    shift_x = shift2D(x_hat,130,0);
-    cc = bwconncomp(shift_x>thresh);
-    cc_reg = regionprops(cc,'Centroid');
-    
-    % Compute AWMV for each connected component
-    for i = 1:cc.NumObjects
-        pixelList = cc.PixelIdxList{i};
-        for j = 1:numel(pixelList)
-            [row,col] = ind2sub(size(shift_x),pixelList(j));
-            awmv_peaks(i,image_num) = awmv_peaks(i) + shift_x(row,col)*sqrt(P.var_theta(col));
-        end
-    end
-end
-
-figure(6)
-imagesc(awmv_peaks)
-colorbar()
+% awmv_peaks = zeros(15,200);
+% for image_num = 1:200
+%     thresh = 1e-3;
+%     x_hat = x_data.X_hat(:,:,image_num);
+%     shift_x = shift2D(x_hat,130,0);
+%     cc = bwconncomp(shift_x>thresh);
+%     cc_reg = regionprops(cc,'Centroid');
+%     
+%     % Compute AWMV for each connected component
+%     for i = 1:cc.NumObjects
+%         pixelList = cc.PixelIdxList{i};
+%         for j = 1:numel(pixelList)
+%             [row,col] = ind2sub(size(shift_x),pixelList(j));
+%             awmv_peaks(i,image_num) = awmv_peaks(i) + shift_x(row,col)*sqrt(P.var_theta(col));
+%         end
+%     end
+% end
+% 
+% figure(6)
+% imagesc(awmv_peaks)
+% colorbar()
 
 %% Track particular connected component (doesnt track same location?)
-figure(7)
-cc_num = 7;
-b_single_cc = zeros(numel(b),200);
-thresh = 1e-3;
-centroid1 = 0;
-for image_num = 1:200
-    
-    x_hat = x_data.X_hat(:,:,image_num);
-    shift_x = shift2D(x_hat,130,0);
-    cc = bwconncomp(shift_x>thresh);
-    cc_reg = regionprops(cc,'Centroid');
-    
-    % Initialize centroid
-    if image_num == 1
-        centroid1 = cc_reg(cc_num).Centroid(2);
-    end
-    centroids = reshape([cc_reg.Centroid],[2,cc.NumObjects]);
-    centroid_locs = centroids(2,:);
-    [~,cc_idx] = min(abs(centroid1-centroid_locs));
-    
-    % Update centroid
-    if image_num ~= 1
-        centroid1 = centroid_locs(cc_idx);
-    end
-    
-    % Plot selected connected component
-    x_single_cc = zeros(size(x_hat));
-    pixelList = cc.PixelIdxList{cc_idx};    
-    x_single_cc(pixelList) = x_hat(pixelList);
-    b_single_cc(:,image_num) = Ax_ft_1D(A0ft_stack,x_single_cc);
-    plot(b_single_cc(:,image_num))
-    pause(0.1)
-end
+% figure(7)
+% cc_num = 7;
+% b_single_cc = zeros(numel(b),200);
+% thresh = 1e-3;
+% centroid1 = 0;
+% for image_num = 1:200
+%     
+%     x_hat = x_data.X_hat(:,:,image_num);
+%     shift_x = shift2D(x_hat,130,0);
+%     cc = bwconncomp(shift_x>thresh);
+%     cc_reg = regionprops(cc,'Centroid');
+%     
+%     % Initialize centroid
+%     if image_num == 1
+%         centroid1 = cc_reg(cc_num).Centroid(2);
+%     end
+%     centroids = reshape([cc_reg.Centroid],[2,cc.NumObjects]);
+%     centroid_locs = centroids(2,:);
+%     [~,cc_idx] = min(abs(centroid1-centroid_locs));
+%     
+%     % Update centroid
+%     if image_num ~= 1
+%         centroid1 = centroid_locs(cc_idx);
+%     end
+%     
+%     % Plot selected connected component
+%     x_single_cc = zeros(size(x_hat));
+%     pixelList = cc.PixelIdxList{cc_idx};    
+%     x_single_cc(pixelList) = x_hat(pixelList);
+%     b_single_cc(:,image_num) = Ax_ft_1D(A0ft_stack,x_single_cc);
+%     plot(b_single_cc(:,image_num))
+%     pause(0.1)
+% end
 
 %{
 

@@ -85,11 +85,11 @@ for k = 1:numel(noise_std)
             polar_vector = Bn;
 % 
 %             % Save out image files
-            save(im_name,'polar_vector')
+%             save(im_name,'polar_vector')
     end
 end
 
-save([[saveDir,sprintf('_%i',k)],'\synth_data.mat'],'synth_sample','VDF')
+% save([[saveDir,sprintf('_%i',k)],'\synth_data.mat'],'synth_sample','VDF')
 
 %% View Expected Variance
 % figure(2)

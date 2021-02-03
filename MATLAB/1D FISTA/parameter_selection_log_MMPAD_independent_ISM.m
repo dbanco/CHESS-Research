@@ -2,14 +2,14 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'E:\MMPAD_data_nr2';
+top_dir = 'E:\MMPAD_data';
 % top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring3_zero';
 
 % Output dirs
-output_name = '_indep_ISM1';
+output_name = '_indep_ISM4';
 output_subdir = [dset_name,output_name];
 
 
@@ -30,10 +30,11 @@ P.dataset = dataset;
 zPad = 0;
 zMask = [];
 load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,2);
+polar_vector = sum(polar_image,1)';
+
 N = size(polar_vector,1);
-K = 21;
-M = 10;
+K = 20;
+M = 30;
 T = num_ims;
 
 P.dataScale = 1e-5;
@@ -44,7 +45,7 @@ P.num_ims = T;
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = K;
-P.var_theta = [0.05 linspace(0.5,50,P.num_var_t-1)].^2;
+P.var_theta = logspace(-2,2,P.num_var_t).^2;
 
 % algorithm parameters
 P.params.rho1 = 1;
@@ -71,11 +72,12 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = P.dataScale*sum(b_data.polar_image,2);
+        b = P.dataScale*sum(b_data.polar_image,1);
     catch
-        b = P.dataScale*polar_vector;
+        b = P.dataScale*b_data.polar_vector;
     end
     B(:,j) = b';
+    B(129:133,j) = (b(128) + b(134))/2;
 end
 
 %% Run coupled grid search
