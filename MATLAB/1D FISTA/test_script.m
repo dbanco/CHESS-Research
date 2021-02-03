@@ -1,8 +1,8 @@
 clear all
 close all
-
+tic
 %% Generate example data
-N = 200;
+N = 201;
 numSpots = 1;
 b = zeros(N,1);
 amplitude = 5;
@@ -26,7 +26,7 @@ P.num_theta = size(b,1);
 % Define dictionary of Gaussian basis functions
 P.num_var_t = 20;   % Number of different basis functions 
 P.var_theta = linspace(1/2,50,P.num_var_t).^2; % Variances of basis functions
-
+P.basis = 'norm2';
 % Zero padding and mask (just ignore this)
 zPad = [0,0];
 zMask = [];
@@ -68,6 +68,7 @@ x_init = zeros(size(A0ft_stack));
 % Compute result
 b_hat = Ax_ft_1D(A0ft_stack,x_hat);
 
+toc
 % Plot fit
 figure(1)
 subplot(1,2,1)
