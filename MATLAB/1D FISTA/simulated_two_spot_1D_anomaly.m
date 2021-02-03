@@ -1,7 +1,7 @@
-saveDir = 'D:\CHESS_data\simulated_two_spot_1D_anomaly';
+saveDir = 'D:\CHESS_data\simulated_two_spot_1D_anomaly_small';
 
 %% Randomized spot example
-num_ims = 150;
+num_ims = 20;
 num_spots = 2;
 
 % Basis function variance parameters

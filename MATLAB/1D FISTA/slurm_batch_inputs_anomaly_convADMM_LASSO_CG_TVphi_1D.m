@@ -92,9 +92,9 @@ end
 
 for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    b = P.dataScale*sum(polar_image,1);
+    b = P.dataScale*polar_vector(1:179);
     rel_err_t = err_select(:,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > 0.02
+    while rel_err_t(select_indices(t)) > 0.15
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
