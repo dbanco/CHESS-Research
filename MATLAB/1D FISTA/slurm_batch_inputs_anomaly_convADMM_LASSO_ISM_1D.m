@@ -5,14 +5,15 @@ disp('Setup params')
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
-
+for iii = 7:11
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly_1';
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
+mkdir(indep_dir)
 
 % Setup directories
 dataset =  fullfile(top_dir,dset_name);
@@ -29,7 +30,7 @@ P.dataset = dataset;
 zPad = 0;
 zMask = [];
 load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,1);
+polar_vector = polar_vector(1:179);
 N = numel(polar_vector);
 K = 20;
 M = 50;
@@ -81,3 +82,4 @@ end
 
 slurm_write_bash(M,jobDir,'full_batch_script.sh',['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+end
