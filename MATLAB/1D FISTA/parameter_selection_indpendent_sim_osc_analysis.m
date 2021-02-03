@@ -151,6 +151,17 @@ xlabel('time-average l1-norm')
 ylabel('time-average error')
 title('L-curve')
 
+figure(666)
+iii = 1;
+loglog(err_select(1:M-8,iii),l1_select(1:M-8,iii),'o-')
+% plot(mean(l1_select,2),mean(err_select,2),'o-')
+hold on
+loglog(err_select(select_ind,iii),l1_select(select_ind,iii),'s','Markersize',15)
+xlabel('l1-norm')
+ylabel('error')
+title('L-curve')
+
+
 % L curve parameter selection
 select_indices = 30*ones(T,1);
 for t = 1:T

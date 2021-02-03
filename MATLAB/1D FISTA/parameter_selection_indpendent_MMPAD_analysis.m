@@ -5,8 +5,8 @@ close all
 disp('Setup params')
 P.set = 1;
 % Parent directory
-% top_dir = 'E:\MMPAD_data';
-top_dir = 'E:\PureTiRD_full';
+top_dir = 'E:\MMPAD_data_nr2';
+% top_dir = 'E:\PureTiRD_full';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
@@ -150,6 +150,23 @@ hold on
 plot(total_l1(select_ind),total_err(select_ind),'s','Markersize',15)
 xlabel('time-average l1-norm')
 ylabel('time-average error')
+title('L-curve')
+
+figure(666)
+iii=55;
+loglog(l1_select(1:M,iii),err_select(1:M,iii),'o-')
+hold on
+loglog(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
+xlabel('l1-norm')
+ylabel('error')
+title('L-curve')
+
+figure(667)
+plot(l1_select(1:M,iii),err_select(1:M,iii),'o-')
+hold on
+plot(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
+xlabel('l1-norm')
+ylabel('error')
 title('L-curve')
 
 %% L curve parameter selection

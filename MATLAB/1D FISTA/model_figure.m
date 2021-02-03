@@ -97,16 +97,19 @@ end
 %% Show data and decomposed fit
 load(fullfile(indep_dir,'select_indices.mat'))
 dict_fig = figure(3);
-[ha3, pos3] = tight_subplot(5,3,[0 0],[.02 .08],[.02 .02]); 
+[ha3, pos3] = tight_subplot(16,1,[0 0],[.02 .08],[.02 .02]); 
 ii = 1;
-for im_num = [1 30 40 60 100]
+im_num2 = 120;
+for im_num = [20]
     param_num = select_indices(im_num);
     x_data = load( fullfile(indep_dir,sprintf(baseFileName,param_num,im_num)) );
+    param_num2 = select_indices(im_num2);
+    x_data2 = load( fullfile(indep_dir,sprintf(baseFileName,param_num2,im_num2)) );
     A0ft_stack = unshifted_basis_vector_ft_stack_zpad(x_data.P);
     [n,m] = size(A0ft_stack);
 
     % Fit objective
-    x = x_data.x_hat;
+    x = x_data.x_hat + 10*x_data2.x_hat;
     indices = find(x>1e-3);
     [row,mm] = ind2sub([n,m],indices);
     % fit = shift1D(Ax_ft_1D(A0ft_stack,x),131);
@@ -116,26 +119,31 @@ for im_num = [1 30 40 60 100]
     polar_vector = sum(polar_image,1);
     b = P.dataScale*polar_vector';
     
-    axes(ha3(ii))
+    load(fullfile(dataset,[P.prefix,'_',num2str(im_num2),'.mat']) )
+    polar_vector = sum(polar_image,1);
+    b = b + 10*P.dataScale*polar_vector';
+    
     max_y = 0;
-    for k = 1:numel(indices)
+    for k = 1:9
+        axes(ha3(ii))
         x_j = zeros(size(x));
-        x_val = x(indices(k));
-        x_j(indices(k)) = x(indices(k));
+        x_j(:,k)= x(:,k);
+%         x_j(:,k+1)= x(:,k+1);
         fit_j = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_j),P.params.zeroMask);
 
-        figure(3)
         plot(fit_j,'LineWidth',1,'Color',[colors(mm(k),:),0.5])
         hold on
         xlim([0 250])
         if max(fit_j) > max_y
             max_y = max(fit_j);
         end
+%         ylim([0 max(b)/5])
         ylim([0 max_y*1.1])
+        ii = ii + 1;
     end
-    plot(zeros(n,1),'Color','White','LineWidth',1.5)
-    set(gca,'Visible','off')
-    ii = ii + 1;
+%     plot(zeros(n,1),'Color','White','LineWidth',1.5)
+%     set(gca,'Visible','off')
+
 
     axes(ha3(ii))
     plot(b,'LineWidth',1.5,'Color',[0 0 0])

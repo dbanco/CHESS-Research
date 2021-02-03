@@ -2,11 +2,11 @@
 disp('Setup params')
 
 % Parent directory
-top_dir = 'E:\MMPAD_data_nr2';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'E:\PureTiRD_nr2_c_x39858';
+top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'simulated_two_spot_1D_anomaly';
 
 % Output dirs
 output_name = '_indep_ISM1';
@@ -21,7 +21,7 @@ mkdir(output_dir)
 num_ims = numel(dir(fullfile(dataset,'*.mat')));
 
 % File Parameters
-P.prefix = 'mmpad_img';
+P.prefix = 'polar_vector';
 P.baseFileName = 'indep_fit_%i_%i.mat';
 P.dataset = dataset;
 
@@ -30,21 +30,21 @@ P.dataset = dataset;
 zPad = 0;
 zMask = [];
 load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,2);
-N = size(polar_vector,1);
-K = 21;
+polar_vector = sum(polar_image,1);
+N = numel(polar_vector);
+K = 20;
 M = 10;
 T = num_ims;
 
-P.dataScale = 1e-5;
-P.lambda_values = logspace(-5,1,M);
+P.dataScale = 1;
+P.lambda_values = logspace(-4,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = K;
-P.var_theta = [0.05 linspace(0.5,50,P.num_var_t-1)].^2;
+P.var_theta = linspace(0.5,50,P.num_var_t).^2;
 
 % algorithm parameters
 P.params.rho1 = 1;
@@ -71,11 +71,11 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = P.dataScale*sum(b_data.polar_image,2);
+        b = P.dataScale*sum(b_data.polar_image,1)';
     catch
-        b = P.dataScale*polar_vector;
+        b = P.dataScale*polar_vector(1:179);
     end
-    B(:,j) = b';
+    B(:,j) = b;
 end
 
 %% Run coupled grid search
