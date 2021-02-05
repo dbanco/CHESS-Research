@@ -9,7 +9,7 @@ P.set = 1;
 top_dir = 'D:\CHESS_data';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly_small_2';
+dset_name = 'simulated_two_spot_1D_anomaly_small_8';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -17,7 +17,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi2';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -100,8 +100,18 @@ end
 
 tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
 
+% Load True AWMV
+true_name = 'simulated_two_spot_1D_anomaly_small_11';
+true_data = load(fullfile(top_dir,true_name,'synth_data.mat'));
+true_awmv = zeros(T,1);
+for t = 1:T
+    true_stds = true_data.synth_sample{t}.std_theta;
+    true_amps = true_data.synth_sample{t}.amplitudes;
+    true_awmv(t) = true_stds'*true_amps/sum(true_amps);
+end
+
 %% Plot awmv
-figure_dir = ['C:\Users\dpqb1\OneDrive\Desktop\',output_subdir,'_figures\'];
+figure_dir = ['C:\Users\dpqb1\Desktop\',output_subdir,'_figures\'];
 mkdir(figure_dir)
 
 % Plot AWMV
@@ -111,6 +121,7 @@ legend_str = {};
 legend_str{1} = '0';
 kk = 2;
 hold on
+plot(true_awmv,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
 for k = 1:M
     hold on
@@ -122,6 +133,7 @@ end
 ylabel('AWMV_\eta','FontSize',20)
 xlabel('t','FontSize',20)
 legend(legend_str,'location','best','FontSize',16)
+
 %% Save images
 % Plot err
 total_err = sum(err_select,2);
@@ -201,7 +213,7 @@ err_scale = total_err/max(total_err(:));
 tv_scale = tv_penalty/max(tv_penalty(:));
 sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
 select_ind = find(sq_origin_dist == min(sq_origin_dist),1);
-select_ind = 10;
+% select_ind = 10;
 selectx = total_err(select_ind);
 selecty = tv_penalty(select_ind,:);
 hold on
@@ -227,16 +239,6 @@ plot(err_indep)
 legend('coupled','indep')
 ylabel('error')
 xlabel('time')
-
-% Load True AWMV
-true_name = 'simulated_two_spot_1D_anomaly_11';
-true_data = load(fullfile(top_dir,true_name,'synth_data.mat'));
-true_awmv = zeros(T,1);
-for t = 1:T
-    true_stds = true_data.synth_sample{t}.std_theta;
-    true_amps = true_data.synth_sample{t}.amplitudes;
-    true_awmv(t) = true_stds'*true_amps/sum(true_amps);
-end
 
 figure(12) % analyze correspondence of l1-parameters to awmv
 cutoff = mean(awmv_az_init(200:end));
@@ -284,11 +286,13 @@ legend('parameter value','indep','coupled','Location','Best')
 %% Plot paramter selected
 select_fig = figure(11);
 legend_str = {};
-legend_str{1} = 'indep';
+legend_str{1} = 'truth';
+legend_str{2} = 'indep';
 hold on
+plot(true_awmv,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
-kk = 2;
-
+kk = 3;
+select_ind = 5;
 for k = [select_ind]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)

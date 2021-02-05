@@ -33,7 +33,7 @@ load(fullfile(dataset,[P.prefix,'_1.mat']));
 polar_vector = polar_vector(1:179);
 N = numel(polar_vector);
 K = 20;
-M = 50;
+M = 80;
 T = num_ims;
 
 P.dataScale = 1;

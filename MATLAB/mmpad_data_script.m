@@ -1,9 +1,14 @@
 %% Load data into single array
-img_array = zeros(67,265,396);
-for i = 1:67
+% img_array = zeros(67,265,396);
+for i = 120
     fname = sprintf('mmpad_img_%i.mat',i-1);
-    load(fullfile('E:\PureTiRD_nr2_c_x39858',fname))
-    img_array(i,:,:) = squeeze(sum(mmpad_img,1));
+    load(fullfile('E:\MMPAD_data\full',fname))
+    summed_img = squeeze(sum(mmpad_img(1,:,:),1));
+    max_lim = max(summed_img(:));
+%     imshow(summed_img,'Colormap',jet,'DisplayRange',[0,max_lim])
+    figure(1)
+    surf(summed_img)
+    colormap(jet)
 end
 
 %% Crop image array to separate rings

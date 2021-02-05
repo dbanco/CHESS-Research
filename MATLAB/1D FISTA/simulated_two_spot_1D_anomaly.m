@@ -1,4 +1,4 @@
-saveDir = 'D:\CHESS_data\simulated_two_spot_1D_anomaly_small';
+saveDir = 'D:\CHESS_data\simulated_two_spot_1D_anomaly';
 
 %% Randomized spot example
 num_ims = 20;
@@ -55,7 +55,8 @@ for k = 1:numel(noise_std)
             Bn(j) = B(j) + randn(1)*noise_std(k);
         end
 
-        Bn = max(Bn, 0);
+        % Don't remove negative component
+%         Bn = max(Bn, 0);
 
 %             B = B + randn(num_rad,num_theta)/100;
 %             rel_error = norm(Bn-B)/norm(B)
