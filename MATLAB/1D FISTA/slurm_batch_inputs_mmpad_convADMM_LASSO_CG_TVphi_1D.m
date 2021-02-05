@@ -6,16 +6,17 @@ disp('Setup params')
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
 
+for ring_num = 4
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -54,7 +55,7 @@ P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 800;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
-P.params.cgEpsilon = 1e-1;
+P.params.cgEpsilon = 1e-3;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
@@ -128,3 +129,4 @@ end
 
 slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+end

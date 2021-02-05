@@ -15,7 +15,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi1';
+output_name = '_coupled_CG_TVphi2';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -109,7 +109,7 @@ P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
 M = 30;
-lambda2_vals = logspace(-5,1,M);
+lambda2_vals = logspace(-4,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 

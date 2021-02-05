@@ -7,10 +7,10 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM1';
+indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
@@ -67,7 +67,7 @@ l1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = P.dataScale*sum(polar_image,2);
+        b = P.dataScale*sum(polar_image,1);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
@@ -115,11 +115,11 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = P.dataScale*sum(b_data.polar_image,2);
+        b = P.dataScale*sum(b_data.polar_image,1);
     catch
         b = P.dataScale*b_data.polar_vector;
     end
-    B(:,j) = b';
+    B(:,j) = b;
     B(129:133,j) = (b(128) + b(134))/2;
 end
 

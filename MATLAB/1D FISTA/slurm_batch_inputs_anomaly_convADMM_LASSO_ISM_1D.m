@@ -5,9 +5,9 @@ disp('Setup params')
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
-for iii = 7:11
+for iii = 1:11
 % Input dirs
-dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
+dset_name = ['simulated_two_spot_1D_anomaly_small_',num2str(iii)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';

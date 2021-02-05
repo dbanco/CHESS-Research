@@ -7,12 +7,13 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring4_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM2';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
+mkdir(indep_dir)
 
 % Setup directories
 dataset =  fullfile(top_dir,dset_name);
