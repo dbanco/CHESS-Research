@@ -45,7 +45,7 @@ A0_stack = unshifted_basis_vector_stack_zpad(P);
 [n,m] = size(A0_stack);
 
 dict_fig = figure(1);
-[ha1, pos1] = tight_subplot(3,7,[0 0],[.02 .08],[.02 .02]); 
+[ha1, pos1] = tight_subplot(4,5,[0 0],[.02 .08],[.02 .02]); 
 colors = jet(P.num_var_t);
 hold on
 for i = 1:P.num_var_t
@@ -97,9 +97,9 @@ end
 %% Show data and decomposed fit
 load(fullfile(indep_dir,'select_indices.mat'))
 dict_fig = figure(3);
-[ha3, pos3] = tight_subplot(16,1,[0 0],[.02 .08],[.02 .02]); 
+[ha3, pos3] = tight_subplot(4,5,[0.02 0.02],[.02 .02],[.02 .02]); 
 ii = 1;
-im_num2 = 120;
+im_num2 = 70;
 for im_num = [20]
     param_num = select_indices(im_num);
     x_data = load( fullfile(indep_dir,sprintf(baseFileName,param_num,im_num)) );
@@ -124,34 +124,40 @@ for im_num = [20]
     b = b + 10*P.dataScale*polar_vector';
     
     max_y = 0;
-    for k = 1:9
+    for k = 1:20
         axes(ha3(ii))
         x_j = zeros(size(x));
         x_j(:,k)= x(:,k);
 %         x_j(:,k+1)= x(:,k+1);
         fit_j = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_j),P.params.zeroMask);
 
-        plot(fit_j,'LineWidth',1,'Color',[colors(mm(k),:),0.5])
+        plot(fit_j,'LineWidth',1,'Color',[colors(k,:),0.5])
+
         hold on
         xlim([0 250])
         if max(fit_j) > max_y
             max_y = max(fit_j);
         end
 %         ylim([0 max(b)/5])
-        ylim([0 max_y*1.1])
+        ylim([0 max(fit_j)*1.4])
+        set(gca,'XTickLabel',[]);
+        set(gca,'YTickLabel',[]);
+        aa = gca;
+        boxPosition = aa.Position;
+        annotation('textbox', boxPosition, 'String', sprintf('max: %.0s',max(fit_j)) )
         ii = ii + 1;
     end
 %     plot(zeros(n,1),'Color','White','LineWidth',1.5)
 %     set(gca,'Visible','off')
 
-
-    axes(ha3(ii))
+	figure(33)
     plot(b,'LineWidth',1.5,'Color',[0 0 0])
     hold on
     plot(fit,'LineWidth',1,'Color','red','LineStyle','--')
     ylim([0 max(b)])
-    legend('Data','Fit')
-    set(gca,'Visible','off')
+%     legend('Data','Fit')
+    set(gca,'XTickLabel',[]);
+    set(gca,'YTickLabel',[]);
     ii = ii + 1;
 end
 

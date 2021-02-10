@@ -9,7 +9,11 @@ P.set = 1;
 top_dir = 'D:\CHESS_data';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly_small_8';
+% for dd_num = 1:10
+dd_num = 9;
+    close all
+    
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(dd_num)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -17,7 +21,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi2';
+output_name = '_coupled_CG_TVphi3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -30,7 +34,7 @@ baseFileName = 'coupled_fit_%i.mat';
 % Universal Parameters
 % Ring sampling parameters
 load(fullfile(output_dir,sprintf(baseFileName,1)))
-lambda2_vals = P.lambda2_values(1:30);
+lambda2_vals = P.lambda2_values(1:end);
 % lambda2_vals = [logspace(-6,-4.1,15) logspace(-4,1,30)]
 M = numel(lambda2_vals);
 
@@ -213,7 +217,7 @@ err_scale = total_err/max(total_err(:));
 tv_scale = tv_penalty/max(tv_penalty(:));
 sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
 select_ind = find(sq_origin_dist == min(sq_origin_dist),1);
-% select_ind = 10;
+%  select_ind = 20;
 selectx = total_err(select_ind);
 selecty = tv_penalty(select_ind,:);
 hold on
@@ -232,56 +236,56 @@ xlabel('Coupling parameter')
 % ylabel('TV')
 % xlabel('Error')
 
-figure(9)
-plot(err_select(select_ind,:))
-hold on
-plot(err_indep)
-legend('coupled','indep')
-ylabel('error')
-xlabel('time')
+% figure(9)
+% plot(err_select(select_ind,:))
+% hold on
+% plot(err_indep)
+% legend('coupled','indep')
+% ylabel('error')
+% xlabel('time')
+% 
+% figure(12) % analyze correspondence of l1-parameters to awmv
+% cutoff = mean(awmv_az_init(200:end));
+% param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
+% indep_cut = awmv_az_init > cutoff;
+% correspond = param_cut(:) == indep_cut(:);
+% % plot(P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init))
+% % plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
+% hold on
+% plot(true_awmv)
+% plot(awmv_az_init)
+% plot(awmv_az(select_ind,:))
+% legend('truth','indep','coupled','Location','Best')
+% 
+% figure(122) % analyze correspondence of l1-parameters to awmv
+% cutoff = mean(awmv_az_init(200:end));
+% param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
+% indep_cut = awmv_az_init > cutoff;
+% correspond = param_cut(:) == indep_cut(:);
+% % plot(P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init))
+% % plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
+% hold on
+% plot(awmv_az_init)
+% plot(awmv_az(select_ind,:))
+% title('All scaled')
+% legend('parameter value','indep','coupled','Location','Best')
 
-figure(12) % analyze correspondence of l1-parameters to awmv
-cutoff = mean(awmv_az_init(200:end));
-param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
-indep_cut = awmv_az_init > cutoff;
-correspond = param_cut(:) == indep_cut(:);
-% plot(P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init))
-% plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
-hold on
-plot(true_awmv)
-plot(awmv_az_init)
-plot(awmv_az(select_ind,:))
-legend('truth','indep','coupled','Location','Best')
-
-figure(122) % analyze correspondence of l1-parameters to awmv
-cutoff = mean(awmv_az_init(200:end));
-param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
-indep_cut = awmv_az_init > cutoff;
-correspond = param_cut(:) == indep_cut(:);
-% plot(P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init))
-% plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
-hold on
-plot(awmv_az_init)
-plot(awmv_az(select_ind,:))
-title('All scaled')
-legend('parameter value','indep','coupled','Location','Best')
-
-figure(13) % analyze correspondence of l1-parameters to awmv
-indep_end = awmv_az_init(200:end);
-coupled_end = awmv_az(select_ind,200:end);
-params_end = P.params.lambda1(200:end)*20 + mean(indep_end);
-
-cutoff = mean(awmv_az_init(200:end));
-param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
-indep_cut = awmv_az_init > cutoff;
-correspond = param_cut(:) == indep_cut(:);
-plot(params_end)
-% plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
-hold on
-plot(indep_end)
-plot(coupled_end)
-title('All scaled')
-legend('parameter value','indep','coupled','Location','Best')
+% figure(13) % analyze correspondence of l1-parameters to awmv
+% indep_end = awmv_az_init(200:end);
+% coupled_end = awmv_az(select_ind,200:end);
+% params_end = P.params.lambda1(200:end)*20 + mean(indep_end);
+% 
+% cutoff = mean(awmv_az_init(200:end));
+% param_cut = (P.params.lambda1/max(P.params.lambda1(:))*max(awmv_az_init)) > cutoff;
+% indep_cut = awmv_az_init > cutoff;
+% correspond = param_cut(:) == indep_cut(:);
+% plot(params_end)
+% % plot(200:546,awmv_az_init(200:end).*correspond(200:end),'o')
+% hold on
+% plot(indep_end)
+% plot(coupled_end)
+% title('All scaled')
+% legend('parameter value','indep','coupled','Location','Best')
 
 %% Plot paramter selected
 select_fig = figure(11);
@@ -292,7 +296,7 @@ hold on
 plot(true_awmv,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
 kk = 3;
-select_ind = 5;
+% select_ind = 8;
 for k = [select_ind]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
@@ -303,77 +307,77 @@ end
 ylabel('AWMV_\eta','FontSize',20)
 xlabel('t','FontSize',20)
 legend(legend_str,'location','best','FontSize',16)
-%     saveas(select_fig,[figure_dir,'awmv_select_',dset_name,'_',dataset_num,'.png'])
+saveas(select_fig,[figure_dir,'awmv_select_',dset_name,'_',num2str(dd_num),'.png'])
 save([dset_name,'_couple_fit_data.mat'],'awmv_az_init','awmv_az','select_ind')
 %% Plot vdf surface
 
-vdf_time_all_fig = figure(56);
-[ha3, pos3] = tight_subplot(3,ceil(M/3)+1,[0.1 0.03],[.02 .08],[.02 .02]); 
-im_ind = 1;
-    % Plot surface
-axes(ha3(im_ind))
-imagesc(squeeze(vdfs_indep'))
-shading interp
-caxis([0 0.6])
-colormap(jet)
-
-title(['\lambda_2 = ','0'])
-ylabel('t')
-xlabel('\sigma')
-
-im_ind = im_ind + 1;
-
-for trial_k = 1:M
-    fprintf('%i of %i\n',trial_k,M)
-    x_data = load(fullfile(output_dir,sprintf(baseFileName,trial_k)));
-    for image_num = 1:T
-        x_hat = x_data.X_hat(:,:,image_num);
-        az_signal = squeeze(sum(x_hat,1));
-        var_sum = sum(az_signal(:));
-        vdf_time(trial_k,image_num,:) = az_signal/var_sum;
-    end
-
-    % Plot surface
-    axes(ha3(im_ind))
-    imagesc(squeeze(vdf_time(trial_k,:,:)))
-    shading interp
-    caxis([0 0.6])
-    colormap(jet)
-
-    title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(trial_k))])
-    ylabel('t')
-    xlabel('\sigma')
-
-    im_ind = im_ind + 1;
-end
+% vdf_time_all_fig = figure(56);
+% [ha3, pos3] = tight_subplot(3,ceil(M/3)+1,[0.1 0.03],[.02 .08],[.02 .02]); 
+% im_ind = 1;
+%     % Plot surface
+% axes(ha3(im_ind))
+% imagesc(squeeze(vdfs_indep'))
+% shading interp
+% caxis([0 0.6])
+% colormap(jet)
+% 
+% title(['\lambda_2 = ','0'])
+% ylabel('t')
+% xlabel('\sigma')
+% 
+% im_ind = im_ind + 1;
+% 
+% for trial_k = 1:M
+%     fprintf('%i of %i\n',trial_k,M)
+%     x_data = load(fullfile(output_dir,sprintf(baseFileName,trial_k)));
+%     for image_num = 1:T
+%         x_hat = x_data.X_hat(:,:,image_num);
+%         az_signal = squeeze(sum(x_hat,1));
+%         var_sum = sum(az_signal(:));
+%         vdf_time(trial_k,image_num,:) = az_signal/var_sum;
+%     end
+% 
+%     % Plot surface
+%     axes(ha3(im_ind))
+%     imagesc(squeeze(vdf_time(trial_k,:,:)))
+%     shading interp
+%     caxis([0 0.6])
+%     colormap(jet)
+% 
+%     title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(trial_k))])
+%     ylabel('t')
+%     xlabel('\sigma')
+% 
+%     im_ind = im_ind + 1;
+% end
 % saveas(vdf_time_all_fig,[figure_dir,'vdf_time_all_',dset_name,'_',dataset_num,'.png'])
 
 %% 
-vdf_time_fig = figure(566);
-
-subplot(2,1,1)
-% Plot surface
-imagesc(squeeze(vdf_time(select_ind,:,:))')
-shading interp
-caxis([0 0.6])
-colormap(jet)
-colorbar()
-title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(select_ind))])
-xlabel('t')
-ylabel('\sigma')
-%     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
-
-subplot(2,1,2)
-% Plot surface
-    imagesc(squeeze(vdfs_indep(:,:)))
-shading interp
-caxis([0 0.6])
-colormap(jet)
-colorbar()
-title(['\lambda_2 = ','0'])
-xlabel('t')
-ylabel('\sigma')
-
+% vdf_time_fig = figure(566);
+% 
+% subplot(2,1,1)
+% % Plot surface
+% imagesc(squeeze(vdf_time(select_ind,:,:))')
+% shading interp
+% caxis([0 0.6])
+% colormap(jet)
+% colorbar()
+% title(['\lambda_2 = ',sprintf('%1.1d',lambda2_vals(select_ind))])
+% xlabel('t')
+% ylabel('\sigma')
+% %     saveas(vdf_time_fig,[figure_dir,'vdf_time_select_',dset_name,'_',dataset_num,'.png'])
+% 
+% subplot(2,1,2)
+% % Plot surface
+%     imagesc(squeeze(vdfs_indep(:,:)))
+% shading interp
+% caxis([0 0.6])
+% colormap(jet)
+% colorbar()
+% title(['\lambda_2 = ','0'])
+% xlabel('t')
+% ylabel('\sigma')
+% 
 
 
 %% Plot fits
@@ -396,11 +400,11 @@ for image_num = 1:20
     axes(ha2(im_ind))
     hold on
     plot(b)
-%     plot(fit)
+    plot(fit)
     legend(sprintf('%i',image_num),'location','northeast')
     im_ind = im_ind + 1;
 end
-%     saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',dataset_num,'.png'])
+saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',num2str(dd_num),'.png'])
 
 %{
 
