@@ -5,12 +5,13 @@ disp('Setup params')
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
+
 noise_added = 0:0.03:0.30;
 noise_thresh = [0.01,0.03:0.03:0.24,0.3,0.5];
 
 for iii = 1:11
 % Input dirs
-dset_name = ['simulated_two_spot_1D_anomaly_small_',num2str(iii)];
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -18,7 +19,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi2';
+output_name = '_coupled_CG_TVphi3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -111,7 +112,7 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-M = 30;
+M = 60;
 lambda2_vals = logspace(-4,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
