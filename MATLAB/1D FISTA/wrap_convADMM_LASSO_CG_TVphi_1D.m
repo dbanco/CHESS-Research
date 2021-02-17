@@ -19,7 +19,7 @@ for j = 1:T
     catch
         b = P.dataScale*b_data.polar_vector(1:179);
     end
-    B(:,j) = b;
+    B(:,j) = b';
 %     B(129:133,j) = (b(128) + b(134))/2;
 end
 

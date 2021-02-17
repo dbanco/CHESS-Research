@@ -9,7 +9,7 @@ top_dir = 'D:\CHESS_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-for data_num = 9:11
+for data_num = 2
     close all
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(data_num)];
 noise_added = 0:0.03:0.30;
