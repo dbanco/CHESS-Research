@@ -77,7 +77,7 @@ for m = 1:M_lam1
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
         b = P.dataScale*polar_vector(1:179);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+        fit = Ax_ft_1D(A0ft_stack,x_data.x_hat);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
         l1_select(m,t) = sum(x_data.x_hat(:));
     end
@@ -98,7 +98,7 @@ for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     b = P.dataScale*polar_vector(1:179);
     rel_err_t = err_select(:,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > noise_thresh(data_num)
+    while rel_err_t(select_indices(t)) > noise_thresh(iii)
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
@@ -112,7 +112,7 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-M = 60;
+M = 30;
 lambda2_vals = logspace(-4,1,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;

@@ -10,7 +10,7 @@ noise_thresh = [0.01,0.03:0.03:0.24,0.3,0.5];
 
 for iii = 1:11
 % Input dirs
-dset_name = ['simulated_two_spot_1D_anomaly_small_',num2str(iii)];
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -18,7 +18,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi2';
+output_name = '_coupled_CG_TVphi_2norm1';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -76,7 +76,7 @@ for m = 1:M_lam1
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
         b = P.dataScale*polar_vector(1:179);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+        fit = Ax_ft_1D(A0ft_stack,x_data.x_hat);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
         l1_select(m,t) = sum(x_data.x_hat(:));
     end
@@ -97,7 +97,7 @@ for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     b = P.dataScale*polar_vector(1:179);
     rel_err_t = err_select(:,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > noise_thresh(data_num)
+    while rel_err_t(select_indices(t)) > noise_thresh(iii)
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else

@@ -72,7 +72,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1;   
     
     % x-update
-    [Xkp1,cgIters] = conjGrad_TVphi_1D( A0ft_stack,B,Xk,(Yk-Vk),(Zk-Uk),params);
+    [Xkp1,cgIters] = conjGrad_TVphi_1D_2norm( A0ft_stack,B,Xk,(Yk-Vk),params);
     
     % y-update and v-update
     for t = 1:T
