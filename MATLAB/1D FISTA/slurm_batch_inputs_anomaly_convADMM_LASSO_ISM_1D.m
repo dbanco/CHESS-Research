@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 for iii = 1:11
 % Input dirs
-dset_name = ['simulated_two_spot_1D_anomaly_small_',num2str(iii)];
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -18,7 +18,7 @@ mkdir(indep_dir)
 % Setup directories
 dataset =  fullfile(top_dir,dset_name);
 
-num_ims = numel(dir(fullfile(dataset,'*.mat')));
+num_ims = numel(dir(fullfile(dataset,'polar_vector_*.mat')));
 
 % File Parameters
 P.prefix = 'polar_vector';
