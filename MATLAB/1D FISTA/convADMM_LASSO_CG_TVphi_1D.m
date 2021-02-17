@@ -119,9 +119,9 @@ while keep_going && (nIter < maxIter)
     if params.plotProgress
         figure(1)    
         hold off
-        plot(b)
+        plot(B(:,10))
         hold on
-        plot(fit)
+        plot(fit(:,10))
         legend('data','fit')
         
         pause

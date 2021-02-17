@@ -10,7 +10,7 @@ top_dir = 'D:\CHESS_data';
 
 % Input dirs
 % for dd_num = 1:10
-dd_num = 9;
+dd_num = 2;
     close all
     
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(dd_num)];
@@ -21,7 +21,8 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi3';
+% output_name = '_coupled_CG_TVphi_2norm1';
+output_name = '_coupled_CG_TVphi3'
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -52,7 +53,7 @@ for k = 1:M
     for j = 1:P.num_ims
         % Fit objective
         x = x_data.X_hat(:,:,j);
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
+        fit = Ax_ft_1D(A0ft_stack,x);
 
         load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
         b = P.dataScale*polar_vector(1:179);
@@ -91,7 +92,7 @@ for j = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
     x = e_data.x_hat;
     X_indep(:,:,j) = x;
-    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
+    fit = Ax_ft_1D(A0ft_stack,x);
     b = P.dataScale*polar_vector(1:179);
     err_indep(j) = sum((fit(:)-b(:)).^2)/sum(b(:).^2);
     l0_indep(j) = sum(x(:)>0);
@@ -105,7 +106,7 @@ end
 tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
 
 % Load True AWMV
-true_name = 'simulated_two_spot_1D_anomaly_small_11';
+true_name = 'simulated_two_spot_1D_anomaly_11';
 true_data = load(fullfile(top_dir,true_name,'synth_data.mat'));
 true_awmv = zeros(T,1);
 for t = 1:T
@@ -141,30 +142,30 @@ legend(legend_str,'location','best','FontSize',16)
 %% Save images
 % Plot err
 total_err = sum(err_select,2);
-figure(2)
-hold on
-% plot(0,sum(err_indep),'o')
-plot(lambda2_vals,total_err,'o-')
-ylabel('Error')
-xlabel('Coupling parameter')
+% figure(2)
+% hold on
+% % plot(0,sum(err_indep),'o')
+% plot(lambda2_vals,total_err,'o-')
+% ylabel('Error')
+% xlabel('Coupling parameter')
 
 % Plot l1 norm
 total_l1 = sum(l1_select,2);
-figure(3)
-hold on
-% plot(0,sum(l1_indep),'o')
-plot(lambda2_vals,total_l1,'o-')
-ylabel('l1-norm')
-xlabel('Coupling parameter')
+% figure(3)
+% hold on
+% % plot(0,sum(l1_indep),'o')
+% plot(lambda2_vals,total_l1,'o-')
+% ylabel('l1-norm')
+% xlabel('Coupling parameter')
 
 % Plot number nonzeros coefficients
 mean_l0 = mean(l0_select,2);
-figure(4)
-% loglog(0,mean(l0_indep),'o')
-hold on
-plot(lambda2_vals,mean_l0,'o-')
-ylabel('l0-norm')
-xlabel('Coupling parameter')
+% figure(4)
+% % loglog(0,mean(l0_indep),'o')
+% hold on
+% plot(lambda2_vals,mean_l0,'o-')
+% ylabel('l0-norm')
+% xlabel('Coupling parameter')
 
 
 
@@ -193,7 +194,7 @@ xlabel('Coupling parameter')
 % Plot L-curve 2
 
 Lcurve_fig = figure(7);
-plot(total_err,tv_penalty,'o-')
+loglog(total_err,tv_penalty,'o-')
 ylabel('TV')
 xlabel('Error')
 
@@ -296,7 +297,7 @@ hold on
 plot(true_awmv,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
 kk = 3;
-% select_ind = 8;
+ select_ind = 7;
 for k = [select_ind]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
@@ -380,21 +381,20 @@ save([dset_name,'_couple_fit_data.mat'],'awmv_az_init','awmv_az','select_ind')
 % 
 
 
-%% Plot fits
+% Plot fits
 fits_fig = figure(222);
 [ha2, pos2] = tight_subplot(5,4,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
 x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
-for image_num = 1:20
+for image_num = 1:T
     x_hat = x_data.X_hat(:,:,image_num);
     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    polar_vector = polar_vector(1:179);
-    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+    b = P.dataScale*polar_vector(1:179);
     
     % Plot
     axes(ha2(im_ind))

@@ -77,7 +77,7 @@ for m = 1:M_lam1
         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
         b = P.dataScale*polar_vector(1:179);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+        fit = Ax_ft_1D(A0ft_stack,x_data.x_hat);
         err_select(m,t) = sum((fit(:)-b(:)).^2);
         l1_select(m,t) = sum(x_data.x_hat(:));
     end
