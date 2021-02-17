@@ -9,7 +9,11 @@ top_dir = 'D:\CHESS_data';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly_2';
+for data_num = 9:11
+    close all
+dset_name = ['simulated_two_spot_1D_anomaly_',num2str(data_num)];
+noise_added = 0:0.03:0.30;
+noise_thresh = [0.01,0.03:0.03:0.24,0.3,0.5];
 
 % Output dirs
 output_name = '_indep_ISM1';
@@ -53,13 +57,15 @@ l1_select = zeros(M,T);
 x_indep = cell(T,1);
 tv_time = zeros(M,T-1);
 im_ind = 1;
+
+nosie_est = norm(randn(179,1)*0.03).^2;
 for i = 1:M
     fprintf('%i of %i \n',i,M)
     for j = 1:T
         b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
         polar_vector = b_data.polar_vector(1:179);
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,e_data.x_hat),129:133);
+        fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);
         b = P.dataScale*polar_vector;
         err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
@@ -84,89 +90,11 @@ err_select(err_select > 10^10) = 0;
 l0_select(l0_select > 10^10) = 0;
 l1_select(l1_select > 10^10) = 0;
 
-%% Criterion separate params
-noise_eta = 0.2;
-discrep_crit = abs(err_select'-noise_eta);
-
-[lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
-param_select = P.lambda_values(lambda_indices);
-lambda_values_separate = param_select;
-
-% Criterion single param
-discrep_crit = abs(mean(err_select,2)-noise_eta);
-lambda_index = find(discrep_crit == min(discrep_crit));
-param_select_single = P.lambda_values(lambda_index);
-lambda_values_single = ones(T,1)*param_select_single;
-
-figure(2)
-plot(param_select,'o-')
-title('Parameters selected')
-
-%% Plot
-lambda_vals = P.lambda_values;
-
-figure(3)
-semilogx(lambda_vals,mean(l1_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_1 term')
-
-% Plot
-figure(4)
-semilogx(lambda_vals,mean(err_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('error')
-
-% Plot
-figure(5)
-semilogx(lambda_vals,mean(l0_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_0')
-
-
-% Analyze L-curve
-total_err = sum(err_select(1:M,:),2);
-total_l1 = sum(l1_select(1:M,:),2);
-total_err = total_err./max(total_err);
-total_l1 = total_l1./max(total_l1);
-
-% Find kink in L-cureve method #1
-% slopes = (total_l1(2:end) - total_l1(1:end-1))./...
-%      (total_err(2:end) - total_err(1:end-1));
-% slope_select = find((slopes)>0);
-% select_ind = slope_select(1);
-
-% Find kink in L-cureve method #2
-sq_origin_dist = total_l1.^2 + total_err.^2;
-select_ind = find(sq_origin_dist == min(sq_origin_dist));
-
-figure(6)
-plot(total_l1,total_err,'o-')
-% plot(mean(l1_select,2),mean(err_select,2),'o-')
-hold on
-plot(total_l1(select_ind),total_err(select_ind),'s','Markersize',15)
-xlabel('time-average l1-norm')
-ylabel('time-average error')
-title('L-curve')
-
-figure(666)
-iii = 1;
-loglog(err_select(1:M,iii),l1_select(1:M,iii),'o-')
-% plot(mean(l1_select,2),mean(err_select,2),'o-')
-hold on
-loglog(err_select(select_ind,iii),l1_select(select_ind,iii),'s','Markersize',15)
-xlabel('l1-norm')
-ylabel('error')
-title('L-curve')
-
-
-% L curve parameter selection
-select_indices = 30*ones(T,1);
+%% L curve parameter selection for l1-norm term
+select_indices = zeros(T,1);
 for t = 1:T
-    err_t = err_select(1:M,t);
-    l1_t = l1_select(1:M,t);
+    err_t = err_select(:,t);
+    l1_t = l1_select(:,t);
     err_t = err_t;%/max(err_t);
     l1_t = l1_t;%/max(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
@@ -176,8 +104,8 @@ end
 for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     b = P.dataScale*polar_vector(1:179);
-    rel_err_t = err_select(1:M,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > 0.15
+    rel_err_t = err_select(:,t)/sum(b(:).^2);
+    while rel_err_t(select_indices(t)) > noise_thresh(data_num)
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
@@ -187,25 +115,6 @@ for t = 1:T
     end
 end
 
-% figure(7)
-% [ha7, ~] = tight_subplot(10,11,[.05 .05],[.01 .01],[.01 .01]); 
-% tt = 1;
-% for t = 1:5:T
-%     err_t = err_select(1:M,t);
-%     l1_t = l1_select(1:M,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t;%/max(l1_t);
-%     axes(ha7(tt))
-%     plot(l1_t,err_t,'o-')
-%     hold on
-%     plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s','MarkerSize',15)
-%     hold on
-%     tt = tt + 1;
-% end
-
-% xlabel('l1-norm')
-% ylabel('error')
-% title('L-curve')
 
 % Selected VDF;
 select_vdf = zeros(T,K);
@@ -218,7 +127,6 @@ shading interp
 caxis([0 0.6])
 colormap(jet)
 title('VDF selected parameters')
-
 
 % Plot AWMV
 
@@ -233,7 +141,7 @@ for t = 1:T
 end
 
 
-figure(9)
+awmv_fig = figure(9);
 hold on
 plot(true_awmv)
 plot(select_vdf*sqrt(P.var_theta)')
@@ -242,12 +150,14 @@ caxis([0 0.6])
 colormap(jet)
 title('VDF selected parameters')
 legend('Truth','Indep','Location','Best')
-%% Plot fits for L-curve selected parameter
+saveas(awmv_fig,['C:\Users\dpqb1\Desktop\indep_param_select\awmv_fig_',num2str(data_num),'.png'])
+
+% Plot fits for L-curve selected parameter
 fits_fig = figure(10);
-[ha2, ~] = tight_subplot(3,4,[.005 .005],[.01 .01],[.01 .01]); 
+[ha2, ~] = tight_subplot(4,5,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 15:15:150
+for t = 1:T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     
@@ -272,17 +182,18 @@ for t = 15:15:150
     legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),rel_err),'location','northeast')
     im_ind = im_ind + 1;
 end
-
-%% Show coefficients of selected parameters
-fits_fig = figure(11);
-[ha2, ~] = tight_subplot(2,T/2,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az_vdfs = zeros(T,1);
-im_ind = 1;
-for t = 1:T
-    load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
-    axes(ha2(t))
-    imagesc(x_hat)
+saveas(fits_fig,['C:\Users\dpqb1\Desktop\indep_param_select\fits_fig_',num2str(data_num),'.png'])
 end
+%% Show coefficients of selected parameters
+% fits_fig = figure(11);
+% [ha2, ~] = tight_subplot(2,T/2,[.005 .005],[.01 .01],[.01 .01]); 
+% awmv_az_vdfs = zeros(T,1);
+% im_ind = 1;
+% for t = 1:T
+%     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
+%     axes(ha2(t))
+%     imagesc(x_hat)
+% end
 
 % %% Plot fits single selected paramter
 % fits_fig = figure(223);

@@ -5,7 +5,11 @@ disp('Setup params')
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
-for iii = 1:10
+
+noise_added = 0:0.03:0.30;
+noise_thresh = [0.01,0.03:0.03:0.24,0.3,0.5];
+
+for iii = 1:11
 % Input dirs
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
@@ -94,7 +98,7 @@ for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     b = P.dataScale*polar_vector(1:179);
     rel_err_t = err_select(:,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > 0.15
+    while rel_err_t(select_indices(t)) > noise_thresh(data_num)
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
