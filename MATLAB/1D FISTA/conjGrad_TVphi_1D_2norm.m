@@ -16,10 +16,6 @@ N = size(A0ft_stack,1);
 
 % Coefficeint Vectors
 Xk = X_init;
-Xk_lam = zeros(size(Xk));
-for t = 1:size(Xk,3)
-    Xk_lam(:,:,t) = Xk(:,:,t)*params.lambda1(t);
-end
 
 % Target Vectors
 AtB = AtB_ft_1D_Time(A0ft_stack,B)./BnormSq2;
@@ -27,7 +23,7 @@ AtB = AtB_ft_1D_Time(A0ft_stack,B)./BnormSq2;
 % Initial Residual
 Rk = AtB - AtAx(A0ft_stack,Xk)./BnormSq2 +...
      + 2*params.lambda2*PtDtDPx(Xk) +...
-     rho1*YV - rho1*Xk_lam;
+     rho1*YV - rho1*Xk;
 Pk = Rk;
 
 for i = 1:params.conjGradIter

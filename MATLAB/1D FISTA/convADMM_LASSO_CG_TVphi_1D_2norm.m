@@ -76,14 +76,14 @@ while keep_going && (nIter < maxIter)
 
     % y-update and v-update
     for t = 1:T
-        Ykp1(:,:,t) = soft(alpha*params.lambda1(t)*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) + Vk(:,:,t), lambda1(t)/rho1);
+        Ykp1(:,:,t) = soft(alpha*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) + Vk(:,:,t), lambda1(t)/rho1);
     end
     if isNonnegative
         Ykp1(Ykp1<0) = 0;
     end
-    for t = 1:T
-        Vk(:,:,t) = Vk(:,:,t) + alpha*params.lambda1(t)*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) - Ykp1(:,:,t);
-    end
+
+    Vk = Vk + alpha*Xkp1 + (1-alpha)*Yk - Ykp1;
+
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D_Time(A0ft_stack,Xkp1);
     err(nIter) = sum(((B-fit).^2)./BnormSq,'all');
