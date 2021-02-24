@@ -27,7 +27,7 @@ Rk = AtB - AtAx(A0ft_stack,Xk)./BnormSq2 +...
 Pk = Rk;
 
 for i = 1:params.conjGradIter
-    Apk = AtAx(A0ft_stack,Pk)./BnormSq2 + params.lambda2*PtDtDPx(Pk) + rho1*Pk;
+    Apk = AtAx(A0ft_stack,Pk)./BnormSq2 + 2*params.lambda2*PtDtDPx(Pk) + rho1*Pk;
     RkRk = sum(Rk(:).*Rk(:));
     alphak = RkRk/sum(Pk(:).*Apk(:));
     Xk = Xk + alphak*Pk;
