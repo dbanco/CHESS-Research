@@ -1,4 +1,4 @@
-function [X_hat, err, obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_TVphi_1D_2norm(A0ft_stack,B,X_init,params)
+function [X_hat, err, obj, l1_norm, l2_penalty] = convADMM_LASSO_CG_TVphi_1D_2norm(A0ft_stack,B,X_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -62,7 +62,7 @@ Vk = zeros(N,K,T);
 % Track error and objective
 err = nan(1,maxIter);
 l1_norm = nan(1,maxIter);
-tv_penalty = nan(1,maxIter);
+l2_penalty = nan(1,maxIter);
 obj = nan(1,maxIter);
 
 keep_going = 1;
@@ -73,16 +73,17 @@ while keep_going && (nIter < maxIter)
     
     % x-update
     [Xkp1,cgIters] = conjGrad_TVphi_1D_2norm( A0ft_stack,B,Xk,(Yk-Vk),params);
-    
+
     % y-update and v-update
     for t = 1:T
-        Ykp1(:,:,t) = soft(alpha*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) + Vk(:,:,t), lambda1(t)/rho1);
+        Ykp1(:,:,t) = soft(alpha*params.lambda1(t)*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) + Vk(:,:,t), lambda1(t)/rho1);
     end
     if isNonnegative
         Ykp1(Ykp1<0) = 0;
     end
-    Vk = Vk + alpha*Xkp1 + (1-alpha)*Yk - Ykp1;
-    
+    for t = 1:T
+        Vk(:,:,t) = Vk(:,:,t) + alpha*params.lambda1(t)*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) - Ykp1(:,:,t);
+    end
     % Track and display error, objective, sparsity
     fit = Ax_ft_1D_Time(A0ft_stack,Xkp1);
     err(nIter) = sum(((B-fit).^2)./BnormSq,'all');
@@ -91,8 +92,8 @@ while keep_going && (nIter < maxIter)
         Xsum = Xsum + lambda1(t)*sum(abs(Xkp1(:,:,t)),'all');
     end
     l1_norm(nIter) = Xsum;
-    tv_penalty(nIter) = lambda2*sum(abs(DiffPhiX_1D(Xkp1)),'all');
-    f = 0.5*err(nIter) + l1_norm(nIter) + tv_penalty(nIter);
+    l2_penalty(nIter) = lambda2*sum((DiffPhiX_1D(Xkp1).^2),'all');
+    f = 0.5*err(nIter) + l1_norm(nIter) + l2_penalty(nIter);
     
     obj(nIter) = f;
     if params.verbose
@@ -102,7 +103,7 @@ while keep_going && (nIter < maxIter)
               ' Obj ',     num2str(obj(nIter)),...
               ' Err ',     num2str(0.5*err(nIter)),...
               ' ||x||_1 ', num2str(l1_norm(nIter)),...
-              ' TVx ',     num2str(tv_penalty(nIter)),...
+              ' TVx ',     num2str(l2_penalty(nIter)),...
               ' ||x||_0 ', num2str(sum(Xkp1(:) >0))
                ]);
     end

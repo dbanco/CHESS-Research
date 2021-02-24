@@ -10,6 +10,7 @@ noise_added = 0:0.03:0.30;
 noise_thresh = [0.01,0.03:0.03:0.24,0.3,0.5];
 
 for iii = 1:11
+
 % Input dirs
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(iii)];
 
