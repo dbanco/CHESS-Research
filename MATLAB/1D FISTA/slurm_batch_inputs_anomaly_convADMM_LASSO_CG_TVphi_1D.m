@@ -19,7 +19,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi3';
+output_name = '_coupled_CG_TVphi2';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -58,7 +58,7 @@ P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 800;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
-P.params.cgEpsilon = 1e-1;
+P.params.cgEpsilon = 1e-2;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;

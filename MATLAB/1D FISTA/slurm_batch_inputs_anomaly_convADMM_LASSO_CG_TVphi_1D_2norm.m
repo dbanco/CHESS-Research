@@ -18,7 +18,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_2norm1';
+output_name = '_coupled_CG_TVphi_2norm0';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -57,7 +57,7 @@ P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 800;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
-P.params.cgEpsilon = 1e-1;
+P.params.cgEpsilon = 1e-2;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
@@ -111,8 +111,10 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Lambda2 values
-M = 30;
-lambda2_vals = logspace(-4,1,M);
+% M = 30;
+% lambda2_vals = logspace(-4,1,M);
+M = 1;
+lambda2_vals = [0];
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
