@@ -13,7 +13,7 @@ for dd_num = 1:10
 % dd_num = 2;
     close all
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(dd_num)];
-figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm2\'];
+figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm3\'];
 % figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm\'];
 mkdir(figure_dir)
 % Indep dirs
@@ -22,7 +22,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_2norm2';
+output_name = '_coupled_CG_TVphi_2norm3';
 % output_name = '_coupled_CG_TVphi3'
 output_subdir = [dset_name,output_name];
 
