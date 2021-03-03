@@ -6,7 +6,7 @@ close all
 disp('Setup parms')
 P.set = 1;
 % Parent directory
-top_dir = 'E:\PureTiRD_full';
+top_dir = 'E:\MMPAD_data_nr1';
 % top_dir = 'E:\MMPAD_data';
 % Input dirs
 dset_name = 'ring4_zero';
@@ -626,4 +626,52 @@ imagesc(vdfs_b,[0 0.05])
 %     legend(sprintf('%i',sum(x_hat(:)>1e-6)),'location','northeast')
 %     im_ind = im_ind + 1;
 % end
+
+
+%% Plot fits
+fits_fig = figure(222);
+[ha2, pos2] = tight_subplot(10,6,[.005 .005],[.01 .01],[.01 .01]); 
+awmv_az_vdfs = zeros(T,1);
+im_ind = 1;
+x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
+for image_num = 90:149
+    load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']) )
+    polar_vector = sum(polar_image,1);
+    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
+    x_hat = x_data.X_hat(:,:,image_num);
+    fit = Ax_ft_1D(A0ft_stack,x_hat);
+    az_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(az_signal(:));
+    awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    
+    % Plot
+    axes(ha2(im_ind))
+    hold on
+    plot(b)
+    plot(fit)
+    legend(sprintf('%i',image_num),'location','northeast')
+    im_ind = im_ind + 1;
+end
+
+%%
+figure(333)
+[ha3, pos3] = tight_subplot(10,6,[.005 .005],[.01 .01],[.01 .01]); 
+im_ind = 1;
+x_data = load( fullfile(output_dir,sprintf(baseFileName,select_ind)) );
+for image_num = 90:149
+    axes(ha3(im_ind))
+    imagesc(x_data.X_hat(:,:,image_num)')
+    im_ind = im_ind + 1;
+end
+%%
+figure(334)
+[ha3, pos3] = tight_subplot(10,6,[.005 .005],[.01 .01],[.01 .01]); 
+im_ind = 1;
+x_data = load( fullfile(output_dir,sprintf(baseFileName,select_ind)) );
+for image_num = 90:149
+    axes(ha3(im_ind))
+    x_plot = shift2D(x_data.X_hat(:,:,image_num)',0,130);
+    imagesc(x_plot)
+    im_ind = im_ind + 1;
+end
 

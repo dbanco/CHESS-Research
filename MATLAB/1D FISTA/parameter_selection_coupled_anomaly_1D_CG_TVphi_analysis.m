@@ -9,12 +9,12 @@ P.set = 1;
 top_dir = 'D:\CHESS_data';
 
 % Input dirs
-for dd_num = 1:10
+for dd_num = 5
 % dd_num = 2;
     close all
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(dd_num)];
-figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm3\'];
-% figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm\'];
+% figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm3\'];
+figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_3\'];
 mkdir(figure_dir)
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -22,8 +22,8 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_2norm3';
-% output_name = '_coupled_CG_TVphi3'
+% output_name = '_coupled_CG_TVphi_2norm3';
+output_name = '_coupled_CG_TVphi3'
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -232,25 +232,53 @@ for image_num = 1:T
 end
 saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',num2str(dd_num),'.png'])
 
-%% Plot awmvs
-% fits_fig = figure(333);
-% [ha2, pos2] = tight_subplot(5,4,[.005 .005],[.01 .01],[.01 .01]); 
-% awmv_az_vdfs = zeros(T,1);
-% im_ind = 1;
-% x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
-% for image_num = 1:T
-%     x_hat = x_data.X_hat(:,:,image_num);
-%     az_signal = squeeze(sum(x_hat,1));
-%     var_sum = sum(az_signal(:));
-%     vdf = az_signal(:)/var_sum;
-%     
-%     % Plot
-%     axes(ha2(im_ind))
-%     hold on
-%     bar(vdf)
-%     im_ind = im_ind + 1;
-% end
+%% Plot vdfs and indep vdfs
+fits_fig = figure(333);
+[ha2, pos2] = tight_subplot(5,4,[.005 .005],[.01 .01],[.01 .01]); 
+unnorm_vdfs = zeros(K,T);
+unnorm_vdfs_indep = zeros(K,T);
+im_ind = 1;
+x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
+for image_num = 1:T
+    x_hat = x_data.X_hat(:,:,image_num);
+    az_signal = squeeze(sum(x_hat,1));
+    unnorm_vdfs(:,image_num) = az_signal(:);
+    x_hat = X_indep(:,:,image_num);
+    az_signal = squeeze(sum(x_hat,1));
+    unnorm_vdfs_indep(:,image_num) = az_signal(:);
+end
+for k = 1:K
+    axes(ha2(k))
+    plot(unnorm_vdfs(k,:),'-o')
+    hold on
+    plot(unnorm_vdfs_indep(k,:),'-o')
+end
 % saveas(fits_fig,[figure_dir,'fits_',dset_name,'_',num2str(dd_num),'.png'])
+
+figure(45)
+imagesc(unnorm_vdfs)
+xlabel('time')
+ylabel('\sigma_\eta')
+
+figure(46)
+imagesc(unnorm_vdfs_indep)
+xlabel('time')
+ylabel('\sigma_\eta')
+
+indep_diff1 = 0;
+indep_diff2 = 0;
+diff1 = 0;
+diff2 = 0;
+for t = 1:T-1
+    diff1 = diff1 + sum(abs(unnorm_vdfs(:,t+1)-unnorm_vdfs(:,t)));
+    indep_diff1 = indep_diff1 + sum(abs(unnorm_vdfs_indep(:,t+1)-unnorm_vdfs_indep(:,t)));
+    diff2 = diff2 + sum((unnorm_vdfs(:,t+1)-unnorm_vdfs(:,t)).^2);
+    indep_diff2 = indep_diff2 + sum((unnorm_vdfs_indep(:,t+1)-unnorm_vdfs_indep(:,t)).^2);
+end
+diff1
+diff2
+indep_diff1
+indep_diff2
 
 end
 
