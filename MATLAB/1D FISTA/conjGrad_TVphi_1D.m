@@ -1,4 +1,4 @@
-function [Xk,cgIters] = conjGrad_TVphi_1D(A0ft_stack,B,X_init,YV,ZU,params)
+function [Xk,cgIters] = conjGrad_TVphi_1D(A0ft_stack,B,X_init,YV,ZU,params,zMask)
 %conjGrad_TVx_1D Solves least squares
 %
 % Inputs:
@@ -33,6 +33,7 @@ for i = 1:params.conjGradIter
     RkRk = sum(Rk(:).*Rk(:));
     alphak = RkRk/sum(Pk(:).*Apk(:));
     Xk = Xk + alphak*Pk;
+    Xk = forceMaskToZeroArray(Xk,zMask);
     Rkp1 = Rk - alphak*Apk;
     if norm(Rkp1(:)) < params.cgEpsilon
         break;

@@ -9,12 +9,12 @@ P.set = 1;
 top_dir = 'D:\CHESS_data';
 
 % Input dirs
-for dd_num = 5
-% dd_num = 2;
-    close all
+% for dd_num = 1:10
+dd_num = 5;
+close all
 dset_name = ['simulated_two_spot_1D_anomaly_',num2str(dd_num)];
-% figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm3\'];
-figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_3\'];
+figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm3\'];
+% figure_dir = ['C:\Users\dpqb1\Desktop\anomaly_figures_2norm\'];
 mkdir(figure_dir)
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -22,8 +22,8 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-% output_name = '_coupled_CG_TVphi_2norm3';
-output_name = '_coupled_CG_TVphi3'
+output_name = '_coupled_CG_TVphi_2norm3';
+% output_name = '_coupled_CG_TVphi3'
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -83,7 +83,7 @@ tv_penalty = zeros(M,1);
 for k = 1:M
     fprintf('TVx %i of %i\n',k,M)
     x_data = load(fullfile(output_dir,sprintf(P.baseFileName,k)));
-    tv_penalty(k) = sum(abs(DiffPhiX_1D(x_data.X_hat)),'all');
+    tv_penalty(k) = sum( (DiffPhiX_1D(x_data.X_hat)).^2 ,'all');
 end
 
 % Load statistics for independently fit data
@@ -192,6 +192,7 @@ hold on
 plot(true_awmv,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
 kk = 3;
+select_ind = 24;
 %  select_ind = 1;
 for k = [select_ind]
     hold on
@@ -213,6 +214,7 @@ fits_fig = figure(222);
 [ha2, pos2] = tight_subplot(5,4,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
+select_ind = 30;
 x_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)));
 for image_num = 1:T
     x_hat = x_data.X_hat(:,:,image_num);
@@ -264,6 +266,7 @@ figure(46)
 imagesc(unnorm_vdfs_indep)
 xlabel('time')
 ylabel('\sigma_\eta')
+% end
 
 indep_diff1 = 0;
 indep_diff2 = 0;
@@ -279,6 +282,3 @@ diff1
 diff2
 indep_diff1
 indep_diff2
-
-end
-

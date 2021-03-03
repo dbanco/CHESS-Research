@@ -10,7 +10,7 @@ top_dir = '/cluster/shared/dbanco02';
 dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM2';
+indep_name = '_indep_ISM5';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)
@@ -28,14 +28,14 @@ P.dataset = dataset;
 
 % Data/Dictionary Parameters
 % Zero padding and mask
-zPad = 0;
-zMask = [];
 load(fullfile(dataset,[P.prefix,'_1.mat']));
 polar_vector = sum(polar_image,1);
 N = numel(polar_vector);
 K = 20;
 M = 50;
 T = num_ims;
+zPad = floor(N/2);
+zMask = [1:zPad,(zPad+N+1):(2*zPad+N)];
 
 P.dataScale = 1e-5;
 P.lambda_values = logspace(-5,1,M);
