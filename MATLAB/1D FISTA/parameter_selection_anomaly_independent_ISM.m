@@ -3,13 +3,14 @@ disp('Setup params')
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_anomaly';
+dset_name = 'simulated_two_spot_1D_anomaly_3';
 
 % Output dirs
-output_name = '_indep_ISM1';
+output_name = '_indep_ISM_pad1';
 output_subdir = [dset_name,output_name];
 
 
@@ -27,14 +28,14 @@ P.dataset = dataset;
 
 % Data/Dictionary Parameters
 % Zero padding and mask
-zPad = 0;
-zMask = [];
+
 load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,1);
-N = numel(polar_vector);
+N = numel(polar_vector(1:179));
 K = 20;
 M = 10;
 T = num_ims;
+zPad = 90;
+zMask = [1:zPad,(N+zPad+1):(N+2*zPad)];
 
 P.dataScale = 1;
 P.lambda_values = logspace(-4,1,M);
@@ -66,7 +67,7 @@ P.params.verbose = 1;
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Load data
-B = zeros(N,T);
+B = zeros(N+2*zPad,T);
 for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
@@ -75,6 +76,7 @@ for j = 1:T
     catch
         b = P.dataScale*polar_vector(1:179);
     end
+    b = zeroPad(b,zPad);
     B(:,j) = b;
 end
 
@@ -82,12 +84,12 @@ end
 disp('Begin grid search')
 
 % Init solution
-x_init = zeros(N,K);
+x_init = zeros(size(A0ft_stack));
 
-for i = 1:M
+for i = 5
     P.set = i;
     P.params.lambda1 = P.lambda_values(i);
-    for t = 1:T
+    for t = 19
         % Solve
         [x_hat,obj,err,l1_norm] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
 

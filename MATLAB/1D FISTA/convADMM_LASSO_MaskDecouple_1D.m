@@ -1,4 +1,4 @@
-function [x_hat, obj, err, l1_norm] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,params)
+function [x_hat, obj, err, l1_norm] = convADMM_LASSO_MaskDecouple_1D(A0ft_stack,b,x_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -47,9 +47,18 @@ bnormsq = sum((b(:)).^2);
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
 xkp1 = x_init;
-yk = zeros(size(x_init));
-ykp1 = zeros(size(x_init));
-vk = zeros(size(xk));
+
+y0k = zeros(size(x_init));
+y0kp1 = zeros(size(x_init));
+v0k = zeros(size(xk));
+
+n = numel(b);
+y1k = b;
+y1k((1+n-zPad):end) = flipud(b((1+n-2*zPad):(n-zPad)));
+y1k(1:zPad) = flipud(b((1+zPad):(2*zPad)));
+y1kp1 = y1k;
+
+v1k = zeros(size(b));
 
 % Track error and objective
 err = nan(1,maxIter);
@@ -67,21 +76,26 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
-    xkp1 = forceMaskToZeroArray(xkp1,zMask);
+    xkp1 = circulantLinSolveMD( A0ft_stack,(y1kp1-v1k),y0k,v0k,params);
+%     xkp1 = forceMaskToZeroArray(xkp1,zMask);
 
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    y0kp1 = soft(alpha*xkp1 + (1-alpha)*y0k + v0k,lambda/rho);
+    y1kp1 = indepLinSolve(A0ft_stack,b,xkp1,v1k,params);
     if isNonnegative
-        ykp1(ykp1<0) = 0;
+        y0kp1(y0kp1<0) = 0;
     end
-    % v-update
-    vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
-   
-    % Track and display error, objective, sparsity
-    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xkp1),zMask);
     
-    err(nIter) = sum((b(:)-fit(:)).^2)/(2*bnormsq);
+    fit = Ax_ft_1D(A0ft_stack,xkp1);
+    
+    % v-update
+    v0k = v0k + alpha*xkp1 + (1-alpha)*y0k - y0kp1;
+    v1k = v1k + alpha*fit + (1-alpha)*y1k - y1kp1;
+    
+    % Track and display error, objective, sparsity
+    fitMask = forceMaskToZero(fit,zMask);
+    
+    err(nIter) = sum((b(:)-fitMask(:)).^2)/(2*bnormsq);
     l1_norm(nIter) = sum(abs(xkp1(:)));
     f = err(nIter) + lambda*l1_norm(nIter);
     obj(nIter) = f;
@@ -126,8 +140,8 @@ while keep_going && (nIter < maxIter)
 %     end
 
 if adaptRho
-    sk = rho*norm(ykp1-yk);
-    rk = norm(xkp1-ykp1);
+    sk = rho*norm(y0kp1-y0k) + rho*norm(y1kp1-y1k);
+    rk = norm(xkp1-y0kp1) + norm(y1kp1-fit);
     if rk > mu*sk
         rho = rho*tau;
     elseif sk > mu*rk
@@ -141,7 +155,8 @@ end
 
     % Update indices
     xk = xkp1;
-    yk = ykp1;
+    y0k = y0kp1;
+    y1k = y1kp1;
 end
 
 if isNonnegative
