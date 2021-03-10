@@ -5,15 +5,15 @@ close all
 disp('Setup params')
 P.set = 1;
 % Parent directory
-top_dir = 'E:\MMPAD_data_nr2';
+top_dir = 'D:\MMPAD_data_nr1';
 % top_dir = 'E:\PureTiRD_full';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring4_zero';
 
 % Output dirs
-output_name = '_indep_ISM1';
+output_name = '_indep_ISM5';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -30,11 +30,10 @@ lambda_values = P.lambda_values;
 % lambda_values = [logspace(-7,-5.1,10) logspace(-5,1,30)];
 % P.lambda_values = lambda_values;
 
-N = P.num_theta;
-K = P.num_var_t;
+[N,K] = size(x_hat);
 T = P.num_ims;
 M = numel(lambda_values);
-
+M=3;
 % Construct dictionary
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
@@ -60,7 +59,7 @@ for i = 1:M
         b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,e_data.x_hat),129:133);
-        b = P.dataScale*sum(b_data.polar_image,1);
+        b = zeroPad(P.dataScale*sum(b_data.polar_image,1),P.params.zeroPad);
         err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
@@ -69,15 +68,15 @@ for i = 1:M
         vdf_time(i,j,:) = az_signal/var_sum;
     end
     
-%     axes(ha1(im_ind))
-%     imagesc(squeeze(vdf_time(i,:,:)))
-%     shading interp
-%     caxis([0 0.6])
-%     colormap(jet)
+    axes(ha1(im_ind))
+    imagesc(squeeze(vdf_time(i,:,:)))
+    shading interp
+    caxis([0 0.6])
+    colormap(jet)
     
     title(['\lambda = ',sprintf('%1.1d',P.lambda_values(i))])
-%     ylabel('t')
-%     xlabel('\sigma')
+    ylabel('t')
+    xlabel('\sigma')
     im_ind = im_ind + 1;
 end
 err_select(err_select > 10^10) = 0;
@@ -264,6 +263,10 @@ for t = 1:T
     axes(ha2(t))
     imagesc(x_hat)
 end
+
+%% Plot AWMV
+figure(12)
+plot()
 
 % %% Plot fits single selected paramter
 % fits_fig = figure(223);

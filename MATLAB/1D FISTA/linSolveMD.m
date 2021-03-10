@@ -1,18 +1,16 @@
-function [x_hat] = circulantLinSolve( A0ft_stack,b,yk,vk,params )
+function [x_hat] = linSolveMD(b,y1k,v1k,params )
 %circulantLinSolve Solves M independent linear systems using
 %Sherman-Morrison formula as described in "Efficient Convolutional Sparse
 %Coding" Brendt Wohlberg
 
 bnormsq = sum(b(:).^2);
-b_ft = fft(b);
-K = size(A0ft_stack,2);
 rho = params.rho1*bnormsq;
+Wb = forceMaskToZero(b,params.zMask);
 
-r_ft = (A0ft_stack'.').*repmat(b_ft,[1,K]) + rho*fft(yk-vk);
-coef = diag(A0ft_stack*r_ft.')./...
-      (rho + diag(A0ft_stack*A0ft_stack'));
-x_ft = (r_ft - repmat(coef,[1,K]).*(A0ft_stack'.') )/rho;
-x_hat = real(ifft(x_ft));
+r = Wb + rho*(Ax_ft_1D(A0ft_stack,x) + v1k;
+coef = ( diag(forceMaskToZero(ones(size(y1k)))) + rho*eye(numel(y1k)) )*y1k;
+x_hat = r./coef;
+
 
 if params.plotProgress
     figure(2)
