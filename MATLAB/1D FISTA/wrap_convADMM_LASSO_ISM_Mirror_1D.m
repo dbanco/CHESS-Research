@@ -20,15 +20,25 @@ for j = 1:T
     catch
         b = P.dataScale*b_data.polar_vector(1:179);
     end
+
+    % Mirror data
     nn = numel(b);
+    pad1 = floor(nn/2);
+    pad2 = ceil(nn/2);
+    N = n + pad1 + pad2;
     mPad = (N-nn)/2;
     b_mirror = zeroPad(b,mPad);
     nn = numel(b_mirror);
     b_mirror((1+nn-mPad):end) = flipud(b_mirror((1+nn-2*mPad):(nn-mPad)));
     b_mirror(1:mPad) = flipud(b_mirror((1+mPad):(2*mPad)));
+    
     B(:,j) = b_mirror;
 
 end
+
+% Rescale data
+P.dataScale = 1/mean(B(:));
+B = B*P.dataScale;
 
 % Init solution
 x_init = zeros(N,K);

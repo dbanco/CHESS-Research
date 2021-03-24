@@ -15,8 +15,8 @@ function B = gaussian_basis_wrap_1D_norm2(num_theta,mean_theta,var_theta)
 % Compute theta distances with wrapping
 idx = 1:num_theta;
 wrapN = @(x, N) (1 + mod(x-1, N));
-opposite = (idx(wrapN(mean_theta-floor(num_theta/2),num_theta)) +... 
-            idx(wrapN(mean_theta-ceil(num_theta/2),num_theta)))/2;
+opposite = (idx(wrapN(floor(mean_theta-num_theta/2),num_theta)) +... 
+            idx(wrapN(ceil(mean_theta-num_theta/2),num_theta)))/2;
 if opposite == mean_theta
     opposite = 0.5;
 end
