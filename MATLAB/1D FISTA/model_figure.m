@@ -45,13 +45,13 @@ A0_stack = unshifted_basis_vector_stack_zpad(P);
 [n,m] = size(A0_stack);
 
 dict_fig = figure(1);
-[ha1, pos1] = tight_subplot(5,5,[0 0],[.02 .08],[.02 .02]); 
+[ha1, pos1] = tight_subplot(4,5,[0 0],[.02 .08],[.02 .02]); 
 colors = jet(P.num_var_t);
 hold on
 for i = 1:P.num_var_t
     axes(ha1(i))
     dictPeak = A0_stack(:,i);
-    plot(dictPeak+0.2,'Linewidth',1.5,'color',colors(i,:))
+    plot(dictPeak+0.2,'Linewidth',1,'color',colors(i,:))
     
     set(gca,'YTickLabel',[]);
     set(gca,'XTickLabel',[]);

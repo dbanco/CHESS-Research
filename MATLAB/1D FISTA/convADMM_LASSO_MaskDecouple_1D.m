@@ -41,21 +41,18 @@ isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 
-bnormsq = sum((b(:)).^2);
-
 % Initialize variables
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
 xkp1 = x_init;
 
 y0k = zeros(size(x_init));
-y0kp1 = zeros(size(x_init));
-v0k = zeros(size(xk));
+v0k = zeros(size(x_init));
 
 n = numel(b);
 y1k = b;
-y1k((1+n-zPad):end) = flipud(b((1+n-2*zPad):(n-zPad)));
-y1k(1:zPad) = flipud(b((1+zPad):(2*zPad)));
+% y1k((1+n-zPad):end) = flipud(b((1+n-2*zPad):(n-zPad)));
+% y1k(1:zPad) = flipud(b((1+zPad):(2*zPad)));
 y1kp1 = y1k;
 
 v1k = zeros(size(b));
@@ -66,9 +63,11 @@ l1_norm = nan(1,maxIter);
 obj = nan(1,maxIter);
 
 % Initial objective
-err(1) = sum((b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask)).^2);
+err(1) = 0.5*sum((...
+            forceMaskToZero(b,zMask)-...
+            forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask) ).^2);
 l1_norm(1) = sum(abs(x_init(:)));
-obj(1) = 0.5/bnormsq*err(1) + lambda*l1_norm(1);
+obj(1) = err(1) + lambda*l1_norm(1);
 
 keep_going = 1;
 nIter = 1;
@@ -95,7 +94,7 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     fitMask = forceMaskToZero(fit,zMask);
     
-    err(nIter) = sum((b(:)-fitMask(:)).^2)/(2*bnormsq);
+    err(nIter) = 0.5*sum((forceMaskToZero(b,zMask)-fitMask ).^2);
     l1_norm(nIter) = sum(abs(xkp1(:)));
     f = err(nIter) + lambda*l1_norm(nIter);
     obj(nIter) = f;
@@ -157,6 +156,9 @@ end
     xk = xkp1;
     y0k = y0kp1;
     y1k = y1kp1;
+%     v0k = v0kp1;
+%     v1k = v1kp1;
+    
 end
 
 if isNonnegative

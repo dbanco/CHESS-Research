@@ -25,7 +25,7 @@ pixel_angle = pixel_side./circum*360;
 top_dirs = {'D:\MMPAD_data_nr1','D:\MMPAD_data_nr2'};
 data_tags = {'_nr1','_nr2'};
 num_rings = [4,3];
-for d_num = 1:2
+for d_num = 1
     top_dir = top_dirs{d_num};
     data_tag = data_tags{d_num};
     dset_name = 'ring%i_zero';
@@ -116,7 +116,6 @@ for d_num = 1:2
     saveas(fig_out,fullfile(datadir,outName))
 
 
-
     %% Plot all Indep AWMVs
     outName = ['indepAWMV',data_tag,'.png'];
     fig_out = figure(7);
@@ -129,10 +128,18 @@ for d_num = 1:2
         xlabel('time (s)')
 
     end
-    c_leg = legend(rings,'Location','Best');
-    ctitle = get(c_leg,'Title');
-    set(ctitle,'String','Ring indices \{hkl\}')
+%     c_leg = legend(rings,'Location','Best');
+
     grid on
     saveas(fig_out,fullfile(datadir,outName))
+    
+    figure(7)   
+    load('masked_ring4_awmv')
+    plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
+    new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
+    c_leg = legend(new_rings,'Location','Best');
+    ctitle = get(c_leg,'Title');
+    set(ctitle,'String','Ring indices \{hkl\}')
+
 %     close all
 end

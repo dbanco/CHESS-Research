@@ -54,7 +54,7 @@ function decomp_visualizer_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for decomp_visualizer
 handles.output = hObject;
-handles.defaultDir = fullfile('E:','CHESS_data');
+handles.defaultDir = fullfile('D:','CHESS_data');
 handles.loaded = 0;
 
 eval_menu_state(handles,hObject)
@@ -113,8 +113,8 @@ if isstr(fileName)
     handles.P = P;
     
     % Compute basis matrices
-    handles.A0ft_stack = unshifted_basis_matrix_ft_stack_norm2(handles.P);
-    handles.A0_stack = unshifted_basis_matrix_stack_norm2(handles.P);
+    handles.A0ft_stack = unshifted_basis_matrix_ft_stack_zpad(handles.P);
+    handles.A0_stack = unshifted_basis_matrix_stack_zpad(handles.P);
     
     handles.err = err;
     handles.x_hat = x_hat;  
