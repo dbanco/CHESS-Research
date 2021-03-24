@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring3_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM_Mask1';
@@ -34,12 +34,12 @@ n = numel(polar_vector);
 zPad = floor(n/2);
 zMask = [1:zPad,(zPad+n+1):(2*zPad+n)];
 K = 20;
-M = 50;
+M = 30;
 T = num_ims;
 N = n + 2*zPad;
 
 P.dataScale = 1e-5;
-P.lambda_values = logspace(-2,2,M);
+P.lambda_values = logspace(-2,1.5,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;

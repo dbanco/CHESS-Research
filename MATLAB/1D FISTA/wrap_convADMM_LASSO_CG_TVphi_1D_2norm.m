@@ -27,10 +27,10 @@ end
 X_init = zeros(N,K,T);
 
 % Solve
-[X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D_2norm(A0ft_stack,B,X_init,P.params); 
+[X_hat,err,obj,l1_norm,l2_penalty] = convADMM_LASSO_CG_TVphi_1D_2norm(A0ft_stack,B,X_init,P.params); 
 
 % Output data
 save(fullfile(output_dir,sprintf(P.baseFileName,P.set)),...
-    'X_hat','err','obj','l1_norm','tv_penalty','P');
+    'X_hat','err','obj','l1_norm','l2_penalty','P');
 end
 

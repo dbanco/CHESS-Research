@@ -10,7 +10,7 @@ top_dir = '/cluster/shared/dbanco02';
 dset_name = 'ring4_zero';
 
 % Indep dirs
-indep_name = '_indep_ISM_Mask1';
+indep_name = '_indep_ISM_Mirror1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)

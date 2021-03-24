@@ -7,7 +7,7 @@ K = P.num_var_t;
 T = P.num_ims;
 
 % Construct dictionary
-P.num_theta = N + 2*zPad;
+P.num_theta = N - 2*P.params.zeroPad;
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 P.num_theta = N;
 % Load data
@@ -17,11 +17,11 @@ for j = 1:T
     % Reduce image to vector if needed
     try
         b = P.dataScale*sum(b_data.polar_image,1);
-        b(129:133,j) = (b(128) + b(134))/2;
+        b(129:133) = (b(128) + b(134))/2;
     catch
         b = P.dataScale*b_data.polar_vector(1:179);
     end
-    b = zeroPad(b,zPad);
+    b = zeroPad(b,P.params.zeroPad);
     B(:,j) = b;
 
 end

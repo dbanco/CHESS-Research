@@ -16,12 +16,11 @@ for j = 1:T
     % Reduce image to vector if needed
     try
         b = P.dataScale*sum(b_data.polar_image,1);
-        
-        b(129:133,j) = (b(128) + b(134))/2;
+        b(129:133) = (b(128) + b(134))/2;
     catch
         b = P.dataScale*b_data.polar_vector(1:179);
     end
-    n = numel(b);
+    nn = numel(b);
     mPad = (N-nn)/2;
     b_mirror = zeroPad(b,mPad);
     nn = numel(b_mirror);
