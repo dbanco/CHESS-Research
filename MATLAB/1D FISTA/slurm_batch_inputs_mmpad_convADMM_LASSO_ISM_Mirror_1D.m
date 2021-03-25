@@ -7,7 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Indep dirs
 indep_name = '_indep_ISM_Mirror1';
