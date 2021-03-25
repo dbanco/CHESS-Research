@@ -11,7 +11,7 @@ for ring_num = 4
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM2';
+indep_name = '_indep_ISM_Mirror1';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 

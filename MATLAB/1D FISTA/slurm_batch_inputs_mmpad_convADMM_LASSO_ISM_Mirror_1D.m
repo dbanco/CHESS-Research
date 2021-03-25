@@ -35,12 +35,12 @@ zPad = 0;
 zMask = [];
 
 K = 20;
-M = 50;
+M = 60;
 T = num_ims;
 N = n + floor(n/2) + ceil(n/2);
 
 P.dataScale = 1;
-P.lambda_values = logspace(-5,-1,M);
+P.lambda_values = logspace(-6,-1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
