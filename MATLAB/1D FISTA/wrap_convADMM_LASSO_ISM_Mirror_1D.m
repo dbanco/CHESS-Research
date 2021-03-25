@@ -26,11 +26,10 @@ for j = 1:T
     pad1 = floor(nn/2);
     pad2 = ceil(nn/2);
     N = nn + pad1 + pad2;
-    mPad = (N-nn)/2;
-    b_mirror = zeroPad(b,mPad);
-    nn = numel(b_mirror);
-    b_mirror((1+nn-mPad):end) = flipud(b_mirror((1+nn-2*mPad):(nn-mPad)));
-    b_mirror(1:mPad) = flipud(b_mirror((1+mPad):(2*mPad)));
+    b_mirror = zeros(N,1);
+    b_mirror((pad1+1):(pad1+nn)) = flipud(b);
+    b_mirror((1+N-pad2):N) = flipud(b((nn-pad2+1):nn));
+    b_mirror(1:pad1) = flipud(b(1:pad1));
     
     B(:,j) = b_mirror;
 

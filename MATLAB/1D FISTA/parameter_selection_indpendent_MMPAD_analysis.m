@@ -10,7 +10,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Output dirs
 output_name = '_indep_ISM_Mirror1';
@@ -33,7 +33,7 @@ lambda_values = P.lambda_values;
 [N,K] = size(x_hat);
 T = P.num_ims;
 M = numel(lambda_values);
-M = 20
+
 % Construct dictionary
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
@@ -52,23 +52,33 @@ l0_select = zeros(M,T);
 l1_select = zeros(M,T);
 x_indep = cell(T,1);
 
+B = zeros(N,T);
+% Load data
+for j = 1:T
+    b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
+    b = P.dataScale*sum(b_data.polar_image,1);
+    
+    % Mirror data
+    nn = numel(b);
+    pad1 = floor(nn/2);
+    pad2 = ceil(nn/2);
+    N = nn + pad1 + pad2;
+    b_mirror = zeros(N,1);
+    b_mirror((pad1+1):(pad1+nn)) = flipud(b);
+    b_mirror((1+N-pad2):N) = flipud(b((nn-pad2+1):nn));
+    b_mirror(1:pad1) = flipud(b(1:pad1));
+    B(:,j) = b_mirror;
+end
+
 tv_time = zeros(M,T-1);
 im_ind = 1;
 for i = 1:M
     fprintf('%i of %i \n',i,M)
     for j = 1:T
-        b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
+        b = B(:,j);
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
-        fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);
-        b = zeroPad(P.dataScale*sum(b_data.polar_image,1),P.params.zeroPad);
+        fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);   
         N = size(e_data.x_hat,1);
-        nn = numel(b);
-        mPad = (N-nn)/2;
-        b_mirror = zeroPad(b,mPad);
-        nn = numel(b_mirror);
-        b_mirror((1+nn-mPad):end) = flipud(b_mirror((1+nn-2*mPad):(nn-mPad)));
-        b_mirror(1:mPad) = flipud(b_mirror((1+mPad):(2*mPad)));
-        b = b_mirror;
         err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
@@ -189,8 +199,7 @@ for t = 1:T
 end
 
 for t = 1:T
-    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    b = P.dataScale*sum(polar_image,1);
+    b = B(:,t);
     rel_err_t = err_select(1:M,t)/sum(b(:).^2);
     while rel_err_t(select_indices(t)) > 0.02
         if select_indices(t) > 1
@@ -201,26 +210,6 @@ for t = 1:T
         end
     end
 end
-
-% figure(7)
-% [ha7, ~] = tight_subplot(10,11,[.05 .05],[.01 .01],[.01 .01]); 
-% tt = 1;
-% for t = 1:5:T
-%     err_t = err_select(1:M,t);
-%     l1_t = l1_select(1:M,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t;%/max(l1_t);
-%     axes(ha7(tt))
-%     plot(l1_t,err_t,'o-')
-%     hold on
-%     plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s','MarkerSize',15)
-%     hold on
-%     tt = tt + 1;
-% end
-
-% xlabel('l1-norm')
-% ylabel('error')
-% title('L-curve')
 
 %% Selected VDF;
 select_vdf = zeros(T,K);
@@ -239,20 +228,14 @@ fits_fig = figure(9);
 [ha2, ~] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 1:T
+for t = 1:10:T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
-    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    polar_vector = sum(polar_image,1);
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    b = P.dataScale*zeroPad(polar_vector,P.params.zeroPad);
-    b_mirror = zeroPad(b,mPad);
-    nn = numel(b_mirror);
-    b_mirror((1+nn-mPad):end) = flipud(b_mirror((1+nn-2*mPad):(nn-mPad)));
-    b_mirror(1:mPad) = flipud(b_mirror((1+mPad):(2*mPad)));
-    b = b_mirror;
+    b = B(:,t);
+
     final_thresh = 1e-3*sum(x_hat(:));
     x_hat(x_hat<final_thresh) = 0;
     % Plot
@@ -264,17 +247,6 @@ for t = 1:T
     legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),rel_err),'location','northeast')
     im_ind = im_ind + 1;
 end
-
-%% Show coefficients of selected parameters
-% fits_fig = figure(10);
-% [ha2, ~] = tight_subplot(10,7,[.005 .005],[.01 .01],[.01 .01]); 
-% awmv_az_vdfs = zeros(T,1);
-% im_ind = 1;
-% for t = 1:T
-%     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
-%     axes(ha2(t))
-%     imagesc(x_hat)
-% end
 
 %% Plot AWMV
 for t = 1:T
@@ -288,60 +260,3 @@ for t = 1:T
 end
 figure(12)
 plot(awmv_az_vdfs)
-
-% %% Plot fits single selected paramter
-% fits_fig = figure(223);
-% [ha3, ~] = tight_subplot(2,T/2,[.005 .005],[.01 .01],[.01 .01]); 
-% awmv_az_vdfs = zeros(T,1);
-% im_ind = 1;
-% for image_num = 1:T
-% 
-%     load(fullfile(output_dir,sprintf(baseFileName,lambda_index,image_num)))
-%     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']))
-%     
-%     polar_vector = sum(polar_image,1);
-%     fit = Ax_ft_1D(A0ft_stack,x_hat);
-%     az_signal = squeeze(sum(x_hat,1));
-%     var_sum = sum(az_signal(:));
-%     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     b = zeroPad(polar_vector,P.params.zeroPad);
-%     
-%     final_thresh = 1e-4*sum(x_hat(:));
-%     x_hat(x_hat<final_thresh) = 0;
-%     % Plot
-%     axes(ha3(im_ind))
-%     hold on
-%     plot(b)
-%     plot(fit)
-%     legend(sprintf('%i',sum(x_hat(:)>0)),'location','northeast')
-%     im_ind = im_ind + 1;
-% end
-% 
-% 
-% %% Plot fits separate paramaters
-% fits_fig = figure(224);
-% [ha2, pos2] = tight_subplot(2,T/2,[.005 .005],[.01 .01],[.01 .01]); 
-% awmv_az_vdfs = zeros(T,1);
-% im_ind = 1;
-% for image_num = 1:T
-% 
-%     load(fullfile(output_dir,sprintf(baseFileName,19,image_num)))
-%     load(fullfile(dataset,[P.prefix,'_',num2str(image_num),'.mat']))
-%     
-%     polar_vector = sum(polar_image,1);
-%     fit = Ax_ft_1D(A0ft_stack,x_hat);
-%     az_signal = squeeze(sum(x_hat,1));
-%     var_sum = sum(az_signal(:));
-%     awmv_az_vdfs(image_num) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     b = zeroPad(polar_vector,P.params.zeroPad);
-%     
-%     final_thresh = 1e-4*sum(x_hat(:));
-%     x_hat(x_hat<final_thresh) = 0;
-%     % Plot
-%     axes(ha2(im_ind))
-%     hold on
-%     plot(b)
-%     plot(fit)
-%     legend(sprintf('%i',sum(x_hat(:)>0)),'location','northeast')
-%     im_ind = im_ind + 1;
-% end
