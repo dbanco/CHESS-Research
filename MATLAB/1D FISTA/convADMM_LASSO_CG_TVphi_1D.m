@@ -49,7 +49,11 @@ zPad = params.zeroPad;
 zMask = params.zeroMask;
 
 [N,K,T] = size(X_init);
-BnormSq = sum(B.^2, 1);
+Bnorms = zeros(T,1);
+for j = 1:T
+    Bnorms(j) = norm(B(:,j));
+    B(:,j) = B(:,j)/Bnorms(j);
+end
 
 % Initialize variables
 X_init = forceMaskToZeroArray(X_init,zMask);

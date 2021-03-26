@@ -18,7 +18,7 @@ for j = 1:T
         b = P.dataScale*sum(b_data.polar_image,1);
         b(129:133,j) = (b(128) + b(134))/2;
     catch
-        b = P.dataScale*b_data.polar_vector(1:179);
+        b = P.dataScale*b_data.polar_vector;
     end
     b = zeroPad(b,zPad);
     B(:,j) = b;
