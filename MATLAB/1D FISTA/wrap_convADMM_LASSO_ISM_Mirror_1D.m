@@ -15,10 +15,10 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = P.dataScale*sum(b_data.polar_image,1);
+        b = sum(b_data.polar_image,1);
         b(129:133) = (b(128) + b(134))/2;
     catch
-        b = P.dataScale*b_data.polar_vector(1:179);
+        b = b_data.polar_vector;
     end
 
     % Mirror data
@@ -27,9 +27,9 @@ for j = 1:T
     pad2 = ceil(nn/2);
     N = nn + pad1 + pad2;
     b_mirror = zeros(N,1);
-    b_mirror((pad1+1):(pad1+nn)) = flipud(b);
-    b_mirror((1+N-pad2):N) = flipud(b((nn-pad2+1):nn));
-    b_mirror(1:pad1) = flipud(b(1:pad1));
+    b_mirror((pad1+1):(pad1+nn)) = b;
+    b_mirror((1+N-pad2):N) = flip(b((nn-pad2+1):nn));
+    b_mirror(1:pad1) = flip(b(1:pad1));
     
     B(:,j) = b_mirror;
 
