@@ -6,8 +6,11 @@ disp('Setup params')
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/shared/dbanco02';
 
+
+for ring_num = 1:4
+    
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
 indep_name = '_indep_ISM_Mirror1';
@@ -82,3 +85,4 @@ end
 
 slurm_write_bash(M,jobDir,'full_batch_script.sh',['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+end
