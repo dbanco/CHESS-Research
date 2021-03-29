@@ -47,6 +47,7 @@ zMask = params.zeroMask;
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
 xkp1 = x_init;
+xMin = x_init;
 yk = zeros(size(x_init));
 ykp1 = zeros(size(x_init));
 vk = zeros(size(xk));
@@ -81,15 +82,18 @@ while keep_going && (nIter < maxIter)
     % Track and display error, objective, sparsity
     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xkp1),zMask);
     
-    err(nIter) = sum((b(:)-fit(:)).^2)/(2);
+    err(nIter) = sum((b(:)-fit(:)).^2);
     l1_norm(nIter) = sum(abs(xkp1(:)));
-    f = err(nIter) + lambda*l1_norm(nIter);
+    f = 0.5*err(nIter) + lambda*l1_norm(nIter);
     obj(nIter) = f;
+    if f < obj(nIter-1)
+        xMin = xkp1;
+    end
     if params.verbose
         disp(['Iter ',     num2str(nIter),...
               ' Obj ',     num2str(obj(nIter)),...
               ' Rho ',     num2str(rho),...
-              ' RelErr ',  num2str(err(nIter)),...
+              ' Err ',  num2str(err(nIter)),...
               ' ||x||_1 ', num2str(lambda*l1_norm(nIter)),...
               ' ||x||_0 ', num2str(sum(xkp1(:) >0))
                ]);
@@ -147,7 +151,7 @@ end
 if isNonnegative
     xkp1(xkp1<0) = 0;
 end
-x_hat = xkp1;
+x_hat = xMin;
 err = err(1:nIter) ;
 obj = obj(1:nIter) ;
 

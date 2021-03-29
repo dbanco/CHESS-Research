@@ -79,7 +79,7 @@ for i = 1:M
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
         fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);   
         N = size(e_data.x_hat,1);
-        err_select(i,j) = sum(( fit(:) - b(:) ).^2);
+        err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
         az_signal = squeeze(sum(e_data.x_hat,1));
@@ -200,8 +200,8 @@ end
 
 for t = 1:T
     b = B(:,t);
-    rel_err_t = err_select(1:M,t)/sum(b(:).^2);
-    while rel_err_t(select_indices(t)) > 0.02
+    rel_err_t = 2*err_select(1:M,t);
+    while rel_err_t(select_indices(t)) > 0.05
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
@@ -243,7 +243,7 @@ for t = 1:10:T
     hold on
     plot(b)
     plot(fit)
-    rel_err = sum((fit(:)-b(:)).^2)./sum(b(:).^2);
+    rel_err = sum((fit(:)-b(:)).^2)/norm(b(:))^2;
     legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),rel_err),'location','northeast')
     im_ind = im_ind + 1;
 end

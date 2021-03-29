@@ -61,6 +61,7 @@ Xk = X_init;
 
 % L1 norm variable/lagranage multipliers
 Yk = zeros(N,K,T);
+Ykp1 = zeros(N,K,T);
 Vk = zeros(N,K,T);
 
 % TVx variable/lagranage multipliers
@@ -80,7 +81,7 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1;   
     
     % x-update
-    [Xkp1,cgIters] = conjGrad_TVphi_1D( A0ft_stack,B,Xk,(Yk-Vk),(Zk-Uk),params,zMask);
+    [Xkp1,cgIters] = conjGrad_TVphi_1D( A0ft_stack,B,Bnorms,Xk,(Yk-Vk),(Zk-Uk),params,zMask);
     
     % y-update and v-update
     for t = 1:T
@@ -96,8 +97,8 @@ while keep_going && (nIter < maxIter)
     Uk = Uk + DiffPhiX_1D(Xkp1) - Zkp1;
     
     % Track and display error, objective, sparsity
-    fit = Ax_ft_1D_Time(A0ft_stack,Xkp1);
-    err(nIter) = sum(((B-fit).^2)./BnormSq,'all');
+    fit = Ax_ft_1D_Time(A0ft_stack,Xkp1,Bnorms);
+    err(nIter) = sum(((B-fit).^2),'all');
     Xsum = 0;
     for t = 1:T
         Xsum = Xsum + lambda1(t)*sum(abs(Xkp1(:,:,t)),'all');

@@ -1,4 +1,4 @@
-function AtB = AtB_ft_1D_Time(A0ft_stack,B)
+function AtB = AtB_ft_1D_Time(A0ft_stack,B,Bnorms)
 %conjGradResidual Compute residual for conjugate gradient that includes 
 % difference matrix
 %   Detailed explanation goes here
@@ -7,5 +7,5 @@ function AtB = AtB_ft_1D_Time(A0ft_stack,B)
 T = size(B,2);
 AtB = zeros(N,M,T);
 for t = 1:T
-    AtB(:,:,t) = AtR_ft_1D(A0ft_stack,B(:,t));
+    AtB(:,:,t) = AtR_ft_1D(A0ft_stack/Bnorms(t),B(:,t));
 end
