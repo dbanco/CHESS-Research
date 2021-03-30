@@ -149,7 +149,7 @@ end
 end
 
 if isNonnegative
-    xkp1(xkp1<0) = 0;
+    xMin(xMin<0) = 0;
 end
 x_hat = xMin;
 err = err(1:nIter) ;
