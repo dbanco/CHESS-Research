@@ -13,7 +13,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM_Mirror1';
+output_name = '_indep_ISM_Mirror2';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -77,6 +77,8 @@ for i = 1:M
     for j = 1:T
         b = B(:,j);
         e_data = load(fullfile(output_dir,sprintf(baseFileName,i,j)),'err','x_hat');
+        e_data.x_hat(e_data.x_hat<0) = 0;
+        
         fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);   
         N = size(e_data.x_hat,1);
         err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
@@ -86,16 +88,16 @@ for i = 1:M
         var_sum = sum(az_signal(:));
         vdf_time(i,j,:) = az_signal/var_sum;
     end
-    
-    axes(ha1(im_ind))
-    imagesc(squeeze(vdf_time(i,:,:)))
-    shading interp
-    caxis([0 0.6])
-    colormap(jet)
-    
-    title(['\lambda = ',sprintf('%1.1d',P.lambda_values(i))])
-    ylabel('t')
-    xlabel('\sigma')
+%     
+%     axes(ha1(im_ind))
+%     imagesc(squeeze(vdf_time(i,:,:)))
+%     shading interp
+%     caxis([0 0.6])
+%     colormap(jet)
+%     
+%     title(['\lambda = ',sprintf('%1.1d',P.lambda_values(i))])
+%     ylabel('t')
+%     xlabel('\sigma')
     im_ind = im_ind + 1;
 end
 err_select(err_select > 10^10) = 0;
@@ -193,15 +195,25 @@ for t = 1:T
     err_t = err_select(1:M,t);
     l1_t = l1_select(1:M,t);
     err_t = err_t;%/max(err_t);
-    l1_t = l1_t;%/max(l1_t);
+    l1_t = l1_t/max(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    if t == 128
+        figure(1111)
+        hold on
+        plot(l1_t,err_t,'o-')
+        plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
+        xlabel('l1-norm')
+        ylabel('error')
+    end
+    
+    
 end
 
 for t = 1:T
     b = B(:,t);
-    rel_err_t = 2*err_select(1:M,t);
-    while rel_err_t(select_indices(t)) > 0.05
+    rel_err_t = err_select(1:M,t);
+    while rel_err_t(select_indices(t)) > 0.1
         if select_indices(t) > 1
             select_indices(t) = select_indices(t) - 1;
         else
@@ -210,6 +222,36 @@ for t = 1:T
         end
     end
 end
+
+for t = 1:T
+    b = B(:,t);
+    rel_err_t = err_select(1:M,t);
+    if select_indices(t) < 33
+        err_t = err_select(1:M,t);
+        l1_t = l1_select(1:M,t);
+        err_t = err_t/max(err_t);
+        l1_t = l1_t/max(l1_t);
+        sq_origin_dist = abs(l1_t) + abs(err_t);
+        select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    end
+end
+
+figure(543)
+plot(select_indices)
+
+% Plot AWMV
+for t = 1:T
+    load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
+    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+    polar_vector = sum(polar_image,1);
+    x_hat(x_hat<0) = 0;
+    fit = Ax_ft_1D(A0ft_stack,x_hat);
+    az_signal = squeeze(sum(x_hat,1));
+    var_sum = sum(az_signal(:));
+    awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+end
+figure(12)
+plot(awmv_az_vdfs)
 
 %% Selected VDF;
 select_vdf = zeros(T,K);
@@ -228,15 +270,17 @@ fits_fig = figure(9);
 [ha2, ~] = tight_subplot(10,10,[.005 .005],[.01 .01],[.01 .01]); 
 awmv_az_vdfs = zeros(T,1);
 im_ind = 1;
-for t = 1:10:T
+for t = T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
+    
+    x_hat = zeros(size(x_hat));
+    x_hat(end) = 20;
+    
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
     awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
     b = B(:,t);
-
-    final_thresh = 1e-3*sum(x_hat(:));
     x_hat(x_hat<final_thresh) = 0;
     % Plot
     axes(ha2(im_ind))
@@ -248,15 +292,4 @@ for t = 1:10:T
     im_ind = im_ind + 1;
 end
 
-%% Plot AWMV
-for t = 1:T
-    load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
-    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    polar_vector = sum(polar_image,1);
-    fit = Ax_ft_1D(A0ft_stack,x_hat);
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-end
-figure(12)
-plot(awmv_az_vdfs)
+

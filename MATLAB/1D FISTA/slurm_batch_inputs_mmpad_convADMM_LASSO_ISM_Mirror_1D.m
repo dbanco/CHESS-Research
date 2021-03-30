@@ -37,31 +37,31 @@ zPad = 0;
 % zMask = [1:zPad,(zPad+n+1):(2*zPad+n)];
 zMask = [];
 
-K = 20;
-M = 60;
+K = 30;
+M = 30;
 T = num_ims;
 N = n + floor(n/2) + ceil(n/2);
 
 P.dataScale = 1;
-P.lambda_values = logspace(-6,-1,M);
+P.lambda_values = logspace(-4,-1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = K;
-P.var_theta = [linspace(0.5,50,P.num_var_t)].^2;
+P.var_theta = [linspace(0.5,100,P.num_var_t)].^2;
 
 % algorithm parameters
-P.params.rho1 = 0.1;
+P.params.rho1 = 0.001;
 % P.params.lambda1 = 0.0001;
 P.params.tau = 1.05;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
 P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
-P.params.maxIter = 10000;
-P.params.tolerance = 1e-12;
+P.params.maxIter = 800;
+P.params.tolerance = 1e-7;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
