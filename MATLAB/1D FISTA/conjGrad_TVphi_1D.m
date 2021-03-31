@@ -42,7 +42,7 @@ cgIters = i;
 end
 
 function y = AtAx(A0ft_stack,X,Bnorms)
-    y = AtB_ft_1D_Time(A0ft_stack,Ax_ft_1D_Time(A0ft_stack,X),Bnorms);
+    y = AtB_ft_1D_Time(A0ft_stack,Ax_ft_1D_Time(A0ft_stack,X,Bnorms),Bnorms);
 end
 
 function y = PtDtDPx(X)
