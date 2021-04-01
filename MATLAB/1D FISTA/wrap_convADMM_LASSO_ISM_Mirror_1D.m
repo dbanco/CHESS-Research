@@ -43,11 +43,11 @@ x_init = zeros(N,K);
 for t = 1:T
     % Solve
     bnorm = norm(B(:,t));
-    [x_hat,err,obj,l1_norm] = convADMM_LASSO_Sherman_1D(A0ft_stack/bnorm,B(:,t)/bnorm,x_init,P.params); 
+    [x_hat,err,obj,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack/bnorm,B(:,t)/bnorm,x_init,P.params); 
 
     % Output data
     save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),...
-        'x_hat','err','obj','l1_norm','P');
+        'x_hat','err','obj','l1_norm','rho','P');
 end
 
 end

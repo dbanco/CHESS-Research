@@ -40,7 +40,12 @@ B = B*P.dataScale;
 
 % Init solution
 X_init = zeros([size(A0ft_stack),T]);
-
+if P.indepInit
+    for t = 1:T
+        i_data = load(fullfile(P.indepDir,sprintf(P.indepName,P.params.lambda1_indices(t),t)));
+        X_init(:,:,t) = i_data.x_hat;    
+    end
+end
 % Solve
 [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params); 
 
