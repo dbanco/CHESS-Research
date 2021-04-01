@@ -59,14 +59,15 @@ end
 X_init = forceMaskToZeroArray(X_init,zMask);
 Xk = X_init;
 
+
 % L1 norm variable/lagranage multipliers
-Yk = zeros(N,K,T);
-Ykp1 = zeros(N,K,T);
-Vk = zeros(N,K,T);
+Yk = X_init;
+Ykp1 = X_init;
+Vk = zeros(size(Yk));
 
 % TVx variable/lagranage multipliers
-Zk = zeros(K,T-1);
-Uk = zeros(K,T-1);
+Zk = DiffPhiX_1D(X_init);
+Uk = zeros(size(Zk));
 
 % Track error and objective
 err = nan(1,maxIter);
@@ -80,9 +81,14 @@ count = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1;   
     
-    % x-update
-    [Xkp1,cgIters] = conjGrad_TVphi_1D( A0ft_stack,B,Bnorms,Xk,(Yk-Vk),(Zk-Uk),params,zMask);
     
+    % x-update
+    if (nIter > 1) || (sum(X_init,'all') == 0) 
+        [Xkp1,cgIters] = conjGrad_TVphi_1D( A0ft_stack,B,Bnorms,Xk,(Yk-Vk),(Zk-Uk),params,zMask);
+    else
+        Xkp1 = Xk;
+        cgIters = 0;
+    end
     % y-update and v-update
     for t = 1:T
         Ykp1(:,:,t) = soft(alpha*Xkp1(:,:,t) + (1-alpha)*Yk(:,:,t) + Vk(:,:,t), lambda1(t)/rho1);
@@ -122,14 +128,25 @@ while keep_going && (nIter < maxIter)
     end
     
     if params.plotProgress
-        figure(1)    
+        figure(1)
+        subplot(2,1,1)
         hold off
         plot(B(:,10))
         hold on
         plot(fit(:,10))
         legend('data','fit')
         
-        pause
+        subplot(2,1,2)
+        P.var_theta = [linspace(0.5,100,30)].^2;
+        awmv = zeros(T,1);
+        var_signal = squeeze(sum(Xkp1,1));
+        var_sum = squeeze(sum(var_signal,1));
+        for t = 1:T
+            awmv(t) = sum(sqrt(P.var_theta(:)).*var_signal(:,t))/var_sum(t);
+        end
+        plot(awmv)
+
+        
     end
     
     % Check stopping criterion

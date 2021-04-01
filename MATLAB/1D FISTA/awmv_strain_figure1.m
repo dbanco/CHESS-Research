@@ -128,18 +128,19 @@ for d_num = 1
         xlabel('time (s)')
 
     end
-%     c_leg = legend(rings,'Location','Best');
-
+    c_leg = legend(rings,'Location','Best');
+    ctitle = get(c_leg,'Title');
+    set(ctitle,'String','Ring indices \{hkl\}')
     grid on
     saveas(fig_out,fullfile(datadir,outName))
     
-    figure(7)   
-    load('masked_ring4_awmv')
-    plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
-    new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
-    c_leg = legend(new_rings,'Location','Best');
-    ctitle = get(c_leg,'Title');
-    set(ctitle,'String','Ring indices \{hkl\}')
+%     figure(7)   
+%     load('masked_ring4_awmv')
+%     plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
+%     new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
+%     c_leg = legend(new_rings,'Location','Best');
+%     ctitle = get(c_leg,'Title');
+%     set(ctitle,'String','Ring indices \{hkl\}')
 
 %     close all
 end

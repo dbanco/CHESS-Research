@@ -29,6 +29,10 @@ baseFileName = 'indep_fit_%i_%i.mat';
 load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
 P.baseFileName = 'coupled_fit_%i.mat';
 
+P.indepDir = indep_dir;
+P.indepName = baseFileName;
+P.indepInit = 1;
+
 N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
@@ -62,34 +66,50 @@ P.params.zeroMask = zMask;
 P.params.plotProgress = 0;
 P.params.verbose = 1;
 
+% Load data
+B = zeros(N,T);
+for t = 1:T
+    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+    b = P.dataScale*sum(polar_image,1);
+    % Mirror data
+    nn = numel(b);
+    pad1 = floor(nn/2);
+    pad2 = ceil(nn/2);
+    N = nn + pad1 + pad2;
+    b_mirror = zeros(N,1);
+    b_mirror((pad1+1):(pad1+nn)) = b;
+    b_mirror((1+N-pad2):N) = flip(b((nn-pad2+1):nn));
+    b_mirror(1:pad1) = flip(b(1:pad1));
+    B(:,t) = b_mirror;
+end
+
 % Lambda1 values: Use L-curve parameter selection
 indep_data = load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
 lambda1_vals = indep_data.P.lambda_values;
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
-
+rho1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
-        load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = P.dataScale*sum(polar_image,1);
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
-        err_select(m,t) = sum((fit(:)-b(:)).^2);
+        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 )/norm(B(:,t));
         l1_select(m,t) = sum(x_data.x_hat(:));
+        rho1_select(m,t) = x_data.rho;
     end
 end
 
 %% L curve parameter selection for l1-norm term
-select_indices = zeros(T,1)+30;
-% for t = 1:T
-%     err_t = err_select(:,t);
-%     l1_t = l1_select(:,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t;%/max(l1_t);
-%     sq_origin_dist = abs(l1_t) + abs(err_t);
-%     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-% end
+select_indices = zeros(T,1);
+for t = 1:T
+    err_t = err_select(:,t);
+    l1_t = l1_select(:,t);
+    err_t = err_t/max(err_t);
+    l1_t = l1_t/max(l1_t);
+    sq_origin_dist = abs(l1_t) + abs(err_t);
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+end
 
 % for t = 1:T
 %     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
@@ -107,6 +127,13 @@ select_indices = zeros(T,1)+30;
 
 P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
+
+% Select minimum rho value
+rho1 = max(rho_select(:));
+for t = 1:T
+    rho1 = min(rho_select(select_indices(t),t),rho1);
+end
+P.params.rho1 = rho1;
 
 % Lambda2 values
 M = 30;

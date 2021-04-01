@@ -10,7 +10,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring4_zero';
+dset_name = 'ring1_zero';
 
 % Output dirs
 output_name = '_indep_ISM_Mirror3';
@@ -190,25 +190,29 @@ ylabel('error')
 title('L-curve')
 
 %% L curve parameter selection
-select_indices = zeros(T,1)+30;
-% for t = 1:T
-%     err_t = err_select(1:M,t);
-%     l1_t = l1_select(1:M,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t/max(l1_t);
-%     sq_origin_dist = abs(l1_t) + abs(err_t);
-%     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-%     if t == 128
-%         figure(1111)
-%         hold on
-%         plot(l1_t,err_t,'o-')
-%         plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
-%         xlabel('l1-norm')
-%         ylabel('error')
-%     end
-%     
-%     
-% end
+select_indices = zeros(T,1);
+selected_error = zeros(T,1);
+for t = 1:T
+    err_t = err_select(1:M,t);
+    l1_t = l1_select(1:M,t);
+    err_t = err_t/max(err_t);
+    l1_t = l1_t/max(l1_t);
+    sq_origin_dist = abs(l1_t) + abs(err_t);
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    selected_error(t) = err_select(select_indices(t),t);
+    if t == 100
+        figure(1111)
+        hold on
+        plot(l1_t,err_t,'o-')
+        plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
+        xlabel('l1-norm')
+        ylabel('error')
+    end
+end
+
+
+figure(544)
+plot(selected_error)
 
 % for t = 1:T
 %     b = B(:,t);
@@ -226,7 +230,8 @@ select_indices = zeros(T,1)+30;
 figure(543)
 plot(select_indices)
 
-% Plot AWMV
+%% Plot AWMV
+awmv = zeros(T,1);
 for t = 1:T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
@@ -235,10 +240,11 @@ for t = 1:T
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
-    awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    awmv(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
 end
 figure(12)
-plot(awmv_az_vdfs)
+plot(awmv)
+% save([dset_name,'_indep_awmv.mat'],'awmv','select_indices','lambda_values')
 
 %% Selected VDF;
 select_vdf = zeros(T,K);
