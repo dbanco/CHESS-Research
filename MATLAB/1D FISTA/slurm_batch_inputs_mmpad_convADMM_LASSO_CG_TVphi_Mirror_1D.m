@@ -16,7 +16,7 @@ indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror1';
+output_name = '_coupled_CG_TVphi_Mirror3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -45,14 +45,14 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 0.005;
+P.params.rho2 = 0.00001;
 P.params.lambda2 = 1;
 P.params.tau = 1.1;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
 P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
-P.params.maxIter = 800;
+P.params.maxIter = 1000;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
 P.params.cgEpsilon = 1e-3;
@@ -68,17 +68,17 @@ lambda1_vals = indep_data.P.lambda_values;
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
-
-for m = 1:M_lam1
-    for t = 1:T
-        load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-        b = P.dataScale*sum(polar_image,1);
-        x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
-        err_select(m,t) = sum((fit(:)-b(:)).^2);
-        l1_select(m,t) = sum(x_data.x_hat(:));
-    end
-end
+% 
+% for m = 1:M_lam1
+%     for t = 1:T
+%         load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+%         b = P.dataScale*sum(polar_image,1);
+%         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
+%         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+%         err_select(m,t) = sum((fit(:)-b(:)).^2);
+%         l1_select(m,t) = sum(x_data.x_hat(:));
+%     end
+% end
 
 %% L curve parameter selection for l1-norm term
 select_indices = zeros(T,1)+30;
