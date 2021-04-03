@@ -11,12 +11,12 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror3';
+indep_name = '_indep_ISM_Mirror4';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror1';
+output_name = '_coupled_CG_TVphi_Mirror3';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
