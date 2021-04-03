@@ -49,14 +49,14 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 0.005;
+P.params.rho2 = 0.00001;
 P.params.lambda2 = 1;
 P.params.tau = 1.1;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
 P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
-P.params.maxIter = 800;
+P.params.maxIter = 1000;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
 P.params.cgEpsilon = 1e-3;
@@ -89,6 +89,7 @@ lambda1_vals = indep_data.P.lambda_values;
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
+
 rho1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
