@@ -13,7 +13,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM_Mirror3';
+output_name = '_indep_ISM_Mirror4';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
