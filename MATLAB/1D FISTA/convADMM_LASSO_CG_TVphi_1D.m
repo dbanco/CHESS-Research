@@ -51,14 +51,14 @@ zMask = params.zeroMask;
 [N,K,T] = size(X_init);
 Bnorms = zeros(T,1);
 for j = 1:T
-    Bnorms(j) = norm(B(:,j));
+    Bnorms(j) = norm(squeeze(B(:,j)));
     B(:,j) = B(:,j)/Bnorms(j);
 end
 
 % Initialize variables
 X_init = forceMaskToZeroArray(X_init,zMask);
 Xk = X_init;
-
+Xmin = X_init;
 
 % L1 norm variable/lagranage multipliers
 Yk = X_init;
@@ -114,6 +114,11 @@ while keep_going && (nIter < maxIter)
     f = 0.5*err(nIter) + l1_norm(nIter) + tv_penalty(nIter);
     
     obj(nIter) = f;
+    
+    if obj(nIter) <= min(obj)
+        Xmin = Xkp1;
+    end
+    
     if params.verbose
         disp(['Iter ',     num2str(nIter),...
               ' cgIters ',  num2str(cgIters),...
@@ -202,9 +207,6 @@ while keep_going && (nIter < maxIter)
     Xk = Xkp1;
     Yk = Ykp1;
     Zk = Zkp1;
-    if obj(nIter) <= min(obj)
-        Xmin = Xkp1;
-    end
     
 end
 
