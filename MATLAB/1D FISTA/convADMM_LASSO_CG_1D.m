@@ -1,4 +1,4 @@
-function [X_hat, err, obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack,B,X_init,params)
+function [x_hat, err, obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack,b,x_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -45,16 +45,16 @@ isNonnegative = params.isNonnegative;
 zPad = params.zeroPad;
 zMask = params.zeroMask;
 
-[N,M,T] = size(X_init);
-BnormSq = sqrt(sum(B.^2, 1));
+[N,M] = size(x_init);
 
 % Initialize variables
-X_init = forceMaskToZeroArray(X_init,zMask);
-Xk = X_init;
+x_init = forceMaskToZeroArray(x_init,zMask);
+xk = x_init;
 
 % L1 norm variable/lagranage multipliers
-Yk = zeros(N,M,T);
-Vk = zeros(N,M,T);
+yk = zeros(N,M);
+ykp1 = zeros(N,M);
+vk = zeros(N,M);
 
 % Track error and objective
 err = nan(1,maxIter);
@@ -64,25 +64,25 @@ obj = nan(1,maxIter);
 
 keep_going = 1;
 nIter = 0;
+count = 0;
 while keep_going && (nIter < maxIter)
     nIter = nIter + 1;   
     
     % x-update
-    [Xkp1,cgIters] = conjGrad_1D( A0ft_stack,B,Xk,(Yk-Vk),params);
+    [xkp1,cgIters] = conjGrad_1D( A0ft_stack,b,xk,(yk-vk),params);
     
     % y-update and v-update
-    Ykp1 = soft(alpha*Xkp1 + (1-alpha)*Yk + Vk, lambda1/(rho1));
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk, lambda1/(rho1));
     if isNonnegative
-        Ykp1(Ykp1<0) = 0;
+        ykp1(ykp1<0) = 0;
     end
-    Vk = Vk + alpha*Xkp1 + (1-alpha)*Yk - Ykp1;
+    vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
     
     % Track and display error, objective, sparsity
-    fit = Ax_ft_1D_Time(A0ft_stack,Xkp1);
+    fit = Ax_ft_1D(A0ft_stack,xkp1);
     
-    err(nIter) = sum(((B-fit).^2)./BnormSq,'all');
-    l1_norm(nIter) = sum(abs(Xkp1),'all');
-    tv_penalty(nIter) = sum(abs(DiffX_1D(Xkp1)),'all');
+    err(nIter) = sum(((b-fit).^2),'all');
+    l1_norm(nIter) = sum(abs(xkp1),'all');
     
     f = 0.5*err(nIter) + lambda1*l1_norm(nIter);
     
@@ -94,7 +94,7 @@ while keep_going && (nIter < maxIter)
               ' Rho1 ',     num2str(rho1),...
               ' Err ',     num2str(0.5*err(nIter)),...
               ' ||x||_1 ', num2str(lambda1*l1_norm(nIter)),...
-              ' ||x||_0 ', num2str(sum(Xkp1(:) >0))
+              ' ||x||_0 ', num2str(sum(xkp1(:) >0))
                ]);
     end
     
@@ -121,34 +121,44 @@ while keep_going && (nIter < maxIter)
                 keep_going = 1;
             end
         case 'COEF_CHANGE'
-            diff_x = sum(abs(Xkp1(:)-Xk(:)))/numel(xk);
+            diff_x = sum(abs(xkp1(:)-xk(:)))/numel(xk);
             keep_going = (diff_x > tolerance);
         otherwise
             error('Undefined stopping criterion.');
     end
 
     if adaptRho
-        skY = rho1*sum((Ykp1(:)-Yk(:)).^2);
-        rkY = sum((Xkp1(:)-Ykp1(:)).^2);
-        if sqrt(rkY) > mu*sqrt(skY)
+        skY = rho1*norm(ykp1(:)-yk(:));
+        rkY =norm(xkp1(:)-ykp1(:));
+        if rkY > mu*skY
             rho1 = rho1*tau;
-        elseif sqrt(skY) > mu*sqrt(rkY)
+        elseif skY > mu*rkY
             rho1 = rho1/tau;
         end
     end
-
+    
+    % Stop if objective increases consistently
+    if (nIter > 10) && (obj(nIter-1) < obj(nIter))
+        count = count + 1;
+        if count > 20
+            keep_going = 0;
+        end
+    else
+        count = 0;
+    end
+    
     % Update indices
-    Xk = Xkp1;
-    Yk = Ykp1;
+    xk = xkp1;
+    yk = ykp1;
     if obj(nIter) <= min(obj)
-        Xmin = Xkp1;
+        xMin = xkp1;
     end
     
 end
 
-X_hat = Xmin;
+x_hat = xMin;
 if isNonnegative
-    X_hat(X_hat<0) = 0;
+    x_hat(x_hat<0) = 0;
 end
 
 err = err(1:nIter) ;

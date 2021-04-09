@@ -29,7 +29,7 @@ function [x_hat, obj, err, l1_norm, rho] = convADMM_LASSO_Sherman_1D(A0ft_stack,
 %   obj - (nIters) objective value of solution at each iteration
 
 tolerance = params.tolerance;
-lambda = params.lambda1;
+lambda1 = params.lambda1;
 rho = params.rho1;
 mu = params.mu;
 adaptRho = params.adaptRho;
@@ -46,7 +46,7 @@ zMask = params.zeroMask;
 % Initialize variables
 x_init = forceMaskToZeroArray(x_init,zMask);
 xk = x_init;
-xkp1 = x_init;
+
 xMin = x_init;
 yk = zeros(size(x_init));
 ykp1 = zeros(size(x_init));
@@ -60,7 +60,7 @@ obj = nan(1,maxIter);
 % Initial objective
 err(1) = sum((b-forceMaskToZero(Ax_ft_1D(A0ft_stack,x_init),zMask)).^2);
 l1_norm(1) = sum(abs(x_init(:)));
-obj(1) = 0.5*err(1) + lambda*l1_norm(1);
+obj(1) = 0.5*err(1) + lambda1*l1_norm(1);
 
 keep_going = 1;
 nIter = 1;
@@ -68,11 +68,11 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    xkp1 = circulantLinSolve( A0ft_stack,b,ykp1,vk,params );
+    xkp1 = circulantLinSolve( A0ft_stack,b,yk,vk,params );
     xkp1 = forceMaskToZeroArray(xkp1,zMask);
 
     % y-update
-    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda/rho);
+    ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda1/rho);
     if isNonnegative
         ykp1(ykp1<0) = 0;
     end
@@ -84,7 +84,9 @@ while keep_going && (nIter < maxIter)
     
     err(nIter) = sum((b(:)-fit(:)).^2);
     l1_norm(nIter) = sum(abs(xkp1(:)));
-    f = 0.5*err(nIter) + lambda*l1_norm(nIter);
+    
+    f = 0.5*err(nIter) + lambda1*l1_norm(nIter);
+    
     obj(nIter) = f;
     if f < obj(nIter-1)
         xMin = xkp1;
@@ -94,7 +96,7 @@ while keep_going && (nIter < maxIter)
               ' Obj ',     num2str(obj(nIter)),...
               ' Rho ',     num2str(rho),...
               ' Err ',  num2str(err(nIter)),...
-              ' ||x||_1 ', num2str(lambda*l1_norm(nIter)),...
+              ' ||x||_1 ', num2str(lambda1*l1_norm(nIter)),...
               ' ||x||_0 ', num2str(sum(xkp1(:) >0))
                ]);
     end

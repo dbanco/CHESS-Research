@@ -21,7 +21,6 @@ for tv = 1:size(A0ft_stack,2)
         AtR(:,tv) = y;
 end
 
-AtR = shift1D_array(AtR,2);
 
 end
 

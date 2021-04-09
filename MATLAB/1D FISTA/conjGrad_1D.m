@@ -1,4 +1,4 @@
-function [Xk,cgIters] = conjGrad_1D(A0ft_stack,B,X_init,YV,params)
+function [xk,cgIters] = conjGrad_1D(A0ft_stack,b,x_init,YV,params)
 %conjGrad_TVx_1D Solves least squares
 %
 % Inputs:
@@ -6,29 +6,26 @@ function [Xk,cgIters] = conjGrad_1D(A0ft_stack,B,X_init,YV,params)
 % Outputs:
 %
 
-% Data normalizing
-BnormSq1 = sqrt((sum(B.^2,1)));
-BnormSq2 = reshape(BnormSq1,[1,1,numel(BnormSq1)]);
 
 % ADMM penalty parameter
 rho1 = params.rho1;
 
 % Coefficeint Vectors
-Xk = X_init;
+xk = x_init;
 
 % Target Vectors
-AtB = AtB_ft_1D_Time(A0ft_stack,B)./BnormSq2;
+AtB = AtR_ft_1D(A0ft_stack,b);
 
 % Initial Residual
-Rk = AtB - AtAx(A0ft_stack,Xk)./BnormSq2 +...
-     rho1*YV  - rho1*Xk;
+Rk = AtB - AtR_ft_1D(A0ft_stack,Ax_ft_1D(A0ft_stack,xk)) +...
+     rho1*YV  - rho1*xk;
 Pk = Rk;
 
 for i = 1:params.conjGradIter
-    Apk = AtAx(A0ft_stack,Pk)./BnormSq2 + rho1*Pk;
+    Apk = AtR_ft_1D(A0ft_stack,Ax_ft_1D(A0ft_stack,Pk)) + rho1*Pk;
     RkRk = sum(Rk(:).*Rk(:));
     alphak = RkRk/sum(Pk(:).*Apk(:));
-    Xk = Xk + alphak*Pk;
+    xk = xk + alphak*Pk;
     Rkp1 = Rk - alphak*Apk;
     if norm(Rkp1(:)) < params.cgEpsilon
         break;
@@ -38,8 +35,4 @@ for i = 1:params.conjGradIter
     Rk = Rkp1;
 end
 cgIters = i;
-end
-
-function y = AtAx(A0ft_stack,X)
-    y = AtB_ft_1D_Time(A0ft_stack,Ax_ft_1D_Time(A0ft_stack,X));
 end

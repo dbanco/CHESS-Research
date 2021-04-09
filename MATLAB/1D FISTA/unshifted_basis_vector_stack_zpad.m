@@ -20,7 +20,7 @@ if sum(zPad)
     for t = 1:numel(P.var_theta)
         switch P.basis
             case 'norm2'
-                A0 = gaussian_basis_wrap_1D_norm2(P.num_theta, (P.num_theta + 1)/2, P.var_theta(t));
+                A0 = gaussian_basis_wrap_1D_norm2(P.num_theta, 1, P.var_theta(t));
         end
         A0_stack(:,t) = zeroPad(A0,zPad);
     end
@@ -29,7 +29,7 @@ else
     for t = 1:numel(P.var_theta)
         switch P.basis
             case 'norm2'
-                A0 = gaussian_basis_wrap_1D_norm2(P.num_theta, (P.num_theta + 1)/2, P.var_theta(t));
+                A0 = gaussian_basis_wrap_1D_norm2(P.num_theta, 1, P.var_theta(t));
         end                     
         A0_stack(:,t) = A0;
     end

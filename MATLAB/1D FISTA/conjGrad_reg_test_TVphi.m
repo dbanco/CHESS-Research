@@ -70,26 +70,27 @@ for image_num = 1:T
     B(:,image_num) = im_data.polar_vector;
 end
 
-[X_hat_tvx,   ~, ~, ~, ~] = convADMM_LASSO_CG_TVx_1D(A0ft_stack,B,X_init,params);
+% [X_hat_tvx,   ~, ~, ~, ~] = convADMM_LASSO_CG_TVx_1D(A0ft_stack,B,X_init,params);
+params.lambda1 = ones(T,1)*P.params.lambda1;
 [X_hat_tvphi, ~, ~, ~, ~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,params);
 % [X_hat1, err, obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack,B,X_init,params);
 %% Plot results
-for t = 1:T
-    x = X_hat_tvx(:,:,t);
-    x(x < sum(x(:),'all')*1e-4) = 0;
-    bb = Ax_ft_1D(A0ft_stack,x);
-    figure(1)
-    subplot(3,2,t)
-    plot(B(:,t))
-    hold on
-    plot(bb)  
-    l0_norm = sum((x > 0),'all');
-    legend('Data',sprintf('Fit: %i',l0_norm))
-    
-    figure(3)
-    subplot(3,2,t)
-    imagesc(x)
-end
+% for t = 1:T
+%     x = X_hat_tvx(:,:,t);
+%     x(x < sum(x(:),'all')*1e-4) = 0;
+%     bb = Ax_ft_1D(A0ft_stack,x);
+%     figure(1)
+%     subplot(3,2,t)
+%     plot(B(:,t))
+%     hold on
+%     plot(bb)  
+%     l0_norm = sum((x > 0),'all');
+%     legend('Data',sprintf('Fit: %i',l0_norm))
+%     
+%     figure(3)
+%     subplot(3,2,t)
+%     imagesc(x)
+% end
 
 for t = 1:T
     x = X_hat_tvphi(:,:,t);
@@ -168,12 +169,12 @@ ind_data = load(fullfile(indep_dir,sprintf(baseFileName,10)));
 ind_data.P.params
 
 figure(4)
-vdf_tvx = squeeze(sum(X_hat_tvx,1))';
+vdf_tvphi = squeeze(sum(X_hat_tvphi,1))';
 % vdf_indep1 = squeeze(sum(X_hat1,1))';
 vdf_indep2 = squeeze(sum(ind_data.X_hat,1))';
 
 subplot(3,1,1)
-imagesc(vdf_tvx)
+imagesc(vdf_tvphi)
 title('TVx, lambda2=0.0001')
 
 % subplot(3,1,2)

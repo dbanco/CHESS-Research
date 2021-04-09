@@ -33,8 +33,8 @@ zPad = [0,0];
 zMask = [];
 
 % ADMM parameters
-params.lambda1 = 10; % sparsity penalty
-params.rho1 = 0.5;  % initial ADMM
+params.lambda1 = 1e-2; % sparsity penalty
+params.rho1 = 0.001;  % initial ADMM
 
 
 params.adaptRho = 1; % binary flag for adaptive rho
@@ -46,8 +46,10 @@ params.alpha = 1.8; % over-relaxation paramter
 params.isNonnegative = 1; % flag to enforce nonnegativity
 
 params.stoppingCriterion = 'OBJECTIVE_VALUE';
-params.maxIter = 800;
-params.tolerance = 1e-6;
+params.maxIter = 20;
+params.conjGradIter = 100;
+params.tolerance = 1e-8;
+params.cgEpsilon = 1e-3;
 
 params.zeroPad = zPad; % number of [rows,columns]of padding to add to data
 params.zeroMask = zMask; % specifies columns known to be zero
@@ -58,16 +60,16 @@ P.params = params;
 %% Setup and solve
 
 % Construct dictionary
-A0ft_stack = unshifted_basis_vector_ft_stack_norm2_zpad(P);
+A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Initialize solution
 x_init = zeros(size(A0ft_stack));
 
 % Solve
-[x_hat,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,params);
+[x_hat1,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
 
 % Compute result
-b_hat = Ax_ft_1D(A0ft_stack,x_hat);
+b_hat = Ax_ft_1D(A0ft_stack,x_hat1);
 
 toc
 % Plot fit
@@ -82,13 +84,37 @@ title('Data fit')
 legend('data','fit')
 
 % Plot variance distribution function
-vdf = sum(x_hat,1)/sum(x_hat,'all');
+vdf = sum(x_hat1,1)/sum(x_hat1,'all');
 subplot(1,2,2)
 bar(vdf)
 xlabel('narrow --> \sigma index --> wide')
 ylabel('\Sigma x_i / \Sigma x')
 title('VDF')
 
+%%
+[x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
+% [x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack, b, x_init, params);
+
+% Compute result
+b_hat2 = Ax_ft_1D(A0ft_stack,x_hat2);
+% Plot fit
+figure(11)
+subplot(1,2,1)
+plot(b)
+hold on
+plot(b_hat2)
+xlabel('\theta')
+ylabel('Intensity')
+title('Data fit')
+legend('data','fit')
+
+% Plot variance distribution function
+vdf2 = sum(x_hat2,1)/sum(x_hat2,'all');
+subplot(1,2,2)
+bar(vdf2)
+xlabel('narrow --> \sigma index --> wide')
+ylabel('\Sigma x_i / \Sigma x')
+title('VDF')
 %{
 Notes:
 
