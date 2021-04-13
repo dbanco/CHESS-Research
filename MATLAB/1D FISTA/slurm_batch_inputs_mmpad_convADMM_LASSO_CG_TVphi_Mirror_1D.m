@@ -11,12 +11,12 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror4';
+indep_name = '_indep_ISM_Mirror5';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror3';
+output_name = '_coupled_CG_TVphi_Mirror6';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -49,7 +49,7 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 0.00001;
+P.params.rho2 = 0.0001;
 P.params.lambda2 = 1;
 P.params.tau = 1.1;
 P.params.mu = 2;
@@ -59,7 +59,7 @@ P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 1000;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
-P.params.cgEpsilon = 1e-3;
+P.params.cgEpsilon = 1e-5;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
@@ -93,7 +93,7 @@ l1_select = zeros(M_lam1,T);
 rho1_select = zeros(M_lam1,T);
 for m = 1:M_lam1
     for t = 1:T
-        x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat');
+        x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
         err_select(m,t) = sum( (fit(:)-B(:,t)).^2 )/norm(B(:,t));
         l1_select(m,t) = sum(x_data.x_hat(:));
@@ -128,11 +128,12 @@ end
 
 P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
+P.params.lambda1(:) = mean(P.params.lambda1);
 
 % Select minimum rho value
-rho1 = max(rho_select(:));
+rho1 = max(rho1_select(:));
 for t = 1:T
-    rho1 = min(rho_select(select_indices(t),t),rho1);
+    rho1 = min(rho1_select(select_indices(t),t),rho1);
 end
 P.params.rho1 = rho1;
 

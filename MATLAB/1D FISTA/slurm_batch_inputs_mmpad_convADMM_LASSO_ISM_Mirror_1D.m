@@ -13,7 +13,7 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror4';
+indep_name = '_indep_ISM_Mirror5';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)
@@ -43,7 +43,7 @@ T = num_ims;
 N = n + floor(n/2) + ceil(n/2);
 
 P.dataScale = 1;
-P.lambda_values = logspace(-4,0,M);
+P.lambda_values = logspace(-3,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
