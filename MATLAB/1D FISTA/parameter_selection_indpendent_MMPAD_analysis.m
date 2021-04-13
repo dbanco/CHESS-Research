@@ -13,7 +13,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_indep_ISM_Mirror4';
+output_name = '_indep_ISM_Mirror5';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -200,7 +200,7 @@ for t = 1:T
     sq_origin_dist = abs(l1_t) + abs(err_t);
     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
     selected_error(t) = err_select(select_indices(t),t);
-    if t == 100
+    if t == 70
         figure(1111)
         hold on
         plot(l1_t,err_t,'o-')
@@ -214,21 +214,26 @@ end
 figure(544)
 plot(selected_error)
 
-% for t = 1:T
-%     b = B(:,t);
-%     rel_err_t = err_select(1:M,t);
-%     while rel_err_t(select_indices(t)) > 0.02
-%         if select_indices(t) > 1
-%             select_indices(t) = select_indices(t) - 1;
-%         else
-%             select_indices(t) = find(rel_err_t == min(rel_err_t));
-%             break
-%         end
-%     end
-% end
+for t = 1:T
+    b = B(:,t);
+    rel_err_t = err_select(1:M,t);
+    while rel_err_t(select_indices(t)) > 0.025
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+        selected_error(t) = err_select(select_indices(t),t);
+    end
+end
 
 figure(543)
 plot(select_indices)
+
+figure(544)
+hold on
+plot(selected_error)
 
 %% Plot AWMV
 awmv = zeros(T,1);

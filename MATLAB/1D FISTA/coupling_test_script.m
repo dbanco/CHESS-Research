@@ -104,11 +104,12 @@ for t = 1:T
 end
 
 %% Solve using coupled algorithm
+P.params.maxIter = 200;
 P.params.rho2 = 0.001;
 P.params.lambda1 = ones(T,1)*params.lambda1;
-P.params.lambda2 = 5e-2;
-P.params.rho2 = 1e-2;
-[X_hat2,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,b,X_hat1,P.params); 
+P.params.lambda2 = 5e-3;
+P.params.rho = 1e-4;
+[X_hat2,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi2_1D(A0ft_stack,b,X_hat1,P.params); 
 figure(9)
 plot(obj)
 awmv2 = zeros(T,1);

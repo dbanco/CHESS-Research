@@ -13,7 +13,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 dset_name = 'ring1_zero';
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror3';
+output_name = '_coupled_CG_TVphi_Mirror6';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -142,7 +142,7 @@ legend_str{1} = 'indep';
 kk = 2;
 hold on
 plot(awmv_az_init,'LineWidth',1.5)
-for k = [30]
+for k = [19]
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.3f',lambda2_values(k));
