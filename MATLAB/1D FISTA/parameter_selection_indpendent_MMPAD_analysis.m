@@ -10,10 +10,10 @@ top_dir = 'D:\MMPAD_data_nr1';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring1_zero';
+dset_name = 'ring3_zero';
 
 % Output dirs
-output_name = '_indep_ISM_Mirror5';
+output_name = '_indep_ISM_Mirror6';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -81,7 +81,7 @@ for i = 1:M
         
         fit = Ax_ft_1D(A0ft_stack,e_data.x_hat);   
         N = size(e_data.x_hat,1);
-        err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
+        err_select(i,j) = sum(( fit(:) - b(:) ).^2);
         l0_select(i,j) = sum(e_data.x_hat(:) > 1e-4*sum(e_data.x_hat(:)));
         l1_select(i,j) = sum(e_data.x_hat(:));
         az_signal = squeeze(sum(e_data.x_hat,1));
@@ -105,7 +105,7 @@ l0_select(l0_select > 10^10) = 0;
 l1_select(l1_select > 10^10) = 0;
 
 %% Criterion separate params
-noise_eta = 0.2;
+noise_eta = 0.1;
 discrep_crit = abs(err_select'-noise_eta);
 
 [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
@@ -195,12 +195,13 @@ selected_error = zeros(T,1);
 for t = 1:T
     err_t = err_select(1:M,t);
     l1_t = l1_select(1:M,t);
-    err_t = err_t/max(err_t);
-    l1_t = l1_t/max(l1_t);
+    err_t = log(err_t);%/max(err_t);
+    l1_t = log(l1_t);%/max(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
-    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-    selected_error(t) = err_select(select_indices(t),t);
-    if t == 70
+
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist)  );
+    selected_error(t) = err_select(select_indices(t),t)/norm(B(:,t))^2;
+    if t == 400
         figure(1111)
         hold on
         plot(l1_t,err_t,'o-')
@@ -213,23 +214,25 @@ end
 
 figure(544)
 plot(selected_error)
+title('Selected Relative Errors')
 
-for t = 1:T
-    b = B(:,t);
-    rel_err_t = err_select(1:M,t);
-    while rel_err_t(select_indices(t)) > 0.025
-        if select_indices(t) > 1
-            select_indices(t) = select_indices(t) - 1;
-        else
-            select_indices(t) = find(rel_err_t == min(rel_err_t));
-            break
-        end
-        selected_error(t) = err_select(select_indices(t),t);
-    end
-end
+% for t = 1:T
+%     b = B(:,t);
+%     rel_err_t = err_select(1:M,t);
+%     while rel_err_t(select_indices(t))/norm(B(:,t)) > 0.01
+%         if select_indices(t) > 1
+%             select_indices(t) = select_indices(t) - 1;
+%         else
+%             select_indices(t) = find(rel_err_t == min(rel_err_t));
+%             break
+%         end
+%         selected_error(t) = err_select(select_indices(t),t);
+%     end
+% end
 
 figure(543)
 plot(select_indices)
+title('Selected Indices')
 
 figure(544)
 hold on
@@ -241,7 +244,6 @@ for t = 1:T
     load(fullfile(output_dir,sprintf(baseFileName,select_indices(t),t)))
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
     polar_vector = sum(polar_image,1);
-    x_hat(x_hat<0) = 0;
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     az_signal = squeeze(sum(x_hat,1));
     var_sum = sum(az_signal(:));
@@ -249,7 +251,8 @@ for t = 1:T
 end
 figure(12)
 plot(awmv)
-% save([dset_name,'_indep_awmv.mat'],'awmv','select_indices','lambda_values')
+title('AWMV Selected Indices')
+save([dset_name,'_mirror_indep_awmv.mat'],'awmv','select_indices','lambda_values')
 
 %% Selected VDF;
 select_vdf = zeros(T,K);

@@ -95,7 +95,7 @@ for m = 1:M_lam1
     for t = 1:T
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
-        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 )/norm(B(:,t));
+        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
         l1_select(m,t) = sum(x_data.x_hat(:));
         rho1_select(m,t) = x_data.rho;
     end
@@ -106,10 +106,10 @@ select_indices = zeros(T,1);
 for t = 1:T
     err_t = err_select(:,t);
     l1_t = l1_select(:,t);
-    err_t = err_t/max(err_t);
-    l1_t = l1_t/max(l1_t);
+    err_t = log(err_t);
+    l1_t = log(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
-    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist )  );
 end
 
 % for t = 1:T
@@ -128,14 +128,13 @@ end
 
 P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
-P.params.lambda1(:) = mean(P.params.lambda1);
 
 % Select minimum rho value
-rho1 = max(rho1_select(:));
-for t = 1:T
-    rho1 = min(rho1_select(select_indices(t),t),rho1);
-end
-P.params.rho1 = rho1;
+% rho1 = max(rho1_select(:));
+% for t = 1:T
+%     rho1 = min(rho1_select(select_indices(t),t),rho1);
+% end
+P.params.rho = 0.0001;
 
 % Lambda2 values
 M = 30;
@@ -144,7 +143,6 @@ M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
 %% Parameters to vary
-
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
 mkdir(jobDir)
