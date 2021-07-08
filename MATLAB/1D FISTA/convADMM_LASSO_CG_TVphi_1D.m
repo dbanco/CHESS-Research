@@ -51,8 +51,9 @@ zMask = params.zeroMask;
 [N,K,T] = size(X_init);
 Bnorms = zeros(T,1);
 for j = 1:T
-    Bnorms(j) = norm(squeeze(B(:,j)));
-    B(:,j) = B(:,j)/Bnorms(j);
+%     Bnorms(j) = norm(squeeze(B(:,j)));
+    Bnorms(j) = 1;
+%     B(:,j) = B(:,j)/Bnorms(j);
 end
 
 % Initialize variables
@@ -173,18 +174,19 @@ while keep_going && (nIter < maxIter)
     end
     
     if adaptRho
-        skY = rho1*sum((Ykp1(:)-Yk(:)).^2);
-        skZ = rho2*sum((Zkp1(:)-Zk(:)).^2);
-        rkY = sum((Xkp1(:)-Ykp1(:)).^2);
-        rkZ = sum((DiffPhiX_1D(Xkp1) - Zkp1).^2,'all');
-        if sqrt(rkY) > mu*sqrt(skY)
+        skY = rho1*norm( Ykp1(:)-Yk(:) );
+        skZ = rho2*norm( Zkp1(:)-Zk(:) );
+        rkY = norm( Xkp1(:)-Ykp1(:) );
+        diff_rkZ = DiffPhiX_1D(Xkp1) - Zkp1;
+        rkZ = norm( diff_rkZ(:) );
+        if rkY > mu*skY
             rho1 = rho1*tau;
-        elseif sqrt(skY) > mu*sqrt(rkY)
+        elseif skY > mu*rkY
             rho1 = rho1/tau;
         end
-        if sqrt(rkZ) > mu*sqrt(skZ)
+        if rkZ > mu*skZ
             rho2 = rho2*tau;
-        elseif sqrt(skZ) > mu*sqrt(rkZ)
+        elseif skZ > mu*rkZ
             rho2 = rho2/tau;
         end
     end

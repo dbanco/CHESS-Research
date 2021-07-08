@@ -14,10 +14,10 @@ for i = 1:numSpots
 end
 
 % Add noise
-b = b + 10*randn(N,1)/50;
+b = b + 100*randn(N,1)/50;
 
-% Remove negative values
-b(b<0) = 0;
+% % Remove negative values
+% b(b<0) = 0;
 
 %% Define parameters
 
@@ -33,7 +33,8 @@ zPad = [0,0];
 zMask = [];
 
 % ADMM parameters
-params.lambda1 = 1e-2; % sparsity penalty
+lambda1 = 1e-2;
+params.lambda1 = lambda1; % sparsity penalty
 params.rho1 = 0.001;  % initial ADMM
 
 
@@ -91,9 +92,17 @@ xlabel('narrow --> \sigma index --> wide')
 ylabel('\Sigma x_i / \Sigma x')
 title('VDF')
 
-%%
+%% Indep CG
 [x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
 % [x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack, b, x_init, params);
+
+%% Coupled CG
+params.rho2 = 0;
+params.lambda2 = 0;
+params.lambda1 = lambda1*ones(3,1);
+B = [b,b+1,b+2]; 
+[X_hat3,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack/norm(b),B/norm(b),zeros(N,20,3),params);
+x_hat3 = X_hat3(:,:,1);
 
 % Compute result
 b_hat2 = Ax_ft_1D(A0ft_stack,x_hat2);
@@ -112,6 +121,27 @@ legend('data','fit')
 vdf2 = sum(x_hat2,1)/sum(x_hat2,'all');
 subplot(1,2,2)
 bar(vdf2)
+xlabel('narrow --> \sigma index --> wide')
+ylabel('\Sigma x_i / \Sigma x')
+title('VDF')
+
+% Compute result
+b_hat3 = Ax_ft_1D(A0ft_stack,x_hat3);
+% Plot fit
+figure(111)
+subplot(1,2,1)
+plot(b)
+hold on
+plot(b_hat3)
+xlabel('\theta')
+ylabel('Intensity')
+title('Data fit')
+legend('data','fit')
+
+% Plot variance distribution function
+vdf3 = sum(x_hat3,1)/sum(x_hat3,'all');
+subplot(1,2,2)
+bar(vdf3)
 xlabel('narrow --> \sigma index --> wide')
 ylabel('\Sigma x_i / \Sigma x')
 title('VDF')

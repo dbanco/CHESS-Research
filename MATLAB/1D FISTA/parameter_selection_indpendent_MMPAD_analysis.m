@@ -10,7 +10,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 %     top_dir = '/cluster/shared/dbanco02';
 
 % Input dirs
-dset_name = 'ring3_zero';
+dset_name = 'ring1_zero';
 
 % Output dirs
 output_name = '_indep_ISM_Mirror6';

@@ -46,9 +46,9 @@ A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 disp('Selecting lambda values')
 
 % VDF figure
-vdf_fig = figure(1);
-[ha1, pos1] = tight_subplot(3,ceil(M/3),[0.1 0.03],[.02 .08],[.02 .02]); 
-set(vdf_fig, 'Position',  [100, 100, 1000, 400])
+% vdf_fig = figure(1);
+% [ha1, pos1] = tight_subplot(3,ceil(M/3),[0.1 0.03],[.02 .08],[.02 .02]); 
+% set(vdf_fig, 'Position',  [100, 100, 1000, 400])
 
 vdf_time = zeros(M,T,K);
 err_select = zeros(M,T);

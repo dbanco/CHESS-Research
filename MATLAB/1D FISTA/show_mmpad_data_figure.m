@@ -4,12 +4,12 @@ close all
 prefix = 'mmpad_img';
 
 % Parent directory
-top_dirs = {'E:\MMPAD_data_nr1\full','E:\MMPAD_data_nr2\full'};
+top_dirs = {'D:\MMPAD_data_nr1\ring1_zero','D:\MMPAD_data_nr2\ring1_zero'};
 fig_dir = 'C:\Users\dpqb1\Desktop\paper_figures\';
 num_rings = [4,3];
 max_val = [2e4 2e4]
 
-for d_num = 1:2
+for d_num = 1
     fig = figure(d_num);
     R = num_rings(d_num);
     [ha1, pos1] = tight_subplot(2,1,[0.01 0.01],[.02 .08],[.02 .02]); 
@@ -18,7 +18,7 @@ for d_num = 1:2
     for im_num = [1 100]
         axes(ha1(k))
         load(fullfile(top_dir,[prefix,'_',num2str(im_num),'.mat']) )
-        imagesc(squeeze(sum(mmpad_img,1)),[0 max_val(d_num)])
+        imagesc(squeeze(sum(polar_image,1)),[0 max_val(d_num)])
         set(gca,'xtick',[])
         set(gca,'ytick',[])
         
@@ -30,9 +30,9 @@ for d_num = 1:2
 %         end
     end
 
-[~,m,n] = size(mmpad_img);
-truesize(fig,[m n])
-saveas(fig,[fig_dir,'ex_mmpad_nr',num2str(d_num),'.png'])
+[~,m,n] = size(polar_image);
+% truesize(fig,[m n])
+% saveas(fig,[fig_dir,'ex_mmpad_nr',num2str(d_num),'.png'])
 end
 
 

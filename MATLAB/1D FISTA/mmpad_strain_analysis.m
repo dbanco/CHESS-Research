@@ -1,4 +1,4 @@
-top_dir = 'E:\MMPAD_data';
+top_dir = 'E:\MMPAD_data_nr1';
 dset_name = 'ring%i_zero';
 prefix = 'mmpad_img_%i.mat';
 
@@ -19,9 +19,11 @@ for ring = 1:R
     end
 end
 
-plot(COM')
+plot(COM)
 xlabel('time')
 ylabel('center of mass (pixel)')
 title('Radial Shifts in MMPAD CP-Ti')
 legend('Ring 1','Ring 2','Ring 3','Ring 4','Location','Best')
 
+figure(2)
+plot(sum(COM))

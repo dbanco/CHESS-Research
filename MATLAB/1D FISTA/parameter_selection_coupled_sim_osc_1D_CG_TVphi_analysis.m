@@ -9,7 +9,7 @@ P.set = 1;
 top_dir = 'E:\CHESS_data';
 
 % Input dirs
-dset_name = 'simulated_two_spot_1D_gnoise6_osc_2';
+dset_name = 'simulated_two_spot_1D_gnoise5_osc_3';
 
 % Indep dirs
 indep_name = '_indep_ISM1';
@@ -35,8 +35,8 @@ lambda2_vals = P.lambda2_values(1:30);
 M = numel(lambda2_vals);
 
 % Construct dictionary
-A0ft_stack = unshifted_basis_vector_ft_stack_norm2(P);
-A0_stack = unshifted_basis_vector_stack_norm2(P);
+A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+A0_stack = unshifted_basis_vector_stack_zpad(P);
 %%
 T = P.num_ims;
 [N,K] = size(A0ft_stack);
@@ -101,18 +101,25 @@ end
 tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
 
 %% Plot awmv
+close all
 figure_dir = ['C:\Users\dpqb1\OneDrive\Desktop\',output_subdir,'_figures\'];
 mkdir(figure_dir)
-
+truth_data = load('E:\CHESS_data\simulated_two_spot_1D_gnoise6_osc_11\synth_data.mat')
+peakSigma = zeros(T,1);
+for i = 1:T
+   peakSigma(i) =  truth_data.synth_sample{i}.std_theta(1);
+end
 % Plot AWMV
 awmv_fig = figure(1);
 legend_str = {};
-% legend_str{1} = 'truth';
-legend_str{1} = '0';
-kk = 2;
+legend_str{1} = 'truth';
+legend_str{2} = '0';
+kk = 3;
 hold on
+plot(peakSigma,'LineWidth',1.5)
 plot(awmv_az_init,'LineWidth',1.5)
-for k = 1:M
+
+for k = 25
     hold on
     plot(awmv_az(k,:),'LineWidth',1.5)
     legend_str{kk} = sprintf('%0.01s',lambda2_vals(k));

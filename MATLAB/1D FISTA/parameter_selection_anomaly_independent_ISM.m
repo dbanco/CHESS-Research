@@ -10,7 +10,7 @@ top_dir = 'D:\CHESS_data\';
 dset_name = 'simulated_two_spot_1D_anomaly_3';
 
 % Output dirs
-output_name = '_indep_ISM_pad1';
+output_name = '_indep_ISM';
 output_subdir = [dset_name,output_name];
 
 
@@ -34,8 +34,8 @@ N = numel(polar_vector(1:179));
 K = 20;
 M = 10;
 T = num_ims;
-zPad = 90;
-zMask = [1:zPad,(N+zPad+1):(N+2*zPad)];
+zPad = 0;
+zMask = [];
 
 P.dataScale = 1;
 P.lambda_values = logspace(-4,1,M);
@@ -86,10 +86,10 @@ disp('Begin grid search')
 % Init solution
 x_init = zeros(size(A0ft_stack));
 
-for i = 5
+for i = 6
     P.set = i;
     P.params.lambda1 = P.lambda_values(i);
-    for t = 19
+    for t = 1:T
         % Solve
         [x_hat,obj,err,l1_norm] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
 
@@ -97,7 +97,13 @@ for i = 5
         save_output(output_dir,x_hat,err,obj,l1_norm,P,t);
     end
 end
-
+%% Plot fit 
+figure(1)
+fit = Ax_ft_1D(A0ft_stack,x_hat);
+hold on
+plot(B(:,t))
+plot(fit)
+legend('fit','b')
 
 function save_output(output_dir,x_hat,err,obj,l1_norm,P,t)
     save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),'x_hat',...
