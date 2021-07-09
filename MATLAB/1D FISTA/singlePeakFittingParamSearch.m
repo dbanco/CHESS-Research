@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';\
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 % lambda_inds = [15,17,19,21,...
@@ -37,7 +37,6 @@ P.dataset = dataset;
 % Data/Dictionary Parameters
 % Zero padding and mask
 
-
 N = 101;
 K = 20;
 M = 50;
@@ -46,7 +45,7 @@ zPad = 0;
 zMask = [];
 
 P.dataScale = 1;
-P.lambda_values = logspace(-3,1,M);
+P.lambda_values = logspace(-4,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
@@ -81,7 +80,7 @@ A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Load data
 theta_stds1 = linspace(1,15,T);
-B = zeros(N+2*zPad,T);
+B = zeros(N,T);
 for j = 1:T
     b = gaussian_basis_1D( N, N/2, theta_stds1(j)^2) + randn(N,1)*noise_std(ii);
 
@@ -90,48 +89,34 @@ end
 
 %% Independent Solution
 x_init = zeros(N,K);
-X_indep = zeros(N,K,T);
-rho_out = zeros(T,1);
-for i = lambda_inds(ii)
+X_indep = zeros(N,K,M);
+rho_out = zeros(M,1);
+for i = 1:M
     P.set = i;
     P.params.lambda1 = P.lambda_values(i);
     for t = 1
         % Solve
         [x_hat,obj,err,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
-        X_indep(:,:,t) = x_hat;
-        rho_out(t) = rho;
+        X_indep(:,:,i) = x_hat;
+        rho_out(i) = rho;
     end
 end
-
+save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']),...
+        'B','X_indep','P');
 %% Plot fit 
+% load(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']))
 close all
-fits_fig = figure(1);
-[ha2, ~] = tight_subplot(10,5,[.005 .005],[.01 .01],[.01 .01]);
 fits_fig_indep = figure(11);
  [ha11, ~] = tight_subplot(10,5,[.005 .005],[.01 .01],[.01 .01]);
-fits_fig_indep_CG = figure(111);
- [ha111, ~] = tight_subplot(10,5,[.005 .005],[.01 .01],[.01 .01]);
  
-awmv_az_indep = zeros(T,1);
-awmv_az_indep_CG = zeros(T,1);
-awmv_az = zeros(T,1);
-rse_coup = zeros(T,1);
-rse_indep = zeros(T,1);
-rse_indep_CG = zeros(T,1);
-for t = 1:T
-    x = X_hat(:,:,t);
-    fit = Ax_ft_1D(A0ft_stack,x);
-    rse_coup(t) = norm(fit-B(:,t))/norm(B(:,t));
-    az_signal = squeeze(sum(x,1));
-    var_sum = squeeze(sum(az_signal(:)));
-    awmv_az(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    axes(ha2(t))
-    hold on
-    plot(B(:,t))
-    plot(fit)
+awmv_az_indep = zeros(M,1);
+rse_indep = zeros(M,1);
+l1_norm = zeros(M,1);
+for t = 1:M
     
     x = X_indep(:,:,t);
     fit = Ax_ft_1D(A0ft_stack,x);
+    l1_norm(t) = sum(abs(x(:)));
     rse_indep(t) = norm(fit-B(:,t))/norm(B(:,t));
     az_signal = squeeze(sum(x,1));
     var_sum = squeeze(sum(az_signal(:)));
@@ -140,58 +125,51 @@ for t = 1:T
     hold on
     plot(B(:,t))
     plot(fit)
-    
-    x = X_indep_CG(:,:,t);
-    fit = Ax_ft_1D(A0ft_stack,x);
-    rse_indep_CG(t) = norm(fit-B(:,t))/norm(B(:,t));
-    az_signal = squeeze(sum(x,1));
-    var_sum = squeeze(sum(az_signal(:)));
-    awmv_az_indep_CG(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    axes(ha111(t))
-    hold on
-    plot(B(:,t))
-    plot(fit)
 
 end
-legend('fit','b')
-save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']),...
-        'B','X_hat','X_indep','X_indep_CG',...
-        'awmv_az','P');
-    
+
+
+%% Plot L-curve
+
+figure(3)
+plot(l1_norm,rse_indep,'o-')
+xlabel('l_1 norm')
+ylabel('Rel Error')
+
 %% Plot awmv, rel err 
-awmv_fig = figure(2);
-hold on
-plot(theta_stds1,theta_stds1,'-','Linewidth',2)
-% plot(theta_stds1,awmv_az_indep,'Linewidth',1)
-plot(theta_stds1,awmv_az_indep_CG,'Linewidth',1)
-plot(theta_stds1,awmv_az,'Linewidth',1)
-xlabel('\sigma')
-ylabel('AWMV')
-
-mse1 = norm(theta_stds1-awmv_az_indep);
-mse2 = norm(theta_stds1-awmv_az_indep_CG);
-mse3 = norm(theta_stds1-awmv_az);
-
-% mse1 = norm(theta_stds1-awmv_az_indep)/norm(theta_stds1);
-% mse2 = norm(theta_stds1-awmv_az_indep_CG)/norm(theta_stds1);
-% mse3 = norm(theta_stds1-awmv_az)/norm(theta_stds1);
-
-legend('truth',['indep- ',num2str(mse2)],...
-                ['coupled- ',num2str(mse3)],...
-                'location','best')
-            
-% legend('truth',['indep- ',num2str(mse1)],...
-%                 ['indep_{CG}- ',num2str(mse2)],...
+% awmv_fig = figure(2);
+% hold on
+% plot(theta_stds1,theta_stds1,'-','Linewidth',2)
+% % plot(theta_stds1,awmv_az_indep,'Linewidth',1)
+% plot(theta_stds1,awmv_az_indep_CG,'Linewidth',1)
+% plot(theta_stds1,awmv_az,'Linewidth',1)
+% xlabel('\sigma')
+% ylabel('AWMV')
+% 
+% mse1 = norm(theta_stds1-awmv_az_indep);
+% mse2 = norm(theta_stds1-awmv_az_indep_CG);
+% mse3 = norm(theta_stds1-awmv_az);
+% 
+% % mse1 = norm(theta_stds1-awmv_az_indep)/norm(theta_stds1);
+% % mse2 = norm(theta_stds1-awmv_az_indep_CG)/norm(theta_stds1);
+% % mse3 = norm(theta_stds1-awmv_az)/norm(theta_stds1);
+% 
+% legend('truth',['indep- ',num2str(mse2)],...
 %                 ['coupled- ',num2str(mse3)],...
 %                 'location','best')
-
-rel_err_fig = figure(3);
-hold on
-plot(theta_stds1,rse_indep,'-','Linewidth',2)
-plot(theta_stds1,rse_indep_CG,'-','Linewidth',2)
-plot(theta_stds1,rse_coup,'-','Linewidth',1)
-legend('indep','indep_{CG}','coupled','location','best')
-%end
+%             
+% % legend('truth',['indep- ',num2str(mse1)],...
+% %                 ['indep_{CG}- ',num2str(mse2)],...
+% %                 ['coupled- ',num2str(mse3)],...
+% %                 'location','best')
+% 
+% rel_err_fig = figure(3);
+% hold on
+% plot(theta_stds1,rse_indep,'-','Linewidth',2)
+% plot(theta_stds1,rse_indep_CG,'-','Linewidth',2)
+% plot(theta_stds1,rse_coup,'-','Linewidth',1)
+% legend('indep','indep_{CG}','coupled','location','best')
+% %end
 
 %% Check awmv
 % close all
