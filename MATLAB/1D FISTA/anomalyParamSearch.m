@@ -14,12 +14,12 @@ lambda_inds = [15,17,19,21,...
                22,22,22,23,...
                23,23,24];
 NN = numel(noise_std);
-for ii =1:11
+for ii =1:10;
 % Input dirs
 dset_name = ['singlePeak_noise',num2str(ii)];
 
 % Output dirs
-output_name = '_indep_ISM';
+output_name = '_coupled_CGTV';
 output_subdir = [dset_name,output_name];
 
 
@@ -31,7 +31,7 @@ mkdir(output_dir)
 num_ims = 50;
 
 % File Parameters
-P.baseFileName = 'indep_fit_%i_%i.mat';
+P.baseFileName = 'couple_fit_%i_%i.mat';
 P.dataset = dataset;
 
 % Data/Dictionary Parameters
@@ -97,7 +97,7 @@ for i = 1:M
     P.params.lambda1 = P.lambda_values(i);
     for t = 1:T
         % Solve
-        [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
+        [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_CG_1D(A0ft_stack,B(:,t),x_init,P.params);  
         X_indep(:,:,i,t) = x_hat;
     end
 end
@@ -106,9 +106,8 @@ save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all2']),...
 end
 
 %% Plot fit
-
-dset_name = ['singlePeak_noise',num2str(5)];
-output_name = '_indep_ISM';
+dset_name = ['singlePeak_noise',num2str(11)];
+output_name = '_coupled_CGTV';
 output_subdir = [dset_name,output_name];
 dataset =  fullfile(top_dir,dset_name);
 output_dir  = fullfile(top_dir,output_subdir);

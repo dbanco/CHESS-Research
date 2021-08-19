@@ -2,6 +2,8 @@ close all
 
 %% Load data
 load('D:\CHESS_data\al7075_311_polar_fit3\fista_fit_1_75.mat')
+[~,NN] = size(polar_image); 
+pixel_angle = NN/360;
 ind1 = 100;
 ind2 = 480;
 n = ind2 - ind1 + 1;
@@ -135,6 +137,19 @@ figure(2)
 plot(b(floor(n*1/3):floor(n*2./3)) + max_old,'Linewidth',Lwidth,'Color','#FFFFFF')
 dict_fig.Position = [550 0 120 700];
 saveas(dict_fig,'C:\Users\dpqb1\Desktop\paper_figures\dict_peaks3.png')
+
+std_i = sqrt(P.var_theta);
+colors = jet(P.num_var_t);
+uvdf = sum(x_hat,1);
+figure(3)
+hold on
+for i = 1:K
+    bar_graph = bar(std_i(i)/pixel_angle,uvdf(i),0.35);
+    set(bar_graph, 'FaceColor', colors(i,:))
+end
+xlabel('\sigma_i  (\circ)','FontSize',18)
+ylabel('UVDF','FontSize',18)
+
 %% Show dictionary peaks
 % [n,m] = size(A0_stack);
 % 

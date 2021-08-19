@@ -9,7 +9,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 % top_dir = 'E:\PureTiRD_full';
 %     top_dir = '/cluster/shared/dbanco02';
 
-for ring_num = 3
+for ring_num = 4
 % Input dirs
 dset_name = sprintf('ring%i_zero',ring_num);
 
@@ -69,61 +69,7 @@ for j = 1:T
     b_mirror(1:pad1) = flip(b(1:pad1));
     B(:,j) = flip(b_mirror);
 end
-%{
-tv_time = zeros(M,T-1);
-im_ind = 1;
-for i = 1:M
-    fprintf('%i of %i \n',i,M)
-    e_data = load(fullfile(output_dir,sprintf(baseFileName,i)),'P','X_hat');
-    
-    tv_penalty(i) = sum(abs(DiffPhiX_1D(e_data.X_hat)),'all');
-    
-    for j = 1:T
-        b = B(:,j);
-        x = squeeze(e_data.X_hat(:,:,j));
-        fit = Ax_ft_1D(A0ft_stack,x);   
-        err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
-        l0_select(i,j) = sum(x(:) > 1e-4*sum(x(:)));
-        l1_select(i,j) = sum(x(:));
-        az_signal = squeeze(sum(x,1));
-        var_sum = squeeze(sum(az_signal(:)));
-        vdfs(:,i,j) = az_signal./var_sum;
-        awmv_az(i,j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    end
 
-    im_ind = im_ind + 1;
-end
-err_select(err_select > 10^10) = 0;
-l0_select(l0_select > 10^10) = 0;
-l1_select(l1_select > 10^10) = 0;
-
-% Load statistics for independently fit data
-awmv_az_init = zeros(T,1);
-err_indep = zeros(T,1);
-l0_indep = zeros(T,1);
-l1_indep = zeros(T,1);
-vdfs_indep = zeros(P.num_var_t,T);
-X_indep = zeros(N,K,T);
-fits_indep = zeros(N,T);
-for j = 1:T
-    i_data = load(fullfile(top_dir,indepDir,sprintf(indepName,e_data.P.params.lambda1_indices(j),j)),'err','x_hat');
-    load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']) )
-    x = i_data.x_hat;
-    X_indep(:,:,j) = x;
-    fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x),P.params.zeroMask);
-    fits_indep(:,j) = fit;
-    b = B(:,j);
-    err_indep(j) = sum((fit(:)-b(:)).^2)/sum(b(:).^2);
-    l0_indep(j) = sum(x(:)>0);
-    l1_indep(j) = sum(x(:));
-    az_signal = squeeze(sum(x,1));
-    var_sum = sum(az_signal(:));
-    vdfs_indep(:,j) = az_signal./var_sum;
-    awmv_az_init(j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-end
-
-tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
-%}
 %% Plot fits for L-curve selected parameter
 load(fullfile(output_dir,sprintf(baseFileName,25)))
 fits_fig = figure(99);
@@ -133,24 +79,19 @@ start_t = 1;
 end_t = start_t + plot_rows*plot_cols - 1;
 % [ha2, ~] = tight_subplot(plot_rows,plot_cols,[.005 .005],[.01 .01],[.01 .01]); 
 im_ind = 1;
+
+line_t1 = 25;
+line_t2 = 50;
+line_t3 = 36;
 T_end = 201;
+t_range = (line_t1*4+1):(line_t2*4+1);
+
+
 fits_coupled = zeros(N,T_end);
 for t = 1:T_end
     x_hat = X_hat(:,:,t);
     fit = Ax_ft_1D(A0ft_stack,x_hat);
     fits_coupled(:,t) = fit;
-%     az_signal = squeeze(sum(x_hat,1));
-%     var_sum = sum(az_signal(:));
-%     b = B(:,t);
-
-%     % Plot
-%     axes(ha2(im_ind))
-%     hold on
-%     plot(b((pad1+1):(pad1+nn)))
-%     plot(fit((pad1+1):(pad1+nn)))
-%     rel_err = sum((fit(:)-b(:)).^2)/norm(b(:))^2;
-%     legend(sprintf('%0.2f',(t-1)/4),'location','best')
-%     im_ind = im_ind + 1;
 end
 
 % MMPAD metadata
@@ -158,6 +99,7 @@ mmpad_dims = [396,265];
 rings = {'020','112','021','004'};
 d_space = [1.27773,1.24845,1.23272,1.17138];
 two_theta = [6.89132,7.05316,7.14328,7.5179];
+
 % eta axis
 pixel_side = 150e-6;
 gap_width = 0.75e-3;
@@ -174,47 +116,78 @@ fps = 4;
 x_time = 0:1/fps:total_time;
 eta_range = linspace(-261/2,261/2,261)*pixel_angle(1) + detect_angle;
 N_eta = numel(eta_range);
-clim1 = 0;
-clim2 = 5;
+clim1 = 2e-1;
+clim2 = 1e3;
 
 % Data water fall for first 25s
 figure(1)
 b_z = (B(pad1+1:N-pad2,1:T_end))';
 h = surf((eta_range),(x_time(1:T_end)),b_z);
-
+shading flat
+colorbar()
 ylabel('time(s)','FontSize',16)
 xlabel('\eta (\circ)','FontSize',18)
 zlabel('log(Intensity)','FontSize',16)
 set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
 set(h,'linestyle','none');
-zlim([clim1,clim2])
-set(gca,'CLim', [clim1 clim2])
+
+% zlim([clim1,clim2])
+% set(gca,'CLim', [clim1 clim2])
 hold on
 z_max = max(b_z(:));
 
-line(eta_range,ones(N_eta,1)*10,log(z_max)*ones(N_eta,1),'Linewidth',1,'Color','r')
-% set(h,'linestyle','none');
-% % Coupled waterfall for first 25s
-% figure(2)
-% waterfall((eta_range),(x_time(1:T_end)),(fits_coupled(pad1+1:N-pad2,1:T_end)'))
-% ylabel('time(s)','FontSize',16)
-% xlabel('\eta (\circ)','FontSize',18)
-% zlabel('log(Intensity)','FontSize',16)
-% set(gca, 'ZScale', 'log');
-% set(gca, 'ColorScale', 'log');
-% zlim([clim1,clim2])
-% set(gca,'CLim', [clim1 clim2])
-% 
-% % Indep waterfall for first 25s
-% figure(3)
-% waterfall((eta_range),(x_time(1:T_end)),(fits_indep(pad1+1:N-pad2,1:T_end)'))
-% ylabel('time(s)','FontSize',16)
-% xlabel('\eta (\circ)','FontSize',18)
-% zlabel('log(Intensity)','FontSize',16)
-% set(gca, 'ZScale', 'log');
-% set(gca, 'ColorScale', 'log');
-% zlim([clim1,clim2])
-% set(gca,'CLim', [clim1 clim2])
+line(eta_range,ones(N_eta,1)*line_t1,log(z_max)*ones(N_eta,1),'Linewidth',1,'Color','r')
+line(eta_range,ones(N_eta,1)*line_t2,log(z_max)*ones(N_eta,1),'Linewidth',1,'Color','r')
+line(eta_range,ones(N_eta,1)*line_t3,z_max*ones(N_eta,1),'Linewidth',1,'Color','r')
 
+figure(2)
+clim1 = 0;
+clim2 = 2;
+b_z = (B(pad1+1:N-pad2,t_range))';
+hh = surf((eta_range),(x_time(t_range)),b_z);
+shading flat
+colorbar()
+ylabel('time(s)','FontSize',16)
+xlabel('\eta (\circ)','FontSize',18)
+zlabel('log(Intensity)','FontSize',16)
+% set(gca, 'ZScale', 'log');
+% set(gca, 'ColorScale', 'log');
+set(hh,'linestyle','none');
+
+% zlim([clim1,clim2])
+% set(gca,'CLim', [clim1 clim2])
+hold on
+z_max = max(b_z(:));
+
+line(eta_range,ones(N_eta,1)*line_t1,z_max*ones(N_eta,1),'Linewidth',1,'Color','r')
+line(eta_range,ones(N_eta,1)*line_t2,z_max*ones(N_eta,1),'Linewidth',1,'Color','r')
+line(eta_range,ones(N_eta,1)*line_t3,z_max*ones(N_eta,1),'Linewidth',1,'Color','r')
+
+%% Plot all coupled awmv
+datadir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
+outName =  ['allAWMV_nr1.png'];
+fig_out = figure(5);
+R = 4;
+select_inds = [29 23 25 25];
+for ring = 1:R
+
+    load(fullfile(datadir,sprintf(fileBase,ring)))
+    hold on
+    plot(x_time,awmv_az(select_inds(ring),:)*pixel_angle(ring),'LineWidth',1.5)
+    ylabel('AWMV in \eta (degrees)')
+    xlabel('time (s)')
+
+end
+c_leg = legend(rings,'Location','Best');
+ctitle = get(c_leg,'Title');
+set(ctitle,'String','Ring indices \{hkl\}')
+grid on
+
+line(ones(N_eta,1)*line_t1,linspace(0,1.3,N_eta),'Linewidth',1,'Color','r')
+line(ones(N_eta,1)*line_t2,linspace(0,1.3,N_eta),'Linewidth',1,'Color','r')
+line(ones(N_eta,1)*line_t3,linspace(0,1.3,N_eta),'Linewidth',1,'Color','r')
+
+saveas(fig_out,fullfile(datadir,outName))
 end
