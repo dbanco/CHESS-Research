@@ -9,20 +9,6 @@ top_dir = 'D:\CHESS_data\';
 noise_std = [0:0.03:0.30];
 MM = 30;
 
-lambda2_values = [logspace(-2.5,-1,MM);
-                  logspace(-2.2,-0.8,MM);
-                  logspace(-2.2,-0.8,MM);
-                  logspace(-2.2,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,1,MM)];
-
-
-
 NN = numel(noise_std);
 num_ims = 30;
 N = 101;

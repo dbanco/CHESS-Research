@@ -7,7 +7,7 @@ top_dir = 'D:\CHESS_data\';
 % top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
-MM = 30;
+MM = 60;
 
 lambda2_values = [logspace(-2.5,-1,MM);
                   logspace(-2.2,-0.8,MM);
@@ -99,8 +99,7 @@ end
 %}
 
 %% Parameter Selection for coupled 
-lambda2_extra = [linspace(-5,1,30),linspace(1,2,15)];
-MM = numel(lambda2_extra);
+lambda2_extra = logspace(-2.2,2.2,60);
 [ha_param, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
 awmv_all = zeros(MM,T,NN);
 awmv_rmse = zeros(MM,NN);
@@ -220,8 +219,9 @@ legend('Sparse Model','VDF Smoothed Model','Location','Best')
 ylabel('Relative MSE in AWMV')
 xlabel('\sigma_{noise}')
 
-%% Show AWMV as function of Gamma Parameter for nn = 11
-lambda2_extra = [logspace(-5,1,30),logspace(1,2,15)];
+%% Show AWMV as function of Gamma Parameter for nn = 3
+nn = 3;
+lambda2_extra = logspace(-2.2,2.2,60);
 figure(12)
 colors = jet(MM+1);
 hold on
@@ -234,8 +234,8 @@ end
 % Concatenate regularization levels onto a surface
 param_surface = [ awmv_indep(:,nn)'; awmv_all(:,:,nn); theta_stds1'];
 figure(122)
-Y = repmat([0,lambda2_extra,120],30,1)';
-X = repmat([1:30]',1,47)';
+Y = repmat([0,lambda2_extra,180],30,1)';
+X = repmat([1:30]',1,62)';
 p = waterfall(X,Y,param_surface)
 p.LineWidth=3
 set(gca, 'YScale', 'log')
