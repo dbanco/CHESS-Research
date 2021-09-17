@@ -3,27 +3,11 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\CHESS_data\';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
-
-MM = 60;
-
-lambda2_values = [logspace(-2.5,-1,MM);
-                  logspace(-2.2,-0.8,MM);
-                  logspace(-2.2,2.2,MM);
-                  logspace(-2.2,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(1,2,MM)];
-
-
-%logspace(-1.5,1,MM)
+MM = 30;
 
 NN = numel(noise_std);
 num_ims = 30;
@@ -39,8 +23,8 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
 
 %% Run ADMM
-
-for nn = 3
+%{
+for nn = 11
     % Input dirs
     dset_name = ['anomaly_noise',num2str(nn)];
     indep_name = '_indep_ISM';
@@ -93,7 +77,7 @@ for nn = 3
         P.params.lambda1 = lambda1_select;
         P.params.lambda2 = lambda2_values(nn,i);
         [X_hat,~,~,~,~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params);
-        save(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time_extra1']),...
+        save(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time1']),...
             'B','X_hat','P');
     end
 end
@@ -101,12 +85,8 @@ end
 %}
 
 %% Parameter Selection for coupled 
-
-%{
-
 lambda2_extra = [linspace(-5,1,30),linspace(1,2,15)];
 MM = numel(lambda2_extra);
-
 [ha_param, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
 awmv_all = zeros(MM,T,NN);
 awmv_rmse = zeros(MM,NN);
@@ -339,7 +319,7 @@ zlim([0 1.5])
 ylabel('time')
 xlabel('\eta')
 zlabel('Intensity')
-%}
+
 %% Other stuff
 %{
     select_ind = zeros(T,1);
