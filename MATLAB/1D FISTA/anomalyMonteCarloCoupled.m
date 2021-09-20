@@ -23,6 +23,7 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 %% Paramter Selection Independent
 close all
 lambda_select = zeros(NN,T);
+dict_init = 1;
 for nn = 1:NN
     % Load Independent and compute awmv
     dset_name = ['anomaly_noise',num2str(nn)];
@@ -32,9 +33,10 @@ for nn = 1:NN
     indep_subdir = [dset_name,indep_name];
     indep_dir  = fullfile(top_dir,indep_subdir);
     load(fullfile(indep_dir,[dset_name,'_',num2str(M),'_','all2']))
-    if( (nn==1)&&(i==1) )
+    if( dict_init )
         % Construct dictionary
         A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+        dict_init = 0;
     end
     mse_indep = zeros(M,T);
     l1_norm = zeros(M,T);
@@ -125,7 +127,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn =4:NN
+for nn =1:3
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
@@ -140,6 +142,6 @@ for nn =4:NN
         X_coupled(:,:,i,:) = X_hat;
     end
     save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']),...
-    'B','X_hat','P');
+    'B','X_coupled','P');
 end
 
