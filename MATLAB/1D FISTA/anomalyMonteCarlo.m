@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 MM = 20;
@@ -137,10 +137,10 @@ for nn =1:11
         % Regenerate noisy data
         
         for t = 1:T
-            b = gaussian_basis_1D( N, N/2, theta_stds1(j)^2);
+            b = gaussian_basis_1D( N, N/2, theta_stds1(t)^2);
             rms = sqrt(sum(b.^2)/N);
             b = b/rms/3 + randn(N,1)*noise_std(nn);
-            B(:,j,i) = b;
+            B(:,t,i) = b;
             % Solve
             P.params.lambda1 = lambda_select(nn,t);
             [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);  
