@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -22,6 +22,7 @@ theta_stds1 = linspace(1,15,T);
 %% Paramter Selection Independent
 close all
 lambda_select = zeros(NN,T);
+dict_init = 1;
 for nn = 1:NN
     % Load Independent and compute awmv
     dset_name = ['singlePeak_noise',num2str(nn)];
@@ -33,9 +34,10 @@ for nn = 1:NN
     output_dir  = fullfile(top_dir,output_subdir);
     indep_dir  = fullfile(top_dir,indep_subdir);
     load(fullfile(indep_dir,[dset_name,'_',num2str(M),'_','all2']))
-    if( (nn==1)&&(i==1) )
+    if(dict_init )
         % Construct dictionary
         A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+        dict_init = 0;
     end
     mse_indep = zeros(M,T);
     l1_norm = zeros(M,T);
@@ -59,18 +61,18 @@ for nn = 1:NN
 end
 
 %% Paramter Selection Coupled
-MM = 20;
-gamma_values = [logspace(-2.5,-1,MM);
-              logspace(-2.2,-0.8,MM);
-              logspace(-2.2,-0.8,MM);
-              logspace(-2.2,-0.5,MM);
-              logspace(-1.5,-0.5,MM);
-              logspace(-1.5,-0.5,MM);
-              logspace(-1.5,-0.5,MM);
-              logspace(-1.5,-0.3,MM);
-              logspace(-1.5,-0.3,MM);
-              logspace(-1.5,-0.3,MM);
-              logspace(-1.5,-0.3,MM)];
+MM = 15;
+gamma_values = [logspace(-2.2,-1,MM);
+              logspace(-2,-0.8,MM);
+              logspace(-2,-0.8,MM);
+              logspace(-2,-0.5,MM);
+              logspace(-1,-0.5,MM);
+              logspace(-1,-0.5,MM);
+              logspace(-1,-0.5,MM);
+              logspace(-1,-0.2,MM);
+              logspace(-1,-0.2,MM);
+              logspace(-1,-0.2,MM);
+              logspace(-1,-0.2,MM)];
           
 awmv_all = zeros(MM,T,NN);
 awmv_rmse = zeros(MM,NN);
@@ -80,13 +82,13 @@ dict_init = 1;
 
 for nn = 1:NN
     % Load coupled solution
-    dset_name = ['anomaly_noise',num2str(nn)];
+    dset_name = ['singlePeak_noise',num2str(nn)];
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
     output_dir  = fullfile(top_dir,output_subdir);
     for i = 1:MM
-        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(1)]))
+        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(5)]))
         if(dict_init)
             % Construct dictionary
             A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
@@ -115,31 +117,33 @@ dset_name = ['singlePeak_noise_MC'];
 indep_name = '_indep_ISM';
 output_name = '_coupled';
 output_subdir = [dset_name,output_name];
-
+indep_subdir = [dset_name,indep_name];
 % Setup directories
 dataset =  fullfile(top_dir,dset_name);
 output_dir  = fullfile(top_dir,output_subdir);
+indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(output_dir)
 
 
 P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
-for nn =1:11
-    i_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
-    X_indep = i_data.X_indep;
-    % Run 100 trials
-    for nn = 1:NN
-        for i = 1:trials
+X_coupled = zeros(N,K,trials,T);
+for nn =7
+    indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
+    X_indep = indep_data.X_indep;
+    B = indep_data.B;
+    P.set = nn;
+    for i = 1:trials            
+        P.params.lambda1 = lambda_select(nn,:);
+        P.params.lambda2 = gamma_values(nn,s_i(nn));
+        X_init = squeeze(X_indep(:,:,i,:));
+        [X_hat,~,~,~,~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,...
+                          B(:,:,i),X_init,P.params);
+        X_coupled(:,:,i,:) = X_hat;
 
-            P.set = i;
-            P.params.lambda1 = lambda_select(nn,:);
-            P.params.lambda2 = gamma_values(nn,s_i(nn));
-            X_init = squeeze(X_indep(:,:,i,:));
-            [X_hat,~,~,~,~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params);
-            save(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time1']),...
-                'B','X_hat','P');
-        end
     end
+    save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']),...
+                             'B','X_coupled','P');
 end
 

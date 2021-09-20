@@ -3,11 +3,10 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
-MM = 20;
 
 NN = numel(noise_std);
 num_ims = 30;
@@ -131,9 +130,8 @@ for nn =1:3
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
-    % Run 100 trials
-    for i = 1:trials
-        P.set = nn;
+    P.set = nn;
+    for i = 1:trials 
         P.params.lambda1 = lambda_select(nn,:);
         P.params.lambda2 = gamma_values(nn,s_i(nn));
         X_init = squeeze(X_indep(:,:,i,:));
@@ -142,6 +140,7 @@ for nn =1:3
         X_coupled(:,:,i,:) = X_hat;
     end
     save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']),...
-    'B','X_coupled','P');
+                  'B','X_coupled','P');
 end
+
 

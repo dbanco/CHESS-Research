@@ -13,7 +13,7 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror5';
+indep_name = '_indep_ISM_Mirror6';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)
