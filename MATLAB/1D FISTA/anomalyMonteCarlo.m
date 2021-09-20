@@ -136,16 +136,14 @@ for nn =1:11
         P.set = i;
         % Regenerate noisy data
         
-        for j = 1:T
+        for t = 1:T
             b = gaussian_basis_1D( N, N/2, theta_stds1(j)^2);
             rms = sqrt(sum(b.^2)/N);
             b = b/rms/3 + randn(N,1)*noise_std(nn);
             B(:,j,i) = b;
-        end
-        for t = 1:T
             % Solve
             P.params.lambda1 = lambda_select(nn,t);
-            [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
+            [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);  
             X_indep(:,:,i,t) = x_hat;
         end
     end
