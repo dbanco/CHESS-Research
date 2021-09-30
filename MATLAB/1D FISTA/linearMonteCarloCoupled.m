@@ -103,7 +103,7 @@ for nn = 1:NN
             awmv_all(i,time,nn) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         end
         tv_penalty(i,nn) = sum(abs(DiffPhiX_1D(X_hat)),'all');
-        awmv_rmse(i,nn) = norm(awmv_all(i,:,nn)-theta_stds1')/norm(theta_stds1);
+        awmv_rmse(i,nn) = norm(awmv_all(i,:,nn)-theta_stds1)/norm(theta_stds1);
     end
 end
 [~,s_i] = min(awmv_rmse);

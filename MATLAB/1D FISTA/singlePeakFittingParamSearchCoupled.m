@@ -216,6 +216,19 @@ plot(1,'b','Linewidth',2)
 plot(2,'r','Linewidth',2)
 legend('Data \sigma','Sparse Model','VDF Smoothed Model')
 
+%% Plot AWMV curves for different parameter values
+[param_awmv_fig, ~] = tight_subplot(5,3,[.005 .005],[.01 .01],[.01 .01]);
+nn = 1
+for i = 1:15
+    axes(param_awmv_fig(i))
+    hold on
+    plot(theta_stds1,'k','Linewidth',2)
+    plot(awmv_indep(:,nn),'b','Linewidth',2)
+    plot(awmv_all(i,:,nn),'r','Linewidth',2)
+    legend(num2str(lambda2_values(nn,i)),'Location','Northwest')
+end
+
+%%
 % Plot RMSE in AWMV
 figure(3)
 hold on
