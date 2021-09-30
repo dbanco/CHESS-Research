@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -129,7 +129,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn =7
+for nn = [5,9]
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
