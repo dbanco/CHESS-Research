@@ -6,7 +6,7 @@ close all
 disp('Setup parms')
 P.set = 1;
 % Parent directory
-top_dir = 'E:\MMPAD_data_nr1';
+top_dir = 'D:\MMPAD_data_nr1';
 
 % Input dirs
 dset_name = 'ring1_zero';

@@ -1,6 +1,6 @@
 % MMPAD metadata
 mmpad_dims = [396,265];
-rings = {'020','112','021','004'};
+rings = {'\{020\}','\{112\}','\{021\}','\{004\}'};
 d_space = [1.27773,1.24845,1.23272,1.17138];
 two_theta = [6.89132,7.05316,7.14328,7.5179];
 
@@ -20,8 +20,10 @@ circum = 2*pi*radius;
 
 % Assume pixels approximately lie on circumeference
 pixel_angle = pixel_side./circum*360;
+% pixel_angle = 180/pi*atan(pixel_side/detec_dist);
 
-
+eta_start = 14.6 - 130*pixel_angle
+eta_end =   14.6 + 130*pixel_angle
 top_dirs = {'D:\MMPAD_data_nr1','D:\MMPAD_data_nr2'};
 data_tags = {'_nr1','_nr2'};
 num_rings = [4,3];
@@ -150,16 +152,17 @@ for d_num = 1
     %% Plot all coupled awmv
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
-    outName =  ['allAWMV',data_tag,'.png'];
+    outName =  ['coupledDeltaAWMV',data_tag,'.png'];
     fig_out = figure(55);
     select_inds = [29 23 25 25];
+    delta_awmv_coupled = zeros(546,4);
     for ring = 1:R
         
         load(fullfile(datadir,sprintf(fileBase,ring)))
         hold on
         awmv_plot = awmv_az(select_inds(ring),:)*pixel_angle(ring);
-        delta_awmv = awmv_plot - min(awmv_plot);
-        plot(x_time,delta_awmv,'LineWidth',1.5)
+        delta_awmv_coupled(:,ring) = awmv_plot - min(awmv_plot);
+        plot(x_time,delta_awmv_coupled,'LineWidth',1.5)
         ylabel('\Delta AWMV in \eta (degrees)')
         xlabel('time (s)')
 
@@ -170,9 +173,95 @@ for d_num = 1
     grid on
     saveas(fig_out,fullfile(datadir,outName))
 
-    %% Plot all Indep AWMVs
+    %% Plot indep awmvs against coupled
     close all
     outName = ['indepAWMV',data_tag,'.png'];
+    fig_out = figure(7);
+    ylabel('\Delta AWMV in \eta (degrees)')
+    colors = colororder;
+    
+    for ring = 1:R
+        
+        load(fullfile(datadir,sprintf(fileBase,ring)))
+        
+        subplot(2,2,ring)
+        hold on
+        awmv_plot = awmv_az_init*pixel_angle(ring);
+        delta_awmv = awmv_plot - min(awmv_plot);
+        plot(x_time,delta_awmv,'LineWidth',1,'Color',[0.5 0.5 0.5])
+        plot(x_time,delta_awmv_coupled(:,ring),'LineWidth',1.5,'Color',colors(ring,:))
+        ylabel('\Delta AWMV in \eta (degrees)')
+        xlabel('time (s)','FontSize',14)
+        ylim([0,1.5])
+        SE = [max(xlim) min(ylim)]-[diff(xlim)*0.25 -diff(ylim)*0.1];
+        text(SE(1), SE(2), rings{ring},'FontSize',14)
+
+    end
+%     c_leg = legend(rings,'Location','Best');
+%     ctitle = get(c_leg,'Title');
+%     set(ctitle,'String','Ring indices \{hkl\}')
+%     grid on
+    saveas(fig_out,fullfile(datadir,outName))
+    
+%     figure(7)   
+%     load('masked_ring4_awmv')
+%     plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
+%     new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
+%     c_leg = legend(new_rings,'Location','Best');
+%     ctitle = get(c_leg,'Title');
+%     set(ctitle,'String','Ring indices \{hkl\}')
+
+%     close all
+
+%     %% Plot indep awmvs against coupled
+%     close all
+%     outName = ['indepAWMV',data_tag,'.png'];
+%     fig7 = figure(7);
+% 
+%     set(gca,'XTick',[], 'YTick', [])
+%     set(gca,'XColor','none')
+%     set(gca,'YColor','none')
+%     ylabel('\Delta AWMV in \eta (degrees)','Color','Black')
+%     xlabel('time (s)')
+%     [compare_fig, ~] = tight_subplot(2,2,[.05 .05],[.1 .1],[.1 .1]);
+%     
+%     colors = colororder;
+%     
+%     for ring = 1:R
+%         
+%         load(fullfile(datadir,sprintf(fileBase,ring)))
+%         
+%         axes(compare_fig(ring))
+%         hold on
+%         awmv_plot = awmv_az_init*pixel_angle(ring);
+%         delta_awmv = awmv_plot - min(awmv_plot);
+%         plot(x_time,delta_awmv,'LineWidth',1,'Color',[0.5 0.5 0.5])
+%         plot(x_time,delta_awmv_coupled(:,ring),'LineWidth',1.5,'Color',colors(ring,:))
+%     set(gca,'XColor','none')
+%     set(gca,'YColor','none')
+%         ylim([0,1.5])
+%         SE = [max(xlim) min(ylim)]-[diff(xlim)*0.25 -diff(ylim)*0.1];
+%         text(SE(1), SE(2), rings{ring},'FontSize',14)
+% 
+%     end
+% %     c_leg = legend(rings,'Location','Best');
+% %     ctitle = get(c_leg,'Title');
+% %     set(ctitle,'String','Ring indices \{hkl\}')
+% %     grid on
+%     saveas(fig7,fullfile(datadir,outName))
+%     
+% %     figure(7)   
+% %     load('masked_ring4_awmv')
+% %     plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
+% %     new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
+% %     c_leg = legend(new_rings,'Location','Best');
+% %     ctitle = get(c_leg,'Title');
+% %     set(ctitle,'String','Ring indices \{hkl\}')
+% 
+% %     close all
+    %% Plot all Indep AWMVs
+    close all
+    outName = ['indepDeltaAWMV',data_tag,'.png'];
     fig_out = figure(7);
     for ring = 1:R
 
@@ -188,14 +277,5 @@ for d_num = 1
     set(ctitle,'String','Ring indices \{hkl\}')
     grid on
     saveas(fig_out,fullfile(datadir,outName))
-    
-%     figure(7)   
-%     load('masked_ring4_awmv')
-%     plot(x_time,masked_ring4_awmv*pixel_angle(4),'LineWidth',1.5)
-%     new_rings = {rings{1},rings{2},rings{3},rings{4},'004 updated'};
-%     c_leg = legend(new_rings,'Location','Best');
-%     ctitle = get(c_leg,'Title');
-%     set(ctitle,'String','Ring indices \{hkl\}')
 
-%     close all
 end

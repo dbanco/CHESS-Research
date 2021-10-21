@@ -14,11 +14,11 @@ gap_width = 0.75e-3;
 detec_dist = 4.6;
 detect_angle = 14.6;
 
-% Compute circumeference of rings
+% Compute circumference of rings
 radius = 4.6*tan(pi/90*two_theta/2);
 circum = 2*pi*radius;
 
-% Assume pixels approximately lie on circumeference
+% Assume pixels approximately lie on circumference
 pixel_angle = pixel_side./circum*360;
 
 

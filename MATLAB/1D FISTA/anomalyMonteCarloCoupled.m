@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\CHESS_data\';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
