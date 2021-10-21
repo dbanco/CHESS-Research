@@ -148,6 +148,8 @@ end
 close all
 [~,s_i] = min(awmv_rmse);
 s_i2 = zeros(size(s_i));
+f3 = figure(3);
+f3.Position = [1000,500,600 400];
 [ha_awmv, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
 awmv_indep = zeros(T,NN);
 awmv_rmse_indep = zeros(NN,1);
@@ -205,6 +207,8 @@ for nn = 1:NN
     plot(theta_stds1,'k','Linewidth',2)
     plot(awmv_indep(:,nn),'b','Linewidth',2)
     plot(awmv_all(s_i2(nn),:,nn),'r','Linewidth',2)
+    NW = [min(xlim) max(ylim)]+[diff(xlim)*0.05 -diff(ylim)*0.1];
+    text(NW(1), NW(2), ['v=',sprintf('%1.1d',noise_std(nn))],'FontSize',14)
 end
 % Use Final plot for legend
 axes(ha_awmv(NN+1))
@@ -212,17 +216,19 @@ hold on
 plot(0,'k','Linewidth',2)
 plot(1,'b','Linewidth',2)
 plot(2,'r','Linewidth',2)
-legend('Data \sigma','Sparse Model','VDF Smoothed Model')
+legend('Truth','\gamma = 0','\gamma = \gamma*',...
+       'FontSize',16,'EdgeColor',[1 1 1],'location','Northwest')
+
 
 % PLot RMSE in AWMV
-figure(3)
+figure(4)
 hold on
 plot(awmv_rmse_indep,'b','Linewidth',2)
 plot(awmv_rmse_coupled,'r','Linewidth',2)
 % plot(awmv_rmse_coupled2,'g')
-legend('Sparse Model','VDF Smoothed Model','Location','Best')
-ylabel('Relative MSE in AWMV')
-xlabel('\sigma_{noise}')
+legend('\gamma = 0','\gamma = \gamma*','Location','Northwest','FontSize',16)
+ylabel('Relative MSE in AWMV','FontSize',16)
+xlabel('\sigma_{noise}','FontSize',16)
 
 %% Waterfall Data + Fits
 fits = zeros(N,T,NN);

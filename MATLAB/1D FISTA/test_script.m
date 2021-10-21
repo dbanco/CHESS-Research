@@ -62,7 +62,7 @@ P.params = params;
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
-
+A0_stack = unshifted_basis_vector_stack_zpad(P);
 % Initialize solution
 x_init = zeros(size(A0ft_stack));
 

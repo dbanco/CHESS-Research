@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\CHESS_data\';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -40,6 +40,7 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
 %% Run ADMM
 
+%{
 for nn = 3
     % Input dirs
     dset_name = ['anomaly_noise',num2str(nn)];
@@ -102,7 +103,7 @@ end
 
 %% Parameter Selection for coupled 
 
-%{
+
 
 lambda2_extra = [linspace(-5,1,30),linspace(1,2,15)];
 MM = numel(lambda2_extra);
@@ -113,7 +114,7 @@ awmv_rmse = zeros(MM,NN);
 mse = zeros(MM,NN);
 tv_penalty = zeros(MM,NN);
 dict_init = 1;
-for nn = 3
+for nn = 1:11
     % Load coupled solution
     dset_name = ['anomaly_noise',num2str(nn)];
     output_name = '_coupled_CGTV';
