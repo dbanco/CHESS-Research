@@ -52,11 +52,20 @@ for nn = 1:NN
 
     % Parameter Selection
     select_ind = zeros(T,1);
+    figure(111)
     
     for time = 1:T
         crit = abs(l1_norm(:,time)*0.45).^2 + abs(mse_indep(:,time)).^2;
         select_ind(time) = find( (crit == min(crit)),1 );
         lambda_select(nn,time) = P.lambda_values(select_ind(time));
+        % Plot L-curves
+%         plot(l1_norm(:,time),mse_indep(:,time))
+%         hold on
+%         plot(l1_norm(select_ind(time),time),mse_indep(select_ind(time),time),'o')
+%         hold off
+%         xlabel('l_1 norm')
+%         ylabel('MSE')
+%         pause()
     end
 end
 

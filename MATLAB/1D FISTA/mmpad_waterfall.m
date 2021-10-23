@@ -2,9 +2,17 @@
 clear all 
 close all
 
+rings = {'\{004\}','\{021\}','\{112\}','\{020\}'};
+d_space = [1.17138,1.23272,1.24845,1.27773];
+two_theta = [7.5179,7.14328,7.05316,6.89132];
+
 % Compute circumeference of rings
 radius = 4.6*tan(pi/90*two_theta/2);
 circum = 2*pi*radius;
+pixel_side = 150e-6;
+gap_width = 0.75e-3;
+detec_dist = 4.6;
+detect_angle = 14.6;
 
 % Assume pixels approximately lie on circumeference
 pixel_angle = pixel_side./circum*360;
@@ -12,7 +20,8 @@ pixel_angle = pixel_side./circum*360;
 prefix = 'mmpad_img';
 
 % Parent directory
-top_dir = 'D:\MMPAD_data_nr1\ring1_zero';
+ring_num = 4;
+top_dir = ['D:\MMPAD_data_nr1\ring',num2str(ring_num),'_zero'];
 fig_dir = 'C:\Users\dpqb1\Desktop\paper_figures\';
 max_val = [2e4 2e4];
 
@@ -39,9 +48,6 @@ end
 %% PLot waterfall
 % MMPAD metadata
 mmpad_dims = [396,265];
-rings = {'020','112','021','004'};
-d_space = [1.27773,1.24845,1.23272,1.17138];
-two_theta = [6.89132,7.05316,7.14328,7.5179];
 
 % time axis
 total_time = 136.25;
@@ -67,21 +73,23 @@ clim2 = 2e5;
 
 figure(5)
 waterfall((eta_range),(x_time(1:100)),(B(:,1:100)'))
+title(rings{ring_num})
 ylabel('time(s)','FontSize',16)
 xlabel('\eta (\circ)','FontSize',18)
 zlabel('log(Intensity)','FontSize',16)
 set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
-set(gca,'CLim', [clim1 clim2])
+% set(gca,'CLim', [clim1 clim2])
 
 figure(6)
 waterfall((eta_range),(x_time),B')
+title(rings{ring_num})
 ylabel('time(s)','FontSize',16)
 xlabel('\eta (\circ)','FontSize',18)
 zlabel('log(Intensity)','FontSize',16)
 set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
-set(gca,'CLim', [clim1 clim2])
+% set(gca,'CLim', [clim1 clim2])
 % 
 % %% Create color legend
 % leg_str = cell(m,1);
