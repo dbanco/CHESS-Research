@@ -96,16 +96,33 @@ for d_num = 1
     strain = zeros(R,N);
     for ring = 1:R
         hold on
-        strain(ring,:) = -cot(angleCOM(ring,1))*delta_angleCOM(ring,:);
+        strain(ring,:) = -cot(angleCOM(ring,1)/2)*delta_angleCOM(ring,:)/2;
         plot(x_time,strain(ring,:),'LineWidth',1.5)
         ylabel('Strain','FontSize',14)
         xlabel('time (s)','FontSize',14)
 
     end
-    c_leg = legend(rings,'Location','Best');
+    c_leg = legend(rings,'Location','SouthEast');
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+     
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    ah1=axes('position',get(gca,'position'),'visible','off');
+    leg2 = legend(ah1,lCurve,'Loading','Location','Best','FontSize',14);
     grid on
+    c_leg.String = rings
+    
     saveas(fig_CoM,fullfile(datadir,outName))
     
     %% Coupled and CoM
@@ -164,25 +181,39 @@ for d_num = 1
 
     
 
-    %% Plot all coupled awmv
+    %% Plot all coupled awmv    
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
     outName =  ['allAWMV',data_tag,'.png'];
     fig_out = figure(5);
     select_inds = [29 23 25 25];
+
     for ring = 1:R
-        
         load(fullfile(datadir,sprintf(fileBase,ring)))
         hold on
         plot(x_time,awmv_az(select_inds(ring),:)*pixel_angle(ring),'LineWidth',1.5)
         ylabel('AWMV in \eta (degrees)','FontSize',14)
         xlabel('time (s)','FontSize',14)
-
     end
-    c_leg = legend(rings,'Location','Best','FontSize',14);
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    legLabels = rings;
+    legLabels{5} = 'Loading';
+    c_leg = legend(legLabels,'Location','Best','FontSize',14);
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
     grid on
+    c_leg.String = rings;
     saveas(fig_out,fullfile(datadir,outName))
     
         %% Plot strain vs awmv
@@ -205,7 +236,7 @@ for d_num = 1
     grid on
     saveas(fig_CoM,fullfile(datadir,outName))
     
-    %% Plot all coupled awmv
+    %% Plot all coupled delta awmv
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
     outName =  ['coupledDeltaAWMV',data_tag,'.png'];
@@ -223,10 +254,25 @@ for d_num = 1
         xlabel('time (s)','FontSize',14)
 
     end
-    c_leg = legend(rings,'Location','South','FontSize',14);
+    c_leg = legend(rings,'Location','Best','FontSize',14);
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    ah1=axes('position',get(gca,'position'),'visible','off');
+    leg2 = legend(ah1,lCurve,'Loading','Location','Best','FontSize',14);
     grid on
+    c_leg.String = rings;
     saveas(fig_out,fullfile(datadir,outName))
 
     %% Plot indep awmvs against coupled
