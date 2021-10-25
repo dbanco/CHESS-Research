@@ -129,7 +129,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn = [5,9]
+for nn = 1:3
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
@@ -143,7 +143,7 @@ for nn = [5,9]
         X_coupled(:,:,i,:) = X_hat;
 
     end
-    save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']),...
+    save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV2']),...
                              'B','X_coupled','P');
 end
 
