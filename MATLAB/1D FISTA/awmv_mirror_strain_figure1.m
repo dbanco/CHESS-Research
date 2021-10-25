@@ -1,8 +1,13 @@
 % MMPAD metadata
 mmpad_dims = [396,265];
-rings = {'\{020\}','\{112\}','\{021\}','\{004\}'};
-d_space = [1.27773,1.24845,1.23272,1.17138];
-two_theta = [6.89132,7.05316,7.14328,7.5179];
+rings = {'\{004\}','\{021\}','\{112\}','\{020\}'};
+% d_space = [1.27773,1.24845,1.23272,1.17138];
+% two_theta = [6.89132,7.05316,7.14328,7.5179];
+
+d_space = [1.17138,1.23272,1.24845,1.27773];
+two_theta = [7.5179,7.14328,7.05316,6.89132];
+
+start_pixel = [5,210,268,355];
 
 total_time = 136.25;
 fps = 4;
@@ -15,7 +20,7 @@ detec_dist = 4.6;
 detect_angle = 14.6;
 
 % Compute circumeference of rings
-radius = 4.6*tan(pi/90*two_theta/2);
+radius = 4.6*tan(pi/180*two_theta);
 circum = 2*pi*radius;
 
 % Assume pixels approximately lie on circumeference
@@ -49,30 +54,77 @@ for d_num = 1
             radial_coord = (1:n)';
             total_mass = sum(radial_img);
             COM(ring,img) = sum(radial_img.*radial_coord./total_mass);
-        end
-        angleCOM(ring,:) = atan((radius(ring) + COM(ring,:)-COM(ring,1))/detec_dist);
+        end 
     end
     close all
-
+    ring_pos = zeros(4,N);
+    rel_ring_pos = zeros(4,N);
+    for ring = 1:R
+        ring_pos(ring,:) = COM(ring,:) + start_pixel(ring);
+    end
+    for ring = 1:R
+        rel_ring_pos(ring,:) = ( ring_pos(4,1)-ring_pos(ring,:) )*pixel_side;
+        approx_rel_ring_pos(ring,:) = rel_ring_pos(ring,:) + radius(4) - 5*pixel_side;
+        angleCOM(ring,:) = atan(approx_rel_ring_pos(ring,:)./detec_dist);
+    end
+    plot(rel_ring_pos')
     %% Plot all CoM and convert to angle units
     close all
     outName =  ['allCoM',data_tag,'.png'];
     datadir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
     fig_CoM = figure(9);
-    
+    delta_angleCOM = zeros(R,N);
     for ring = 1:R
         hold on
-        plot(x_time,angleCOM(ring,:),'LineWidth',1.5)
-        ylabel('\Delta CoM in 2\theta (degrees)')
-        xlabel('time (s)')
+        delta_angleCOM(ring,:) = angleCOM(ring,:) - angleCOM(ring,1);
+        plot(x_time,180/pi*delta_angleCOM(ring,:),'LineWidth',1.5)
+        ylabel('\Delta CoM in 2\theta (degrees)','FontSize',14)
+        xlabel('time (s)','FontSize',14)
 
     end
-    c_leg = legend(rings,'Location','Best');
+    c_leg = legend(rings,'Location',' Best');
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
     grid on
     saveas(fig_CoM,fullfile(datadir,outName))
+   
+    %% Plot strain
+    close all
+    outName =  ['allStrain',data_tag,'.png'];
+    datadir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+    fig_CoM = figure(9);
+    strain = zeros(R,N);
+    for ring = 1:R
+        hold on
+        strain(ring,:) = -cot(angleCOM(ring,1)/2)*delta_angleCOM(ring,:)/2;
+        plot(x_time,strain(ring,:),'LineWidth',1.5)
+        ylabel('Strain','FontSize',14)
+        xlabel('time (s)','FontSize',14)
 
+    end
+    c_leg = legend(rings,'Location','SouthEast');
+    ctitle = get(c_leg,'Title');
+    set(ctitle,'String','Ring indices \{hkl\}')
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+     
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    ah1=axes('position',get(gca,'position'),'visible','off');
+    leg2 = legend(ah1,lCurve,'Loading','Location','Best','FontSize',14);
+    grid on
+    c_leg.String = rings
+    
+    saveas(fig_CoM,fullfile(datadir,outName))
+    
     %% Coupled and CoM
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
@@ -129,27 +181,62 @@ for d_num = 1
 
     
 
-    %% Plot all coupled awmv
+    %% Plot all coupled awmv    
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
     outName =  ['allAWMV',data_tag,'.png'];
     fig_out = figure(5);
     select_inds = [29 23 25 25];
+
     for ring = 1:R
-        
         load(fullfile(datadir,sprintf(fileBase,ring)))
         hold on
         plot(x_time,awmv_az(select_inds(ring),:)*pixel_angle(ring),'LineWidth',1.5)
-        ylabel('AWMV in \eta (degrees)')
-        xlabel('time (s)')
-
+        ylabel('AWMV in \eta (degrees)','FontSize',14)
+        xlabel('time (s)','FontSize',14)
     end
-    c_leg = legend(rings,'Location','Best');
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    legLabels = rings;
+    legLabels{5} = 'Loading';
+    c_leg = legend(legLabels,'Location','Best','FontSize',14);
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
     grid on
+    c_leg.String = rings;
     saveas(fig_out,fullfile(datadir,outName))
-    %% Plot all coupled awmv
+    
+        %% Plot strain vs awmv
+    close all
+    outName =  ['strain_vs_awmv',data_tag,'.png'];
+    datadir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+    fig_CoM = figure(9);
+    
+    for ring = 1:R
+        hold on
+        plot(awmv_az(ring,:)*pixel_angle(ring),strain(ring,:),'LineWidth',1.5)
+        ylabel('Strain','FontSize',14)
+        xlabel('AWMV in \eta (degrees)','FontSize',14)
+        ylim([-0.1e-3 2.5e-3])
+
+    end
+    c_leg = legend(rings,'Location','South');
+    ctitle = get(c_leg,'Title');
+    set(ctitle,'String','Ring indices \{hkl\}')
+    grid on
+    saveas(fig_CoM,fullfile(datadir,outName))
+    
+    %% Plot all coupled delta awmv
     close all
     fileBase = ['ring%i_zero_mirror_coupled_awmv.mat'];
     outName =  ['coupledDeltaAWMV',data_tag,'.png'];
@@ -162,15 +249,30 @@ for d_num = 1
         hold on
         awmv_plot = awmv_az(select_inds(ring),:)*pixel_angle(ring);
         delta_awmv_coupled(:,ring) = awmv_plot - min(awmv_plot);
-        plot(x_time,delta_awmv_coupled,'LineWidth',1.5)
-        ylabel('\Delta AWMV in \eta (degrees)')
-        xlabel('time (s)')
+        plot(x_time,delta_awmv_coupled(:,ring),'LineWidth',1.5)
+        ylabel('\Delta AWMV in \eta (degrees)','FontSize',14)
+        xlabel('time (s)','FontSize',14)
 
     end
-    c_leg = legend(rings,'Location','Best');
+    c_leg = legend(rings,'Location','Best','FontSize',14);
     ctitle = get(c_leg,'Title');
     set(ctitle,'String','Ring indices \{hkl\}')
+    
+    yyaxis right
+    % Import load curve
+    loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+    sheet = 'PureTiTD_nr1_c';
+    xlsRange = 'I4:I135';
+    loadCurve = xlsread(loadCurveFile,sheet,xlsRange)
+    lCurve = plot(6:1:137,loadCurve,'-','Linewidth',2,'Color','#aaa')
+    ylim([min(loadCurve) 450])
+    ylabel('Loading (MPa)')
+    ax = gca;
+    ax.YAxis(2).Color = 'k';
+    ah1=axes('position',get(gca,'position'),'visible','off');
+    leg2 = legend(ah1,lCurve,'Loading','Location','Best','FontSize',14);
     grid on
+    c_leg.String = rings;
     saveas(fig_out,fullfile(datadir,outName))
 
     %% Plot indep awmvs against coupled

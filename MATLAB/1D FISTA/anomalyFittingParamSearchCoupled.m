@@ -104,6 +104,8 @@ end
 awmv_all = zeros(MM,T,NN);
 awmv_rmse = zeros(MM,NN);
 mse = zeros(MM,NN);
+rse = zeros(MM,NN);
+l1_norm = zeros(MM,NN);
 tv_penalty = zeros(MM,NN);
 for nn = 1:11
     % Load coupled solution
@@ -122,6 +124,9 @@ for nn = 1:11
             x = X_hat(:,:,time);
             fit = Ax_ft_1D(A0ft_stack,x);
             mse(i,nn) = mse(i,nn) + norm( B(:,time)-fit ).^2;
+            rse(i,nn) = rse(i,nn) + norm( B(:,time)-fit ).^2 /...
+                                    norm( B(:,time))/T.^2;
+            l1_norm(i,nn) = l1_norm(i,nn) + sum(abs(x(:)));
             az_signal = squeeze(sum(x,1));
             var_sum = squeeze(sum(az_signal(:)));
             awmv_all(i,time,nn) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
@@ -135,6 +140,76 @@ end
 
 figure(2)
 plot(awmv_rmse)
+
+%% Show L-curves and selected parameters
+nn = 3;
+[~,s_i] = min(awmv_rmse);
+select_ind = zeros(NN,1);
+gamma_select = zeros(NN,T);
+figure(111)
+for nn = 1:NN
+    crit = abs(l1_norm(:,nn)*0.45).^2 +...
+           abs(mse(:,nn)).^2 +...
+           abs(tv_penalty(:,nn)).^2;
+    select_ind(nn) = find( (crit == min(crit)),1 );
+    gamma_select(nn) = P.lambda_values(select_ind(nn));
+    % Plot L-curves
+    subplot(3,4,nn)
+    plot(l1_norm(:,nn)+mse(:,nn),...
+         tv_penalty(:,nn))
+    hold on
+    plot(l1_norm(select_ind(nn),nn)+mse(select_ind(nn),nn),...
+         tv_penalty(select_ind(nn),nn),'or')
+    plot(l1_norm(s_i(nn),nn)+mse(s_i(nn),nn),...
+     tv_penalty(s_i(nn),nn),'sb')
+    hold off
+    xlabel('l_1 norm + MSE')
+    ylabel('TV Penalty')
+
+end
+%% Show L-curves and selected parameters
+nn = 3;
+
+[~,s_i] = min(awmv_rmse);
+select_ind = zeros(NN,1);
+gamma_select = zeros(NN,T);
+figure(111)
+for nn = 1:NN
+    crit1 = abs(mse(:,nn)-min(mse(:,nn))).^2 /2/(max(mse(:,nn))-min(mse(:,nn)))^2;
+    crit2 = abs(l1_norm(:,nn)-min(l1_norm(:,nn))).^2 /2/(max(l1_norm(:,nn))-min(l1_norm(:,nn)))^2;
+    crit3 = abs(tv_penalty(:,nn)-min(tv_penalty(:,nn))).^2 /(max(tv_penalty(:,nn))-min(tv_penalty(:,nn)))^2;
+    crit = crit1+crit2+(1+3*noise_std(nn))*crit3;
+    select_ind(nn) = find( (crit == min(crit)),1 );
+    gamma_select(nn) = P.lambda_values(select_ind(nn));
+    % Plot L-curves
+    subplot(3,4,nn)
+    plot(crit1+crit2,...
+         crit3)
+    hold on
+    plot(crit1(select_ind(nn))+crit2(select_ind(nn)),...
+         crit3(select_ind(nn)),'or')
+    plot(crit1(s_i(nn))+crit2(s_i(nn)),...
+         crit3(s_i(nn)),'sb')
+    [awmv_rmse(select_ind(nn),nn),...
+     awmv_rmse(s_i(nn),nn)]
+    
+    hold off
+    xlabel('MSE')
+    ylabel('TV Penalty')
+
+end
+
+%% Plot the pairs of AWMV fits 
+figure(222)
+for nn = 1:NN
+    subplot(3,4,nn)
+    hold on
+    plot(theta_stds1,'k')
+    plot(awmv_all(select_ind(nn),:,nn),'r')
+    plot(awmv_all(s_i(nn),:,nn),'b')
+end
+
+
 
 %% 
 figure(22)
