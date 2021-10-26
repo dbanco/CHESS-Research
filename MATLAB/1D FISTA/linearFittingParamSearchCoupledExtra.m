@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -73,10 +73,10 @@ for nn = 1:11
     P.params.rho1 = 1.5;
     P.params.rho2 = 0.5;
     
-    for i = 1:MM
+    for i = 48:50
         P.set = i;
         P.params.lambda1 = lambda1_select;
-        P.params.lambda2 = lambda2_values(nn,i);
+        P.params.lambda2 = lambda2_values(i);
         [X_hat,~,~,~,~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params);
         save(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time6']),...
             'B','X_hat','P');
@@ -637,4 +637,5 @@ for t = [1,25,50]
 end
 fits_fig.Position = [800 800 300 100];
 end
+%}
 %}
