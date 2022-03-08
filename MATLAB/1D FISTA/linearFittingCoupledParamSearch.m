@@ -89,45 +89,45 @@ for j = 1:T
 end
 
 %% Independent Solution
-x_init = zeros(N,K);
-X_indep = zeros(N,K,T);
-rho_out = zeros(T,1);
-for i = lambda_inds(ii)
-    P.set = i;
-    P.params.lambda1 = P.lambda_values(i);
-    for t = 1:T
-        % Solve
-        [x_hat,obj,err,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
-        X_indep(:,:,t) = x_hat;
-        rho_out(t) = rho;
-    end
-end
+% x_init = zeros(N,K);
+% X_indep = zeros(N,K,T);
+% rho_out = zeros(T,1);
+% for i = lambda_inds(ii)
+%     P.set = i;
+%     P.params.lambda1 = P.lambda_values(i);
+%     for t = 1:T
+%         % Solve
+%         [x_hat,obj,err,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
+%         X_indep(:,:,t) = x_hat;
+%         rho_out(t) = rho;
+%     end
+% end
 
 %% CG Indep
-X_indep_CG = zeros(N,K,T);
-P.params.maxIter = 200;
-for i = lambda_inds(ii)
-    P.set = i;
-    P.params.lambda1 = P.lambda_values(i);
-    for t = 1:T
-        % Solve
-        [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_CG_1D(A0ft_stack,B(:,t),x_init,P.params);  
-        X_indep_CG(:,:,t) = x_hat;
-
-    end
-end
+% X_indep_CG = zeros(N,K,T);
+% P.params.maxIter = 200;
+% for i = lambda_inds(ii)
+%     P.set = i;
+%     P.params.lambda1 = P.lambda_values(i);
+%     for t = 1:T
+%         % Solve
+%         [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_CG_1D(A0ft_stack,B(:,t),x_init,P.params);  
+%         X_indep_CG(:,:,t) = x_hat;
+% 
+%     end
+% end
 
 %% Coupled Solution
-P.params.rho1 = 1;%min(rho_out);
-P.params.rho2 = 1;
-P.params.lambda2 = 0.1;
-
-for i = lambda_inds(ii)
-    P.set = i;
-    P.params.lambda1 = ones(T,1)*P.lambda_values(i);
-    [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,zeros(N,K,T),P.params);
-    save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),'X_indep','X_hat','err','obj','l1_norm','tv_penalty','P');
-end
+% P.params.rho1 = 1;%min(rho_out);
+% P.params.rho2 = 1;
+% P.params.lambda2 = 0.1;
+% 
+% for i = lambda_inds(ii)
+%     P.set = i;
+%     P.params.lambda1 = ones(T,1)*P.lambda_values(i);
+%     [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,zeros(N,K,T),P.params);
+%     save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),'X_indep','X_hat','err','obj','l1_norm','tv_penalty','P');
+% end
 %% Plot fit 
 close all
 fits_fig = figure(1);

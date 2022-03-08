@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\CHESS_data\';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -24,7 +24,7 @@ zMask = [];
 theta_stds1 = linspace(1,15,T)';
 
 %% Run ADMM
-
+%{
 for nn = 1:11
     % Input dirs
     dset_name = ['singlePeak_noise',num2str(nn)];
@@ -82,9 +82,9 @@ for nn = 1:11
             'B','X_hat','P');
     end
 end
+
 %}
 
-%{
 %% Parameter Selection for coupled 
 [ha_param, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
 awmv_all = zeros(MM,T,NN);
@@ -95,12 +95,12 @@ tv_penalty = zeros(MM,NN);
 for nn = 1:11
     % Load coupled solution
     dset_name = ['singlePeak_noise',num2str(nn)];
-    output_name = '_coupled_CGTV_50';
+    output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
     output_dir  = fullfile(top_dir,output_subdir);
     for i = 1:MM
-        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(5)]))
+        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(6)]))
         if( (nn==1)&&(i==1) )
             % Construct dictionary
             A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
@@ -131,6 +131,7 @@ end
 figure(2)
 plot(awmv_rmse)
 %% Show awmvs
+%{
 close all
 [~,s_i] = min(awmv_rmse);
 s_i2 = zeros(NN,1);
@@ -213,8 +214,9 @@ plot(1,'b','Linewidth',2)
 plot(2,'r','Linewidth',2)
 legend('Truth','\gamma = 0','\gamma = \gamma*',...
        'FontSize',16,'EdgeColor',[1 1 1],'location','Northwest')
+%}
 
-   %% Show L-curves and selected parameters
+%% Show L-curves and selected parameters
 nn = 3;
 
 [~,s_i] = min(awmv_rmse);
@@ -248,16 +250,15 @@ end
 
    %% Show L-curves and selected parameters
 nn = 3;
-
 [~,s_i] = min(awmv_rmse);
 select_ind = zeros(NN,1);
 gamma_select = zeros(NN,T);
 figure(111)
 for nn = 1:NN
-    crit1 = (0.5*mse_c(:,nn));
+    crit1 = (mse_c(:,nn));
     crit2 = (l1_norm_c(:,nn));
     crit3 = log(tv_penalty(:,nn));
-    crit = crit1+crit2+crit3;
+    crit = log(crit1+crit2)+crit3;
     select_ind(nn) = find( (crit == min(crit)),1 );
     gamma_select(nn) = P.lambda_values(select_ind(nn));
     % Plot L-curves
@@ -294,9 +295,9 @@ end
    
    
 %% Plot AWMV curves for different parameter values
-[param_awmv_fig, ~] = tight_subplot(5,3,[.005 .005],[.01 .01],[.01 .01]);
+[param_awmv_fig, ~] = tight_subplot(5,10,[.005 .005],[.01 .01],[.01 .01]);
 nn = 1
-for i = 1:15
+for i = 1:MM
     axes(param_awmv_fig(i))
     hold on
     plot(theta_stds1,'k','Linewidth',2)
@@ -637,5 +638,4 @@ for t = [1,25,50]
 end
 fits_fig.Position = [800 800 300 100];
 end
-%}
 %}

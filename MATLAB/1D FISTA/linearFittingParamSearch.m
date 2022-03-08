@@ -90,19 +90,19 @@ for j = 1:T
 end
 
 %% Independent Solution
-x_init = zeros(N,K);
-X_indep = zeros(N,K,M,T);
-for i = 1:M
-    P.set = i;
-    P.params.lambda1 = P.lambda_values(i);
-    for t = 1:T
-        % Solve
-        [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
-        X_indep(:,:,i,t) = x_hat;
-    end
-end
-save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all2']),...
-        'B','X_indep','P');
+% x_init = zeros(N,K);
+% X_indep = zeros(N,K,M,T);
+% for i = 1:M
+%     P.set = i;
+%     P.params.lambda1 = P.lambda_values(i);
+%     for t = 1:T
+%         % Solve
+%         [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
+%         X_indep(:,:,i,t) = x_hat;
+%     end
+% end
+% save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all2']),...
+%         'B','X_indep','P');
 end
 
 %% Plot fit
@@ -158,6 +158,14 @@ plot(theta_stds1)
 %% Plot L-curve
 figure(3)
 plot(l1_norm,mse_indep,'o-')
+% waterfall(1:T,l1_norm,rse_indep)
+xlabel('l_1 norm')
+ylabel('Rel Error')
+
+%% Plot L-curve
+nn = 9
+figure(3)
+plot(l1_norm(15:50,nn),mse_indep(15:50,nn),'o-')
 % waterfall(1:T,l1_norm,rse_indep)
 xlabel('l_1 norm')
 ylabel('Rel Error')

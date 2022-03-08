@@ -18,7 +18,7 @@ for d_num = 1
     for im_num = [1 100]
         axes(ha1(k))
         load(fullfile(top_dir,[prefix,'_',num2str(im_num),'.mat']) )
-        imagesc(squeeze(sum(polar_image,1)),[0 max_val(d_num)])
+        imagesc(squeeze((polar_image)),[0 max_val(d_num)])
         set(gca,'xtick',[])
         set(gca,'ytick',[])
         

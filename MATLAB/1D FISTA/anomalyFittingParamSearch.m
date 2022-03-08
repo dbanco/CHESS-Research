@@ -154,7 +154,7 @@ plot(awmv_az_indep)
 plot(theta_stds1)
 %% Plot L-curve
 figure(3)
-plot(l1_norm,mse_indep,'o-')
+plot(l1_norm(16:50,23),mse_indep(16:50,23),'o-')
 % waterfall(1:T,l1_norm,rse_indep)
 xlabel('l_1 norm')
 ylabel('Rel Error')

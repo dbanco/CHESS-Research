@@ -6,13 +6,9 @@ function A0_stack = unshifted_basis_matrix_stack(P)
 % P:
 % var_theta -vector of theta variances
 % var_rad - vector of radial variances
-% dtheta - difference in theta between each pixel
-% drad - difference in radius between each pixel
 % num_theta - image size in theta direction
 % num_rad - image size in radial direction
-% weight - 1 or 0, to weight or not to weight
-% alphap - total penalty
-% betap  - variance based penalty
+
 %
 % Outputs:
 % A0_stack - (n x m x t x r) array

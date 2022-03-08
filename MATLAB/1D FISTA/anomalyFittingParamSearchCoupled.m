@@ -279,18 +279,18 @@ for nn = 1:NN
     awmv_rmse_indep(nn) = norm(awmv_indep(:,nn)-theta_stds1)/norm(theta_stds1);
     axes(ha_awmv(nn))
     hold on
-    plot(theta_stds1,'k','Linewidth',2)
-    plot(awmv_indep(:,nn),'b','Linewidth',2)
-    plot(awmv_all(s_i2(nn),:,nn),'r','Linewidth',2)
+    plot(theta_stds1,'k--','Linewidth',2)
+    plot(awmv_indep(:,nn),'b-','Linewidth',2)
+    plot(awmv_all(s_i2(nn),:,nn),'r:','Linewidth',3)
     NW = [min(xlim) max(ylim)]+[diff(xlim)*0.05 -diff(ylim)*0.1];
-    text(NW(1), NW(2), ['v=',sprintf('%1.1d',noise_std(nn))],'FontSize',14)
+    text(NW(1), NW(2), ['v=',sprintf('%1.2f',noise_std(nn))],'FontSize',14)
 end
 % Use Final plot for legend
 axes(ha_awmv(NN+1))
 hold on
-plot(0,'k','Linewidth',2)
-plot(1,'b','Linewidth',2)
-plot(2,'r','Linewidth',2)
+plot(0,'k--','Linewidth',2)
+plot(1,'b-','Linewidth',2)
+plot(2,'r:','Linewidth',3)
 legend('Truth','\gamma = 0','\gamma = \gamma*',...
        'FontSize',16,'EdgeColor',[1 1 1],'location','Northwest')
 

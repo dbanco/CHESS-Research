@@ -44,10 +44,10 @@ norm(Aty1(:)-Aty2)/norm(Aty2)
 figure(1)
 subplot(2,1,1)
 hold on
-plot(y1)
+plot(y1,'o')
 plot(y2)
 
 subplot(2,1,2)
 hold on
-plot(Aty1(:))
+plot(Aty1(:),'o')
 plot(Aty2(:))

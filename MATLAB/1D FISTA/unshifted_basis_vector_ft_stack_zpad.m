@@ -5,7 +5,6 @@ function A0_stack = unshifted_basis_vector_ft_stack_zpad(P)
 % Inputs:
 % P:
 % var_theta -vector of theta variances
-% dtheta - difference in theta between each pixel
 % num_theta - image size in theta direction
 %
 % zPad

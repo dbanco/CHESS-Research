@@ -20,7 +20,7 @@ pixel_angle = pixel_side./circum*360;
 prefix = 'mmpad_img';
 
 % Parent directory
-ring_num = 4;
+ring_num = 1;
 top_dir = ['D:\MMPAD_data_nr1\ring',num2str(ring_num),'_zero'];
 fig_dir = 'C:\Users\dpqb1\Desktop\paper_figures\';
 max_val = [2e4 2e4];
@@ -67,29 +67,35 @@ pixel_angle = pixel_side./circum*360;
 
 eta_range = linspace(-261/2,261/2,261)*pixel_angle(1) + detect_angle;
 
-
 clim1 = 0.5e4;
 clim2 = 2e5;
-
-figure(5)
+az = 165;
+el = 60;
+s1 = 500;
+s2 = 360;
+f1 = figure(5);
 waterfall((eta_range),(x_time(1:100)),(B(:,1:100)'))
-title(rings{ring_num})
-ylabel('time(s)','FontSize',16)
+% title(rings{ring_num})
+ylabel('time(s)','FontSize',18)
 xlabel('\eta (\circ)','FontSize',18)
-zlabel('log(Intensity)','FontSize',16)
+zlabel('Intensity','FontSize',18)
 set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
-% set(gca,'CLim', [clim1 clim2])
+set(gca,'CLim', [clim1 clim2])
+view( az , el )
+f1.Position = [1200,600,s1,s2];
 
-figure(6)
+f2 = figure(6);
 waterfall((eta_range),(x_time),B')
-title(rings{ring_num})
-ylabel('time(s)','FontSize',16)
+% title(rings{ring_num})
+ylabel('time(s)','FontSize',18)
 xlabel('\eta (\circ)','FontSize',18)
-zlabel('log(Intensity)','FontSize',16)
+zlabel('Intensity','FontSize',18)
 set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
-% set(gca,'CLim', [clim1 clim2])
+set(gca,'CLim', [clim1 clim2])
+view( az , el )
+f2.Position = [1200,200,s1,s2];
 % 
 % %% Create color legend
 % leg_str = cell(m,1);

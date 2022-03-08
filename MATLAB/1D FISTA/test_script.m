@@ -1,20 +1,26 @@
 
 clear all
 close all
-tic
 %% Generate example data
+% Gaussian peak functions with additive white Gaussian noise
+close all
 N = 201;
-numSpots = 1;
+numSpots = 4;
 b = zeros(N,1);
-amplitude = 5;
-mean_param = N*0.5;
-var_param = 20;
+amplitude = 5*rand(numSpots,1);
+mean_param = N*rand(numSpots,1);
+std_param = 40*rand(numSpots,1);
 for i = 1:numSpots
-   b = b + amplitude*gaussian_basis_1D(N, mean_param, var_param);
+   b = b + amplitude(i)*gaussian_basis_wrap_1D_norm2(N,...
+                                               mean_param(i),...
+                                               std_param(i));
 end
 
 % Add noise
-b = b + 100*randn(N,1)/50;
+v = 0.1;
+b_noise = b + v*randn(N,1);
+b_true = b;
+b = b_noise;
 
 % % Remove negative values
 % b(b<0) = 0;
@@ -35,7 +41,7 @@ zMask = [];
 % ADMM parameters
 lambda1 = 1e-2;
 params.lambda1 = lambda1; % sparsity penalty
-params.rho1 = 0.001;  % initial ADMM
+params.rho1 = 0.1;  % initial ADMM
 
 
 params.adaptRho = 1; % binary flag for adaptive rho
@@ -67,12 +73,11 @@ A0_stack = unshifted_basis_vector_stack_zpad(P);
 x_init = zeros(size(A0ft_stack));
 
 % Solve
-[x_hat1,err,obj] = convADMM_LASSO_Sherman_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
+[x_hat1,~,~,~] = convADMM_LASSO_Sherman_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
 
 % Compute result
 b_hat = Ax_ft_1D(A0ft_stack,x_hat1);
 
-toc
 % Plot fit
 figure(1)
 subplot(1,2,1)
@@ -93,58 +98,58 @@ ylabel('\Sigma x_i / \Sigma x')
 title('VDF')
 
 %% Indep CG
-[x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
+% [x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack/norm(b),b/norm(b),x_init,params);
 % [x_hat2,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_1D(A0ft_stack, b, x_init, params);
 
 %% Coupled CG
-params.rho2 = 0;
-params.lambda2 = 0;
-params.lambda1 = lambda1*ones(3,1);
-B = [b,b+1,b+2]; 
-[X_hat3,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack/norm(b),B/norm(b),zeros(N,20,3),params);
-x_hat3 = X_hat3(:,:,1);
-
-% Compute result
-b_hat2 = Ax_ft_1D(A0ft_stack,x_hat2);
-% Plot fit
-figure(11)
-subplot(1,2,1)
-plot(b)
-hold on
-plot(b_hat2)
-xlabel('\theta')
-ylabel('Intensity')
-title('Data fit')
-legend('data','fit')
-
-% Plot variance distribution function
-vdf2 = sum(x_hat2,1)/sum(x_hat2,'all');
-subplot(1,2,2)
-bar(vdf2)
-xlabel('narrow --> \sigma index --> wide')
-ylabel('\Sigma x_i / \Sigma x')
-title('VDF')
-
-% Compute result
-b_hat3 = Ax_ft_1D(A0ft_stack,x_hat3);
-% Plot fit
-figure(111)
-subplot(1,2,1)
-plot(b)
-hold on
-plot(b_hat3)
-xlabel('\theta')
-ylabel('Intensity')
-title('Data fit')
-legend('data','fit')
-
-% Plot variance distribution function
-vdf3 = sum(x_hat3,1)/sum(x_hat3,'all');
-subplot(1,2,2)
-bar(vdf3)
-xlabel('narrow --> \sigma index --> wide')
-ylabel('\Sigma x_i / \Sigma x')
-title('VDF')
+% params.rho2 = 0;
+% params.lambda2 = 0;
+% params.lambda1 = lambda1*ones(3,1);
+% B = [b,b+1,b+2]; 
+% [X_hat3,err,obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack/norm(b),B/norm(b),zeros(N,20,3),params);
+% x_hat3 = X_hat3(:,:,1);
+% 
+% % Compute result
+% b_hat2 = Ax_ft_1D(A0ft_stack,x_hat2);
+% % Plot fit
+% figure(11)
+% subplot(1,2,1)
+% plot(b)
+% hold on
+% plot(b_hat2)
+% xlabel('\theta')
+% ylabel('Intensity')
+% title('Data fit')
+% legend('data','fit')
+% 
+% % Plot variance distribution function
+% vdf2 = sum(x_hat2,1)/sum(x_hat2,'all');
+% subplot(1,2,2)
+% bar(vdf2)
+% xlabel('narrow --> \sigma index --> wide')
+% ylabel('\Sigma x_i / \Sigma x')
+% title('VDF')
+% 
+% % Compute result
+% b_hat3 = Ax_ft_1D(A0ft_stack,x_hat3);
+% % Plot fit
+% figure(111)
+% subplot(1,2,1)
+% plot(b)
+% hold on
+% plot(b_hat3)
+% xlabel('\theta')
+% ylabel('Intensity')
+% title('Data fit')
+% legend('data','fit')
+% 
+% % Plot variance distribution function
+% vdf3 = sum(x_hat3,1)/sum(x_hat3,'all');
+% subplot(1,2,2)
+% bar(vdf3)
+% xlabel('narrow --> \sigma index --> wide')
+% ylabel('\Sigma x_i / \Sigma x')
+% title('VDF')
 %{
 Notes:
 
