@@ -38,6 +38,7 @@ opt.DRelaxParam = 1.8;
 opt.DictFilterSizes = [8, 8, 8, 8, 8, 12,12,12,12,16,16,16,16,16,16;
                        12,12,12,12,12,20,20,20,20,40,40,40,64,64,88];
 opt.NonNegCoef = 1;
+opt.NonnegativeDict = 1;
 
 P.var_theta = logspace(-0.3,1.699,15).^2;
 P.var_rad = 3;
@@ -47,7 +48,7 @@ P.basis = 'norm2';
 for i = 1:15
     D0 = unshifted_basis_matrix_stack(P);
 end
-D0 = shift2center(D0);
+% D0 = shift2center(D0);
 
 % Do dictionary learning
 [D, X, optinf] = cbpdndl(D0, S0, lambda, opt);
@@ -64,7 +65,7 @@ xlabel('Iterations');
 ylabel('Functional value');
 
 %% Load reconstructions
-load('dict_learn_results.mat')
+% load('dict_learn_results.mat')
 Df = fft2(D,size(S0,1),size(S0,2));
 % X(X<0.1) = 0;
 Xf = fft2(X);

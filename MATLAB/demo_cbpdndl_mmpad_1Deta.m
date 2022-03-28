@@ -16,14 +16,14 @@ for t = 1:T
 	load(fullfile(data_dir,['mmpad_img_',num2str(t),'.mat']))
     if t == 1
         [N,M] = size(polar_image);
-        S0 = zeros(M,T);
+        S0 = zeros(1,M,T);
     end
-    S0(:,t) = sum(polar_image,1);
+    S0(1,:,t) = sum(polar_image,1);
 end
-S0 = S0(:,1:4:T)/1e3;
+S0 = S0(1,:,1:4:T)/1e3;
 
 % Set up cbpdndl parameters
-lambda = 0.2;
+lambda = 50;
 opt = [];
 opt.Verbose = 1;
 opt.MaxMainIter = 250;
@@ -38,22 +38,24 @@ opt.DRelaxParam = 1.8;
 opt.DictFilterSizes = [ones(1,15);
                        12,12,12,12,12,20,20,20,20,40,40,40,64,64,88];
 opt.NonNegCoef = 1;
+opt.NonnegativeDict = 1;
 
 P.var_theta = logspace(-0.3,1.699,15).^2;
 P.num_theta = 88;
+P.mean = 6;
 P.basis = 'norm2';
+D0 = zeros(1,88,15);
 for i = 1:15
-    D0 = unshifted_basis_vector_stack_zpad(P);
+    D0(1,:,:) = dictionary(P);
 end
-% D0 = shift2center(D0);
+
 
 % Do dictionary learning
 [D, X, optinf] = cbpdndl(D0, S0, lambda, opt);
 
-
 % Display learned dictionary
 figure;
-imagesc(tiledict(D));
+imagesc(squeeze(D));
 
 % Plot functional value evolution
 figure;
@@ -62,7 +64,7 @@ xlabel('Iterations');
 ylabel('Functional value');
 
 %% Load reconstructions
-load('dict_learn_results.mat')
+% load('dict_learn_results_1D.mat')
 Df = fft2(D,size(S0,1),size(S0,2));
 % X(X<0.1) = 0;
 Xf = fft2(X);
@@ -76,10 +78,11 @@ dispY = arrangeIms(Y);
 dispS = arrangeIms(S0);
 dispD = arrangeIms(D);
 
-figure;
-imagesc(tiledict(D));
-set(gca,'visible','off')
-title('Dictionary')
+% figure;
+% imagesc(squeeze(D));
+plotDictionary(D)
+
+
 
 figure;
 subplot(1,2,1)
@@ -87,9 +90,8 @@ imagesc(dispY);
 set(gca,'visible','off')
 title('Data')
 
-% title(num2str(norm(Y(:,:,tt)-S0(:,:,tt))/norm(S0(:,:,tt))))
 subplot(1,2,2)
-imagesc(dispS);
+imagesc(dispS');
 set(gca,'visible','off')
 title('Recon')
 
@@ -99,9 +101,9 @@ sparsity = zeros(50,1);
 dataNorms = zeros(50,1);
 vdfs = squeeze(squeeze(sum(sum(X,1),2)));
 for t = 1:50
-   rel_err(t) = norm(Y(:,:,t)-S0(:,:,t))/norm(S0(:,:,t));
+   rel_err(t) = norm(Y(:,t)'-S0(1,:,t))/norm(S0(1,:,t));
    sparsity(t) = sum(X(:,:,:,t)>0,'all');
-   dataNorms(t) = norm(S0(:,:,t));
+   dataNorms(t) = norm(S0(1,:,t));
    vdfs(:,t) = vdfs(:,t)/max(vdfs(:,t));
 end
 
