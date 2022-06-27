@@ -1,7 +1,10 @@
-function checkDict_upSample(X,D,U)
-Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
+function checkDict_upSample(X,D,U,f)
+K = size(D,3);
 AD0 = upSample(D,U);
-plotDictUsage(AD0,U,1,X,1);
-
+if nargin < 4
+    f = plotDictUsage(AD0,K,X);
+else  
+    f = plotDictUsage(AD0,K,X,f);
+end
 end
 

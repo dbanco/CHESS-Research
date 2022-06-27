@@ -12,14 +12,15 @@ for k = 1:K
     for j = 1:numScales
         jk = j+(k-1)*numScales;
         jj = 2^(j-1); 
-        dj = X(:,1:N2/jj,jk);
+        dj = X(:,1:N2,jk);
         for i = 1:(j-1)
             Ndj = numel(dj);
             dj1 = zeros(1,2*Ndj);
             dj1(:,2:2:2*Ndj) = dj;
             dj = lwpass4(dj1,1);
         end
-        Xd(:,:,k) = Xd(:,:,k) + dj;
+        Xd(:,:,k) = Xd(:,:,k) + dj(:,1:N2);
+        clear dj
     end
 end
 

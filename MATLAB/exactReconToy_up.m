@@ -4,7 +4,7 @@ y = reshape(y,[1,N,1,T]);
 
 close all
 % Set up cbpdndl parameters
-lambda = 1;
+lambda = 1e-2;
 opt = [];
 opt.Verbose = 1;
 opt.MaxMainIter = 100;

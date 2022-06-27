@@ -1,5 +1,5 @@
 % Multiscale 1D dictionary learnging toy problem
-[y,yd,X_true,N,T] = upDwn_translate_problem;
+[y,yd,X_true,N,T] = upDwn_translate2_problem;
 y = reshape(y,[1,N,1,T]); 
 % plotDataSeq(y)
 
@@ -69,9 +69,9 @@ Yhat0 = squeeze(ifft2(sum(bsxfun(@times,AD0f,fft2(X_true)),3),'symmetric'));
 % imagesc(Yhat0)
 % title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
 % 
-
 fff=checkDict_upDwnSample(X_true,D0,opt.numScales);
 saveas(fff,fullfile(topDir,['init',dName,'.png']))
+
 %% Dictionary learning
 opt.LinSolve = 'CGD';
 
@@ -88,6 +88,7 @@ Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'));
 mkdir(topDir)
 f1 = plotDictUsage(AD,K,X);
 f1.Position =[1 1 400 1000];
+% plotDictionary(decimate(D0,opt.numScales))
 saveas(f1,fullfile(topDir,['dictUsage_',dName,'.png']))
 
 f2 = figure;

@@ -37,7 +37,7 @@ D0 = rand(1,N,K);
 % for i = 1:K
 %     D0(:,:,i) = D0(:,:,i)/norm(D0(:,:,i));
 % end
-D0(1,:,1) = yd(1,:,1);% + 50*rand(1,N,K)/100;
+D0(1,:,1) = yd(1,:,1) + 50*rand(1,N,K)/100;
 
 % Define Dictionary function
 opt.DictSize = opt.numScales*K;

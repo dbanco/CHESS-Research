@@ -1,7 +1,11 @@
-function checkDict(X,D,U)
-Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
+function checkDict(X,D,U,f)
+K = size(D,3);
 AD0 = decimate(D,U);
-plotDictUsage(AD0,5,1,X,1);
+if nargin < 4
+    f = plotDictUsage(AD0,K,X);
+else  
+    f = plotDictUsage(AD0,K,X,f);
+end
 
 end
 

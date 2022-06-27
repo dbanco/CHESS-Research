@@ -1,7 +1,7 @@
 function y = lwpass4(x,trans)
 N = numel(x);
 % f = exp(-1)*ones(1,4);
-f = exp(-1)*[0.5 1 0.5]
+f = [0.5 1 0.5]/sqrt(1.5);
 M = numel(f);
 
 f4 = zeros(1,N);

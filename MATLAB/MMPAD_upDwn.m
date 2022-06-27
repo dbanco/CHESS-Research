@@ -5,7 +5,7 @@ y = reshape(y,[1,N,1,T]);
 
 close all
 % Set up cbpdndl parameters
-lambda = 10000e-2;
+lambda = 5e-2;
 opt = [];
 opt.Verbose = 1;
 opt.MaxMainIter = 100;
@@ -43,8 +43,6 @@ D0 = rand(1,N0,K);
 
 % Define Dictionary function
 opt.DictSize = (2*U+1)*K;
-XAd = @(in,xf) ifft2(sum(bsxfun(@times,xf,fft2(decimate(in,opt.numScales))),3),'symmetric');
-AtXty = @(in,xf) decimateTrans(ifft2(sum(bsxfun(@times, conj(xf), fft2(in)), 4),'symmetric'),opt.numScales);
 
 % Check init solution (good)
 opt.Y0 = zeros(1,N,K*(2*U+1),T);
@@ -76,16 +74,16 @@ AD = upDwnSample(D,opt.numScales);
 ADf = fft2(AD);
 Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'));
 
-topDir = 'C:\Users\dpqb1\Desktop\multiDict_upDwn\';
+topDir = 'C:\Users\dpqb1\Desktop\multiDict_MMPAD\';
 dName = 'MMPAD';
 mkdir(topDir)
-f1 = plotDictUsage(AD,K,2*U+1,X,1);
+f1 = plotDictUsage(AD,K,X);
 f1.Position =[50 50 400 1000];
 % plotDictionary(decimate(D0,opt.numScales))
 saveas(f1,fullfile(topDir,['dictUsage_',dName,'.png']))
 
 
-f2 = figure(2);
+f2 = figure;
 subplot(1,2,1)
 imagesc(squeeze(y))
 subplot(1,2,2)
@@ -93,12 +91,12 @@ imagesc(Yhat)
 title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat,'fro')/norm(y(:),'fro')))
 saveas(f2,fullfile(topDir,['recon',dName,'.png']))
 
-f3 = figure(3);
+f3 = figure;
 imagesc(squeeze(sum(sum(X,1),2)))
 f3.Position = [100 100 600 100];
 saveas(f3,fullfile(topDir,['dictDist',dName,'.png']))
 
-f4 = figure(4);
+f4 = figure;
 error_time = zeros(T,1);
 for t = 1:T
     error_time(t) = norm(squeeze(y(:,:,:,t))'-Yhat(:,t),'fro')/norm(y(:,:,:,t),'fro');
