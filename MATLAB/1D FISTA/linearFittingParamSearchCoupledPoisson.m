@@ -103,13 +103,13 @@ l1_norm_c = zeros(MM,NN);
 tv_penalty = zeros(MM,NN);
 for nn = 1:NN
     % Load coupled solution
-    dset_name = ['singlePeak_noise',num2str(nn)];
+    dset_name = ['singlePeak_noise_poisson',num2str(nn)];
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
     output_dir  = fullfile(top_dir,output_subdir);
     for i = 1:MM
-        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(5)]))
+        load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time',num2str(1)]))
         if( (nn==1)&&(i==1) )
             % Construct dictionary
             A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);

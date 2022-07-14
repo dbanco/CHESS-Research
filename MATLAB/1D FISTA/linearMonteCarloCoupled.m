@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\CHESS_data\';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\CHESS_data\';
+% top_dir = '/cluster/shared/dbanco02';
 
 noise_std = [0:0.03:0.30];
 
@@ -23,9 +23,9 @@ theta_stds1 = linspace(1,15,T);
 close all
 lambda_select = zeros(NN,T);
 dict_init = 1;
-for nn = 1:NN
+for nn = 1
     % Load Independent and compute awmv
-    dset_name = ['singlePeak_noise',num2str(nn)];
+    dset_name = ['singlePeak_noise_poisson',num2str(nn)];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
@@ -33,7 +33,7 @@ for nn = 1:NN
     dataset =  fullfile(top_dir,dset_name);
     output_dir  = fullfile(top_dir,output_subdir);
     indep_dir  = fullfile(top_dir,indep_subdir);
-    load(fullfile(indep_dir,[dset_name,'_',num2str(M),'_','all2']))
+    load(fullfile(indep_dir,[dset_name,'_',num2str(M),'_','all']))
     if(dict_init )
         % Construct dictionary
         A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
