@@ -34,7 +34,7 @@ zMask = [];
 theta_stds1 = linspace(1,15,T)';
 
 %% Run ADMM
-
+%{
 for nn = 1:NN
     % Input dirs
     dset_name = ['singlePeak_noise_poisson',num2str(nn)];
@@ -92,7 +92,7 @@ for nn = 1:NN
             'B','X_hat','P');
     end
 end
-
+%}
 
 %% Parameter Selection for coupled 
 [ha_param, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
@@ -234,7 +234,7 @@ for nn = 1:NN
     crit1 = abs(mse_c(:,nn)-min(mse_c(:,nn))).^2 /2/(max(mse_c(:,nn))-min(mse_c(:,nn)))^2;
     crit2 = abs(l1_norm_c(:,nn)-min(l1_norm_c(:,nn))).^2 /2/(max(l1_norm_c(:,nn))-min(l1_norm_c(:,nn)))^2;
     crit3 = abs(tv_penalty(:,nn)-min(tv_penalty(:,nn))).^2 /(max(tv_penalty(:,nn))-min(tv_penalty(:,nn)))^2;
-    crit = crit1+crit2+(1+3*noise_std(nn))*crit3;
+    crit = crit1+crit2+(1+3*noise_factor(nn))*crit3;
     select_ind(nn) = find( (crit == min(crit)),1 );
     gamma_select(nn) = P.lambda_values(select_ind(nn));
     % Plot L-curves
@@ -304,7 +304,7 @@ end
    
 %% Plot AWMV curves for different parameter values
 [param_awmv_fig, ~] = tight_subplot(5,3,[.005 .005],[.01 .01],[.01 .01]);
-nn = 1
+nn = 10
 for i = 1:15
     axes(param_awmv_fig(i))
     hold on

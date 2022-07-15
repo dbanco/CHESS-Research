@@ -6,7 +6,7 @@ close all
 top_dir = 'D:\CHESS_data\';
 % top_dir = '/cluster/shared/dbanco02';
 
-noise_factor = [0.2:0.2:2];
+noise_factor = [0.1:0.1:1];
 NN = numel(noise_factor);
 
 % Load in Parameters
@@ -23,7 +23,7 @@ theta_stds1 = linspace(1,15,T);
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Analysis of MC runs
-NN = 11;
+NN = 10;
 awmv_coup = zeros(NN,M,T);
 rse_coup = zeros(NN,M,T);
 mse_coup = zeros(NN,M,T);
@@ -34,11 +34,11 @@ fit_1 = zeros(NN,N,T);
 awmv_rse_coup = zeros(NN,M);
 
 %% Noise levels
-for nn = 1:11
+for nn = 1:NN
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
     output_dir  = fullfile(top_dir,output_subdir);
-    load(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV2']))
+    load(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']))
     % 100 trials
     for i = 1:M
         for time = 1:T
@@ -74,7 +74,7 @@ l1_norm_indep = zeros(NN,M,T);
 fit_avg_indep = zeros(NN,N,T);
 awmv_rse_indep = zeros(NN,M);
 
-for nn = 1:11
+for nn = 1:NN
     load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']))
     % 100 trials
     for i = 1:M
@@ -110,9 +110,9 @@ legend('Coupled','Indep','Truth','Location','Best')
 
 %% Waterfall for highest noise level compare
 figure(1)
-nn = 11;
-fit_nn_1 = squeeze(fit_1(11,:,:));
-fit_nn = squeeze(fit_avg_coup(11,:,:));
+nn = 10;
+fit_nn_1 = squeeze(fit_1(nn,:,:));
+fit_nn = squeeze(fit_avg_coup(nn,:,:));
 
 subplot(1,3,1)
 waterfall(fit_nn')

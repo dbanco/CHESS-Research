@@ -10,9 +10,9 @@ end
 for i = 1:KU
     subplot(KU/K,K,i)
     plot(AD(:,:,i)) 
-    if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
-        title(sprintf('Usage: %1.2f',sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) ))
-    end
+%     if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
+%         title(sprintf('Usage: %1.2f',sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) ))
+%     end
 %     set(gca,'YTickLabel',[]);
 %     set(gca,'XTickLabel',[]);
     p = 1+(f.Number-1)*400;
