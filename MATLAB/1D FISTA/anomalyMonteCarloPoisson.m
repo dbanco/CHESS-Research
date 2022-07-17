@@ -4,16 +4,15 @@ close all
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = '/cluster/home/dbanco02/data';
 
-noise_factor = 0.2:0.2:2;
 MM = 20;
 
-NN = numel(noise_factor);
 num_ims = 30;
 N = 101;
 K = 20;
 M = 50;
+NN = 1;
 T = num_ims;
 zPad = 0;
 zMask = [];
@@ -24,7 +23,7 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 close all
 lambda_select = zeros(NN,T);
 for nn = 1:NN
-    dset_name = ['anomaly_noise_poisson',num2str(nn)];
+    dset_name = ['anomaly_noise_Poisson',num2str(nn)];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
@@ -62,7 +61,7 @@ end
 
 for nn =1:NN
     % Input dirs
-    dset_name = ['anomaly_noise_poisson_MC'];
+    dset_name = ['anomaly_noise_MC_Poisson'];
 
     % Output dirs
     output_name = '_indep_ISM';
@@ -127,7 +126,7 @@ for nn =1:NN
     theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)];
 
     %% Independent Solution
-    trials = 5;
+    trials = 100;
     x_init = zeros(N,K);
     X_indep = zeros(N,K,trials,T);
     B = zeros(N,T,trials);
