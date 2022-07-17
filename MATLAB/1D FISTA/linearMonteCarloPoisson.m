@@ -4,7 +4,7 @@ close all
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = '/cluster/home/dbanco02/data';
 
 num_ims = 50;
 N = 101;
@@ -129,7 +129,7 @@ for nn = 1:NN
     
 
     %% Independent Solution
-    trials = 5;
+    trials = 100;
     x_init = zeros(N,K);
     X_indep = zeros(N,K,trials,T);
     B = zeros(N,T,trials);
