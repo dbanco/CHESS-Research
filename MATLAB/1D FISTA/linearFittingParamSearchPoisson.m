@@ -79,7 +79,7 @@ for t = 1:T
     b = b*100; % + randn(N,1)*noise_std(nn);
     bn = poissrnd(b);
     B(:,t) = bn;
-    plot(b);hold on;plot(bn);
+%     plot(b);hold on;plot(bn);
     
 end
 

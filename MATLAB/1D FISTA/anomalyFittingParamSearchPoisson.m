@@ -3,14 +3,11 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 
-noise_factor = [0.2:0.2:2];
-NN = numel(noise_factor);
-for ii =1:NN
     % Input dirs
-    dset_name = ['anomaly_noise_poisson',num2str(ii)];
+    dset_name = ['anomaly_noise_Poisson'];
 
     % Output dirs
     output_name = '_indep_ISM';
@@ -38,7 +35,7 @@ for ii =1:NN
     zMask = [];
 
     P.dataScale = 1;
-    P.lambda_values = logspace(-3,1,M);
+    P.lambda_values = logspace(-2.5,1.5,M);
     P.num_theta = N;
     P.sampleDims = [T,1];
     P.num_ims = T;
@@ -77,9 +74,9 @@ for ii =1:NN
     for t = 1:T
         b = gaussian_basis_1D( N, N/2, theta_stds1(t)^2);
         rms = sqrt(sum(b.^2)/N);
-        b = b/rms/3; % + randn(N,1)*noise_std(nn);
-        b = addNoisePoisson(b,noise_factor(ii));
-        B(:,t) = b;
+        b = b*100; % + randn(N,1)*noise_std(nn);
+        bn = poissrnd(b);
+        B(:,t) = bn;
     end
 
     %% Independent Solution
@@ -101,7 +98,7 @@ end
 
 %% Plot fit
 top_dir = 'D:\CHESS_data\';
-dset_name = ['anomaly_noise_poisson',num2str(8)];
+dset_name = ['anomaly_noise_Poisson'];
 output_name = '_indep_ISM';
 output_subdir = [dset_name,output_name];
 dataset =  fullfile(top_dir,dset_name);
@@ -139,7 +136,7 @@ end
 close all
 select_ind = zeros(T,1);
 for time = 1:T
-    crit = abs(l1_norm(:,time)*0.5).^2 + abs(mse_indep(:,time)).^2;
+    crit = abs(l1_norm(:,time)*0.6).^2 + abs(mse_indep(:,time)).^2;
     select_ind(time) = find( (crit == min(crit)),1 );
     x = X_indep(:,:,select_ind(time),time);
     az_signal = squeeze(sum(x,1));
