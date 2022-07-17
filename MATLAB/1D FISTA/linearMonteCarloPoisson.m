@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/home/dbanco02/data';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 
 num_ims = 50;
 N = 101;
@@ -23,7 +23,7 @@ close all
 lambda_select = zeros(NN,T);
 
 for nn = 1:NN
-    dset_name = ['singlePeak_noise_Poisson',num2str(nn)];
+    dset_name = ['singlePeak_noise_Poisson'];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
@@ -140,9 +140,9 @@ for nn = 1:NN
         for t = 1:T
             b = gaussian_basis_1D( N, N/2, theta_stds1(t)^2);
             rms = sqrt(sum(b.^2)/N);
-            b = b/rms/3; % + randn(N,1)*noise_std(nn);
-            b = addNoisePoisson(b,noise_factor(nn));
-            B(:,t,i) = b;
+            b = b*100; % + randn(N,1)*noise_std(nn);
+            bn = poissrnd(b);
+            B(:,t,i) = bn;
             % Solve
             P.params.lambda1 = lambda_select(nn,t);
             [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,b,x_init,P.params);  

@@ -3,7 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 % top_dir = '/cluster/shared/dbanco02';
 
 noise_factor = [0.1:0.1:1];
@@ -118,7 +119,7 @@ end
 [~,s_i] = min(awmv_rmse);
 
 %% Use Lambda_t and Gamma parameters to do MC
-trials = 100;
+trials = 5;
 % Input dirs
 dset_name = ['singlePeak_noise_MC_poisson'];
 
@@ -138,7 +139,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn = 1:3
+for nn = 1:2
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
