@@ -93,11 +93,9 @@ top_dir = '/cluster/home/dbanco02/data';
     end
     save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']),...
             'B','X_indep','P');
-        
-end
+
 
 %% Plot fit
-top_dir = 'D:\CHESS_data\';
 dset_name = ['anomaly_noise_Poisson'];
 output_name = '_indep_ISM';
 output_subdir = [dset_name,output_name];
