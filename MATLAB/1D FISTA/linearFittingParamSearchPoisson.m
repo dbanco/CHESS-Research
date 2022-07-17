@@ -6,103 +6,101 @@ close all
 top_dir = 'D:\CHESS_data\';
 % top_dir = '/cluster/shared/dbanco02';
 
-noise_factor = [0.1:0.1:1];
-NN = numel(noise_factor);
+% Input dirs
+dset_name = ['singlePeak_noise_Poisson'];
 
-for ii = 1:NN
-    % Input dirs
-    dset_name = ['singlePeak_noise_poisson',num2str(ii)];
-
-    % Output dirs
-    output_name = '_indep_ISM';
-    output_subdir = [dset_name,output_name];
+% Output dirs
+output_name = '_indep_ISM';
+output_subdir = [dset_name,output_name];
 
 
-    % Setup directories
-    dataset =  fullfile(top_dir,dset_name);
-    output_dir  = fullfile(top_dir,output_subdir);
-    mkdir(output_dir)
+% Setup directories
+dataset =  fullfile(top_dir,dset_name);
+output_dir  = fullfile(top_dir,output_subdir);
+mkdir(output_dir)
 
-    num_ims = 50;
+num_ims = 50;
 
-    % File Parameters
-    P.baseFileName = 'indep_fit_%i_%i.mat';
-    P.dataset = dataset;
+% File Parameters
+P.baseFileName = 'indep_fit_%i_%i.mat';
+P.dataset = dataset;
 
-    % Data/Dictionary Parameters
-    % Zero padding and mask
+% Data/Dictionary Parameters
+% Zero padding and mask
 
-    N = 101;
-    K = 20;
-    M = 50;
-    T = num_ims;
-    zPad = 0;
-    zMask = [];
+N = 101;
+K = 20;
+M = 50;
+T = num_ims;
+zPad = 0;
+zMask = [];
 
-    P.dataScale = 1;
-    P.lambda_values = logspace(-3,1,M);
-    P.num_theta = N;
-    P.sampleDims = [T,1];
-    P.num_ims = T;
-    P.basis = 'norm2';
-    P.cost = 'l1';
-    P.num_var_t = K;
-    P.var_theta = linspace(0.5,25,P.num_var_t).^2;
+P.dataScale = 1;
+P.lambda_values = logspace(-3,1,M);
+P.num_theta = N;
+P.sampleDims = [T,1];
+P.num_ims = T;
+P.basis = 'norm2';
+P.cost = 'l1';
+P.num_var_t = K;
+P.var_theta = linspace(0.5,25,P.num_var_t).^2;
 
-    % algorithm parameters
+% algorithm parameters
 
-    P.params.rho1 = 1;
-    % P.params.lambda1 = 0.0001;
-    P.params.tau = 1.05;
-    P.params.mu = 2;
-    P.params.adaptRho = 1;
-    P.params.alpha = 1.8;
-    P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
-    P.params.maxIter = 50;
-    P.params.tolerance = 1e-8;
-    P.params.isNonnegative = 1;
-    P.params.zeroPad = zPad;
-    P.params.zeroMask = zMask;
-    P.params.plotProgress = 0;
-    P.params.verbose = 1;
+P.params.rho1 = 1;
+% P.params.lambda1 = 0.0001;
+P.params.tau = 1.05;
+P.params.mu = 2;
+P.params.adaptRho = 1;
+P.params.alpha = 1.8;
+P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
+P.params.maxIter = 50;
+P.params.tolerance = 1e-8;
+P.params.isNonnegative = 1;
+P.params.zeroPad = zPad;
+P.params.zeroMask = zMask;
+P.params.plotProgress = 0;
+P.params.verbose = 1;
 
-    P.params.conjGradIter = 100;
-    P.params.tolerance = 1e-8;
-    P.params.cgEpsilon = 1e-3;
+P.params.conjGradIter = 100;
+P.params.tolerance = 1e-8;
+P.params.cgEpsilon = 1e-3;
 
-    % Construct dictionary
-    A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+% Construct dictionary
+A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
-    % Load data
-    theta_stds1 = linspace(1,15,T);
-    B = zeros(N,T);
-    for t = 1:T
-        b = gaussian_basis_1D( N, N/2, theta_stds1(t)^2);
-        rms = sqrt(sum(b.^2)/N);
-        b = b/rms/3; % + randn(N,1)*noise_std(nn);
-        b = addNoisePoisson(b,noise_factor(ii));
-        B(:,t) = b;
-    end
-
-    %% Independent Solution
-    x_init = zeros(N,K);
-    X_indep = zeros(N,K,M,T);
-    for i = 1:M
-        P.set = i;
-        P.params.lambda1 = P.lambda_values(i);
-        for t = 1:T
-            % Solve
-            [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
-            X_indep(:,:,i,t) = x_hat;
-        end
-    end
-    save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']),...
-            'B','X_indep','P');
+% Load data
+theta_stds1 = linspace(1,15,T);
+B = zeros(N,T);
+for t = 1:T
+    close all
+    b = gaussian_basis_1D( N, N/2, theta_stds1(t)^2);
+    rms = sqrt(sum(b.^2)/N);
+    b = b*100; % + randn(N,1)*noise_std(nn);
+    bn = poissrnd(b);
+    B(:,t) = bn;
+    plot(b);hold on;plot(bn);
+    
 end
 
-%% Plot fit
+%% Independent Solution
+% x_init = zeros(N,K);
+% X_indep = zeros(N,K,M,T);
+% for i = 1:M
+%     P.set = i;
+%     P.params.lambda1 = P.lambda_values(i);
+%     for t = 1:T
+%         % Solve
+%         [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_Sherman_1D(A0ft_stack,B(:,t),x_init,P.params);  
+%         X_indep(:,:,i,t) = x_hat;
+%     end
+% end
+% save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all']),...
+%         'B','X_indep','P');
 
-dset_name = ['singlePeak_noise_poisson',num2str(10)];
+
+%% Plot fit
+dset_name = ['singlePeak_noise_Poisson'];
 output_name = '_indep_ISM';
 output_subdir = [dset_name,output_name];
 dataset =  fullfile(top_dir,dset_name);
@@ -112,7 +110,7 @@ load(fullfile(output_dir,[dset_name,'_',num2str(50),'_','all']))
 close all
 fits_fig_indep = figure(11);
  [ha11, ~] = tight_subplot(10,5,[.005 .005],[.01 .01],[.01 .01]);
-awmv_az_indep = zeros(M,1);
+awmv_az_indep = zeros(T,1);
 rse_indep = zeros(M,T);
 mse_indep = zeros(M,T);
 l1_norm = zeros(M,T);
@@ -124,9 +122,6 @@ for i = 1:M
         l1_norm(i,time) = sum(abs(x(:)));
         mse_indep(i,time) = norm(fit-B(:,time));
         rse_indep(i,time) = norm(fit-B(:,time))/norm(B(:,time));
-        az_signal = squeeze(sum(x,1));
-        var_sum = squeeze(sum(az_signal(:)));
-        awmv_az_indep(i) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
 %     axes(ha11(time))
 %     hold on
 %     plot(B(:,time))
@@ -138,10 +133,9 @@ end
 close all
 select_ind = zeros(T,1);
 for time = 1:T
-    crit = abs(l1_norm(:,time)*0.5).^2 + abs(mse_indep(:,time)).^2;
+    crit = abs(l1_norm(:,time)*0.6).^2 + abs(mse_indep(:,time)).^2;
     select_ind(time) = find( (crit == min(crit)),1 );
     x = X_indep(:,:,select_ind(time),time);
-%     x = X_indep(:,:,1,time);
     az_signal = squeeze(sum(x,1));
     var_sum = squeeze(sum(az_signal(:)));
     awmv_az_indep(time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;

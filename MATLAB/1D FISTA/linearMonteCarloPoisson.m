@@ -6,13 +6,11 @@ close all
 top_dir = 'D:\CHESS_data\';
 % top_dir = '/cluster/shared/dbanco02';
 
-noise_factor = [0.1:0.1:1];
-NN = numel(noise_factor);
-
 num_ims = 50;
 N = 101;
 K = 20;
 M = 50;
+NN = 1;
 T = num_ims;
 zPad = 0;
 zMask = [];
@@ -25,7 +23,7 @@ close all
 lambda_select = zeros(NN,T);
 
 for nn = 1:NN
-    dset_name = ['singlePeak_noise_poisson',num2str(nn)];
+    dset_name = ['singlePeak_noise_Poisson',num2str(nn)];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
