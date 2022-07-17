@@ -4,23 +4,14 @@ close all
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = '/cluster/home/dbanco02/data';
 
-noise_factor = [0.2:0.2:2];
-NN = numel(noise_factor);
+
 MM = 20;
+noise_factor = 1;
+NN = numel(noise_factor);
 
-lambda2_values = [logspace(-2.5,-1,MM);
-                  logspace(-2.2,-0.8,MM);
-                  logspace(-2.2,-0.8,MM);
-                  logspace(-2.2,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.5,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM);
-                  logspace(-1.5,-0.3,MM)];
+lambda2_values =  logspace(-1.5,-0.3,MM);
 
 num_ims = 30;
 N = 101;
@@ -36,9 +27,9 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
 %% Run ADMM
 
-for nn = 10
+for nn = 1
     % Input dirs
-    dset_name = ['anomaly_noise_poisson',num2str(nn)];
+    dset_name = ['anomaly_noise_Poisson'];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];

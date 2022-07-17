@@ -4,11 +4,11 @@ close all
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = '/cluster/home/dbanco02/data';
 
 MM = 15;
 noise_factor = 1;
-lambda2_values = logspace(-1,-0.2,MM);
+lambda2_values = logspace(-1.5,-0.3,MM);
 
 num_ims = 50;
 N = 101;
@@ -21,7 +21,7 @@ zMask = [];
 theta_stds1 = linspace(1,15,T)';
 
 %% Run ADMM
-%{
+
 % Input dirs
 dset_name = ['singlePeak_noise_Poisson'];
 indep_name = '_indep_ISM';
@@ -77,7 +77,7 @@ for i = 1:MM
     save(fullfile(output_dir,[dset_name,'_',num2str(i),'_','time1']),...
         'B','X_hat','P');
 end
-%}
+
 
 %% Parameter Selection for coupled 
 MM = 9
