@@ -15,7 +15,7 @@ for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
-        b = sum(b_data.polar_image,1);
+        b = sum(b_data.polar_image,2);
         b(129:133) = (b(128) + b(134))/2;
     catch
         b = b_data.polar_vector;

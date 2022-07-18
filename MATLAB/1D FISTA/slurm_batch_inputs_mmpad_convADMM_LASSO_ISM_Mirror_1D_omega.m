@@ -6,7 +6,7 @@ disp('Setup params')
 % top_dir = 'E:\MMPAD_data';
 top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
-r_dir = {'ring1','ring2','ring3','ring4'];
+r_dir = {'ring1','ring2','ring3','ring4'};
 
 for o = 1:3
 for ring_num = 1:4
@@ -16,12 +16,12 @@ dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
 indep_name = '_indep_ISM_Mirror';
-indep_subdir = [dset_name,om_dir,indep_name];
+indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)
 
 % Setup directories
-dataset =  fullfile(top_dir,om_dir,r_dir,dset_name);
+dataset =  fullfile(top_dir,om_dir{o},dset_name);
 
 num_ims = numel(dir(fullfile(dataset,'*.mat')));
 
@@ -33,7 +33,7 @@ P.dataset = dataset;
 % Data/Dictionary Parameters
 % Zero padding and mask
 load(fullfile(dataset,[P.prefix,'_1.mat']));
-polar_vector = sum(polar_image,1);
+polar_vector = sum(polar_image,2);
 n = numel(polar_vector);
 zPad = 0;
 % zMask = [1:zPad,(zPad+n+1):(2*zPad+n)];

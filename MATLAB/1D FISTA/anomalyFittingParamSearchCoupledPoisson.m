@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/home/dbanco02/data';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 
 
 MM = 20;
@@ -98,7 +98,7 @@ l1_norm = zeros(MM,NN);
 tv_penalty = zeros(MM,NN);
 for nn = 1:NN
     % Load coupled solution
-    dset_name = ['anomaly_noise_poisson',num2str(nn)];
+    dset_name = ['anomaly_noise_Poisson'];
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
