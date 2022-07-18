@@ -40,7 +40,7 @@ r1 = 355; r2 = 395;
 %% Inspect data
 om_0 = 35;
 
-for i = 1:545
+for i = 80:2:545
     fname = [' mmpad_img_',num2str(i),'.mat'];
     load(fullfile(data_dir,fname))
 
@@ -53,12 +53,12 @@ for i = 1:545
     hold on
     plot(1:265,om_0*ones(265),'r')
     
-    f2 = figure(2);
-    imagesc(squeeze(sum(mmpad_img(:,:,r1:r2),1))')
-    ylabel('2\theta')
-    xlabel('\eta')  
-    title(['t = ',num2str(i)])
-    f2.Position = [968,400,560,81];
+%     f2 = figure(2);
+%     imagesc(squeeze(sum(mmpad_img(:,:,r1:r2),1))')
+%     ylabel('2\theta')
+%     xlabel('\eta')  
+%     title(['t = ',num2str(i)])
+%     f2.Position = [968,400,560,81];
     
     f3 = figure(3);
     imagesc(squeeze(mmpad_img(om_0,:,r1:r2))')
