@@ -3,11 +3,9 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 
-noise_factor = [0.2:0.2:2];
-NN = numel(noise_factor);
 
 num_ims = 30;
 N = 101;
@@ -21,11 +19,12 @@ theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
 %% Paramter Selection Independent
 close all
+NN = 1;
 lambda_select = zeros(NN,T);
 dict_init = 1;
-for nn = 10:NN
+for nn = 1:NN
     % Load Independent and compute awmv
-    dset_name = ['anomaly_noise_poisson',num2str(nn)];
+    dset_name = ['anomaly_noise_Poisson'];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
@@ -52,7 +51,7 @@ for nn = 10:NN
     select_ind = zeros(T,1);
     
     for time = 1:T
-        crit = abs(l1_norm(:,time)*0.45).^2 + abs(mse_indep(:,time)).^2;
+        crit = abs(l1_norm(:,time)*0.60).^2 + abs(mse_indep(:,time)).^2;
         select_ind(time) = find( (crit == min(crit)),1 );
         lambda_select(nn,time) = P.lambda_values(select_ind(time));
     end
@@ -78,9 +77,9 @@ mse = zeros(MM,NN);
 tv_penalty = zeros(MM,NN);
 dict_init = 1;
 
-for nn = 10:NN
+for nn = 1:NN
     % Load coupled solution
-    dset_name = ['anomaly_noise_poisson',num2str(nn)];
+    dset_name = ['anomaly_noise_Poisson'];
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     output_dir  = fullfile(top_dir,output_subdir);
@@ -106,9 +105,9 @@ end
 [~,s_i] = min(awmv_rmse);
 
 %% Use Lambda_t and Gamma parameters to do MC
-trials = 5;
+trials = 100;
 % Input dirs
-dset_name = ['anomaly_noise_MC'];
+dset_name = ['anomaly_noise_MC_Poisson'];
 
 % Output dirs
 indep_name = '_indep_ISM';
@@ -126,7 +125,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn = 10
+for nn = 1:NN
     indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;

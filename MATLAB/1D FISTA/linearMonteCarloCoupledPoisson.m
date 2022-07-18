@@ -7,8 +7,7 @@ close all
 top_dir = '/cluster/home/dbanco02/data';
 % top_dir = '/cluster/shared/dbanco02';
 
-noise_factor = [0.1:0.1:1];
-NN = numel(noise_factor);
+NN = 1;
 
 num_ims = 50;
 N = 101;
@@ -26,7 +25,7 @@ lambda_select = zeros(NN,T);
 dict_init = 1;
 for nn = 1
     % Load Independent and compute awmv
-    dset_name = ['singlePeak_noise_poisson',num2str(nn)];
+    dset_name = ['singlePeak_noise_Poisson'];
     indep_name = '_indep_ISM';
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
@@ -56,7 +55,7 @@ for nn = 1
     figure(111)
     
     for time = 1:T
-        crit = abs(l1_norm(:,time)*0.45).^2 + abs(mse_indep(:,time)).^2;
+        crit = abs(l1_norm(:,time)*0.60).^2 + abs(mse_indep(:,time)).^2;
         select_ind(time) = find( (crit == min(crit)),1 );
         lambda_select(nn,time) = P.lambda_values(select_ind(time));
         % Plot L-curves
@@ -92,7 +91,7 @@ dict_init = 1;
 
 for nn = 1:NN
     % Load coupled solution
-    dset_name = ['singlePeak_noise_poisson',num2str(nn)];
+    dset_name = ['singlePeak_noise_Poisson'];
     output_name = '_coupled_CGTV';
     output_subdir = [dset_name,output_name];
     dataset =  fullfile(top_dir,dset_name);
@@ -121,7 +120,7 @@ end
 %% Use Lambda_t and Gamma parameters to do MC
 trials = 5;
 % Input dirs
-dset_name = ['singlePeak_noise_MC_poisson'];
+dset_name = ['singlePeak_noise_MC_Poisson'];
 
 % Output dirs
 indep_name = '_indep_ISM';
@@ -139,8 +138,8 @@ P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
 X_coupled = zeros(N,K,trials,T);
-for nn = 1:2
-    indep_data = load(fullfile(indep_dir,[dset_name,'_',num2str(nn),'_','all']));
+for nn = 1:NN
+    indep_data = load(fullfile(indep_dir,[dset_name,'_','all']));
     X_indep = indep_data.X_indep;
     B = indep_data.B;
     P.set = nn;
