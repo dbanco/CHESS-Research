@@ -36,8 +36,9 @@ r1 = 355; r2 = 395;
 % Spot exits eta = 251, omega = 1, t = 33
 % (artifact t=47 visible)
 %% Inspect data
-for i = 46:545
+for i = 0:200
     fname = [' mmpad_img_',num2str(i),'.mat'];
+    gifname = 'eta_omega_mmpad_021';
     load(fullfile(data_dir,fname))
 
     f1 = figure(1);
@@ -47,12 +48,19 @@ for i = 46:545
     title(['t = ',num2str(i)])
     f1.Position = [971,573,560,420];
     
-    f2 = figure(2);
-    imagesc(squeeze(sum(mmpad_img(:,:,r1:r2),1))')
-    ylabel('2\theta')
-    xlabel('\eta')  
-    title(['t = ',num2str(i)])
-    f2.Position = [968,408,560,81];
-    
-%     pause()
+    % creat gif
+    drawnow
+    frame = getframe(f1);
+    [A,map] = rgb2ind(frame2im(frame),256);
+    if i==0
+        imwrite(A,map,gifname,'gif','LoopCount',Inf,'DelayTime',0.1);
+    else
+        imwrite(A,map,gifname,'gif','WriteMode','append','DelayTime',0.1);
+    end
+%     f2 = figure(2);
+%     imagesc(squeeze(sum(mmpad_img(:,:,r1:r2),1))')
+%     ylabel('2\theta')
+%     xlabel('\eta')  
+%     title(['t = ',num2str(i)])
+%     f2.Position = [968,408,560,81];
 end
