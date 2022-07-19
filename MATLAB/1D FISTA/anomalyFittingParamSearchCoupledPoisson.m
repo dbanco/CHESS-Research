@@ -9,7 +9,7 @@ top_dir = '/cluster/home/dbanco02/data';
 
 MM = 20;
 noise_factor = 1;
-NN = numel(noise_factor);
+NN = 1;
 
 lambda2_values =  logspace(-1.5,-0.3,MM);
 

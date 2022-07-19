@@ -15,15 +15,15 @@ dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
 indep_name = '_indep_ISM_Mirror';
-indep_subdir = [dset_name,indep_name];
+indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
 output_name = '_coupled_CG_TVphi_Mirror';
-output_subdir = [dset_name,output_name];
+output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
-dataset =  fullfile(top_dir,dset_name);
+dataset =  fullfile(top_dir,om_dir{o},dset_name);
 output_dir  = fullfile(top_dir,output_subdir);
 mkdir(output_dir)  
 
@@ -159,4 +159,5 @@ end
 
 slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+end
 end

@@ -6,8 +6,10 @@ close all
 % top_dir = 'D:\CHESS_data\';
 top_dir = '/cluster/home/dbanco02/data';
 
-MM = 15;
+MM = 20;
 noise_factor = 1;
+NN = 1;
+
 lambda2_values = logspace(-1.5,-0.3,MM);
 
 num_ims = 50;
@@ -80,8 +82,8 @@ end
 
 
 %% Parameter Selection for coupled 
-MM = 9
-NN = 1
+
+NN = 1;
 [ha_param, ~] = tight_subplot(4,3,[.005 .005],[.01 .01],[.01 .01]);
 awmv_all = zeros(MM,T,NN);
 awmv_rmse = zeros(MM,NN);

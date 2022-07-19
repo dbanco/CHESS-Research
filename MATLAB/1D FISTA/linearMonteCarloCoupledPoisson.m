@@ -120,7 +120,7 @@ end
 %% Use Lambda_t and Gamma parameters to do MC
 trials = 5;
 % Input dirs
-dset_name = ['singlePeak_noise_MC_Poisson'];
+dset_name = ['singlePeak_noise_Poisson'];
 
 % Output dirs
 indep_name = '_indep_ISM';
@@ -152,7 +152,7 @@ for nn = 1:NN
         X_coupled(:,:,i,:) = X_hat;
 
     end
-    save(fullfile(output_dir,[dset_name,'_',num2str(nn),'_','CGTV1']),...
+    save(fullfile(output_dir,[dset_name,'_MC_',num2str(nn),'_','CGTV1']),...
                              'B','X_coupled','P');
 end
 
