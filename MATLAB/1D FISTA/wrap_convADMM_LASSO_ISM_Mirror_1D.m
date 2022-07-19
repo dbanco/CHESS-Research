@@ -11,7 +11,7 @@ A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Load data
 B = zeros(N,T);
-for j = 101:T
+for j = 1:100
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
