@@ -11,7 +11,7 @@ A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Load data
 B = zeros(N,T);
-for j = 1:100
+for j = 1:T
   b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
     % Reduce image to vector if needed
     try
@@ -40,14 +40,16 @@ B = B*P.dataScale;
 
 % Init solution
 x_init = zeros(N,K);
-for t = 101:T
-    % Solve
-    bnorm = norm(B(:,t));
-    [x_hat,err,obj,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack/bnorm,B(:,t)/bnorm,x_init,P.params); 
+for t = 23
+%     if ~isfile(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)))
+        % Solve
+        bnorm = norm(B(:,t));
+        [x_hat,err,obj,l1_norm,rho] = convADMM_LASSO_Sherman_1D(A0ft_stack/bnorm,B(:,t)/bnorm,x_init,P.params); 
 
-    % Output data
-    save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),...
-        'x_hat','err','obj','l1_norm','rho','P');
+        % Output data
+        save(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)),...
+            'x_hat','err','obj','l1_norm','rho','P');
+%     end
 end
 
 end
