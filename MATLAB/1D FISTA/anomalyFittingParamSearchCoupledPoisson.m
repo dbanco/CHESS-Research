@@ -3,15 +3,15 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\CHESS_data\';
-% top_dir = '/cluster/home/dbanco02/data';
+% top_dir = 'D:\CHESS_data\';
+top_dir = '/cluster/home/dbanco02/data';
 
 
 MM = 20;
 noise_factor = 1;
 NN = 1;
 
-lambda2_values =  logspace(-0.3,1,MM);
+lambda2_values =  logspace(-0.3,2,MM);
 
 num_ims = 30;
 N = 101;
@@ -131,31 +131,35 @@ figure(2)
 plot(awmv_rmse)
 
 %% Show L-curves and selected parameters
-% nn = 3;
-% [~,s_i] = min(awmv_rmse);
+% % [~,s_i] = min(awmv_rmse);
 % select_ind = zeros(NN,1);
 % gamma_select = zeros(NN,T);
 % figure(111)
 % for nn = 1:NN
-%     crit = abs(l1_norm(:,nn)*0.45).^2 +...
-%            abs(mse(:,nn)).^2 +...
-%            abs(tv_penalty(:,nn)).^2;
+%     crit1 = abs(mse(:,nn)-min(mse(:,nn))).^2 /2/(max(mse(:,nn))-min(mse(:,nn)))^2;
+%     crit2 = abs(l1_norm(:,nn)-min(l1_norm(:,nn))).^2 /2/(max(l1_norm(:,nn))-min(l1_norm(:,nn)))^2;
+%     crit3 = abs(tv_penalty(:,nn)-min(tv_penalty(:,nn))).^2 /(max(tv_penalty(:,nn))-min(tv_penalty(:,nn)))^2;
+%     crit = crit1+crit2+crit3;
 %     select_ind(nn) = find( (crit == min(crit)),1 );
 %     gamma_select(nn) = P.lambda_values(select_ind(nn));
 %     % Plot L-curves
 %     subplot(3,4,nn)
-%     plot(l1_norm(:,nn)+mse(:,nn),...
-%          tv_penalty(:,nn))
+%     plot(crit1+crit2,...
+%          crit3)
 %     hold on
-%     plot(l1_norm(select_ind(nn),nn)+mse(select_ind(nn),nn),...
-%          tv_penalty(select_ind(nn),nn),'or')
-%     plot(l1_norm(s_i(nn),nn)+mse(s_i(nn),nn),...
-%      tv_penalty(s_i(nn),nn),'sb')
+%     plot(crit1(select_ind(nn))+crit2(select_ind(nn)),...
+%          crit3(select_ind(nn)),'or')
+%     plot(crit1(s_i(nn))+crit2(s_i(nn)),...
+%          crit3(s_i(nn)),'sb')
+%     [awmv_rmse(select_ind(nn),nn),...
+%      awmv_rmse(s_i(nn),nn)]
+%     
 %     hold off
-%     xlabel('l_1 norm + MSE')
+%     xlabel('MSE')
 %     ylabel('TV Penalty')
 % 
 % end
+
 %% Show L-curves and selected parameters
 % [~,s_i] = min(awmv_rmse);
 select_ind = zeros(NN,1);
@@ -205,6 +209,7 @@ end
 % for i = 1:2:MM
 %     plot(awmv_all(i,:,11),'Linewidth',2)
 % end
+
 
 %% Show awmvs
 close all
