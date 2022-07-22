@@ -175,10 +175,10 @@ for nn = 1:NN
     hold on
     plot(crit1(select_ind(nn))+crit2(select_ind(nn)),...
          crit3(select_ind(nn)),'or')
-    plot(crit1(s_i(nn))+crit2(s_i(nn)),...
-         crit3(s_i(nn)),'sb')
-    [awmv_rmse(select_ind(nn),nn),...
-     awmv_rmse(s_i(nn),nn)]
+%     plot(crit1(s_i(nn))+crit2(s_i(nn)),...
+%          crit3(s_i(nn)),'sb')
+%     [awmv_rmse(select_ind(nn),nn),...
+%      awmv_rmse(s_i(nn),nn)]
     
     hold off
     xlabel('MSE')
@@ -217,7 +217,7 @@ awmv_rmse_indep = zeros(NN,1);
 awmv_rmse_coupled = zeros(NN,1);
 % awmv_rmse_coupled2 = zeros(NN,1);
 for nn = 1:NN
-    awmv_rmse_coupled(nn) = awmv_rmse(s_i(nn),nn);
+%     awmv_rmse_coupled(nn) = awmv_rmse(s_i(nn),nn);
     % Load Independent and compute awmv
     dset_name = ['anomaly_noise_Poisson'];
     indep_name = '_indep_ISM';
@@ -267,7 +267,7 @@ for nn = 1:NN
     hold on
     plot(theta_stds1,'k--','Linewidth',2)
     plot(awmv_indep(:,nn),'b-','Linewidth',2)
-    plot(awmv_all(20,:,nn),'r:','Linewidth',3) %s_i2(nn)
+    plot(awmv_all(s_i2(nn),:,nn),'r:','Linewidth',3) %s_i2(nn)
     NW = [min(xlim) max(ylim)]+[diff(xlim)*0.05 -diff(ylim)*0.1];
 %     text(NW(1), NW(2), ['v=',sprintf('%1.2f',noise_std(nn))],'FontSize',14)
 end

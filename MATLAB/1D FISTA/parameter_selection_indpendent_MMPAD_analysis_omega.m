@@ -11,7 +11,7 @@ top_dir = 'E:\MMPAD_omega';
 
 % Input dirs
 dset_name = 'ring1';
-om_name = 'omega2';
+om_name = 'omega4';
 
 % Output dirs
 output_name = '_indep_ISM_Mirror';
@@ -254,7 +254,7 @@ end
 figure(12)
 plot(awmv)
 title('AWMV Selected Indices')
-save([dset_name,'_mirror_indep_awmv.mat'],'awmv','select_indices','lambda_values')
+save([dset_name,om_name,'_mirror_indep_awmv.mat'],'awmv','select_indices','lambda_values')
 
 %% Selected VDF;
 select_vdf = zeros(T,K);
