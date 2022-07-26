@@ -2,10 +2,11 @@ function wrap_convADMM_LASSO_CG_TVphi_Mirror_1D(dataset,P,output_dir)
 %wrap_convADMM_LASSO_CG_TVphi_1D Wrapper function to call 
 %   convADMM_LASSO_CG_TVphi_1D during in parallel processing
 
-if ~isfile(fullfile(output_dir,sprintf(P.baseFileName,P.set)))
+% if ~isfile(fullfile(output_dir,sprintf(P.baseFileName,P.set)))
     N = P.num_theta;
     K = P.num_var_t;
     T = P.num_ims;
+    T = 546;
 
     % Construct dictionary
     A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
@@ -52,4 +53,4 @@ if ~isfile(fullfile(output_dir,sprintf(P.baseFileName,P.set)))
     % Output data
     save(fullfile(output_dir,sprintf(P.baseFileName,P.set)),...
     'X_hat','err','obj','l1_norm','tv_penalty','P');
-end
+% end

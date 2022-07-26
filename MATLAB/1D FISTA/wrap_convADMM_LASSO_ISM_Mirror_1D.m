@@ -40,7 +40,7 @@ B = B*P.dataScale;
 
 % Init solution
 x_init = zeros(N,K);
-for t = 23
+for t = 1:T
 %     if ~isfile(fullfile(output_dir,sprintf(P.baseFileName,P.set,t)))
         % Solve
         bnorm = norm(B(:,t));

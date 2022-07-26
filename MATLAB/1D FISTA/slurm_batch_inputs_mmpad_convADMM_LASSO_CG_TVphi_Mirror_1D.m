@@ -8,7 +8,7 @@ top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o = 2:3
+for o = 1:3
 for ring_num = 1:4
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
@@ -39,6 +39,8 @@ P.indepInit = 1;
 N = P.num_theta;
 K = P.num_var_t;
 T = P.num_ims;
+T = 546;
+P.num_ims = 546;
 
 % Function
 funcName = 'wrap_convADMM_LASSO_CG_TVphi_Mirror_1D';
@@ -159,5 +161,6 @@ end
 
 slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
+
 end
 end
