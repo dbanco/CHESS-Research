@@ -4,14 +4,22 @@ close all
 % Parameter selection
 disp('Setup params')
 P.set = 1;
+
 % Parent directory
-top_dir = 'E:\MMPAD_omega';
+% top_dir = 'E:\MMPAD_omega';
 % top_dir = 'E:\PureTiRD_full';
-%     top_dir = '/cluster/shared/dbanco02';
+% top_dir = '/cluster/shared/dbanco02';
+top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+om_dir = {'omega2','omega3','omega4'};
+r_dir = {'ring1','ring2','ring3','ring4'};
+
+for o =1:3
+    for r = 1:4
+        close all
 
 % Input dirs
-dset_name = 'ring1';
-om_name = 'omega4';
+dset_name = r_dir{r};
+om_name = om_dir{o};
 
 % Output dirs
 output_name = '_indep_ISM_Mirror';
@@ -120,76 +128,76 @@ lambda_index = find(discrep_crit == min(discrep_crit));
 param_select_single = P.lambda_values(lambda_index);
 lambda_values_single = ones(T,1)*param_select_single;
 
-figure(2)
-plot(param_select,'o-')
-title('Parameters selected')
+% figure(2)
+% plot(param_select,'o-')
+% title('Parameters selected')
 
 
 %% Plot
-lambda_vals = P.lambda_values;
+% lambda_vals = P.lambda_values;
+% 
+% figure(3)
+% semilogx(lambda_vals(1:M),mean(l1_select,2),'o-')
+% hold on
+% xlabel('\lambda')
+% ylabel('l_1 term')
+% 
+% % Plot
+% figure(4)
+% semilogx(lambda_vals(1:M),mean(err_select,2),'o-')
+% hold on
+% xlabel('\lambda')
+% ylabel('error')
+% 
+% % Plot
+% figure(5)
+% semilogx(lambda_vals(1:M),mean(l0_select,2),'o-')
+% hold on
+% xlabel('\lambda')
+% ylabel('l_0')
 
-figure(3)
-semilogx(lambda_vals(1:M),mean(l1_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_1 term')
 
-% Plot
-figure(4)
-semilogx(lambda_vals(1:M),mean(err_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('error')
-
-% Plot
-figure(5)
-semilogx(lambda_vals(1:M),mean(l0_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_0')
-
-
-% Analyze L-curve
-total_err = sum(err_select(1:M,:),2);
-total_l1 = sum(l1_select(1:M,:),2);
-total_err = total_err./max(total_err);
-total_l1 = total_l1./max(total_l1);
-
-% Find kink in L-cureve method #1
-% slopes = (total_l1(2:end) - total_l1(1:end-1))./...
-%      (total_err(2:end) - total_err(1:end-1));
-% slope_select = find((slopes)>0);
-% select_ind = slope_select(1);
-
-% Find kink in L-cureve method #2
-sq_origin_dist = total_l1.^2 + total_err.^2;
-select_ind = find(sq_origin_dist == min(sq_origin_dist));
-
-figure(6)
-plot(total_l1,total_err,'o-')
-% plot(mean(l1_select,2),mean(err_select,2),'o-')
-hold on
-plot(total_l1(select_ind),total_err(select_ind),'s','Markersize',15)
-xlabel('time-average l1-norm')
-ylabel('time-average error')
-title('L-curve')
-
-figure(666)
-iii=55;
-loglog(l1_select(1:M,iii),err_select(1:M,iii),'o-')
-hold on
-loglog(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
-xlabel('l1-norm')
-ylabel('error')
-title('L-curve')
-
-figure(667)
-plot(l1_select(1:M,iii),err_select(1:M,iii),'o-')
-hold on
-plot(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
-xlabel('l1-norm')
-ylabel('error')
-title('L-curve')
+% % Analyze L-curve
+% total_err = sum(err_select(1:M,:),2);
+% total_l1 = sum(l1_select(1:M,:),2);
+% total_err = total_err./max(total_err);
+% total_l1 = total_l1./max(total_l1);
+% 
+% % Find kink in L-cureve method #1
+% % slopes = (total_l1(2:end) - total_l1(1:end-1))./...
+% %      (total_err(2:end) - total_err(1:end-1));
+% % slope_select = find((slopes)>0);
+% % select_ind = slope_select(1);
+% 
+% % Find kink in L-cureve method #2
+% sq_origin_dist = total_l1.^2 + total_err.^2;
+% select_ind = find(sq_origin_dist == min(sq_origin_dist));
+% 
+% figure(6)
+% plot(total_l1,total_err,'o-')
+% % plot(mean(l1_select,2),mean(err_select,2),'o-')
+% hold on
+% plot(total_l1(select_ind),total_err(select_ind),'s','Markersize',15)
+% xlabel('time-average l1-norm')
+% ylabel('time-average error')
+% title('L-curve')
+% 
+% figure(666)
+% iii=55;
+% loglog(l1_select(1:M,iii),err_select(1:M,iii),'o-')
+% hold on
+% loglog(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
+% xlabel('l1-norm')
+% ylabel('error')
+% title('L-curve')
+% 
+% figure(667)
+% plot(l1_select(1:M,iii),err_select(1:M,iii),'o-')
+% hold on
+% plot(l1_select(select_ind,iii),err_select(select_ind,iii),'s','Markersize',15)
+% xlabel('l1-norm')
+% ylabel('error')
+% title('L-curve')
 
 %% L curve parameter selection
 select_indices = zeros(T,1);
@@ -214,9 +222,9 @@ for t = 1:T
 end
 
 
-figure(544)
-plot(selected_error)
-title('Selected Relative Errors')
+% figure(544)
+% plot(selected_error)
+% title('Selected Relative Errors')
 
 % for t = 1:T
 %     b = B(:,t);
@@ -232,13 +240,13 @@ title('Selected Relative Errors')
 %     end
 % end
 
-figure(543)
-plot(select_indices)
-title('Selected Indices')
-
-figure(544)
-hold on
-plot(selected_error)
+% figure(543)
+% plot(select_indices)
+% title('Selected Indices')
+% 
+% figure(544)
+% hold on
+% plot(selected_error)
 
 %% Plot AWMV
 awmv = zeros(T,1);
@@ -254,8 +262,9 @@ end
 figure(12)
 plot(awmv)
 title('AWMV Selected Indices')
-save([dset_name,om_name,'_mirror_indep_awmv.mat'],'awmv','select_indices','lambda_values')
+save(fullfile(top_dir,[dset_name,om_name,'_mirror_indep_awmv.mat']),'awmv','select_indices','lambda_values')
 
+%{
 %% Selected VDF;
 select_vdf = zeros(T,K);
 for j = 1:T
@@ -291,4 +300,6 @@ for t = 1:10:T
     im_ind = im_ind + 1;
 end
 
-
+%}
+    end
+end
