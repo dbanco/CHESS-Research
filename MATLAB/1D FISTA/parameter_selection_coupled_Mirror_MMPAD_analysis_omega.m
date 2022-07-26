@@ -5,13 +5,14 @@ close all
 disp('Setup params')
 P.set = 1;
 % Parent directory
-% top_dir = 'E:\MMPAD_omega';
+top_dir = 'E:\MMPAD_omega';
+coupled_dir = 'E:\MMPAD_omega\coupled';
 % top_dir = 'E:\PureTiRD_full';
-top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+% top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 
 for o = 1:3
-for ring_num = 1
+for ring_num = 1:4
 % Input dirs
 dset_name = sprintf('ring%i',ring_num);
 
@@ -21,7 +22,7 @@ output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
 dataset =  fullfile(top_dir,om_dir{o},dset_name);
-output_dir  = fullfile(top_dir,output_subdir);
+output_dir  = fullfile(coupled_dir,output_subdir);
 
 baseFileName = 'coupled_fit_%i.mat';
 
@@ -125,7 +126,7 @@ end
 tv_indep = sum(abs(DiffPhiX_1D(X_indep)),'all');
 
 %% Plot awmv
-figure_dir = ['/cluster/home/dbanco02/',output_subdir,'_figures\'];
+figure_dir = [fullfile(coupled_dir,output_subdir),'_figures\'];
 % figure_dir = ['C:\Users\dpqb1\OneDrive\Desktop\',output_subdir,'_figures\'];
 mkdir(figure_dir)
 
