@@ -1,4 +1,4 @@
-function [x_hat, dcx_hat] = convADMM_LASSO_Sherman_DC_1D(A0ft_stack,b,x_init,params)
+function [x_hat, dcx_hat] = convADMM_LASSO_Sherman_DC2_1D(A0ft_stack,b,x_init,params)
 %convADMM_LASSO_1D Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -54,7 +54,7 @@ vk = zeros(size(xk));
 
 dcxk = 0;
 dcyk = 0;
-dcykp1 = 0;
+dcxkp1 = 0;
 dcvk = 0;
 
 % Track error and objective
@@ -74,25 +74,23 @@ while keep_going && (nIter < maxIter)
     nIter = nIter + 1 ;   
     
     % x-update
-    [xkp1, dcxkp1] = circulantLinSolve_DC( A0ft_stack,b,yk,vk,params,dcyk,dcvk );
+    [xkp1, dcxkp1] = circulantLinSolve_DC2( A0ft_stack,b,yk,vk,params,dcxk );
     xkp1 = forceMaskToZeroArray(xkp1,zMask);
 
     % y-update
     ykp1 = soft(alpha*xkp1 + (1-alpha)*yk + vk,lambda1/rho);
-    dcykp1 = soft(alpha*dcxkp1 + (1-alpha)*dcyk + dcvk,lambda1/rho);
+    
     if isNonnegative
         ykp1(ykp1<0) = 0;
-        dcykp1(dcykp1<0) = 0;
     end
     % v-update
     vk = vk + alpha*xkp1 + (1-alpha)*yk - ykp1;
-    dcvk = dcvk + alpha*dcxkp1 + (1-alpha)*dcyk - dcykp1;
     
     % Track and display error, objective, sparsity
     fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,xkp1) + dcxkp1,zMask);
     
     err(nIter) = sum((b(:)-fit(:)).^2);
-    l1_norm(nIter) = sum(abs(xkp1(:)))+abs(dcxkp1);
+    l1_norm(nIter) = sum(abs(xkp1(:)));
     
     f = 0.5*err(nIter) + lambda1*l1_norm(nIter);
     
@@ -106,13 +104,13 @@ while keep_going && (nIter < maxIter)
         disp(['Iter ',     num2str(nIter),...
               ' Obj ',     num2str(obj(nIter)),...
               ' Rho ',     num2str(rho),...
-              ' Err ',  num2str(err(nIter)),...
+              ' Err ',     num2str(err(nIter)),...
               ' ||x||_1 ', num2str(lambda1*l1_norm(nIter)),...
               ' ||x||_0 ', num2str(sum(xkp1(:) >0) + dcxkp1)
                ]);
     end
     
-    if params.plotProgress && nIter == 40
+    if params.plotProgress && nIter == 50
         figure(1)    
         hold off
         plot(b)
@@ -143,8 +141,8 @@ while keep_going && (nIter < maxIter)
 %     end
 
 if adaptRho
-    sk = rho*sqrt(norm(ykp1-yk)^2 + (dcykp1-dcyk)^2) ;
-    rk = sqrt(norm(xkp1-ykp1)^2 + (dcxkp1-dcykp1)^2);
+    sk = rho*norm(ykp1-yk) ;
+    rk = norm(xkp1-ykp1);
     if rk > mu*sk
         rho = rho*tau;
     elseif sk > mu*rk
@@ -158,7 +156,7 @@ end
 
     % Update indices
     xk = xkp1; dcxk = dcxkp1;
-    yk = ykp1; dcyk = dcykp1;
+    yk = ykp1;
 end
 
 if isNonnegative

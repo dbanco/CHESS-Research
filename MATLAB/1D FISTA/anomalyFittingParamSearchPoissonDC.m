@@ -7,7 +7,7 @@ top_dir = 'D:\Simulations';
 mkdir(top_dir)
 
 % Output dirs
-sim_name = 'linearPoissonDCNoise';
+sim_name = 'anomalyPoissonDCNoise';
 alg_name = 'IndepISM_DC';
 file_name = 'lineSearchNoise';
 output_dir  = fullfile(top_dir,sim_name,alg_name);
@@ -15,7 +15,7 @@ mkdir(output_dir)
 
 a_factor = [0,5,10,20,50];
 N = 101;
-T = 50;
+T = 30;
 
 for nn = 1:numel(a_factor)
     % Setup directories
@@ -23,10 +23,10 @@ for nn = 1:numel(a_factor)
         
     % Data/Dictionary Parameters
     [P,K,M] = definePoissonP(N,T);
-    [B,theta_stds] = genLinearPoisson(N,T,a_factor(nn));    
+    [B,theta_stds] = genAnomalyPoisson(N,T,a_factor(nn));
     
     % Construct dictionary
-    A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+    A0ft = dictionaryFFT(P);
 
     %% Independent Solution
     x_init = zeros(N,K);
@@ -35,9 +35,10 @@ for nn = 1:numel(a_factor)
     for i = 1:M
         P.set = i;
         P.params.lambda1 = P.lambda_values(i);
+        P.params.plotProgress = 1;
         for t = 1:T
             % Solve
-            [x_hat,dcx_hat] = convADMM_LASSO_Sherman_DC_1D(A0ft_stack,B(:,t),x_init,P.params);  
+            [x_hat,dcx_hat] = convADMM_LASSO_Sherman_DC_1D(A0ft,B(:,t),x_init,P.params);  
             X_indep(:,:,i,t) = x_hat;
             dcx_indep(i,t) = dcx_hat;
         end
@@ -47,7 +48,7 @@ end
 
 
 %% Plot fit
-nn = 4;
+nn = 5;
 f_name =  [file_name,'_',num2str(nn),'.mat'];
 load(fullfile(output_dir,f_name))
 
@@ -62,14 +63,16 @@ for i = 1:M
     for time = 1:T
 
         x = X_indep(:,:,i,time);
-        fit = Ax_ft_1D(A0ft_stack,x);
+        fit = Ax_ft_1D(A0ft,x) + dcx_indep(i,time);
         l1_norm(i,time) = sum(abs(x(:)));
         mse_indep(i,time) = norm(fit-B(:,time));
         rse_indep(i,time) = norm(fit-B(:,time))/norm(B(:,time));
-%         axes(ha11(time))
-%         hold on
-%         plot(B(:,time))
-%         plot(fit)
+        if i == 1
+            axes(ha11(time))
+            hold on
+            plot(B(:,time))
+            plot(fit)
+        end
     end
 end
 
@@ -181,11 +184,11 @@ output_subdir = [dset_name,output_name];
 output_dir  = fullfile(top_dir,output_subdir);
 awmv_az = zeros(T,1);
 load(fullfile(output_dir,[dset_name,'_',num2str(i),'_','all']))
-A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
+A0ft = unshifted_basis_vector_ft_stack_zpad(P);
 im_ind=1;
 for t = [1,25,50]
     x = X_hat(:,:,t);
-    fit = Ax_ft_1D(A0ft_stack,x);
+    fit = Ax_ft_1D(A0ft,x);
     az_signal = squeeze(sum(x,1));
     var_sum = squeeze(sum(az_signal(:)));
     awmv_az(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;

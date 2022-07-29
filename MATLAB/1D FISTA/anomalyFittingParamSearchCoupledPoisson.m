@@ -23,8 +23,6 @@ zMask = [];
 
 theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
-
-
 %% Run ADMM
 %{
 for nn = 1
