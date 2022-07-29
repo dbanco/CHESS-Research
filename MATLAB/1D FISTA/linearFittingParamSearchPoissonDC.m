@@ -8,15 +8,15 @@ top_dir = 'D:\Simulations';
 mkdir(top_dir)
 
 % Output dirs
-sim_name = 'linearPoissonNoise';
-alg_name = 'IndepISM';
+sim_name = 'linearPoissonDCNoise';
+alg_name = 'IndepISM_DC';
 file_name = 'lineSearchNoise';
 output_dir  = fullfile(top_dir,sim_name,alg_name);
 mkdir(output_dir)
 
 a_factor = [2,5,10,20,50];
 
-for nn = 5:numel(a_factor)
+for nn = 1:numel(a_factor)
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
         
