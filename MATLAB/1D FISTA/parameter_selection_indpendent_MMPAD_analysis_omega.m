@@ -6,10 +6,8 @@ disp('Setup params')
 P.set = 1;
 
 % Parent directory
-% top_dir = 'E:\MMPAD_omega';
-% top_dir = 'E:\PureTiRD_full';
-% top_dir = '/cluster/shared/dbanco02';
-top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+top_dir = 'E:\MMPAD_omega';
+% top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
