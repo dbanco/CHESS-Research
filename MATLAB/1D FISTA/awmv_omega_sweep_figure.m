@@ -19,11 +19,11 @@ pixel_angle = pixel_side./circum*360;
 
 R = 4;
 
-%% Load AWMV
+%% AWMV indep
 datadir = 'E:\MMPAD_omega';
 fileBase = 'ring%iomega%i_mirror_indep_awmv.mat';
 outName =  'ring%iomega%i_indep_AWMV.png';
-origBase = 'ring%i_zero_mirror_indep_awmv.mat';
+indepBase = 'ring%i_zero_mirror_indep_awmv.mat';
 for ring = 1:R
     fig_out = figure(ring);
     hold on
@@ -34,12 +34,259 @@ for ring = 1:R
         maxAWMV = max(awmv);
         plot(awmv,'LineWidth',1.5)
     end
-    load(fullfile(datadir,sprintf(origBase,ring)))
+    load(fullfile(datadir,sprintf(indepBase,ring)))
     plot(awmv,'LineWidth',1.5)
     title(sprintf('Ring %i',ring))
     legend('2^\circ','3^\circ','4^\circ','5^\circ')
 %     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
 end
+
+%% AWMV coupled
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+origBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+orig_ind = [29 23 25 25];
+for ring = 1:R
+    fig_out = figure(ring);
+    hold on
+    for om = 2:4
+        load(fullfile(datadir,sprintf(fileBase,ring,om)))
+        % Rescale center of Mass
+        awmv = awmv_az(select_ind,:);
+        minAWMV = min(awmv);
+        maxAWMV = max(awmv);
+        plot(awmv,'LineWidth',1.5)
+    end
+    load(fullfile(origdir,sprintf(origBase,ring)))
+    plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+    title(sprintf('Ring %i',ring))
+    legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+end
+
+%% Compare fits
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+origBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+
+om_dir = {'tt','omega2','omega3','omega4'};
+r_dir = {'ring1','ring2','ring3','ring4'};
+
+orig_ind = [29 23 25 25];
+for ring = 2
+    fig_out = figure(ring);
+    hold on
+    for om = 2:4
+        load(fullfile(datadir,sprintf(fileBase,ring,om)))   
+        
+        figure(ring)
+        % Rescale center of Mass
+        awmv = awmv_az(select_ind,:);
+        minAWMV = min(awmv);
+        maxAWMV = max(awmv);
+        plot(awmv,'LineWidth',1.5)
+        
+        % Plot fits
+        output_name = '_coupled_CG_TVphi_Mirror';
+        output_subdir = [r_dir{ring},om_dir{om},output_name];
+        output_dir  = fullfile(datadir,output_subdir);
+        baseFileName = 'coupled_fit_%i.mat';
+        load(fullfile(output_dir,sprintf(baseFileName,1)))
+        [N,K,T] = size(X_hat);
+        B = zeros(N,T);
+        dataset = fullfile('E:\MMPAD_omega',om_dir{om},r_dir{ring});
+        
+        tt = 28;
+        for j = tt
+            b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
+            b = P.dataScale*sum(b_data.polar_image,2);
+
+            % Mirror data
+            nn = numel(b);
+            pad1 = floor(nn/2);
+            pad2 = ceil(nn/2);
+            N = nn + pad1 + pad2;
+            b_mirror = zeros(N,1);
+            b_mirror((pad1+1):(pad1+nn)) = b;
+            b_mirror((1+N-pad2):N) = flip(b((nn-pad2+1):nn));
+            b_mirror(1:pad1) = flip(b(1:pad1));
+            B(:,j) = b_mirror;
+        end
+        % Load coupled fit for selected ind
+        e_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)),'P','X_hat');
+        A0ft_stack = unshifted_basis_vector_ft_stack_zpad(e_data.P);
+        tt = 200;
+        b = B(:,tt);
+        x = squeeze(e_data.X_hat(:,:,tt));
+        fit = Ax_ft_1D(A0ft_stack,x);
+        figure(om+9)
+        hold on
+        plot(b)
+        plot(fit)
+    end
+    load(fullfile(origdir,sprintf(origBase,ring)))
+    figure(ring)
+    plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+    title(sprintf('Ring %i',ring))
+    legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+end
+
+%% AWMV coupled
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+origBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+orig_ind = [29 23 25 25];
+for ring = 2
+    fig_out = figure(ring);
+    hold on
+    for om = 4
+        load(fullfile(datadir,sprintf(fileBase,ring,om)))
+        % Rescale center of Mass
+        awmv = awmv_az(30,:);
+        minAWMV = min(awmv);
+        maxAWMV = max(awmv);
+        plot(awmv,'LineWidth',1.5)
+    end
+    load(fullfile(origdir,sprintf(origBase,ring)))
+    plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+    title(sprintf('Ring %i',ring))
+    legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+end
+
+
+%% Plot fit from orig and smaller sweep
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+indepBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+
+om_dir = {'tt','omega2','omega3','omega4'};
+r_dir = {'ring1','ring2','ring3','ring4'};
+
+orig_ind = [29 23 25 25];
+for ring = 2
+    fig_out = figure(ring);
+    hold on
+    for om = 2
+        load(fullfile(datadir,sprintf(fileBase,ring,om)))   
+        
+        figure(ring)
+        % Rescale center of Mass
+        awmv = awmv_az(select_ind,:);
+        minAWMV = min(awmv);
+        maxAWMV = max(awmv);
+        plot(awmv,'LineWidth',1.5)
+        
+        % Plot fits
+        output_name = '_coupled_CG_TVphi_Mirror';
+        output_subdir = [r_dir{ring},om_dir{om},output_name];
+        output_dir  = fullfile(datadir,output_subdir);
+        baseFileName = 'coupled_fit_%i.mat';
+        load(fullfile(output_dir,sprintf(baseFileName,1)))
+        [N,K,T] = size(X_hat);
+        B = zeros(N,T);
+        dataset = fullfile('E:\MMPAD_omega',om_dir{om},r_dir{ring});
+        
+        tt = 28;
+        for j = tt
+            b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
+            b = P.dataScale*sum(b_data.polar_image,2);
+            B(:,j) = mirrorData(b);
+        end
+        % Load coupled fit for selected ind
+        e_data = load(fullfile(output_dir,sprintf(baseFileName,select_ind)),'P','X_hat');
+        A0ft_stack = unshifted_basis_vector_ft_stack_zpad(e_data.P);
+        tt = 200;
+        b = B(:,tt);
+        x = squeeze(e_data.X_hat(:,:,tt));
+        fit = Ax_ft_1D(A0ft_stack,x);
+        figure(om+9)
+        hold on
+        plot(b)
+        plot(fit)
+    end
+    load(fullfile(origdir,sprintf(indepBase,ring)))
+    figure(ring)
+    plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+    title(sprintf('Ring %i',ring))
+    legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+end
+
+%% Plot AWMV for different parameter values
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+indepBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+orig_ind = [29 23 25 25];
+for ring = 1
+    fig_out = figure(ring);
+    hold on
+    for om = 4
+        load(fullfile(datadir,sprintf(fileBase,ring,om)))
+        % Rescale center of Mass
+        awmv = awmv_az(30,:);
+        minAWMV = min(awmv);
+        maxAWMV = max(awmv);
+        plot(awmv,'LineWidth',1.5)
+    end
+%     load(fullfile(origdir,sprintf(origBase,ring)))
+%     plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+%     title(sprintf('Ring %i',ring))
+%     legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+end
+
+%% Plot AWMV for different parameter values
+datadir = 'E:\MMPAD_omega\coupled';
+fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
+outName =  'ring%iomega%i_coupled_AWMV.png';
+origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
+indepBase = 'ring%i_zero_mirror_coupled_awmv.mat';
+orig_ind = [29 23 25 25];
+
+ring = 1;
+om = 4;
+m = 30;
+tt = 40;
+
+omegDir = 'ring%iomega%i_coupled_CG_TVphi_Mirror';
+fitOmeg = fullfile(datadir,sprintf(omegDir,ring,om));
+fitOrig = fullfile('E:\MMPAD_data_nr1',...
+                   'ring4_zero_coupled_CG_TVphi_Mirror7');
+fName = 'coupled_fit_%i.mat';
+
+% Load original fit
+ogData = load(fullfile(fitOrig,sprintf(fName,m)));
+% Load an omega fit
+omData = load(fullfile(fitOmeg,sprintf(fName,m)));
+A0 = dictionaryFFT(ogData.P);
+
+fitog = Ax_ft_1D(A0,ogData.X_hat(:,:,tt));
+fitom = Ax_ft_1D(A0,omData.X_hat(:,:,tt));
+
+figure(1)
+hold on
+plot(fitog)
+plot(fitom)
+legend('og',num2str(om))
+
+%     load(fullfile(origdir,sprintf(origBase,ring)))
+%     plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
+%     title(sprintf('Ring %i',ring))
+%     legend('2^\circ','3^\circ','4^\circ','5^\circ')
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+
 
 %{
 %% PLot all awmv

@@ -11,8 +11,8 @@ top_dir = 'E:\MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o = 3
-for ring_num = 4
+for o = 1:3
+for ring_num = 1:4
 % Input dirs
 dset_name = r_dir{ring_num};
 om_name = om_dir{o};
@@ -70,7 +70,7 @@ for j = 1:T
     b_mirror((pad1+1):(pad1+nn)) = b;
     b_mirror((1+N-pad2):N) = flip(b((nn-pad2+1):nn));
     b_mirror(1:pad1) = flip(b(1:pad1));
-    B(:,j) = flip(b_mirror);
+    B(:,j) = b_mirror;
 end
 
 tv_time = zeros(M,T-1);
@@ -87,19 +87,24 @@ for i = 1:M
         fit = Ax_ft_1D(A0ft_stack,x);   
         err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
         l0_select(i,j) = sum(x(:) > 1e-4*sum(x(:)));
-        l1_select(i,j) = sum(x(:));
+%         l1_select(i,j) = sum(x(:));
         az_signal = squeeze(sum(x,1));
         var_sum = squeeze(sum(az_signal(:)));
         vdfs(:,i,j) = az_signal./var_sum;
         awmv_az(i,j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+        
+        if j == 40
+            hold off
+            figure(1)
+            plot(b)
+            hold on
+            plot(fit)
+            legend('data','fit')
+        end
     end
     im_ind = im_ind + 1;
 end
 
-save([dset_name,om_name,'_mirror_coupled_awmv.mat'],'awmv_az','lambda2_values')
-
-end
-end
 %% Criterion separate params
 % noise_eta = 0.2;
 % discrep_crit = abs(err_select'-noise_eta);
@@ -113,35 +118,14 @@ end
 % lambda_index = find(discrep_crit == min(discrep_crit));
 % param_select_single = P.lambda_values(lambda_index);
 % lambda_values_single = ones(T,1)*param_select_single;
-% 
+
 % figure(2)
 % plot(param_select,'o-')
 % title('Parameters selected')
 
-%{
+
 %% Plot
 lambda_vals = P.lambda_values;
-
-figure(3)
-semilogx(lambda_vals(1:M),mean(l1_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_1 term')
-
-% Plot
-figure(4)
-semilogx(lambda_vals(1:M),mean(err_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('error')
-
-% Plot
-figure(5)
-semilogx(lambda_vals(1:M),mean(l0_select,2),'o-')
-hold on
-xlabel('\lambda')
-ylabel('l_0')
-
 
 % Analyze L-curve
 total_err = sum(err_select(1:M,:),2);
@@ -156,9 +140,18 @@ total_l1 = total_l1./max(total_l1);
 % select_ind = slope_select(1);
 
 % Find kink in L-cureve method #2
-sq_origin_dist = total_l1.^2 + total_err.^2;
-select_ind = find(sq_origin_dist == min(sq_origin_dist));
+% sq_origin_dist = total_l1.^2 + total_err.^2;
+% select_ind = find(sq_origin_dist == min(sq_origin_dist));
+err_scale = total_err/max(total_err(:));
+tv_scale = tv_penalty/max(tv_penalty(:));
+sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
+select_ind = find(sq_origin_dist == min(sq_origin_dist),1);
 
+save([dset_name,om_name,'_mirror_coupled_awmv.mat'],'awmv_az','select_ind',...
+    'lambda2_values','err_select','l1_select','tv_penalty')
+end
+end
+%{
 figure(6)
 plot(total_l1,total_err,'o-')
 % plot(mean(l1_select,2),mean(err_select,2),'o-')
@@ -187,37 +180,37 @@ title('L-curve')
 
 %% L curve parameter selection
 select_indices = zeros(T,1)+1;
-% for t = 1:T
-%     err_t = err_select(1:M,t);
-%     l1_t = l1_select(1:M,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t/max(l1_t);
-%     sq_origin_dist = abs(l1_t) + abs(err_t);
-%     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-%     if t == 128
-%         figure(1111)
-%         hold on
-%         plot(l1_t,err_t,'o-')
-%         plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
-%         xlabel('l1-norm')
-%         ylabel('error')
-%     end
-%     
-%     
-% end
+for t = 1:T
+    err_t = err_select(1:M,t);
+    l1_t = l1_select(1:M,t);
+    err_t = err_t;%/max(err_t);
+    l1_t = l1_t/max(l1_t);
+    sq_origin_dist = abs(l1_t) + abs(err_t);
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    if t == 128
+        figure(1111)
+        hold on
+        plot(l1_t,err_t,'o-')
+        plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
+        xlabel('l1-norm')
+        ylabel('error')
+    end
+    
+    
+end
 
-% for t = 1:T
-%     b = B(:,t);
-%     rel_err_t = err_select(1:M,t);
-%     while rel_err_t(select_indices(t)) > 0.02
-%         if select_indices(t) > 1
-%             select_indices(t) = select_indices(t) - 1;
-%         else
-%             select_indices(t) = find(rel_err_t == min(rel_err_t));
-%             break
-%         end
-%     end
-% end
+for t = 1:T
+    b = B(:,t);
+    rel_err_t = err_select(1:M,t);
+    while rel_err_t(select_indices(t)) > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
 
 figure(543)
 plot(select_indices)
@@ -246,30 +239,5 @@ shading interp
 caxis([0 0.6])
 colormap(jet)
 title('VDF selected parameters')
-
-%% Plot fits for L-curve selected parameter
-load(fullfile(output_dir,sprintf(baseFileName,1)))
-fits_fig = figure(9);
-[ha2, ~] = tight_subplot(5,10,[.005 .005],[.01 .01],[.01 .01]); 
-awmv_az_vdfs = zeros(T,1);
-im_ind = 1;
-for t = 1:5:200 
-    x_hat = X_hat(:,:,t);
-    fit = Ax_ft_1D(A0ft_stack,x_hat);
-    az_signal = squeeze(sum(x_hat,1));
-    var_sum = sum(az_signal(:));
-    awmv_az_vdfs(t) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-    b = B(:,t);
-
-    % Plot
-    axes(ha2(im_ind))
-    hold on
-    plot(b)
-    plot(fit)
-    rel_err = sum((fit(:)-b(:)).^2)/norm(b(:))^2;
-    legend(sprintf('%i \n %0.2f',sum(x_hat(:)>0),rel_err),'location','northeast')
-    im_ind = im_ind + 1;
-end
-
-
 %}
+
