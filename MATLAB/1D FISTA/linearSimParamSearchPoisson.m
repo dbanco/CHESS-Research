@@ -1,4 +1,4 @@
-function linearFittingParamSearchPoisson(P,N,M,T,levels,...
+function linearSimParamSearchPoisson(P,N,M,K,T,levels,...
                             alpha_vals,output_dir,file_name)
 mkdir(output_dir)
 
@@ -11,7 +11,7 @@ for nn = 1:numel(levels)
     A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
     % Generate data
-    [B,theta_stds] = genLinearPoisson(N,T,alpha_vals(nn));
+    [B,] = genLinearPoisson(N,T,alpha_vals(nn));
 
     % Independent Solution
     x_init = zeros(N,K);

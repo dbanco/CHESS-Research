@@ -63,7 +63,7 @@ for ring = 1:R
     plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
     title(sprintf('Ring %i',ring))
     legend('2^\circ','3^\circ','4^\circ','5^\circ')
-%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+    saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
 end
 
 %% Compare fits
@@ -247,7 +247,8 @@ for ring = 1
 %     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
 end
 
-%% Plot AWMV for different parameter values
+%% Plot fits for different parameter values
+
 datadir = 'E:\MMPAD_omega\coupled';
 fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
 outName =  'ring%iomega%i_coupled_AWMV.png';
@@ -255,31 +256,61 @@ origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
 indepBase = 'ring%i_zero_mirror_coupled_awmv.mat';
 orig_ind = [29 23 25 25];
 
-ring = 1;
-om = 4;
-m = 30;
-tt = 40;
+ring = 2;
+close all
+dataset =  fullfile('E:\MMPAD_data_nr1',sprintf('ring%i_zero',ring));
+m = 10;
+tt = 200;
+
 
 omegDir = 'ring%iomega%i_coupled_CG_TVphi_Mirror';
-fitOmeg = fullfile(datadir,sprintf(omegDir,ring,om));
-fitOrig = fullfile('E:\MMPAD_data_nr1',...
-                   'ring4_zero_coupled_CG_TVphi_Mirror7');
 fName = 'coupled_fit_%i.mat';
 
 % Load original fit
+fitOrig = fullfile('E:\MMPAD_data_nr1',...
+                   'ring2_zero_coupled_CG_TVphi_Mirror7');
 ogData = load(fullfile(fitOrig,sprintf(fName,m)));
-% Load an omega fit
-omData = load(fullfile(fitOmeg,sprintf(fName,m)));
-A0 = dictionaryFFT(ogData.P);
+A0 = unshifted_basis_vector_ft_stack_zpad(ogData.P);
 
 fitog = Ax_ft_1D(A0,ogData.X_hat(:,:,tt));
-fitom = Ax_ft_1D(A0,omData.X_hat(:,:,tt));
+for j = tt
+    b_data = load(fullfile(dataset,[ogData.P.prefix,'_',num2str(j),'.mat']));
+    b = ogData.P.dataScale*sum(b_data.polar_image,1);
+    b_m = mirrorData(b);
+end
 
 figure(1)
+subplot(5,1,1)
 hold on
+plot(b_m)
 plot(fitog)
-plot(fitom)
-legend('og',num2str(om))
+legend('data','og')
+
+subplot(5,1,5)
+hold on
+plot(b_m)
+
+for om = 2:4
+    % Load an omega fit
+    fitOmeg = fullfile(datadir,sprintf(omegDir,ring,om));
+    omData = load(fullfile(fitOmeg,sprintf(fName,m)));
+    dataset =  fullfile('E:\MMPAD_omega',sprintf('omega%i',om),...
+                sprintf('ring%i',ring));
+    bom_data = load(fullfile(dataset,[ogData.P.prefix,'_',num2str(tt),'.mat']));
+    bom = omData.P.dataScale*sum(bom_data.polar_image,2);
+    bom_m = mirrorData(bom);
+    fitom = Ax_ft_1D(A0,omData.X_hat(:,:,tt));
+    subplot(5,1,om)
+    hold on
+    plot(bom_m)
+    plot(fitom)
+    legend('data',num2str(om))
+    subplot(5,1,5)
+    plot(bom_m)
+end
+
+
+
 
 %     load(fullfile(origdir,sprintf(origBase,ring)))
 %     plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)

@@ -1,13 +1,15 @@
-function [P,K,M] = definePoissonP(N,T)
+function [P,K,M,MM] = definePoissonP(N,T)
 % File Parameters
 P = struct();
 P.baseFileName = 'indep_fit_%i_%i.mat';
 K = 20;
 M = 50;
+MM = 20;
 zPad = 0;
 zMask = [];
 P.dataScale = 1;
 P.lambda_values = logspace(-3,1,M);
+P.lambda2_values = logspace(-1.5,-0.3,MM);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
