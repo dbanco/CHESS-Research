@@ -19,7 +19,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror';
+output_name = '_coupled_CG_TVphi_Mirror2';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
@@ -142,8 +142,8 @@ P.params.lambda1_indices = select_indices;
 P.params.rho = 0.0001;
 
 % Lambda2 values
-M = 30;
-lambda2_vals = logspace(-5,1,M);
+M = 15;
+lambda2_vals = logspace(1,2.5,M);
 M = numel(lambda2_vals);
 P.lambda2_values = lambda2_vals;
 
