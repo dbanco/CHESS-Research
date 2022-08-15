@@ -51,12 +51,12 @@ for nn = 1:NN
             awmv_all(i,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         end
         tv_penalty(i) = sum(abs(DiffPhiX_1D(X_hat)),'all');
-        awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds1')/norm(theta_stds1);
+        awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds1)/norm(theta_stds1);
     end
     
-    crit1 = abs(mse_c(:,nn)-min(mse_c(:,nn))).^2 /2/(max(mse_c(:,nn))-min(mse_c(:,nn)))^2;
-    crit2 = abs(l1_norm_c(:,nn)-min(l1_norm_c(:,nn))).^2 /2/(max(l1_norm_c(:,nn))-min(l1_norm_c(:,nn)))^2;
-    crit3 = abs(tv_penalty(:,nn)-min(tv_penalty(:,nn))).^2 /(max(tv_penalty(:,nn))-min(tv_penalty(:,nn)))^2;
+    crit1 = 0.5*abs(mse_c-min(mse_c)).^2 /(max(mse_c)-min(mse_c))^2;
+    crit2 = abs(l1_norm_c-min(l1_norm_c)).^2 /2/(max(l1_norm_c)-min(l1_norm_c))^2;
+    crit3 = abs(tv_penalty-min(tv_penalty)).^2 /(max(tv_penalty)-min(tv_penalty))^2;
     crit = crit1+crit2+crit3;
     select_ind = find( (crit == min(crit)),1 );
     
