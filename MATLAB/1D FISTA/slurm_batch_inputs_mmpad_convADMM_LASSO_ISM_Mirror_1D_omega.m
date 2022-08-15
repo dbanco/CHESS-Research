@@ -52,7 +52,7 @@ P.num_ims = T;
 P.basis = 'norm2';
 P.cost = 'l1';
 P.num_var_t = K;
-P.var_theta = [linspace(0.5,100,P.num_var_t)].^2;
+P.var_theta = linspace(0.5,100,P.num_var_t).^2;
 
 % algorithm parameters
 P.params.rho1 = 0.0001;

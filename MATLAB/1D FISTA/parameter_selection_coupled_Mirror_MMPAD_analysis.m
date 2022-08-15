@@ -247,24 +247,24 @@ end
 end
 
 %% Criterion separate params
-% noise_eta = 0.2;
-% discrep_crit = abs(err_select'-noise_eta);
-% 
-% [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
-% param_select = P.lambda_values(lambda_indices);
-% lambda_values_separate = param_select;
-% 
-% % Criterion single param
-% discrep_crit = abs(mean(err_select,2)-noise_eta);
-% lambda_index = find(discrep_crit == min(discrep_crit));
-% param_select_single = P.lambda_values(lambda_index);
-% lambda_values_single = ones(T,1)*param_select_single;
-% 
-% figure(2)
-% plot(param_select,'o-')
-% title('Parameters selected')
+noise_eta = 0.2;
+discrep_crit = abs(err_select'-noise_eta);
 
-%{
+[lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
+param_select = P.lambda_values(lambda_indices);
+lambda_values_separate = param_select;
+
+% Criterion single param
+discrep_crit = abs(mean(err_select,2)-noise_eta);
+lambda_index = find(discrep_crit == min(discrep_crit));
+param_select_single = P.lambda_values(lambda_index);
+lambda_values_single = ones(T,1)*param_select_single;
+
+figure(2)
+plot(param_select,'o-')
+title('Parameters selected')
+
+
 %% Plot
 lambda_vals = P.lambda_values;
 
@@ -333,37 +333,37 @@ title('L-curve')
 
 %% L curve parameter selection
 select_indices = zeros(T,1)+1;
-% for t = 1:T
-%     err_t = err_select(1:M,t);
-%     l1_t = l1_select(1:M,t);
-%     err_t = err_t;%/max(err_t);
-%     l1_t = l1_t/max(l1_t);
-%     sq_origin_dist = abs(l1_t) + abs(err_t);
-%     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
-%     if t == 128
-%         figure(1111)
-%         hold on
-%         plot(l1_t,err_t,'o-')
-%         plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
-%         xlabel('l1-norm')
-%         ylabel('error')
-%     end
-%     
-%     
-% end
+for t = 1:T
+    err_t = err_select(1:M,t);
+    l1_t = l1_select(1:M,t);
+    err_t = err_t;%/max(err_t);
+    l1_t = l1_t/max(l1_t);
+    sq_origin_dist = abs(l1_t) + abs(err_t);
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
+    if t == 128
+        figure(1111)
+        hold on
+        plot(l1_t,err_t,'o-')
+        plot(l1_t(select_indices(t)),err_t(select_indices(t)),'s')
+        xlabel('l1-norm')
+        ylabel('error')
+    end
+    
+    
+end
 
-% for t = 1:T
-%     b = B(:,t);
-%     rel_err_t = err_select(1:M,t);
-%     while rel_err_t(select_indices(t)) > 0.02
-%         if select_indices(t) > 1
-%             select_indices(t) = select_indices(t) - 1;
-%         else
-%             select_indices(t) = find(rel_err_t == min(rel_err_t));
-%             break
-%         end
-%     end
-% end
+for t = 1:T
+    b = B(:,t);
+    rel_err_t = err_select(1:M,t);
+    while rel_err_t(select_indices(t)) > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
 
 figure(543)
 plot(select_indices)

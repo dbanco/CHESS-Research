@@ -23,8 +23,6 @@ zMask = [];
 
 theta_stds1 = [7*ones(1,T/2),12*ones(1,T/2)]';
 
-
-
 %% Run ADMM
 %{
 for nn = 1
@@ -160,6 +158,57 @@ plot(awmv_rmse)
 % 
 % end
 
+%% Show L-curves and selected parameters
+% [~,s_i] = min(awmv_rmse);
+select_ind = zeros(NN,1);
+gamma_select = zeros(NN,T);
+figure(111)
+for nn = 1:NN
+    crit1 = abs(mse(:,nn)-min(mse(:,nn))).^2 /2/(max(mse(:,nn))-min(mse(:,nn)))^2;
+    crit2 = abs(l1_norm(:,nn)-min(l1_norm(:,nn))).^2 /2/(max(l1_norm(:,nn))-min(l1_norm(:,nn)))^2;
+    crit3 = abs(tv_penalty(:,nn)-min(tv_penalty(:,nn))).^2 /(max(tv_penalty(:,nn))-min(tv_penalty(:,nn)))^2;
+    crit = crit1+crit2+crit3;
+    select_ind(nn) = find( (crit == min(crit)),1 );
+    gamma_select(nn) = P.lambda_values(select_ind(nn));
+    % Plot L-curves
+    subplot(3,4,nn)
+    plot(crit1+crit2,...
+         crit3)
+    hold on
+    plot(crit1(select_ind(nn))+crit2(select_ind(nn)),...
+         crit3(select_ind(nn)),'or')
+%     plot(crit1(s_i(nn))+crit2(s_i(nn)),...
+%          crit3(s_i(nn)),'sb')
+%     [awmv_rmse(select_ind(nn),nn),...
+%      awmv_rmse(s_i(nn),nn)]
+    
+    hold off
+    xlabel('MSE')
+    ylabel('TV Penalty')
+
+end
+
+%% Plot the pairs of AWMV fits 
+% figure(222)
+% for nn = 1:NN
+%     subplot(3,4,nn)
+%     hold on
+%     plot(theta_stds1,'k')
+%     plot(awmv_all(select_ind(nn),:,nn),'r')
+%     plot(awmv_all(s_i(nn),:,nn),'b')
+% end
+
+
+
+%% 
+% figure(22)
+% hold on
+% plot(theta_stds1,'Linewidth',2)
+% for i = 1:2:MM
+%     plot(awmv_all(i,:,11),'Linewidth',2)
+% end
+
+
 %% Show awmvs
 close all
 s_i2 = zeros(size(awmv_rmse));
@@ -221,7 +270,7 @@ for nn = 1:NN
     hold on
     plot(theta_stds1,'k--','Linewidth',2)
     plot(awmv_indep(:,nn),'b-','Linewidth',2)
-    plot(awmv_all(20,:,nn),'r:','Linewidth',3) %s_i2(nn)
+    plot(awmv_all(s_i2(nn),:,nn),'r:','Linewidth',3) %s_i2(nn)
     NW = [min(xlim) max(ylim)]+[diff(xlim)*0.05 -diff(ylim)*0.1];
 %     text(NW(1), NW(2), ['v=',sprintf('%1.2f',noise_std(nn))],'FontSize',14)
 end
