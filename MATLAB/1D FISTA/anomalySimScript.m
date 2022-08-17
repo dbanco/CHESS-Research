@@ -16,7 +16,7 @@ N = 101;
 T = 30;
 [P,K,M,MM] = definePoissonP(N,T);
 levels = 0.05:0.05:0.3;
-alpha_vals = genPoissonScales(N,T,levels,'linear');
+alpha_vals = genPoissonScales(N,T,levels,'anomaly');
 
 % Independent
 % alg_name = 'IndepISM';

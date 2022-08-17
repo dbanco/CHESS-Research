@@ -20,9 +20,10 @@ pixel_angle = pixel_side./circum*360;
 R = 4;
 
 %% AWMV indep
-datadir = 'E:\MMPAD_omega';
+datadir = 'E:\MMPAD_omega\omega_mirror_indep_awmv';
 fileBase = 'ring%iomega%i_mirror_indep_awmv.mat';
 outName =  'ring%iomega%i_indep_AWMV.png';
+indepDir = 'E:\MMPAD_omega\mirror_indep_awmv';
 indepBase = 'ring%i_zero_mirror_indep_awmv.mat';
 for ring = 1:R
     fig_out = figure(ring);
@@ -34,7 +35,7 @@ for ring = 1:R
         maxAWMV = max(awmv);
         plot(awmv,'LineWidth',1.5)
     end
-    load(fullfile(datadir,sprintf(indepBase,ring)))
+    load(fullfile(indepDir,sprintf(indepBase,ring)))
     plot(awmv,'LineWidth',1.5)
     title(sprintf('Ring %i',ring))
     legend('2^\circ','3^\circ','4^\circ','5^\circ')
@@ -42,7 +43,7 @@ for ring = 1:R
 end
 
 %% AWMV coupled
-datadir = 'E:\MMPAD_omega\coupled';
+datadir = 'E:\MMPAD_omega\omega_mirror_coupled_awmv2';
 fileBase = 'ring%iomega%i_mirror_coupled_awmv.mat';
 outName =  'ring%iomega%i_coupled_AWMV.png';
 origdir = 'C:\Users\dpqb1\Desktop\AWMV_mirror_Figures';
@@ -54,7 +55,7 @@ for ring = 1:R
     for om = 2:4
         load(fullfile(datadir,sprintf(fileBase,ring,om)))
         % Rescale center of Mass
-        awmv = awmv_az(select_ind,:);
+        awmv = awmv_az(15,:);
         minAWMV = min(awmv);
         maxAWMV = max(awmv);
         plot(awmv,'LineWidth',1.5)
@@ -63,7 +64,7 @@ for ring = 1:R
     plot(awmv_az(orig_ind(ring),:),'LineWidth',1.5)
     title(sprintf('Ring %i',ring))
     legend('2^\circ','3^\circ','4^\circ','5^\circ')
-    saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
+%     saveas(fig_out,fullfile(datadir,sprintf(outName,ring,om)))
 end
 
 %% Compare fits

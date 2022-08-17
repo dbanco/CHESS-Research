@@ -11,7 +11,7 @@ if strcmp(sim,'linear')
     end
 elseif strcmp(sim,'anomaly')
     for a = 1:A
-        [~,~,~,rel_err] = genLinearPoisson(N,T,alphas(a));
+        [~,~,~,rel_err] = genAnomalyPoisson(N,T,alphas(a));
         rel_errs(a) = mean(rel_err);
     end
 end

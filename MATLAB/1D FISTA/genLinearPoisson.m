@@ -1,4 +1,4 @@
-function [Bn,B,theta_stds,rel_err] = genLinearPoisson(N,T,alpha)
+ function [Bn,B,theta_stds,rel_err] = genLinearPoisson(N,T,alpha)
 % Generate data
 theta_stds = linspace(1,15,T);
 B = zeros(N,T);
