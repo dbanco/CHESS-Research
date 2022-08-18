@@ -3,12 +3,13 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/shared/dbanco02';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/home/dbanco02/data/Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim_name = 'anomalyPoissonNoise';
+sim = 'anomaly';
+sim_name = [sim,'PoissonNoise'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
@@ -16,29 +17,27 @@ N = 101;
 T = 30;
 [P,K,M,MM] = definePoissonP(N,T);
 levels = 0.05:0.05:0.3;
-alpha_vals = genPoissonScales(N,T,levels,'anomaly');
+[alpha_vals,theta_stds1] = genPoissonScales(N,T,levels,sim);
 
 % Independent
-% alg_name = 'IndepISM';
-% indep_dir  = fullfile(top_dir,sim_name,alg_name);
-% linearSimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
-%                                 indep_dir,file_name)
+alg_name = 'IndepISM';
+indep_dir  = fullfile(top_dir,sim_name,alg_name);
+% SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
+%                                 indep_dir,file_name,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
-% coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-% linearSimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
-%                                 coupled_dir,indep_dir,file_name)
+coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
+SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
+                                coupled_dir,indep_dir,file_name,sim)
   
 %% Redo parameter selection
-
 for nn = 1:numel(levels)
     awmv_all = zeros(MM,T);
     awmv_rmse = zeros(MM,1);
     mse_c = zeros(MM,1);
     l1_norm_c = zeros(MM,1);
     tv_penalty = zeros(MM,1);
-    theta_stds1 = linspace(1,15,T);
 
     for i = 1:MM
         load(fullfile(top_dir,sim_name,alg_name,...

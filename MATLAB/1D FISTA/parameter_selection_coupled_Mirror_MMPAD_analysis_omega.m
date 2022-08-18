@@ -6,8 +6,8 @@ disp('Setup params')
 P.set = 1;
 
 % Parent directory
-top_dir = 'E:\MMPAD_omega';
-% top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+% top_dir = 'E:\MMPAD_omega';
+top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
@@ -18,12 +18,12 @@ dset_name = r_dir{ring_num};
 om_name = om_dir{o};
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror';
+output_name = '_coupled_CG_TVphi_Mirror2';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
 dataset =  fullfile(top_dir,om_dir{o},dset_name);
-output_dir  = fullfile(top_dir,'coupled',output_subdir);
+output_dir  = fullfile(top_dir,output_subdir);
 
 baseFileName = 'coupled_fit_%i.mat';
 

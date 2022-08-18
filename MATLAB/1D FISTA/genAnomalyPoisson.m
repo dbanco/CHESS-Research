@@ -1,4 +1,4 @@
-function [Bn,B,theta_stds] = genAnomalyPoisson(N,T,alpha)
+function [Bn,B,theta_stds,rel_err] = genAnomalyPoisson(N,T,alpha)
 % Generate data
 theta_stds = [7*ones(1,T/2),12*ones(1,T/2)];
 B = zeros(N,T);

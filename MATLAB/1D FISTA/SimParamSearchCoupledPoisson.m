@@ -1,10 +1,10 @@
-function linearSimParamSearchCoupledPoisson(P,N,MM,K,T,levels,...
+function SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,...
                   alpha_vals,output_dir,indep_dir,file_name,sim)
 mkdir(output_dir)
 
 % Fits for different parameters/noise levels
 NN = numel(levels);
-for nn = 1:NN
+for nn = 5:NN
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
@@ -13,9 +13,10 @@ for nn = 1:NN
 
     % Generate data
     if strcmp(sim,'linear')
-        [Bn,B,theta_stds1] = genLinearPoisson(N,T,alpha_vals(nn));
+        [B,~,theta_stds1,~] = genLinearPoisson(N,T,alpha_vals(nn));
     elseif strcmp(sim,'anomaly')
-        [B,theta_stds1] = genAnomalyPoisson(N,T,alpha_vals(nn));
+        [B,~,theta_stds1,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
+    end
 
     % Load indep solution
     i_name = [file_name,'_',num2str(nn),'.mat'];
@@ -57,7 +58,7 @@ for nn = 1:NN
         awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds1)/norm(theta_stds1);
     end
     
-    crit1 = 0.5*abs(mse_c-min(mse_c)).^2 /(max(mse_c)-min(mse_c))^2;
+    crit1 = abs(mse_c-min(mse_c)).^2 /(max(mse_c)-min(mse_c))^2;
     crit2 = abs(l1_norm_c-min(l1_norm_c)).^2 /2/(max(l1_norm_c)-min(l1_norm_c))^2;
     crit3 = abs(tv_penalty-min(tv_penalty)).^2 /(max(tv_penalty)-min(tv_penalty))^2;
     crit = crit1+crit2+crit3;
