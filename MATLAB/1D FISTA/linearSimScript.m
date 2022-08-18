@@ -8,7 +8,7 @@ top_dir = 'D:\Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim_name = 'anomalyPoissonNoise';
+sim_name = 'linearPoissonNoise';
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset

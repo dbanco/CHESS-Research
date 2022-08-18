@@ -1,4 +1,4 @@
-function alpha_val = genPoissonScales(N,T,levels,sim)
+function [alpha_val,theta_stds] = genPoissonScales(N,T,levels,sim)
 %% Comptue error for different data scales
 alphas = linspace(1,500,1000);
 A = numel(alphas);
@@ -6,12 +6,12 @@ rel_errs = zeros(A,1);
 
 if strcmp(sim,'linear')
     for a = 1:A
-        [~,~,~,rel_err] = genLinearPoisson(N,T,alphas(a));
+        [~,~,theta_stds,rel_err] = genLinearPoisson(N,T,alphas(a));
         rel_errs(a) = mean(rel_err);
     end
 elseif strcmp(sim,'anomaly')
     for a = 1:A
-        [~,~,~,rel_err] = genAnomalyPoisson(N,T,alphas(a));
+        [~,~,theta_stds,rel_err] = genAnomalyPoisson(N,T,alphas(a));
         rel_errs(a) = mean(rel_err);
     end
 end
