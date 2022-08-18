@@ -30,24 +30,9 @@ for nn = 1:numel(levels)
         end
     end
     
-    % Error/L1-norm
-    mse_indep = zeros(M,T);
-    l1_norm = zeros(M,T);
-    for i = 1:M
-        for time = 1:T
-            x = X_indep(:,:,i,time);
-            fit = Ax_ft_1D(A0ft_stack,x);
-            l1_norm(i,time) = sum(abs(x(:)));
-            mse_indep(i,time) = norm(fit-B(:,time));
-        end
-    end
-    
     % Parameter selection
-    select_ind = zeros(T,1);
-    for time = 1:T
-        crit = abs(l1_norm(:,time)*0.5).^2 + abs(mse_indep(:,time)).^2;
-        select_ind(time) = find( (crit == min(crit)),1 );
-    end
+    [mse_indep,l1_norm,~,~,~] = exploreParametersIndep(X_indep);
+    select_ind = selectParamsIndep(mse_indep,l1_norm);
     
     P.indep_select_ind = select_ind;
     P.selected_lambdas = P.lambda_values(select_ind);
