@@ -1,14 +1,15 @@
 %% Alternate Omega sweep of MMPAD data
 top_dir = 'E:\MMPAD_omega';
-sub_dir = {'omega4','omega3','omega2'};
-sweeps = [8,65;...
+sub_dir = {'omega5','omega4','omega3','omega2'};
+sweeps = [1,73
+          8,65;...
           15,58;...
           22,50];
 
 for i = 0:545
-    for j = 1:3
-        fName = [' mmpad_img_',num2str(i),'.mat'];
-        inFile = fullfile(top_dir,fName);
+    for j = 1
+        fName = ['mmpad_img_',num2str(i),'.mat'];
+        inFile = fullfile(top_dir,'full',fName);
         load(inFile)
 
         polar_image = squeeze(sum(mmpad_img(sweeps(j,1):sweeps(j,2),:,:),1));
@@ -22,10 +23,10 @@ end
 
 %% Split into rings
 top_dir = 'E:\MMPAD_omega';
-sub_dir = {'omega4','omega3','omega2'};
+sub_dir = {'omega5','omega4','omega3','omega2'};
 ring_dir = {'ring1','ring2','ring3','ring4'};
 for i = 1:546
-    for j = 1:3
+    for j = 1
         for r = 1:4
             if i == 1
                 mkdir(fullfile(top_dir,sub_dir{j},ring_dir{r}))
