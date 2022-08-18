@@ -31,7 +31,7 @@ for nn = 1:numel(levels)
     end
     
     % Parameter selection
-    [mse_indep,l1_norm,~,~,~] = exploreParametersIndep(X_indep);
+    [mse_indep,l1_norm,~,~,~] = exploreParametersIndep(X_indep,P,B);
     select_ind = selectParamsIndep(mse_indep,l1_norm);
     
     P.indep_select_ind = select_ind;
