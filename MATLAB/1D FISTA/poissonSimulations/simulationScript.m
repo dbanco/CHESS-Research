@@ -8,7 +8,7 @@ top_dir = 'D:\Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'anomaly';
+sim = 'linear';
 sim_name = [sim,'PoissonNoise'];
 file_name = 'lineSearchNoise';
 
