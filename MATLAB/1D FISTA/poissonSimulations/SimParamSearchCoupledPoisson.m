@@ -24,7 +24,7 @@ for nn = 1:NN
 
     
     % Coupled Solution
-    P.params.maxIter = 100;
+    P.params.maxIter = 1;
     P.params.rho1 = 1.5;
     P.params.rho2 = 0.5;
     X_coupled = zeros(N,K,MM,T);

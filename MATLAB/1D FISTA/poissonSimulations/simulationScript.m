@@ -8,7 +8,7 @@ top_dir = '/cluster/home/dbanco02/data/Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'linear';
+sim = 'aonmaly';
 sim_name = [sim,'PoissonNoise2'];
 file_name = 'lineSearchNoise';
 
