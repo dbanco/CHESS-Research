@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\Simulations';
-top_dir = '/cluster/home/dbanco02/data/Simulations';
+top_dir = 'D:\Simulations';
+% top_dir = '/cluster/home/dbanco02/data/Simulations';
 mkdir(top_dir)
 
 % Simulation name
@@ -34,7 +34,29 @@ coupled_dir  = fullfile(top_dir,sim_name,alg_name);
 SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
                                 coupled_dir,indep_dir,file_name,sim)
 
-%% Redo parameter selection coupled
+%% Redo Parameter selection indep
+
+% alg_name = 'IndepISM';
+% indep_dir = fullfile(top_dir,sim_name,alg_name);
+% for nn = 1:numel(levels)
+%     f_name = [file_name,'_',num2str(nn),'.mat'];
+%     load(fullfile(indep_dir,f_name));
+% 
+%     [mse_indep,l1_norm,awmv,~,~] = exploreParametersIndep(X_indep,P,B);
+%     select_ind = selectParamsIndep(mse_indep,l1_norm);
+%     awmv_select = selectAWMV(awmv,select_ind);
+%     P.indep_select_ind = select_ind;
+%     P.selected_lambdas = P.lambda_values(select_ind);
+% %     save(fullfile(indep_dir,f_name),'B','X_indep','P');
+%     fprintf('%i, ',nn)
+% end
+% close all
+% figure(3)
+% hold on
+% plot(awmv_select)
+% plot(theta_stds1)
+
+                            %% Redo parameter selection coupled
 %{
 for nn = 1:numel(levels)
     [mse,l1_norm,tv_penalty,awmv,~,B] = exploreParametersCoupled(X_coupled,P,B);
@@ -144,7 +166,7 @@ f_name = [file_name,'_',num2str(nn),'.mat'];
 load(fullfile(indep_dir,f_name));
 [mse_indep,l1_norm,awmv_indep,fits,B] = exploreParametersIndep(X_indep,P,B);
 
-ii = 37;
+ii = 5;
 figure(1)
 hold on
 plot(theta_stds1)
