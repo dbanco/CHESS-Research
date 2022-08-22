@@ -3,12 +3,12 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/home/dbanco02/data/Simulations';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/data/Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'aonmaly';
+sim = 'anomaly';
 sim_name = [sim,'PoissonNoise2'];
 file_name = 'lineSearchNoise';
 

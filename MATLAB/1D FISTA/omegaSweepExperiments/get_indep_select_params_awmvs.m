@@ -3,8 +3,8 @@ disp('Setup params')
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'E:\MMPAD_omega';
-% top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+% top_dir = 'E:\MMPAD_omega';
+top_dir = '/cluster/shared/dbanco02/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
@@ -12,15 +12,15 @@ awmv_all_indep = zeros(546,50,4);
 all_select_indices = zeros(546,4);
 
 for o = 4
-for ring_num = 1:4
+for ring_num = 2:4
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
 indep_name = '_indep_ISM_Mirror';
 indep_subdir = [dset_name,om_dir{o},indep_name];
-indep_dir = fullfile(top_dir,'indep',indep_subdir);
-
+indep_dir = fullfile(top_dir,indep_subdir);
+dataset =  fullfile(top_dir,om_dir{o},dset_name);
 % File Parameters
 baseFileName = 'indep_fit_%i_%i.mat';
 load(fullfile(indep_dir,sprintf(baseFileName,1,1)));

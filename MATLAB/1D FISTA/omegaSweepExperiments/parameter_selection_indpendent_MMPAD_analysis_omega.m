@@ -6,12 +6,12 @@ disp('Setup params')
 P.set = 1;
 
 % Parent directory
-top_dir = 'E:\MMPAD_omega';
-% top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
-om_dir = {'omega2','omega3','omega4'};
+% top_dir = 'E:\MMPAD_omega';
+top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o =1:3
+for o =1:4
     for r = 1:4
         close all
 

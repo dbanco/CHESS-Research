@@ -9,7 +9,7 @@ om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
 
-for o = 4
+for o = 1:4
 for ring_num = 1:4
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
