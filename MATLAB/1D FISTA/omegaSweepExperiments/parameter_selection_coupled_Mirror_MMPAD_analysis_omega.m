@@ -8,7 +8,7 @@ P.set = 1;
 % Parent directory
 % top_dir = 'E:\MMPAD_omega';
 top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
-om_dir = {'omega2','omega3','omega4'};
+om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
 for o = 1:4
@@ -18,7 +18,7 @@ dset_name = r_dir{ring_num};
 om_name = om_dir{o};
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror2';
+output_name = '_coupled_CG_TVphi_Mirror';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories

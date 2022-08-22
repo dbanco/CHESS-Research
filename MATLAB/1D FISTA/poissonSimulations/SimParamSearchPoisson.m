@@ -12,9 +12,9 @@ for nn = 1:numel(levels)
 
     % Generate data
     if strcmp(sim,'linear')
-        [B,~,theta_stds1,~] = genLinearPoisson(N,T,alpha_vals(nn));
+        [B,~,~,~] = genLinearPoisson(N,T,alpha_vals(nn));
     elseif strcmp(sim,'anomaly')
-        [B,~,theta_stds1,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
+        [B,~,~,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
     end
 
     % Independent Solution
@@ -37,5 +37,5 @@ for nn = 1:numel(levels)
     P.indep_select_ind = select_ind;
     P.selected_lambdas = P.lambda_values(select_ind);
     
-%     save(fullfile(output_dir,f_name),'B','X_indep','P');
+    save(fullfile(output_dir,f_name),'B','X_indep','P');
 end

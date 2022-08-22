@@ -4,7 +4,7 @@ mkdir(output_dir)
 
 % Fits for different parameters/noise levels
 NN = numel(levels);
-for nn = 1:NN
+for nn = 5:NN
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
@@ -13,15 +13,15 @@ for nn = 1:NN
 
     % Generate data
     if strcmp(sim,'linear')
-        [B,~,theta_stds1,~] = genLinearPoisson(N,T,alpha_vals(nn));
+        [B,~,theta_stds,~] = genLinearPoisson(N,T,alpha_vals(nn));
     elseif strcmp(sim,'anomaly')
-        [B,~,theta_stds1,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
+        [B,~,theta_stds,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
     end
 
     % Load indep solution
     i_name = [file_name,'_',num2str(nn),'.mat'];
     indepData = load(fullfile(indep_dir,i_name));
-
+    P.params.lambda1 = indepData.P.selected_lambdas;
     
     % Coupled Solution
     P.params.maxIter = 100;
@@ -29,13 +29,13 @@ for nn = 1:NN
     P.params.rho2 = 0.5;
     X_coupled = zeros(N,K,MM,T);
     for i = 1:MM 
-        P.set = i;
-        P.params.lambda1 = indepData.P.selected_lambdas;
-        P.params.lambda2 = P.lambda2_values(i);
+        P1 = P;
+        P1.set = i;
+        P1.params.lambda2 = P.lambda2_values(i);
         % Solve
         x_init = squeeze(indepData.X_indep(:,:,i,:));
         [X_hat,~,~,~,~] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,...
-                                                     x_init,P.params); 
+                                                     x_init,P1.params); 
         X_coupled(:,:,i,:) = X_hat;                             
     end
     
@@ -46,7 +46,7 @@ for nn = 1:NN
     tv_penalty = zeros(MM,1);
     for i = 1:MM
         for time = 1:T
-            x = X_hat(:,:,time);        
+            x = X_coupled(:,:,i,time);        
             fit = Ax_ft_1D(A0ft_stack,x);
             mse_c(i) = mse_c(i) + norm( B(:,time)-fit ).^2/norm(B(:,time))^2;
             l1_norm_c(i) = P.params.lambda1(time)*l1_norm_c(i) + sum(abs(x(:)));
@@ -54,8 +54,8 @@ for nn = 1:NN
             var_sum = squeeze(sum(az_signal(:)));
             awmv_all(i,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         end
-        tv_penalty(i) = sum(abs(DiffPhiX_1D(X_hat)),'all');
-        awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds1)/norm(theta_stds1);
+        tv_penalty(i) = sum(abs(DiffPhiX_1D(squeeze(X_coupled(:,:,i,:)))),'all');
+        awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds)/norm(theta_stds);
     end
     
     crit1 = abs(mse_c-min(mse_c)).^2 /(max(mse_c)-min(mse_c))^2;
