@@ -69,7 +69,7 @@ for d_num = 1
         ctitle = get(c_leg,'Title');
         set(ctitle,'String','Ring indices \{hkl\}')
         grid on
-        saveas(fig_CoM,fullfile(datadir,outName))
+%         saveas(fig_CoM,fullfile(datadir,outName))
     end
 %     %% Load AWMV
 %     fileBase = ['ring%i_zero_couple_fit_data',data_tag,'.mat'];
@@ -130,7 +130,10 @@ c_leg = legend(rings,'Location','Best');
 ctitle = get(c_leg,'Title');
 set(ctitle,'String','Ring indices \{hkl\}')
 grid on
-saveas(fig_out,fullfile(datadir,outName))
+% saveas(fig_out,fullfile(datadir,outName))
+
+
+
 
 %     figure(7)   
 %     load('masked_ring4_awmv')

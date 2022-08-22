@@ -90,19 +90,19 @@ for j = 1:T
 end
 
 %% Independent Solution
-x_init = zeros(N,K);
-X_indep = zeros(N,K,M,T);
-for i = 1:M
-    P.set = i;
-    P.params.lambda1 = P.lambda_values(i);
-    for t = 1:T
-        % Solve
-        [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_CG_1D(A0ft_stack,B(:,t),x_init,P.params);  
-        X_indep(:,:,i,t) = x_hat;
-    end
-end
-save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all2']),...
-        'B','X_indep','P');
+% x_init = zeros(N,K);
+% X_indep = zeros(N,K,M,T);
+% for i = 1:M
+%     P.set = i;
+%     P.params.lambda1 = P.lambda_values(i);
+%     for t = 1:T
+%         % Solve
+%         [x_hat,obj,err,l1_norm,~] = convADMM_LASSO_CG_1D(A0ft_stack,B(:,t),x_init,P.params);  
+%         X_indep(:,:,i,t) = x_hat;
+%     end
+% end
+% save(fullfile(output_dir,[dset_name,'_',num2str(P.set),'_','all2']),...
+%         'B','X_indep','P');
 end
 
 %% Plot fit
@@ -131,10 +131,14 @@ for i = 1:M
         az_signal = squeeze(sum(x,1));
         var_sum = squeeze(sum(az_signal(:)));
         awmv_az_indep(i) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     axes(ha11(time))
-%     hold on
-%     plot(B(:,time))
-%     plot(fit)
+        if time==5
+            axes(ha11(i))
+            hold on
+            plot(B(:,time))
+            plot(fit)
+            title(num2str(i))
+            pause()
+        end
     end
 end
 

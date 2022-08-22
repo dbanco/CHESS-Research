@@ -10,9 +10,11 @@ r_dir = {'ring1','ring2','ring3','ring4'};
 
 awmv_all_indep = zeros(546,50,4);
 all_select_indices = zeros(546,4);
+all_select_indices_err = zeros(546,4); 
 
 for o = 4
-for ring_num = 1:4
+for ring_num = 2:4
+    fprintf('%i, ',ring_num)
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
 
@@ -20,6 +22,9 @@ dset_name = ['ring',num2str(ring_num)];
 indep_name = '_indep_ISM_Mirror';
 indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,'indep',indep_subdir);
+
+% Setup directories
+dataset =  fullfile(top_dir,om_dir{o},dset_name);
 
 % File Parameters
 baseFileName = 'indep_fit_%i_%i.mat';
@@ -88,15 +93,18 @@ lambda1_vals = indep_data.P.lambda_values;
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
+rel_err_select = zeros(M_lam1,T);
 
 for m = 1:M_lam1
     for t = 1:T
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
         err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
+        rel_err_select(m,t) = norm(fit(:)-B(:,t))/norm(B(:,t));
         l1_select(m,t) = sum(x_data.x_hat(:));
         var_signal = sum(x_data.x_hat,1);
-        awmv_all_indep(t,m,ring_num) = sum(var_signal.*sqrt(P.var_theta));
+        var_total = sum(var_signal(:));
+        awmv_all_indep(t,m,ring_num) = sum(var_signal.*sqrt(P.var_theta))/var_total;
         
     end
 end
@@ -112,23 +120,21 @@ for t = 1:T
     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist )  );
 end
 all_select_indices(:,ring_num) = select_indices;
-% for t = 1:T
-%     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-%     b = P.dataScale*sum(polar_image,1);
-%     rel_err_t = err_select(:,t)/sum(b(:).^2);
-%     while rel_err_t(select_indices(t)) > 0.02
-%         if select_indices(t) > 1
-%             select_indices(t) = select_indices(t) - 1;
-%         else
-%             select_indices(t) = find(rel_err_t == min(rel_err_t));
-%             break
-%         end
-%     end
-% end
-
-P.params.lambda1 = lambda1_vals(select_indices);
-P.params.lambda1_indices = select_indices;
 
 
+for t = 1:T
+    rel_err_t = rel_err_select(:,select_indices(t));
+    while rel_err_t > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
+all_select_indices_err(:,ring_num) = select_indices;
 end
 end
+
+save('om5_awmv_indices_indep.mat','all_select_indices','all_select_indices_err','awmv_all_indep','err_select','rel_err_select','l1_select')

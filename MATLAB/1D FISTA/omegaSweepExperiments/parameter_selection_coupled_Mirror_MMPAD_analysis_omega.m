@@ -11,7 +11,7 @@ top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o = 1:3
+for o = 1:4
 for ring_num = 1:4
 % Input dirs
 dset_name = r_dir{ring_num};
