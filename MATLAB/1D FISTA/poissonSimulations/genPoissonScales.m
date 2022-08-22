@@ -4,16 +4,9 @@ alphas = linspace(1,500,1000);
 A = numel(alphas);
 rel_errs = zeros(A,1);
 
-if strcmp(sim,'linear')
-    for a = 1:A
-        [~,~,theta_stds,rel_err] = genLinearPoisson(N,T,alphas(a));
-        rel_errs(a) = mean(rel_err);
-    end
-elseif strcmp(sim,'anomaly')
-    for a = 1:A
-        [~,~,theta_stds,rel_err] = genAnomalyPoisson(N,T,alphas(a));
-        rel_errs(a) = mean(rel_err);
-    end
+for a = 1:A
+    [~,~,theta_stds,rel_err] = genSimDataPoisson(N,T,alphas(a),sim);
+    rel_errs(a) = mean(rel_err);
 end
 % plot(alphas,rel_errs)
 

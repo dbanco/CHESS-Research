@@ -1,6 +1,11 @@
- function [Bn,B,theta_stds,rel_err] = genLinearPoisson(N,T,alpha)
+function [Bn,B,theta_stds,rel_err] = genSimDataPoisson(N,T,alpha,sim)
 % Generate data
-theta_stds = linspace(1,15,T);
+if strcmp(sim,'linear')
+    theta_stds = linspace(1,15,T);
+elseif strcmp(sim,'anomaly')
+    theta_stds = [7*ones(1,T/2),12*ones(1,T/2)];
+end
+
 B = zeros(N,T);
 Bn = zeros(N,T);
 rel_err = zeros(T,1);
