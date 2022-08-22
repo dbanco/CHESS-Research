@@ -3,13 +3,13 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\Simulations';
-top_dir = '/cluster/shared/dbanco02/data/Simulations';
+top_dir = 'D:\Simulations';
+% top_dir = '/cluster/shared/dbanco02/data/Simulations';
 mkdir(top_dir)
 
 % Simulation name
 sim = 'anomaly';
-sim_name = [sim,'PoissonNoise2'];
+sim_name = [sim,'PoissonNoise3'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
@@ -20,13 +20,15 @@ levels = 0.05:0.05:0.3;
 [alpha_vals,theta_stds] = genPoissonScales(N,T,levels,sim);
 P.theta_stds = theta_stds;
 
+% [Bn,B,theta_stds,rel_err] = genSimDataPoisson(N,T,alpha_vals(4),sim);
+
 %% Run algorithm
 
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-% SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
-%                                 indep_dir,file_name,sim)
+SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
+                                indep_dir,file_name,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
@@ -36,21 +38,21 @@ coupled_dir  = fullfile(top_dir,sim_name,alg_name);
 
 %% Redo parameter selection indep
 
-% alg_name = 'IndepISM';
-% indep_dir = fullfile(top_dir,sim_name,alg_name);
-% for nn = 1:numel(levels)
-%     f_name = [file_name,'_',num2str(nn),'.mat'];
-%     load(fullfile(indep_dir,f_name));
-% 
-%     [mse_indep,l1_norm,awmv,~,~] = exploreParametersIndep(X_indep,P,B);
-%     select_ind = selectParamsIndep(mse_indep,l1_norm);
-% %     select_ind = selectParamsIndepAWMV(awmv,theta_stds);
+alg_name = 'IndepISM';
+indep_dir = fullfile(top_dir,sim_name,alg_name);
+for nn = 1:numel(levels)
+    f_name = [file_name,'_',num2str(nn),'.mat'];
+    load(fullfile(indep_dir,f_name));
+
+    [mse_indep,l1_norm,awmv,~,~] = exploreParametersIndep(X_indep,P,B);
+    select_ind = selectParamsIndep(mse_indep,l1_norm);
+%     select_ind = selectParamsIndepAWMV(awmv,theta_stds);
 %     awmv_select = selectAWMV(awmv,select_ind);
-%     P.indep_select_ind = select_ind;
-%     P.selected_lambdas = P.lambda_values(select_ind);
-% %     save(fullfile(indep_dir,f_name),'B','X_indep','P');
-%     fprintf('%i, ',nn)
-% end
+    P.indep_select_ind = select_ind;
+    P.selected_lambdas = P.lambda_values(select_ind);
+    save(fullfile(indep_dir,f_name),'B','X_indep','P');
+    fprintf('%i, ',nn)
+end
 % close all
 % figure(3)
 % hold on
@@ -58,29 +60,29 @@ coupled_dir  = fullfile(top_dir,sim_name,alg_name);
 % plot(theta_stds)
 
 %% Redo parameter selection coupled
-alg_name = 'CoupledCGTV';
-coupled_dir  = fullfile(top_dir,sim_name,alg_name); 
-for nn = 1:numel(levels)
-    load(fullfile(coupled_dir,[file_name,'_',num2str(nn),'.mat']))
-    [mse,l1_norm,tv_penalty,awmv,~,B] = exploreParametersCoupled(X_coupled,P,B);
-%     select_ind = selectParamsCoupled(mse,l1_norm,tv_penalty);
-    select_ind = selectParamsCoupledAWMV(awmv,theta_stds);
-
-%     awmv_rmse = zeros(MM,1);
-%     awmv_rmse(i) = norm(awmv(i,:)-theta_stds1)/norm(theta_stds1);
-
-    P.selected_lambda2 = P.lambda2_values(select_ind);
-    P.coupled_select_ind = select_ind;
-    save(fullfile(coupled_dir,...
-                [file_name,'_',num2str(nn),'.mat']),'B','P','X_coupled')
-            fprintf('%i, ',nn)
-end  
-
-close all
-figure(3)
-hold on
-plot(awmv(:,select_ind))
-plot(theta_stds)
+% alg_name = 'CoupledCGTV';
+% coupled_dir  = fullfile(top_dir,sim_name,alg_name); 
+% for nn = 1:numel(levels)
+%     load(fullfile(coupled_dir,[file_name,'_',num2str(nn),'.mat']))
+%     [mse,l1_norm,tv_penalty,awmv,~,B] = exploreParametersCoupled(X_coupled,P,B);
+% %     select_ind = selectParamsCoupled(mse,l1_norm,tv_penalty);
+%     select_ind = selectParamsCoupledAWMV(awmv,theta_stds);
+% 
+% %     awmv_rmse = zeros(MM,1);
+% %     awmv_rmse(i) = norm(awmv(i,:)-theta_stds1)/norm(theta_stds1);
+% 
+%     P.selected_lambda2 = P.lambda2_values(select_ind);
+%     P.coupled_select_ind = select_ind;
+%     save(fullfile(coupled_dir,...
+%                 [file_name,'_',num2str(nn),'.mat']),'B','P','X_coupled')
+%             fprintf('%i, ',nn)
+% end  
+% 
+% close all
+% figure(3)
+% hold on
+% plot(awmv(:,select_ind))
+% plot(theta_stds)
 %% Plot results
 % awmv_coupled = zeros(numel(levels),T);
 % awmv_indep = zeros(numel(levels),T);
@@ -145,6 +147,7 @@ plot(theta_stds)
 % end
 
 %% Plot results
+
 awmv_coupled = zeros(numel(levels),T);
 awmv_indep = zeros(numel(levels),T);
 awmv_err_coupled = zeros(numel(levels),1);
@@ -192,7 +195,7 @@ end
 figure(1)
 hold on
 plot(awmv_err_indep)
-plot(awmv_err_coupled)
+% plot(awmv_err_coupled)
 legend('indep','coupled')
 
 figure(2)
@@ -201,7 +204,7 @@ for nn = 1:numel(levels)
     hold on
     plot(theta_stds)
     plot(awmv_indep(nn,:))
-    plot(awmv_coupled(nn,:))
+%     plot(awmv_coupled(nn,:))
     legend('truth','indep','coupled','Location','Best')
 end
 
@@ -234,11 +237,13 @@ end
 %% Explore indep parameters
 alg_name = 'IndepISM';
 indep_dir = fullfile(top_dir,sim_name,alg_name);
-iii = [30,20,20,18,17,17];
+iii = [30,30,30,30,30,30];
 for nn = 1:6
 f_name = [file_name,'_',num2str(nn),'.mat'];
 load(fullfile(indep_dir,f_name));
 [mse_indep,l1_norm,awmv_indep,fits,B] = exploreParametersIndep(X_indep,P,B);
+select_ind = selectParamsIndep(mse_indep,l1_norm)
+
 
 ii = iii(nn);
 % figure(1)
@@ -251,6 +256,27 @@ subplot(6,1,nn)
 t = 30;
 hold on
 plot(B(:,t),'Linewidth',2)
-plot(fits(:,t,25))
+plot(fits(:,t,ii))
 legend('data','recon')
 end
+
+% for nn = 6
+% f_name = [file_name,'_',num2str(nn),'.mat'];
+% load(fullfile(indep_dir,f_name));
+% [mse_indep,l1_norm,awmv_indep,fits,B] = exploreParametersIndep(X_indep,P,B);
+% 
+% ii = iii(nn);
+% % figure(1)
+% % hold on
+% % plot(theta_stds1)
+% % plot(awmv_indep(:,ii))
+% 
+% figure(2)
+% for i = 1:60
+%     subplot(6,10,i)
+%     t = 30;
+%     hold on
+%     plot(B(:,t),'Linewidth',2)
+%     plot(fits(:,t,ii))
+%     legend('data','recon')
+% end

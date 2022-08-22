@@ -3,13 +3,13 @@ function [P,K,M,MM] = definePoissonP(N,T)
 P = struct();
 P.baseFileName = 'indep_fit_%i_%i.mat';
 K = 20;
-M = 50;
+M = 60;
 MM = 50;
 zPad = 0;
 zMask = [];
 P.dataScale = 1;
-P.lambda_values = logspace(-2.5,2.5,M);
-P.lambda2_values = logspace(-2.5,2.5,MM);
+P.lambda_values = logspace(-3,1.5,M);
+P.lambda2_values = logspace(-3,1.5,MM);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
@@ -20,9 +20,9 @@ P.var_theta = linspace(0.5,25,P.num_var_t).^2;
 
 % algorithm parameters
 
-P.params.rho1 = 0.5;
+P.params.rho1 = 1;
 % P.params.lambda1 = 0.0001;
-P.params.tau = 1.5;
+P.params.tau = 1.05;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;

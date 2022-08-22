@@ -11,11 +11,7 @@ for nn = 1:numel(levels)
     A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
     % Generate data
-    if strcmp(sim,'linear')
-        [B,~,~,~] = genLinearPoisson(N,T,alpha_vals(nn));
-    elseif strcmp(sim,'anomaly')
-        [B,~,~,~] = genAnomalyPoisson(N,T,alpha_vals(nn));
-    end
+    [B,~,~,~] = genSimDataPoisson(N,T,alpha_vals(nn),sim);
 
     % Independent Solution
     x_init = zeros(N,K);
