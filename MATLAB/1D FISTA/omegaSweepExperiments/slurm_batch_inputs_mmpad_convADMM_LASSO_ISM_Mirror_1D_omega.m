@@ -7,9 +7,11 @@ disp('Setup params')
 top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
+load('dataScales.mat')
 
 for o = 1:4
 for ring_num = 1:4
+    
     
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
@@ -44,7 +46,7 @@ M = 40;
 T = num_ims;
 N = n + floor(n/2) + ceil(n/2);
 
-P.dataScale = 1;
+P.dataScale = dataScales{ring_num};
 P.lambda_values = logspace(-4,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];

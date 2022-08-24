@@ -35,7 +35,7 @@ for j = 1:T
 end
 
 % Rescale data
-P.dataScale = 1/mean(B(:));
+% P.dataScale = 1/mean(B(:));
 B = B*P.dataScale;
 
 % Init solution

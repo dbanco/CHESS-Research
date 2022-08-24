@@ -36,7 +36,7 @@ function wrap_convADMM_LASSO_CG_TVphi_Mirror_1D(dataset,P,output_dir)
     end
 
     % Rescale data
-    P.dataScale = 1/mean(B(:));
+%     P.dataScale = 1/mean(B(:));
     B = B*P.dataScale;
 
     % Init solution
