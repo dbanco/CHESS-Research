@@ -15,7 +15,7 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror';
+indep_name = '_indep_ISM_Mirror4';
 indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 mkdir(indep_dir)
@@ -40,12 +40,12 @@ zPad = 0;
 zMask = [];
 
 K = 30;
-M = 60;
+M = 40;
 T = num_ims;
 N = n + floor(n/2) + ceil(n/2);
 
 P.dataScale = 1;
-P.lambda_values = logspace(-4,1.7,M);
+P.lambda_values = logspace(-4,1,M);
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
@@ -55,15 +55,15 @@ P.num_var_t = K;
 P.var_theta = linspace(0.5,100,P.num_var_t).^2;
 
 % algorithm parameters
-P.params.rho1 = 0.0001;
-% P.params.lambda1 = 0.0001;
+P.params.rho1 = 1e-3;
+P.params.lambda1 = 0.0001;
 P.params.tau = 1.05;
 P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
 P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 800;
-P.params.tolerance = 1e-10;
+P.params.tolerance = 1e-8;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;

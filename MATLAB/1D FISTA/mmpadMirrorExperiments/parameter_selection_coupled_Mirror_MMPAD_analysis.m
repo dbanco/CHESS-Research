@@ -9,7 +9,7 @@ top_dir = 'D:\MMPAD_data_nr1';
 % top_dir = 'E:\PureTiRD_full';
 %     top_dir = '/cluster/shared/dbanco02';
 
-for ring_num = 3
+for ring_num = 2
 % Input dirs
 dset_name = sprintf('ring%i_zero',ring_num);
 
