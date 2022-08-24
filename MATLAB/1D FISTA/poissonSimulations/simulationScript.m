@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/shared/dbanco02/data/Simulations';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/Simulations';
 mkdir(top_dir)
 
 % Simulation name
@@ -27,32 +27,32 @@ P.theta_stds = theta_stds;
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
-                                indep_dir,file_name,sim)
+% SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
+%                                 indep_dir,file_name,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
 coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-% SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
-%                                 coupled_dir,indep_dir,file_name,sim)
+SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
+                                coupled_dir,indep_dir,file_name,sim)
 
 %% Redo parameter selection indep
 
-alg_name = 'IndepISM';
-indep_dir = fullfile(top_dir,sim_name,alg_name);
-for nn = 1:numel(levels)
-    f_name = [file_name,'_',num2str(nn),'.mat'];
-    load(fullfile(indep_dir,f_name));
-
-    [mse_indep,l1_norm,awmv,~,~] = exploreParametersIndep(X_indep,P,B);
-    select_ind = selectParamsIndep(mse_indep,l1_norm);
-%     select_ind = selectParamsIndepAWMV(awmv,theta_stds);
-%     awmv_select = selectAWMV(awmv,select_ind);
-    P.indep_select_ind = select_ind;
-    P.selected_lambdas = P.lambda_values(select_ind);
-    save(fullfile(indep_dir,f_name),'B','X_indep','P');
-    fprintf('%i, ',nn)
-end
+% alg_name = 'IndepISM';
+% indep_dir = fullfile(top_dir,sim_name,alg_name);
+% for nn = 1:numel(levels)
+%     f_name = [file_name,'_',num2str(nn),'.mat'];
+%     load(fullfile(indep_dir,f_name));
+% 
+%     [mse_indep,l1_norm,awmv,~,~] = exploreParametersIndep(X_indep,P,B);
+%     select_ind = selectParamsIndep(mse_indep,l1_norm);
+% %     select_ind = selectParamsIndepAWMV(awmv,theta_stds);
+% %     awmv_select = selectAWMV(awmv,select_ind);
+%     P.indep_select_ind = select_ind;
+%     P.selected_lambdas = P.lambda_values(select_ind);
+%     save(fullfile(indep_dir,f_name),'B','X_indep','P');
+%     fprintf('%i, ',nn)
+% end
 % close all
 % figure(3)
 % hold on
