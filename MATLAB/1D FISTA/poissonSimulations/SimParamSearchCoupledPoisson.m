@@ -4,7 +4,7 @@ mkdir(output_dir)
 
 % Fits for different parameters/noise levels
 NN = numel(levels);
-for nn = 1:NN
+for nn = 3:NN
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
