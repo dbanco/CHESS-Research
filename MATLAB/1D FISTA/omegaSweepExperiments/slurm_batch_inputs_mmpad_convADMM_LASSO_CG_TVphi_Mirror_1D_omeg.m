@@ -55,7 +55,7 @@ zMask = [];
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 
 % Algorithm parameters
-P.params.rho2 = 0.0001;
+P.params.rho2 = 1e-4;
 P.params.lambda2 = 1;
 P.params.tau = 1.1;
 P.params.mu = 2;

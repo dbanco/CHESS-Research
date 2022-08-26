@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'D:\Simulations';
-top_dir = '/cluster/shared/dbanco02/Simulations';
+top_dir = 'D:\Simulations';
+% top_dir = '/cluster/shared/dbanco02/Simulations';
 mkdir(top_dir)
 
 % Simulation name
@@ -33,8 +33,8 @@ indep_dir  = fullfile(top_dir,sim_name,alg_name);
 % Coupled
 alg_name = 'CoupledCGTV';
 coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
-                                coupled_dir,indep_dir,file_name,sim)
+% SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
+%                                 coupled_dir,indep_dir,file_name,sim)
 
 %% Redo parameter selection indep
 
@@ -84,67 +84,67 @@ SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
 % plot(awmv(:,select_ind))
 % plot(theta_stds)
 %% Plot results
-% awmv_coupled = zeros(numel(levels),T);
-% awmv_indep = zeros(numel(levels),T);
-% awmv_err_coupled = zeros(numel(levels),1);
-% awmv_err_indep = zeros(numel(levels),1);
+awmv_coupled = zeros(numel(levels),T);
+awmv_indep = zeros(numel(levels),T);
+awmv_err_coupled = zeros(numel(levels),1);
+awmv_err_indep = zeros(numel(levels),1);
 % hand_ind = [15,17,20,38,35,50];
-% % hand_ind = [15,17,20,5,40,40];
-% 
-% % Coupled Error
-% alg_name = 'CoupledCGTV';
-% for nn = 1:numel(levels)
-%     load(fullfile(top_dir,sim_name,alg_name,...
-%             [file_name,'_',num2str(nn),'.mat']))
-%     if nn == 1
-%        A0 = unshifted_basis_vector_ft_stack_zpad(P);
-% %        theta_stds = P.theta_stds;
-%         theta_stds = theta_stds;
-%     end
-%     for time = 1:T
-%         x = X_coupled(:,:,hand_ind(nn),time);        
-%         fit_coupled = Ax_ft_1D(A0,x);
-%         az_signal = squeeze(sum(x,1));
-%         var_sum = squeeze(sum(az_signal(:)));
-%         awmv_coupled(nn,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     end
-%     awmv_err_coupled(nn) = norm(theta_stds-awmv_coupled(nn,:))/norm(theta_stds);
-% end
-% 
-% % Independent Error
-% alg_name = 'IndepISM';
-% for nn = 1:numel(levels)
-%     load(fullfile(top_dir,sim_name,alg_name,...
-%             [file_name,'_',num2str(nn),'.mat']))
-%     if nn == 1
-%        A0 = unshifted_basis_vector_ft_stack_zpad(P);
-%     end
-%     for time = 1:T
-%         x = X_indep(:,:,P.indep_select_ind(time),time);        
-%         fit_indep = Ax_ft_1D(A0,x);
-%         az_signal = squeeze(sum(x,1));
-%         var_sum = squeeze(sum(az_signal(:)));
-%         awmv_indep(nn,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
-%     end
-%     awmv_err_indep(nn) = norm(theta_stds-awmv_indep(nn,:))/norm(theta_stds);
-% end
-%      
-% 
-% figure(1)
-% hold on
-% plot(awmv_err_indep)
-% plot(awmv_err_coupled)
-% legend('indep','coupled')
-% 
-% figure(2)
-% for nn = 1:numel(levels)
-%     subplot(3,2,nn)
-%     hold on
-%     plot(theta_stds)
-%     plot(awmv_indep(nn,:))
-%     plot(awmv_coupled(nn,:))
-%     legend('truth','indep','coupled','Location','Best')
-% end
+% hand_ind = [15,17,20,5,40,40];
+
+% Coupled Error
+alg_name = 'CoupledCGTV';
+for nn = 1:numel(levels)
+    load(fullfile(top_dir,sim_name,alg_name,...
+            [file_name,'_',num2str(nn),'.mat']))
+    if nn == 1
+       A0 = unshifted_basis_vector_ft_stack_zpad(P);
+%        theta_stds = P.theta_stds;
+        theta_stds = theta_stds;
+    end
+    for time = 1:T
+        x = X_coupled(:,:,P.coupled_select_ind,time);        
+        fit_coupled = Ax_ft_1D(A0,x);
+        az_signal = squeeze(sum(x,1));
+        var_sum = squeeze(sum(az_signal(:)));
+        awmv_coupled(nn,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    end
+    awmv_err_coupled(nn) = norm(theta_stds-awmv_coupled(nn,:))/norm(theta_stds);
+end
+
+% Independent Error
+alg_name = 'IndepISM';
+for nn = 1:numel(levels)
+    load(fullfile(top_dir,sim_name,alg_name,...
+            [file_name,'_',num2str(nn),'.mat']))
+    if nn == 1
+       A0 = unshifted_basis_vector_ft_stack_zpad(P);
+    end
+    for time = 1:T
+        x = X_indep(:,:,P.indep_select_ind(time),time);        
+        fit_indep = Ax_ft_1D(A0,x);
+        az_signal = squeeze(sum(x,1));
+        var_sum = squeeze(sum(az_signal(:)));
+        awmv_indep(nn,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+    end
+    awmv_err_indep(nn) = norm(theta_stds-awmv_indep(nn,:))/norm(theta_stds);
+end
+     
+
+figure(1)
+hold on
+plot(awmv_err_indep)
+plot(awmv_err_coupled)
+legend('indep','coupled')
+
+figure(2)
+for nn = 1:numel(levels)
+    subplot(3,2,nn)
+    hold on
+    plot(theta_stds)
+    plot(awmv_indep(nn,:))
+    plot(awmv_coupled(nn,:))
+    legend('truth','indep','coupled','Location','Best')
+end
 
 %% Plot results
 
@@ -204,7 +204,7 @@ for nn = 1:numel(levels)
     hold on
     plot(theta_stds)
     plot(awmv_indep(nn,:))
-%     plot(awmv_coupled(nn,:))
+    plot(awmv_coupled(nn,:))
     legend('truth','indep','coupled','Location','Best')
 end
 
