@@ -10,10 +10,10 @@ mkdir(top_dir)
 % Simulation name
 sim = 'linear';
 sim_name = [sim,'PoissonNoise3'];
-paramSearch_name = 'lineSearchNoise';
+ps_name = 'lineSearchNoise';
 mc_dir = 'mcTrials';
 
-load(fullfile(top_dir,sim_name,'IndepISM',[paramSearch_name,'_1']));
+load(fullfile(top_dir,sim_name,'IndepISM',[ps_name,'_1']));
 
 % Define poisson dataset
 [N,T] = size(B);
@@ -26,13 +26,13 @@ levels = 0.05:0.05:0.3;
 
 % Independent
 alg_name = 'IndepISM';
-paramSearch_dir  = fullfile(top_dir,sim_name,alg_name);
-SimMCPoisson(P,N,K,T,levels,alpha_vals,...
-       paramSearch_dir,paramSearch_name,mc_dir,sim)
+indepPS_dir  = fullfile(top_dir,sim_name,alg_name);
+% SimMCPoisson(P,N,K,T,levels,alpha_vals,...
+%        indepPS_dir,ps_name,mc_dir,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
-paramSearch_dir  = fullfile(top_dir,sim_name,alg_name); 
+coupledPS_dir = fullfile(top_dir,sim_name,alg_name); 
 SimMCPoissonCoupled(P,N,K,T,levels,alpha_vals,...
-    paramSearch_dir,paramSearch_name,mc_dir,sim)
+    indepPS_dir,coupledPS_dir,ps_name,mc_dir,sim)
 

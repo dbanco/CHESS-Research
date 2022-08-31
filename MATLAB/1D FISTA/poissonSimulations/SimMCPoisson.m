@@ -1,16 +1,16 @@
 function SimMCPoisson(P,N,K,T,levels,alpha_vals,...
-                 paramSearch_dir,paramSearch_name,mc_dir,sim)
+                 indepPS_dir,ps_name,mc_dir,sim)
 
 % Fits for different parameters/noise levels
 for nn = 1:numel(levels)
     
     % Make folder to save trials
-    trials_dir = fullfile(paramSearch_dir,[mc_dir,'_',num2str(nn)]);
+    trials_dir = fullfile(indepPS_dir,[mc_dir,'_',num2str(nn)]);
     mkdir(trials_dir)
     
     % Get selected parameter indices
-    PSdata = load(fullfile(paramSearch_dir,[paramSearch_name,'_',num2str(nn),'.mat']),'P');
-    lambdas = PSdata.P.selected_lambdas;
+    ps = load(fullfile(indepPS_dir,[ps_name,'_',num2str(nn),'.mat']),'P');
+    lambdas = ps.P.selected_lambdas;
        
     % Construct dictionary
     A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
