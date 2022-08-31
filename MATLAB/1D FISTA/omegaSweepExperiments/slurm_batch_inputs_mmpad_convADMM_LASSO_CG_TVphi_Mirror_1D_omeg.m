@@ -4,7 +4,7 @@ disp('Setup params')
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
 % top_dir = 'E:\MMPAD_data';
-top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+top_dir = '/cluster/shared/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
@@ -15,7 +15,7 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror';
+indep_name = '_indep_ISM_Mirror4';
 indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
