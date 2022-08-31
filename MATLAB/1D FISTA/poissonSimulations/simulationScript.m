@@ -8,7 +8,7 @@ top_dir = 'D:\Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'anomaly';
+sim = 'linear';
 sim_name = [sim,'PoissonNoise3'];
 file_name = 'lineSearchNoise';
 
@@ -163,7 +163,20 @@ for nn = 1:numel(levels)
         theta_stds = theta_stds;
     end
     for time = 1:T
-        x = X_coupled(:,:,P.coupled_select_ind,time);        
+        c_idx = P.coupled_select_ind-21;
+%         if nn == 4
+%             c_idx = c_idx-3;
+%         end
+%         if nn == 1
+%             c_idx = c_idx-3;
+%         end
+%         if nn == 2
+%             c_idx = c_idx-3;
+%         end
+%         if nn == 3
+%             c_idx = c_idx-3;
+%         end
+        x = X_coupled(:,:,c_idx,time);        
         fit_coupled = Ax_ft_1D(A0,x);
         az_signal = squeeze(sum(x,1));
         var_sum = squeeze(sum(az_signal(:)));
@@ -195,7 +208,7 @@ end
 figure(1)
 hold on
 plot(awmv_err_indep)
-% plot(awmv_err_coupled)
+plot(awmv_err_coupled)
 legend('indep','coupled')
 
 figure(2)
