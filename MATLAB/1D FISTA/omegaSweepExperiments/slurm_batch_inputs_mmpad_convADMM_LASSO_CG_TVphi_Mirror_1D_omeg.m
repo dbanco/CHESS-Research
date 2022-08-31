@@ -15,7 +15,7 @@ for ring_num = 1:4
 dset_name = ['ring',num2str(ring_num)];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror4';
+indep_name = '_indep_ISM_Mirror5';
 indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
@@ -65,7 +65,7 @@ P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
 P.params.maxIter = 1000;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
-P.params.cgEpsilon = 1e-5;
+P.params.cgEpsilon = 1e-3;
 P.params.isNonnegative = 1;
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
@@ -136,11 +136,11 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
-% rho1 = max(rho1_select(:));
-% for t = 1:T
-%     rho1 = min(rho1_select(select_indices(t),t),rho1);
-% end
-P.params.rho = 0.0001;
+rho1 = max(rho1_select(:));
+for t = 1:T
+    rho1 = min(rho1_select(select_indices(t),t),rho1);
+end
+P.params.rho1 = rho1;
 
 % Lambda2 values
 M = 30;
