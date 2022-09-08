@@ -98,7 +98,6 @@ for nn = 1:11
 end
 
 %% Inspect AWMV curves
-
 figure(21)
 hold on
 nn = 8;
