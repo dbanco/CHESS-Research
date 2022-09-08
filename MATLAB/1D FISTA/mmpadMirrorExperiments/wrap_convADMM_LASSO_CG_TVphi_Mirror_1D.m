@@ -48,7 +48,7 @@ function wrap_convADMM_LASSO_CG_TVphi_Mirror_1D(dataset,P,output_dir)
         end
     end
     % Solve
-    [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi2_1D(A0ft_stack,B,X_init,P.params); 
+    [X_hat,err,obj,l1_norm,tv_penalty] = convADMM_LASSO_CG_TVphi_1D(A0ft_stack,B,X_init,P.params); 
 
     % Output data
     save(fullfile(output_dir,sprintf(P.baseFileName,P.set)),...

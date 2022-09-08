@@ -52,7 +52,7 @@ zMask = params.zeroMask;
 Bnorms = zeros(T,1);
 for j = 1:T
     Bnorms(j) = norm(squeeze(B(:,j)));
-%     Bnorms(j) = 1;
+%   Bnorms(j) = 1;
     B(:,j) = B(:,j)/Bnorms(j);
 end
 

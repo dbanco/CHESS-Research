@@ -36,7 +36,7 @@ function [X_hat, err, obj, l1_norm, tv_penalty] = convADMM_LASSO_CG_TVphi2_1D(A0
 tolerance = params.tolerance;
 lambda1 = params.lambda1;
 lambda2 = params.lambda2;
-rho = params.rho;
+rho = params.rho1;
 
 mu = params.mu;
 adaptRho = params.adaptRho;

@@ -7,12 +7,12 @@ P.set = 1;
 
 % Parent directory
 % top_dir = 'E:\MMPAD_omega';
-top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+top_dir = '/cluster/shared/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o = 1:4
-for ring_num = 1:4
+for o = 1
+for ring_num = 2:4
 % Input dirs
 dset_name = r_dir{ring_num};
 om_name = om_dir{o};
@@ -49,6 +49,40 @@ disp('Selecting lambda values')
 
 load([dset_name,om_name,'_mirror_coupled_awmv.mat'])
 end
+<<<<<<< HEAD
+=======
+
+tv_time = zeros(M,T-1);
+im_ind = 1;
+for i = 1:M
+    fprintf('%i of %i \n',i,M)
+    e_data = load(fullfile(output_dir,sprintf(baseFileName,i)),'P','X_hat');
+    
+    tv_penalty(i) = sum(abs(DiffPhiX_1D(e_data.X_hat)),'all');
+    
+    for j = 1:T
+        b = B(:,j);
+        x = squeeze(e_data.X_hat(:,:,j));
+        fit = Ax_ft_1D(A0ft_stack,x);   
+        err_select(i,j) = sum(( fit(:) - b(:) ).^2)/norm(b)^2;
+        l0_select(i,j) = sum(x(:) > 1e-4*sum(x(:)));
+%         l1_select(i,j) = sum(x(:));
+        az_signal = squeeze(sum(x,1));
+        var_sum = squeeze(sum(az_signal(:)));
+        vdfs(:,i,j) = az_signal./var_sum;
+        awmv_az(i,j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
+        
+%         if j == 40
+%             hold off
+%             figure(1)
+%             plot(b)
+%             hold on
+%             plot(fit)
+%             legend('data','fit')
+%         end
+    end
+    im_ind = im_ind + 1;
+>>>>>>> c130eb0a688edba5b75e8baadc5cd2bec681a928
 end
 
 %{

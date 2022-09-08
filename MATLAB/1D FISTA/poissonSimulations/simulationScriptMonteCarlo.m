@@ -3,8 +3,8 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/shared/dbanco02/Simulations';
+%top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/Simulations';
 mkdir(top_dir)
 
 % Simulation name
