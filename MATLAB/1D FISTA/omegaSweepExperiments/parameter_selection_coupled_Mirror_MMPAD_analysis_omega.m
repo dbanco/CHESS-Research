@@ -7,12 +7,12 @@ P.set = 1;
 
 % Parent directory
 % top_dir = 'E:\MMPAD_omega';
-top_dir = '/cluster/home/dbanco02/data/MMPAD_omega';
+top_dir = '/cluster/shared/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
-for o = 1:4
-for ring_num = 1:4
+for o = 1
+for ring_num = 2:4
 % Input dirs
 dset_name = r_dir{ring_num};
 om_name = om_dir{o};
@@ -93,14 +93,14 @@ for i = 1:M
         vdfs(:,i,j) = az_signal./var_sum;
         awmv_az(i,j) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         
-        if j == 40
-            hold off
-            figure(1)
-            plot(b)
-            hold on
-            plot(fit)
-            legend('data','fit')
-        end
+%         if j == 40
+%             hold off
+%             figure(1)
+%             plot(b)
+%             hold on
+%             plot(fit)
+%             legend('data','fit')
+%         end
     end
     im_ind = im_ind + 1;
 end

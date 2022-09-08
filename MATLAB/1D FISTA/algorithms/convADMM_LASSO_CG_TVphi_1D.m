@@ -51,9 +51,9 @@ zMask = params.zeroMask;
 [N,K,T] = size(X_init);
 Bnorms = zeros(T,1);
 for j = 1:T
-%     Bnorms(j) = norm(squeeze(B(:,j)));
-    Bnorms(j) = 1;
-%     B(:,j) = B(:,j)/Bnorms(j);
+    Bnorms(j) = norm(squeeze(B(:,j)));
+%   Bnorms(j) = 1;
+    B(:,j) = B(:,j)/Bnorms(j);
 end
 
 % Initialize variables

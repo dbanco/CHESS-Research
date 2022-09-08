@@ -3,7 +3,7 @@ function SimMCPoissonCoupled(P,N,K,T,levels,alpha_vals,...
 
                     % Fits for different parameters/noise levels
 NN = numel(levels);
-for nn = 1:NN
+for nn =  6%1:NN
     
     % Make folder to save trials
     indepTrials_dir = fullfile(indepPS_dir,[mc_dir,'_',num2str(nn)]);
