@@ -136,11 +136,11 @@ P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
-rho1 = max(rho1_select(:));
-for t = 1:T
-    rho1 = min(rho1_select(select_indices(t),t),rho1);
-end
-P.params.rho1 = rho1;
+% rho1 = max(rho1_select(:));
+% for t = 1:T
+%     rho1 = min(rho1_select(select_indices(t),t),rho1);
+% end
+% P.params.rho1 = rho1;
 
 % Lambda2 values
 M = 30;

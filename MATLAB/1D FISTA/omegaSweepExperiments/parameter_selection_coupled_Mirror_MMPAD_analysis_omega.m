@@ -47,10 +47,31 @@ A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
 %% Select lambda values
 disp('Selecting lambda values')
 
-load([dset_name,om_name,'_mirror_coupled_awmv.mat'])
+err_select = zeros(M,T);
+l0_select = zeros(M,T);
+l1_select = zeros(M,T);
+tv_penalty = zeros(M,1);
+x_indep = cell(T,1);
+vdfs = zeros(K,M,T);
+awmv_az = zeros(M,T);
+
+B = zeros(N,T);
+% Load data
+for j = 1:T
+    b_data = load(fullfile(dataset,[P.prefix,'_',num2str(j),'.mat']));
+    b = P.dataScale*sum(b_data.polar_image,2);
+    
+    % Mirror data
+    nn = numel(b);
+    pad1 = floor(nn/2);
+    pad2 = ceil(nn/2);
+    N = nn + pad1 + pad2;
+    b_mirror = zeros(N,1);
+    b_mirror((pad1+1):(pad1+nn)) = b;
+    b_mirror((1+N-pad2):N) = flip(b((nn-pad2+1):nn));
+    b_mirror(1:pad1) = flip(b(1:pad1));
+    B(:,j) = b_mirror;
 end
-<<<<<<< HEAD
-=======
 
 tv_time = zeros(M,T-1);
 im_ind = 1;
@@ -82,9 +103,54 @@ for i = 1:M
 %         end
     end
     im_ind = im_ind + 1;
->>>>>>> c130eb0a688edba5b75e8baadc5cd2bec681a928
 end
 
+%% Criterion separate params
+% noise_eta = 0.2;
+% discrep_crit = abs(err_select'-noise_eta);
+% 
+% [lambda_indices,~] = find(discrep_crit' == min(discrep_crit'));
+% param_select = P.lambda_values(lambda_indices);
+% lambda_values_separate = param_select;
+% 
+% % Criterion single param
+% discrep_crit = abs(mean(err_select,2)-noise_eta);
+% lambda_index = find(discrep_crit == min(discrep_crit));
+% param_select_single = P.lambda_values(lambda_index);
+% lambda_values_single = ones(T,1)*param_select_single;
+
+% figure(2)
+% plot(param_select,'o-')
+% title('Parameters selected')
+
+
+%% Plot
+lambda_vals = P.lambda_values;
+
+% Analyze L-curve
+total_err = sum(err_select(1:M,:),2);
+total_l1 = sum(l1_select(1:M,:),2);
+total_err = total_err./max(total_err);
+total_l1 = total_l1./max(total_l1);
+
+% Find kink in L-cureve method #1
+% slopes = (total_l1(2:end) - total_l1(1:end-1))./...
+%      (total_err(2:end) - total_err(1:end-1));
+% slope_select = find((slopes)>0);
+% select_ind = slope_select(1);
+
+% Find kink in L-cureve method #2
+% sq_origin_dist = total_l1.^2 + total_err.^2;
+% select_ind = find(sq_origin_dist == min(sq_origin_dist));
+err_scale = total_err/max(total_err(:));
+tv_scale = tv_penalty/max(tv_penalty(:));
+sq_origin_dist = abs(tv_scale).^2 + abs(err_scale).^2;
+select_ind = find(sq_origin_dist == min(sq_origin_dist),1);
+
+save([dset_name,om_name,'_mirror_coupled_awmv.mat'],'awmv_az','select_ind',...
+    'lambda2_values','err_select','l1_select','tv_penalty')
+end
+end
 %{
 figure(6)
 plot(total_l1,total_err,'o-')
