@@ -20,7 +20,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror3';
+output_name = '_coupled_CG_TVphi_Mirror4';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
