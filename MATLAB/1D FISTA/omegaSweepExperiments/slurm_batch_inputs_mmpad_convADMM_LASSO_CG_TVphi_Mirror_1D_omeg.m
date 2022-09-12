@@ -9,8 +9,8 @@ om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
 
 
-for o = 1:4
-for ring_num = 1:4
+for o = 4
+for ring_num = 1
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
 
@@ -20,7 +20,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror4';
+output_name = '_coupled_CG_TVphi_Mirror5';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
@@ -132,7 +132,8 @@ end
 %     end
 % end
 
-P.params.lambda1 = lambda1_vals(select_indices);
+% P.params.lambda1 = lambda1_vals(select_indices);
+P.params.lambda1 = ones(T,1)*0.4546e-3;
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
