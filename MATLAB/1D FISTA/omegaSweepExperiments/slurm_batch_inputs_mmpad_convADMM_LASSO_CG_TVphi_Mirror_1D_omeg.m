@@ -10,7 +10,7 @@ r_dir = {'ring1','ring2','ring3','ring4'};
 
 
 for o = 4
-for ring_num = 1
+for ring_num = 2:4
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
 
@@ -20,7 +20,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror5';
+output_name = '_coupled_CG_TVphi_Mirror6';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
@@ -95,8 +95,9 @@ lambda1_vals = indep_data.P.lambda_values;
 M_lam1 = numel(lambda1_vals);
 err_select = zeros(M_lam1,T);
 l1_select = zeros(M_lam1,T);
-
 rho1_select = zeros(M_lam1,T);
+awmv_indep = zeros(T,M_lam1);
+
 for m = 1:M_lam1
     for t = 1:T
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
@@ -104,6 +105,7 @@ for m = 1:M_lam1
         err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
         l1_select(m,t) = sum(x_data.x_hat(:));
         rho1_select(m,t) = x_data.rho;
+        awmv_indep(t,m) = computeAWMV_1D(x_data.x_hat,P.var_theta);
     end
 end
 
@@ -137,11 +139,11 @@ P.params.lambda1 = ones(T,1)*0.4546e-3;
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
-% rho1 = max(rho1_select(:));
-% for t = 1:T
-%     rho1 = min(rho1_select(select_indices(t),t),rho1);
-% end
-% P.params.rho1 = rho1;
+rho1 = max(rho1_select(:));
+for t = 1:T
+    rho1 = min(rho1_select(select_indices(t),t),rho1);
+end
+P.params.rho1 = rho1;
 
 % Lambda2 values
 M = 30;
