@@ -3,20 +3,20 @@ disp('Setup params')
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-% top_dir = 'E:\MMPAD_data';
-top_dir = '/cluster/shared/dbanco02';
+top_dir = 'D:\MMPAD_data_nr1';
+% top_dir = '/cluster/shared/dbanco02';
 
 for ring_num = 1:4
 % Input dirs
 dset_name = ['ring',num2str(ring_num),'_zero'];
 
 % Indep dirs
-indep_name = '_indep_ISM_Mirror6';
+indep_name = '_indep_ISM_Mirror5';
 indep_subdir = [dset_name,indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror7';
+output_name = '_coupled_CG_TVphi_Mirror5';
 output_subdir = [dset_name,output_name];
 
 % Setup directories
@@ -96,7 +96,7 @@ for m = 1:M_lam1
     for t = 1:T
         x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
         fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
-        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
+        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 )/norm(B(:,t));
         l1_select(m,t) = sum(x_data.x_hat(:));
         rho1_select(m,t) = x_data.rho;
     end
@@ -107,25 +107,25 @@ select_indices = zeros(T,1);
 for t = 1:T
     err_t = err_select(:,t);
     l1_t = l1_select(:,t);
-    err_t = log(err_t);
-    l1_t = log(l1_t);
+    err_t = err_t/max(err_t);
+    l1_t = l1_t/max(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
-    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist )  );
+    select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
 end
 
-% for t = 1:T
-%     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-%     b = P.dataScale*sum(polar_image,1);
-%     rel_err_t = err_select(:,t)/sum(b(:).^2);
-%     while rel_err_t(select_indices(t)) > 0.02
-%         if select_indices(t) > 1
-%             select_indices(t) = select_indices(t) - 1;
-%         else
-%             select_indices(t) = find(rel_err_t == min(rel_err_t));
-%             break
-%         end
-%     end
-% end
+for t = 1:T
+    load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
+    b = P.dataScale*sum(polar_image,1);
+    rel_err_t = err_select(:,t)/sum(b(:).^2);
+    while rel_err_t(select_indices(t)) > 0.02
+        if select_indices(t) > 1
+            select_indices(t) = select_indices(t) - 1;
+        else
+            select_indices(t) = find(rel_err_t == min(rel_err_t));
+            break
+        end
+    end
+end
 
 P.params.lambda1 = lambda1_vals(select_indices);
 P.params.lambda1_indices = select_indices;

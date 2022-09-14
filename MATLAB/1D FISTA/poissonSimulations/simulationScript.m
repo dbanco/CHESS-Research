@@ -60,29 +60,29 @@ coupled_dir  = fullfile(top_dir,sim_name,alg_name);
 % plot(theta_stds)
 
 %% Redo parameter selection coupled
-alg_name = 'CoupledCGTV';
-coupled_dir  = fullfile(top_dir,sim_name,alg_name); 
-for nn = 1:numel(levels)
-    load(fullfile(coupled_dir,[file_name,'_',num2str(nn),'.mat']))
-    [mse,l1_norm,tv_penalty,awmv,~,B] = exploreParametersCoupled(X_coupled,P,B);
-%     select_ind = selectParamsCoupled(mse,l1_norm,tv_penalty);
-    select_ind = selectParamsCoupledAWMV(awmv,theta_stds);
-
-%     awmv_rmse = zeros(MM,1);
-%     awmv_rmse(i) = norm(awmv(i,:)-theta_stds1)/norm(theta_stds1);
-
-    P.selected_lambda2 = P.lambda2_values(select_ind);
-    P.coupled_select_ind = select_ind;
-    save(fullfile(coupled_dir,...
-                [file_name,'_',num2str(nn),'.mat']),'B','P','X_coupled')
-            fprintf('%i, ',nn)
-end  
-
-close all
-figure(3)
-hold on
-plot(awmv(:,select_ind))
-plot(theta_stds)
+% alg_name = 'CoupledCGTV';
+% coupled_dir  = fullfile(top_dir,sim_name,alg_name); 
+% for nn = 1:numel(levels)
+%     load(fullfile(coupled_dir,[file_name,'_',num2str(nn),'.mat']))
+%     [mse,l1_norm,tv_penalty,awmv,~,B] = exploreParametersCoupled(X_coupled,P,B);
+% %     select_ind = selectParamsCoupled(mse,l1_norm,tv_penalty);
+%     select_ind = selectParamsCoupledAWMV(awmv,theta_stds);
+% 
+% %     awmv_rmse = zeros(MM,1);
+% %     awmv_rmse(i) = norm(awmv(i,:)-theta_stds1)/norm(theta_stds1);
+% 
+%     P.selected_lambda2 = P.lambda2_values(select_ind);
+%     P.coupled_select_ind = select_ind;
+%     save(fullfile(coupled_dir,...
+%                 [file_name,'_',num2str(nn),'.mat']),'B','P','X_coupled')
+%             fprintf('%i, ',nn)
+% end  
+% 
+% close all
+% figure(3)
+% hold on
+% plot(awmv(:,select_ind))
+% plot(theta_stds)
 %% Plot results
 awmv_coupled = zeros(numel(levels),T);
 awmv_indep = zeros(numel(levels),T);
