@@ -107,8 +107,8 @@ select_indices = zeros(T,1);
 for t = 1:T
     err_t = err_select(:,t);
     l1_t = l1_select(:,t);
-    err_t = err_t/max(err_t);
-    l1_t = l1_t/max(l1_t);
+    err_t = log(err_t);
+    l1_t = log(l1_t);
     sq_origin_dist = abs(l1_t) + abs(err_t);
     select_indices(t) = find( sq_origin_dist == min(sq_origin_dist + (err_t == 0) )  );
 end

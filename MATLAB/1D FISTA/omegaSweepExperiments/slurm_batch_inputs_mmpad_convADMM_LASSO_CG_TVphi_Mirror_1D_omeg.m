@@ -7,6 +7,7 @@ disp('Setup params')
 top_dir = '/cluster/shared/dbanco02/data/MMPAD_omega';
 om_dir = {'omega2','omega3','omega4','omega5'};
 r_dir = {'ring1','ring2','ring3','ring4'};
+lam1s = [4.5471e-4,3.0740e-4,3.2959e-4,3.7557e-4];
 
 for o = 1:4
 for ring_num = 1:4
@@ -20,7 +21,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror6';
+output_name = '_coupled_CG_TVphi_Mirror7';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
@@ -76,7 +77,7 @@ P.params.verbose = 1;
 B = zeros(N,T);
 for t = 1:T
     load(fullfile(dataset,[P.prefix,'_',num2str(t),'.mat']))
-    b = P.dataScale*sum(polar_image,2);
+    b = sum(polar_image,2);
     % Mirror data
     nn = numel(b);
     pad1 = floor(nn/2);
@@ -88,6 +89,9 @@ for t = 1:T
     b_mirror(1:pad1) = flip(b(1:pad1));
     B(:,t) = b_mirror;
 end
+Bmean = mean(B(:));
+B = B*P.dataScale;
+
 
 % Lambda1 values: Use L-curve parameter selection
 indep_data = load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
@@ -135,7 +139,7 @@ end
 % end
 
 % P.params.lambda1 = lambda1_vals(select_indices);
-P.params.lambda1 = ones(T,1)*0.4546e-3;
+P.params.lambda1 = ones(T,1)*lam1s(ring_num)*Bmean*P.dataScale;
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
@@ -156,14 +160,14 @@ P.lambda2_values = lambda2_vals;
 jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
 mkdir(jobDir)
 
-for k = 1:M
+for k = 27:29
     P.params.lambda2 = lambda2_vals(k);
     P.set = k;
     varin = {dataset,P,output_dir};
     save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
 end
 
-slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(M)])
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh','27-29') %,['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
 
 end
