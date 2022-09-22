@@ -51,8 +51,11 @@ zMask = params.zeroMask;
 [N,K,T] = size(X_init);
 Bnorms = zeros(T,1);
 for j = 1:T
-    Bnorms(j) = norm(squeeze(B(:,j)));
-%   Bnorms(j) = 1;
+    if params.normData
+        Bnorms(j) = norm(squeeze(B(:,j)));
+    else
+        Bnorms(j) = 1;
+    end
     B(:,j) = B(:,j)/Bnorms(j);
 end
 
@@ -143,13 +146,8 @@ while keep_going && (nIter < maxIter)
         legend('data','fit')
         
         subplot(2,1,2)
-        P.var_theta = [linspace(0.5,100,30)].^2;
-        awmv = zeros(T,1);
-        var_signal = squeeze(sum(Xkp1,1));
-        var_sum = squeeze(sum(var_signal,1));
-        for t = 1:T
-            awmv(t) = sum(sqrt(P.var_theta(:)).*var_signal(:,t))/var_sum(t);
-        end
+        var_theta = linspace(0.5,25,20).^2;
+        awmv = computeAWMV_1D(Xkp1,var_theta);
         plot(awmv)
 
         

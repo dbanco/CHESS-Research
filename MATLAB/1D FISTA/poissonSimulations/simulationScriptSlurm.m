@@ -16,25 +16,25 @@ file_name = 'lineSearchNoise';
 N = 101;
 T = 30;
 [P,K,M,MM] = definePoissonP(N,T);
-levels = 0.05:0.05:0.3;
-[alpha_vals,theta_stds] = genPoissonScales(N,T,levels,sim);
+snr_levels = [10,5,2.5,2,1.75,1.5,1.25,1.1];
+[alpha_vals,theta_stds] = genPoissonScales2(N,T,snr_levels,sim);
 P.theta_stds = theta_stds;
-
-[Bn,B,theta_stds,rel_err] = genSimDataPoisson(N,T,alpha_vals(4),sim);
+P.alpha_vals = alpha_vals;
+% [Bn,B,theta_stds,rel_err] = genSimDataPoisson2(N,T,alpha_vals(4),sim);
 
 %% Run algorithm
 
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-% SimParamSearchPoisson(P,N,M,K,T,levels,alpha_vals,...
+% SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
 %                                 indep_dir,file_name,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
 coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-% SimParamSearchCoupledPoisson(P,N,MM,K,T,levels,alpha_vals,...
-%                                 coupled_dir,indep_dir,file_name,sim)
+SimParamSearchCoupledPoissonSlurm(P,MM,snr_levels,...
+                       coupled_dir,indep_dir,file_name,sim_name)
 
 %% Redo parameter selection indep
 
@@ -84,16 +84,16 @@ coupled_dir  = fullfile(top_dir,sim_name,alg_name);
 % plot(awmv(:,select_ind))
 % plot(theta_stds)
 %% Plot results
-awmv_coupled = zeros(numel(levels),T);
-awmv_indep = zeros(numel(levels),T);
-awmv_err_coupled = zeros(numel(levels),1);
-awmv_err_indep = zeros(numel(levels),1);
+awmv_coupled = zeros(numel(snr_levels),T);
+awmv_indep = zeros(numel(snr_levels),T);
+awmv_err_coupled = zeros(numel(snr_levels),1);
+awmv_err_indep = zeros(numel(snr_levels),1);
 % hand_ind = [15,17,20,38,35,50];
 % hand_ind = [15,17,20,5,40,40];
 
 % Coupled Error
 alg_name = 'CoupledCGTV';
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
     if nn == 1
@@ -113,7 +113,7 @@ end
 
 % Independent Error
 alg_name = 'IndepISM';
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
     if nn == 1
@@ -137,7 +137,7 @@ plot(awmv_err_coupled)
 legend('indep','coupled')
 
 figure(2)
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     subplot(3,2,nn)
     hold on
     plot(theta_stds)
@@ -148,13 +148,13 @@ end
 
 %% Plot results
 
-awmv_coupled = zeros(numel(levels),T);
-awmv_indep = zeros(numel(levels),T);
-awmv_err_coupled = zeros(numel(levels),1);
-awmv_err_indep = zeros(numel(levels),1);
+awmv_coupled = zeros(numel(snr_levels),T);
+awmv_indep = zeros(numel(snr_levels),T);
+awmv_err_coupled = zeros(numel(snr_levels),1);
+awmv_err_indep = zeros(numel(snr_levels),1);
 % Coupled Error
 alg_name = 'CoupledCGTV';
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
     if nn == 1
@@ -163,19 +163,7 @@ for nn = 1:numel(levels)
         theta_stds = theta_stds;
     end
     for time = 1:T
-        c_idx = P.coupled_select_ind-21;
-%         if nn == 4
-%             c_idx = c_idx-3;
-%         end
-%         if nn == 1
-%             c_idx = c_idx-3;
-%         end
-%         if nn == 2
-%             c_idx = c_idx-3;
-%         end
-%         if nn == 3
-%             c_idx = c_idx-3;
-%         end
+        c_idx = P.coupled_select_ind;
         x = X_coupled(:,:,c_idx,time);        
         fit_coupled = Ax_ft_1D(A0,x);
         az_signal = squeeze(sum(x,1));
@@ -188,7 +176,7 @@ end
 
 % Independent Error
 alg_name = 'IndepISM';
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
     if nn == 1
@@ -212,8 +200,8 @@ plot(awmv_err_coupled)
 legend('indep','coupled')
 
 figure(2)
-for nn = 1:numel(levels)
-    subplot(3,2,nn)
+for nn = 1:numel(snr_levels)
+    subplot(3,3,nn)
     hold on
     plot(theta_stds)
     plot(awmv_indep(nn,:))
@@ -222,14 +210,14 @@ for nn = 1:numel(levels)
 end
 
 %% Plot awmv for different parameter values
-awmv_coupled = zeros(numel(levels),T,MM);
-awmv_indep = zeros(numel(levels),T,1);
-awmv_err_coupled = zeros(numel(levels),MM);
-awmv_err_indep = zeros(numel(levels),1);
+awmv_coupled = zeros(numel(snr_levels),T,MM);
+awmv_indep = zeros(numel(snr_levels),T,1);
+awmv_err_coupled = zeros(numel(snr_levels),MM);
+awmv_err_indep = zeros(numel(snr_levels),1);
 
 % Coupled Error
 alg_name = 'CoupledCGTV';
-for nn = 1:numel(levels)
+for nn = 1:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
     if nn == 1

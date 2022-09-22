@@ -178,24 +178,24 @@ c_leg = legend(rings,'Location','Best','FontSize',14);
 ctitle = get(c_leg,'Title');
 set(ctitle,'String','Ring indices \{hkl\}')
 grid on
-yyaxis right
-% Import load curve
-loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
-sheet = 'PureTiTD_nr1_c';
-xlsRange = 'I4:I127';
-loadCurve = xlsread(loadCurveFile,sheet,xlsRange);
-loadTime = 2.3:1.088757396:137.3
-lCurve = plot(loadTime,loadCurve,'-o','Linewidth',2,'Color','#aaa',...
-    'MarkerIndices',1:10:500,...
-    'MarkerSize',6);
-ylim([min(loadCurve) 450])
-ylabel('Stress (MPa)')
-ax = gca;
-ax.YAxis(2).Color = 'k';
-ah1=axes('position',get(gca,'position'),'visible','off');
-leg2 = legend(ah1,lCurve,'Stress','Location','Best','FontSize',14);
-grid on
-c_leg.String = rings;
+% yyaxis right
+% % Import load curve
+% loadCurveFile = 'C:\Users\dpqb1\CHESS-Research\PureTiTD_loading.xlsx';
+% sheet = 'PureTiTD_nr1_c';
+% xlsRange = 'I4:I127';
+% loadCurve = xlsread(loadCurveFile,sheet,xlsRange);
+% loadTime = 2.3:1.088757396:137.3
+% lCurve = plot(loadTime,loadCurve,'-o','Linewidth',2,'Color','#aaa',...
+%     'MarkerIndices',1:10:500,...
+%     'MarkerSize',6);
+% ylim([min(loadCurve) 450])
+% ylabel('Stress (MPa)')
+% ax = gca;
+% ax.YAxis(2).Color = 'k';
+% ah1=axes('position',get(gca,'position'),'visible','off');
+% leg2 = legend(ah1,lCurve,'Stress','Location','Best','FontSize',14);
+% grid on
+% c_leg.String = rings;
 saveas(fig_out,fullfile(datadir,outName))
 
        %% Plot strain vs awmv
