@@ -7,12 +7,12 @@ NN = numel(snr_levels);
 P.params.maxIter = 100;
 P.params.rho1 = 1.5;
 P.params.rho2 = 0.5;
-k = 1;
 
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_',sim_name]);
 mkdir(jobDir)
 funcName = 'wrapCoupledPoisson';
+k = 1;
 for nn = 1:NN
     i_name = [file_name,'_',num2str(nn),'.mat'];
     indepFile = fullfile(indep_dir,i_name);
@@ -26,5 +26,7 @@ for nn = 1:NN
         k = k + 1;
     end
 end
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh',['1-',num2str(NN*MM)]) %,['1-',num2str(M)])
+
 
 end
