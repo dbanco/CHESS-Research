@@ -1,6 +1,8 @@
 function wrapCoupledPoisson(P)
 
-T = P.num_theta;
+N = P.num_theta;
+T = P.num_ims;
+K = P.num_var_t;
 i = P.set;
 P.params.lambda2 = P.lambda2_values(i);
 
