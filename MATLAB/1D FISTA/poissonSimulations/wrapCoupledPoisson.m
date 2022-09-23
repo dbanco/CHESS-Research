@@ -28,8 +28,8 @@ mse = 0; l1_norm = 0;
 for time = 1:T
     x = X_hat(:,:,time);        
     fit = Ax_ft_1D(A0ft_stack,x);
-    mse = mse + norm( B(:,time)-fit ).^2;
-    l1_norm = P.params.lambda1(time)*l1_norm_c + sum(abs(x(:)));
+    mse = mse + norm( indepData.B(:,time)-fit ).^2;
+    l1_norm = l1_norm + P.params.lambda1(time)*sum(abs(x(:)));
 end
 tv_penalty = sum(abs(DiffPhiX_1D(X_hat)),'all');
 awmv_rmse = norm(awmv-P.theta_stds)/norm(P.theta_stds);
