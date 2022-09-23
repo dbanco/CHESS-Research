@@ -32,7 +32,7 @@ for time = 1:T
     l1_norm = P.params.lambda1(time)*l1_norm_c + sum(abs(x(:)));
 end
 tv_penalty = sum(abs(DiffPhiX_1D(X_hat)),'all');
-awmv_rmse = norm(awmv-theta_stds)/norm(theta_stds);
+awmv_rmse = norm(awmv-P.theta_stds)/norm(P.theta_stds);
 
 save(outputFile,'X_hat','P','mse','l1_norm','tv_penalty','awmv_rmse');
 

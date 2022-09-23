@@ -53,7 +53,7 @@ for nn = 8:NN
             awmv_all(i,time) = sum(sqrt(P.var_theta(:)).*az_signal(:))/var_sum;
         end
         tv_penalty(i) = sum(abs(DiffPhiX_1D(squeeze(X_coupled(:,:,i,:)))),'all');
-        awmv_rmse(i) = norm(awmv_all(i,:)-theta_stds)/norm(theta_stds);
+        awmv_rmse(i) = norm(awmv_all(i,:)-P.theta_stds)/norm(P.theta_stds);
     end
     
     crit1 = abs(mse_c-min(mse_c)).^2 /(max(mse_c)-min(mse_c))^2;
