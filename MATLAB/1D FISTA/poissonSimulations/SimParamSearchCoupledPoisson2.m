@@ -28,7 +28,7 @@ for nn = 8:NN
     P.params.rho1 = 1.5;
     P.params.rho2 = 0.5;
     X_coupled = zeros(N,K,MM,T);
-    for i = 1:MM 
+    for i = 24:MM 
         P.set = i;
         P.params.lambda2 = P.lambda2_values(i);
         % Solve

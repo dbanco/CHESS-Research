@@ -8,7 +8,11 @@ load(['varin_',index_str,'.mat'])
 
 % Evaluate function
 funcH = eval(['@',funcName]);
-funcH(varin{1},varin{2},varin{3})
-
+switch numel(varin)
+    case 1
+        funcH(varin{1})
+    case 2
+        funcH(varin{1},varin{2})
+    case 3
+        funcH(varin{1},varin{2},varin{3})
 end
-
