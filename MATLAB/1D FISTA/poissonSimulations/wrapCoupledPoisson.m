@@ -8,7 +8,7 @@ P.params.lambda2 = P.lambda2_values(i);
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
             
 % Load indep solution to get parameters
-indepData = load(indepFile);
+indepData = load(P.indepFile);
 P.params.lambda1 = indepData.P.selected_lambdas;
 x_init = zeros(N,K,T);
 for t = 1:T
