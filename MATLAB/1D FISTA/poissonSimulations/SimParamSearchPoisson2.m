@@ -7,7 +7,7 @@ K = P.num_var_t;
 T = P.num_ims;
 
 % Fits for different parameters/noise levels
-for nn = 7:numel(snr_levels)
+for nn = 1:numel(snr_levels)
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
@@ -20,7 +20,7 @@ for nn = 7:numel(snr_levels)
     % Independent Solution
     x_init = zeros(N,K);
     X_indep = zeros(N,K,M,T);
-    for i = 20:M
+    for i = 1:M
         P.set = i;
         P.params.lambda1 = P.lambda_values(i);
         for t = 1:T

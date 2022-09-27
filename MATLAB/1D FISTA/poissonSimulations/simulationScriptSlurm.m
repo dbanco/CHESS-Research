@@ -3,12 +3,12 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/shared/dbanco02/Simulations';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'linear';
+sim = 'anomaly';
 sim_name = [sim,'PoissonNoise4'];
 file_name = 'lineSearchNoise';
 
@@ -27,8 +27,8 @@ P.alpha_vals = alpha_vals;
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-% SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
-%                                 indep_dir,file_name,sim)
+SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
+                                indep_dir,file_name,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';
