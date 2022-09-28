@@ -25,13 +25,16 @@ for nn = 1:NN
         load(fullfile(indepTrials_dir,['trial_',num2str(i)]),'awmv');
         awmv_indep(nn,i,:) = awmv;
         awmv_rse_indep(nn,i) = norm(awmv-theta_stds)/norm(theta_stds);
-        
+%         figure(88)
+%         plot(theta_stds)
+%         hold on
+%         plot(awmv)
         % Load coupled and compute awmv rse
-        load(fullfile(coupledTrials_dir,['trial_',num2str(i)]),'awmv','P');
-        awmv_coup(nn,i,:) = awmv;
-        awmv_rse_coup(nn,i) = norm(awmv-theta_stds)/norm(theta_stds);
+%         load(fullfile(coupledTrials_dir,['trial_',num2str(i)]),'awmv','P');
+%         awmv_coup(nn,i,:) = awmv;
+%         awmv_rse_coup(nn,i) = norm(awmv-theta_stds)/norm(theta_stds);
     end
-    lambda2_nn(nn) = P.params.lambda2;
+%     lambda2_nn(nn) = P.params.lambda2;
 end
 end
 
