@@ -11,7 +11,7 @@ lam1s = [4.5471e-4,3.0740e-4,3.2959e-4,3.7557e-4];
 
 for o = 1:4
 for ring_num = 1:4
-fprintf('Omega %i, Ring %i',o,ring_num)
+fprintf('Omega %i, Ring %i \n',o,ring_num)
 % Input dirs
 dset_name = ['ring',num2str(ring_num)];
 
@@ -21,7 +21,7 @@ indep_subdir = [dset_name,om_dir{o},indep_name];
 indep_dir = fullfile(top_dir,indep_subdir);
 
 % Output dirs
-output_name = '_coupled_CG_TVphi_Mirror10';
+output_name = '_coupled_CG_TVphi_Mirror12';
 output_subdir = [dset_name,om_dir{o},output_name];
 
 % Setup directories
@@ -63,7 +63,7 @@ P.params.mu = 2;
 P.params.adaptRho = 1;
 P.params.alpha = 1.8;
 P.params.stoppingCriterion = 'OBJECTIVE_VALUE';
-P.params.maxIter = 300;
+P.params.maxIter = 800;
 P.params.conjGradIter = 50;
 P.params.tolerance = 1e-8;
 P.params.cgEpsilon = 1e-3;
@@ -92,27 +92,31 @@ end
 Bmean = mean(B(:));
 B = B*P.dataScale;
 
+try
+    load(fullfile(indep_dir,['paramSelected',indep_subdir]))
+catch
+    % Lambda1 values: Use L-curve parameter selection
+    indep_data = load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
+    lambda1_vals = indep_data.P.lambda_values;
+    M_lam1 = numel(lambda1_vals);
+    err_select = zeros(M_lam1,T);
+    l1_select = zeros(M_lam1,T);
+    rho1_select = zeros(M_lam1,T);
+    awmv_indep = zeros(T,M_lam1);
 
-% Lambda1 values: Use L-curve parameter selection
-indep_data = load(fullfile(indep_dir,sprintf(baseFileName,1,1)));
-lambda1_vals = indep_data.P.lambda_values;
-M_lam1 = numel(lambda1_vals);
-err_select = zeros(M_lam1,T);
-l1_select = zeros(M_lam1,T);
-rho1_select = zeros(M_lam1,T);
-awmv_indep = zeros(T,M_lam1);
-
-for m = 1:M_lam1
-    for t = 1:T
-        x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
-        fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
-        err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
-        l1_select(m,t) = sum(x_data.x_hat(:));
-        rho1_select(m,t) = x_data.rho;
-        awmv_indep(t,m) = computeAWMV_1D(x_data.x_hat,P.var_theta);
+    for m = 1:M_lam1
+        for t = 1:T
+            x_data = load(fullfile(indep_dir,sprintf(baseFileName,m,t)),'x_hat','rho');
+            fit = forceMaskToZero(Ax_ft_1D(A0ft_stack,x_data.x_hat),129:133);
+            err_select(m,t) = sum( (fit(:)-B(:,t)).^2 );
+            l1_select(m,t) = sum(x_data.x_hat(:));
+            rho1_select(m,t) = x_data.rho;
+            awmv_indep(t,m) = computeAWMV_1D(x_data.x_hat,P.var_theta);
+        end
     end
+    save(fullfile(indep_dir,['paramSelected',indep_subdir]),'lambda1_vals',...
+        'err_select','l1_select','rho1_select','awmv_indep')
 end
-
 %% L curve parameter selection for l1-norm term
 select_indices = zeros(T,1);
 for t = 1:T
@@ -139,7 +143,7 @@ end
 % end
 
 % P.params.lambda1 = lambda1_vals(select_indices);
-P.params.lambda1 = ones(T,1)*lam1s(ring_num);
+P.params.lambda1 = ones(T,1)*lam1s(ring_num)/(Bmean*P.dataScale);
 P.params.lambda1_indices = select_indices;
 
 % Select minimum rho value
@@ -160,14 +164,14 @@ P.lambda2_values = lambda2_vals;
 jobDir = fullfile('/cluster','home','dbanco02',['job_',output_subdir]);
 mkdir(jobDir)
 
-for k = 25:33
+for k = [1,28:33]
     P.params.lambda2 = lambda2_vals(k);
     P.set = k;
     varin = {dataset,P,output_dir};
     save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
 end
 
-slurm_write_bash(k-1,jobDir,'full_batch_script.sh','25-33') %,['1-',num2str(M)])
+slurm_write_bash(k-1,jobDir,'full_batch_script.sh','1,28-33') %,['1-',num2str(M)])
 % slurm_write_matlab(k-1,jobDir,'parallel_FISTA','matlab_batch_script.sh')
 
 end

@@ -7,8 +7,8 @@ K = P.num_var_t;
 T = P.num_ims;
 
 % Fits for different parameters/noise levels
-for nn = 7:numel(snr_levels)
-    fprintf('SNR %i \n',nn)
+
+for nn = 1:numel(snr_levels)
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
@@ -22,7 +22,7 @@ for nn = 7:numel(snr_levels)
     x_init = zeros(N,K);
     X_indep = zeros(N,K,M,T);
     fprintf('m = ')
-    for i = 20:M
+    for i = 1:M
         fprintf('%i, ',i)
         P.set = i;
         P.params.lambda1 = P.lambda_values(i);

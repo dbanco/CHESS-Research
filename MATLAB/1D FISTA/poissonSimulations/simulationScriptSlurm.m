@@ -29,6 +29,7 @@ indep_dir  = fullfile(top_dir,sim_name,alg_name);
 SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
                        indep_dir,file_name,sim)
 
+
 % Coupled
 alg_name = 'CoupledCGTV';
 coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
