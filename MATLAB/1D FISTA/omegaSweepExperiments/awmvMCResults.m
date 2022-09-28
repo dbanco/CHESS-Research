@@ -1,10 +1,6 @@
-function [awmv_coup,awmv_rse_coup,awmv_indep,awmv_rse_indep] = awmvMCResults(NN,nTrials,T,theta_stds,sim)
+function [awmv_coup,awmv_rse_coup,awmv_indep,awmv_rse_indep] = awmvMCResults(NN,nTrials,T,theta_stds,sim,top_dir,sim_name,mc_dir)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
-
-top_dir = 'D:\Simulations';
-sim_name = [sim,'PoissonNoise3'];
-mc_dir = 'mcTrials';
 
 awmv_coup = zeros(NN,nTrials,T);
 awmv_rse_coup = zeros(NN,nTrials);
