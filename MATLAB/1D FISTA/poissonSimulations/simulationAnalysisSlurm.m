@@ -1,10 +1,11 @@
 top_dir = 'D:\Simulations';
 sim = 'linear';
-sim_name = [sim,'PoissonNoise4'];
+sim_name = [sim,'PoissonNoise5'];
 file_name = 'lineSearchNoise';
 N = 101;
 T = 30;
-[P,K,M,MM] = definePoissonP(N,T);
+[P,K,M,MM] = definePoissonP(N,T,sim);
+theta_stds = P.theta_stds;
 snr_levels = [10,5,2.5,2,1.75,1.5,1.25,1.1];
 
 close all
