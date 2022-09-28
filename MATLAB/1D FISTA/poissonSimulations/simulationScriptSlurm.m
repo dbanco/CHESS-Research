@@ -8,14 +8,14 @@ top_dir = '/cluster/shared/dbanco02/Simulations';
 mkdir(top_dir)
 
 % Simulation name
-sim = 'linear';
+sim = 'anomaly';
 sim_name = [sim,'PoissonNoise5'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
 N = 101;
 T = 30;
-[P,K,M,MM] = definePoissonP(N,T);
+[P,K,M,MM] = definePoissonP(N,T,sim);
 snr_levels = [10,5,2.5,2,1.75,1.5,1.25,1.1];
 [alpha_vals,theta_stds] = genPoissonScales2(N,T,snr_levels,sim);
 P.alpha_vals = alpha_vals;
