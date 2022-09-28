@@ -9,16 +9,17 @@ mkdir(top_dir)
 
 % Simulation name
 sim = 'linear';
-sim_name = [sim,'PoissonNoise4'];
+sim_name = [sim,'PoissonNoise5'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
 N = 101;
 T = 30;
-[P,K,M,MM] = definePoissonP(N,T);
+[P,K,M,MM] = definePoissonP(N,T,sim);
 snr_levels = [10,5,2.5,2,1.75,1.5,1.25,1.1];
-[alpha_vals,theta_stds] = genPoissonScales2(N,T,snr_levels,sim);
-P.theta_stds = theta_stds;
+% [alpha_vals,theta_stds] = genPoissonScales2(N,T,snr_levels,sim);
+% save('alpha_vals5.mat','alpha_vals')
+load('alpha_vals5.mat')
 P.alpha_vals = alpha_vals;
 % [Bn,B,theta_stds,rel_err] = genSimDataPoisson2(N,T,alpha_vals(4),sim);
 
@@ -27,14 +28,14 @@ P.alpha_vals = alpha_vals;
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-% SimParamSearchPoisson2(P,N,M,K,T,snr_levels,alpha_vals,...
-%                                 indep_dir,file_name,sim)
+SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
+                          indep_dir,file_name,sim)
 
 % Coupled
-alg_name = 'CoupledCGTV';
-coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-SimParamSearchCoupledPoisson2(P,MM,snr_levels,...
-                       coupled_dir,indep_dir,file_name,sim_name)
+% alg_name = 'CoupledCGTV';
+% coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
+% SimParamSearchCoupledPoisson2(P,MM,snr_levels,...
+%                        coupled_dir,indep_dir,file_name,sim_name)
 
 %% Redo parameter selection indep
 
@@ -109,10 +110,12 @@ end
 
 % Independent Error
 alg_name = 'IndepISM';
-for nn = 1:numel(snr_levels)
+for nn = 7:numel(snr_levels)
     load(fullfile(top_dir,sim_name,alg_name,...
             [file_name,'_',num2str(nn),'.mat']))
-    if nn == 1
+    try
+       A0;
+    catch
        A0 = unshifted_basis_vector_ft_stack_zpad(P);
     end
     for time = 1:T
@@ -131,7 +134,7 @@ plot(awmv_err_coupled)
 legend('indep','coupled')
 
 figure(2)
-for nn = 1:numel(snr_levels)
+for nn = 7:numel(snr_levels)
     subplot(3,3,nn)
     hold on
     plot(theta_stds)

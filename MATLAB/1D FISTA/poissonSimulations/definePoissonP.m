@@ -1,4 +1,4 @@
-function [P,K,M,MM] = definePoissonP(N,T)
+function [P,K,M,MM] = definePoissonP(N,T,sim)
 % File Parameters
 P = struct();
 P.baseFileName = 'indep_fit_%i_%i.mat';
@@ -18,6 +18,12 @@ P.cost = 'l1';
 P.num_var_t = K;
 P.var_theta = linspace(0.5,25,P.num_var_t).^2;
 
+if strcmp(sim,'linear')
+    P.theta_stds = linspace(3,15,T)';
+elseif strcmp(sim,'anomaly')
+    P.theta_stds = [7*ones(1,T/2),12*ones(1,T/2)]';
+end
+
 % algorithm parameters
 
 P.params.rho1 = 1;
@@ -34,8 +40,8 @@ P.params.normData = 0;
 
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
-P.params.plotProgress = 1;
-P.params.verbose = 1;
+P.params.plotProgress = 0;
+P.params.verbose = 0;
 
 P.params.conjGradIter = 100;
 P.params.tolerance = 1e-8;

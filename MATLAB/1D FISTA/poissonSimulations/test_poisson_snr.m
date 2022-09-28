@@ -4,7 +4,7 @@ alphas = [ 1 1.1 1.25 2 3 5 10];
 sim = 'linear';
 N = 101;
 for a = 1:numel(alphas)
-    [Bn,B,theta_stds,rel_err,rms] = genSimDataPoisson2(N,1,alphas(a),sim);
+    [Bn,B,theta_stds,rel_err,rms,snr] = genSimDataPoisson2(N,1,alphas(a),sim);
     B = B*alphas(a);
     Bn = Bn*alphas(a);
  
@@ -20,3 +20,11 @@ for a = 1:numel(alphas)
     plot(B)
 
 end
+
+%%
+[Bn,B,theta_stds,rel_err,rms,snr] = genSimDataPoisson2(N,30,alphas(3),sim);
+figure(2)
+plot(rms)
+
+figure(3)
+plot(snr)

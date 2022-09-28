@@ -8,6 +8,7 @@ T = P.num_ims;
 
 % Fits for different parameters/noise levels
 for nn = 7:numel(snr_levels)
+    fprintf('SNR %i \n',nn)
     % Setup directories
     f_name =  [file_name,'_',num2str(nn),'.mat'];
        
@@ -20,7 +21,9 @@ for nn = 7:numel(snr_levels)
     % Independent Solution
     x_init = zeros(N,K);
     X_indep = zeros(N,K,M,T);
+    fprintf('m = ')
     for i = 20:M
+        fprintf('%i, ',i)
         P.set = i;
         P.params.lambda1 = P.lambda_values(i);
         for t = 1:T
@@ -29,6 +32,7 @@ for nn = 7:numel(snr_levels)
             X_indep(:,:,i,t) = x_hat;
         end
     end
+    fprintf('\n')
     
     % Parameter selection
     [mse_indep,l1_norm,~,~,~] = exploreParametersIndep(X_indep,P,B);
