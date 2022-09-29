@@ -4,7 +4,6 @@ N = P.num_theta;
 T = P.num_ims;
 K = P.num_var_t;
 i = P.set;
-P.params.lambda2 = P.lambda2_values(i);
 
 % Construct dictionary
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
