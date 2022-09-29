@@ -9,7 +9,7 @@ awmv_rse_indep = zeros(NN,nTrials);
 
 
 fprintf('Loading and computing awmv/rse: \n')
-lambda2_nn = zeros(NN,1);
+% lambda2_nn = zeros(NN,1);
 for nn = 1:NN
     fprintf('%i, ',nn)
     % Directories for MC trials
@@ -24,13 +24,14 @@ for nn = 1:NN
         % Load independent and compute awmv rse
         load(fullfile(indepTrials_dir,['trial_',num2str(i)]),'awmv');
         awmv_indep(nn,i,:) = awmv;
-        awmv_rse_indep(nn,i) = norm(awmv-theta_stds)/norm(theta_stds);
+        awmv_rse_indep(nn,i) = norm(awmv(:)-theta_stds(:))/norm(theta_stds(:));
 %         figure(88)
 %         plot(theta_stds)
 %         hold on
 %         plot(awmv)
         % Load coupled and compute awmv rse
         load(fullfile(coupledTrials_dir,['trial_',num2str(i)]),'awmv','P');
+        P.params.lambda2
         awmv_coup(nn,i,:) = awmv;
         awmv_rse_coup(nn,i) = norm(awmv(:)-theta_stds(:))/norm(theta_stds(:));
     end

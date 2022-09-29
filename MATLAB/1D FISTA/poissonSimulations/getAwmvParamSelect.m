@@ -1,4 +1,4 @@
-function [awmv_indep,awmv_coupled] = getAwmvParamSelect(NN,MM,T,top_dir,sim_name,ps_name)
+function [awmv_indep,awmv_coupled] = getAwmvParamSelect(NN,MM,T,top_dir,sim_name,ps_name,P)
 
 indepPS_dir = fullfile(top_dir,sim_name,'IndepISM');
 coupledPS_dir = fullfile(top_dir,sim_name,'CoupledCGTV');
@@ -20,7 +20,7 @@ for nn = 1:NN
         c_index = c_data.P.coupled_select_ind;
         X_hat = squeeze(c_data.X_coupled(:,:,c_index,:));
     catch
-        c_index = selectParamCoupled(MM,top_dir,sim_name,'CoupledCGTV',ps_name,nn);
+        c_index = selectParamCoupled(MM,P.theta_stds,top_dir,sim_name,'CoupledCGTV',ps_name,nn);
         load(fullfile(top_dir,sim_name,'CoupledCGTV',...
             [ps_name,'_',num2str(nn),'_',num2str(c_index),'.mat']),'X_hat');
     end

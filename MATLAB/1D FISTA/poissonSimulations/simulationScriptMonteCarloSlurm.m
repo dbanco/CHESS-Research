@@ -27,8 +27,8 @@ theta_stds = P.theta_stds;
 % Independent
 alg_name = 'IndepISM';
 indepPS_dir  = fullfile(top_dir,sim_name,alg_name);
-SimMCPoisson2(P,snr_levels,alpha_vals,...
-              indepPS_dir,ps_name,mc_dir,sim)
+% SimMCPoisson2(P,snr_levels,alpha_vals,...
+%               indepPS_dir,ps_name,mc_dir,sim)
 
 % Coupled
 alg_name = 'CoupledCGTV';

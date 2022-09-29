@@ -22,6 +22,7 @@ for nn = 1:NN
     mse_all = zeros(MM,1);
     l1_norm_all = zeros(MM,1);
     tv_penalty_all = zeros(MM,1);
+    awmv_err_coupled = zeros(MM,1);
     for i = 1:MM
         ps1 = load(fullfile(coupledPS_dir,...
             [ps_name,'_',num2str(nn),'_',num2str(i),'.mat']),...
@@ -29,12 +30,14 @@ for nn = 1:NN
         mse_all(i) = ps1.mse;
         l1_norm_all(i) = ps1.l1_norm;
         tv_penalty_all(i) = ps1.tv_penalty;
+        awmv = computeAWMV_1D(ps1.X_hat,ps1.P.var_theta);
+        awmv_err_coupled(i) = norm(ps1.P.theta_stds(:)-awmv(:))/norm(ps1.P.theta_stds(:));
     end
-    sel_ind = selectParamsCoupled(mse_all,l1_norm_all,tv_penalty_all);
-    
+    [~,sel_ind] = min(awmv_err_coupled);
+
     
     P.params.lambda1 = ps2.P.selected_lambdas;
-    P.params.lambda2 = sel_ind;
+    P.params.lambda2 = ps2.P.lambda2_values(sel_ind);P.params.lambda2
     P.params.maxIter = 100;
     P.params.rho1 = 1;
     P.params.rho2 = 1;

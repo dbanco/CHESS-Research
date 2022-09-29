@@ -1,4 +1,4 @@
-function figOut = waterfallFigure(nnInd,MM,top_dir,sim_name,ps_name)
+function figOut = waterfallFigure(nnInd,MM,top_dir,sim_name,ps_name,P)
 alg_name = 'CoupledCGTV';
 coupledPS_dir = fullfile(top_dir,sim_name,alg_name);
 
@@ -15,7 +15,7 @@ for nn = nnInd
             ones(T,1));
         B = c_data.B;
     catch
-        sel_ind = selectParamCoupled(MM,top_dir,sim_name,alg_name,ps_name,nn);
+        sel_ind = selectParamCoupled(MM,P.theta_stds,top_dir,sim_name,alg_name,ps_name,nn);
         c_data = load(fullfile(top_dir,sim_name,alg_name,...
             [ps_name,'_',num2str(nn),'_',num2str(sel_ind),'.mat']));
         A0 = unshifted_basis_vector_ft_stack_zpad(c_data.P);

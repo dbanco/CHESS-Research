@@ -5,6 +5,7 @@ P.baseFileName = 'indep_fit_%i_%i.mat';
 K = 20;
 M = 60;
 MM = 50;
+P.trials = 3;
 zPad = 0;
 zMask = [];
 P.dataScale = 1;
@@ -40,8 +41,8 @@ P.params.normData = 0;
 
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
-P.params.plotProgress = 1;
-P.params.verbose = 1;
+P.params.plotProgress = 0;
+P.params.verbose = 0;
 
 
 P.params.conjGradIter = 100;
