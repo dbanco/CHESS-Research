@@ -9,7 +9,7 @@ zPad = 0;
 zMask = [];
 P.dataScale = 1;
 P.lambda_values = logspace(-3,1.5,M);
-P.lambda2_values = logspace(-3,1.5,MM);
+P.lambda2_values = logspace(-3,1.5,MM)*5;
 P.num_theta = N;
 P.sampleDims = [T,1];
 P.num_ims = T;
@@ -40,8 +40,8 @@ P.params.normData = 0;
 
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
-P.params.plotProgress = 0;
-P.params.verbose = 0;
+P.params.plotProgress = 1;
+P.params.verbose = 1;
 
 
 P.params.conjGradIter = 100;

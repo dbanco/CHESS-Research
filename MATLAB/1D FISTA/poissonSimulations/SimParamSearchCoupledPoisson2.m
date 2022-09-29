@@ -25,10 +25,10 @@ for nn = 8:NN
     end
     % Coupled Solution
     P.params.maxIter = 100;
-    P.params.rho1 = 1.5;
-    P.params.rho2 = 0.5;
+    P.params.rho1 = 1;
+    P.params.rho2 = 1;
     X_coupled = zeros(N,K,MM,T);
-    for i = 24:MM 
+    for i = 47:MM 
         P.set = i;
         P.params.lambda2 = P.lambda2_values(i);
         % Solve
