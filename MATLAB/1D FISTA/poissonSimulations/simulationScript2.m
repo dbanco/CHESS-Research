@@ -9,7 +9,7 @@ mkdir(top_dir)
 
 % Simulation name
 sim = 'linear';
-sim_name = [sim,'PoissonNoise5'];
+sim_name = [sim,'PoissonNoise6'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
@@ -28,14 +28,14 @@ P.alpha_vals = alpha_vals;
 % Independent
 alg_name = 'IndepISM';
 indep_dir  = fullfile(top_dir,sim_name,alg_name);
-SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
-                          indep_dir,file_name,sim)
+% SimParamSearchPoisson2(P,M,snr_levels,alpha_vals,...
+%                           indep_dir,file_name,sim)
 
 % Coupled
-% alg_name = 'CoupledCGTV';
-% coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
-% SimParamSearchCoupledPoisson2(P,MM,snr_levels,...
-%                        coupled_dir,indep_dir,file_name,sim_name)
+alg_name = 'CoupledCGTV';
+coupled_dir  = fullfile(top_dir,sim_name,alg_name);       
+SimParamSearchCoupledPoisson2(P,MM,snr_levels,...
+                       coupled_dir,indep_dir,file_name,sim_name)
 
 %% Redo parameter selection indep
 

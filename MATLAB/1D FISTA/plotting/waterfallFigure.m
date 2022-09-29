@@ -20,7 +20,7 @@ for nn = nnInd
             [ps_name,'_',num2str(nn),'_',num2str(sel_ind),'.mat']));
         A0 = unshifted_basis_vector_ft_stack_zpad(c_data.P);
         fits = Ax_ft_1D_Time(A0,c_data.X_hat,ones(c_data.P.num_ims,1));
-        load(fullfile(top_dir,sim_name,'IndepIsm',...
+        load(fullfile(top_dir,sim_name,'IndepISM',...
              [ps_name,'_',num2str(nn),'.mat']),'B')
     end
     

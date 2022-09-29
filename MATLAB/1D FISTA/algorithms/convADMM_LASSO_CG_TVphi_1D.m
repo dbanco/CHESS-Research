@@ -149,8 +149,9 @@ while keep_going && (nIter < maxIter)
         var_theta = linspace(0.5,25,20).^2;
         awmv = computeAWMV_1D(Xkp1,var_theta);
         awmv_indep = computeAWMV_1D(X_init,var_theta);
-        plot(awmv)
+        plot(linspace(3,15,T))
         hold on
+        plot(awmv)
         plot(awmv_indep)
         hold off
 

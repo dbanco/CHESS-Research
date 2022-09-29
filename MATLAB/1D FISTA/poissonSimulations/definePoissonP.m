@@ -40,8 +40,8 @@ P.params.normData = 0;
 
 P.params.zeroPad = zPad;
 P.params.zeroMask = zMask;
-P.params.plotProgress = 0;
-P.params.verbose = 0;
+P.params.plotProgress = 1;
+P.params.verbose = 1;
 
 
 P.params.conjGradIter = 100;
