@@ -3,12 +3,12 @@ close all
 
 % Parent directory
 % top_dir = 'E:\PureTiRD_nr2_c_x39858';
-top_dir = 'D:\Simulations';
-% top_dir = '/cluster/shared/dbanco02/Simulations';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/Simulations';
 
 % Simulation name
 sim = 'linear';
-sim_name = [sim,'PoissonNoise5'];
+sim_name = [sim,'PoissonNoise6'];
 ps_name = 'lineSearchNoise';
 mc_dir = 'mcTrials';
 
@@ -28,7 +28,7 @@ snrs = snr_levels
 
 %% Figure 4/5a
 % Waterfall plots
-nnInd = [2,4,6];
+nnInd = [2,5,7];
 fig45a = waterfallFigure(nnInd,MM,top_dir,sim_name,ps_name);
 
 %% Figure 4/5c

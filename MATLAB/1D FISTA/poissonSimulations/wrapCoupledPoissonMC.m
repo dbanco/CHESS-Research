@@ -10,11 +10,11 @@ P.params.lambda2 = P.lambda2_values(i);
 A0ft_stack = unshifted_basis_vector_ft_stack_zpad(P);
             
 % Load indep solution to get parameters
-indepData = load(fullfile(indepTrials_dir,['trial_',num2str(i)]));
+indepData = load(fullfile(P.indepTrials_dir,['trial_',num2str(i)]));
 x_init = zeros(N,K,T);
 for t = 1:T
     ii = indepData.P.indep_select_ind(t);
-    x_init(:,:,t) = squeeze(indepData.X_indep(:,:,ii,t));
+    x_init(:,:,t) = squeeze(indepData.X_indep(:,:,t));
 end
 
 % Solve

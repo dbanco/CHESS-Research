@@ -1,6 +1,7 @@
-top_dir = 'D:\Simulations';
+% top_dir = 'D:\Simulations';
+top_dir = '/cluster/shared/dbanco02/Simulations'
 sim = 'linear';
-sim_name = [sim,'PoissonNoise5'];
+sim_name = [sim,'PoissonNoise6'];
 file_name = 'lineSearchNoise';
 N = 101;
 T = 30;
