@@ -30,9 +30,9 @@ for nn = 1:NN
 %         hold on
 %         plot(awmv)
         % Load coupled and compute awmv rse
-%         load(fullfile(coupledTrials_dir,['trial_',num2str(i)]),'awmv','P');
-%         awmv_coup(nn,i,:) = awmv;
-%         awmv_rse_coup(nn,i) = norm(awmv-theta_stds)/norm(theta_stds);
+        load(fullfile(coupledTrials_dir,['trial_',num2str(i)]),'awmv','P');
+        awmv_coup(nn,i,:) = awmv;
+        awmv_rse_coup(nn,i) = norm(awmv(:)-theta_stds(:))/norm(theta_stds(:));
     end
 %     lambda2_nn(nn) = P.params.lambda2;
 end

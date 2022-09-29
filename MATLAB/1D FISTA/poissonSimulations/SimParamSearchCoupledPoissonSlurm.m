@@ -8,6 +8,7 @@ P.params.maxIter = 100;
 P.params.rho1 = 1;
 P.params.rho2 = 1;
 
+
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_',sim_name]);
 mkdir(jobDir)
