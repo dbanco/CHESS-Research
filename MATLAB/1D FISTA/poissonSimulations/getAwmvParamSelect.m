@@ -6,6 +6,8 @@ coupledPS_dir = fullfile(top_dir,sim_name,'CoupledCGTV');
 awmv_indep = zeros(T,NN);
 awmv_coupled = zeros(T,NN);
 
+lambda2_inds = zeros(NN,1);
+
 for nn = 1:NN
     % Load param search data
     i_data = load(fullfile(indepPS_dir,[ps_name,'_',num2str(nn)]),...
@@ -22,6 +24,7 @@ for nn = 1:NN
         load(fullfile(top_dir,sim_name,'CoupledCGTV',...
             [ps_name,'_',num2str(nn),'_',num2str(c_index),'.mat']),'X_hat');
     end
+    lambda2_inds(nn) = c_index;
         
     for t = 1:T
         awmv_indep(t,nn) = computeAWMV_1D(i_data.X_indep(:,:,i_indices(t),t),...
@@ -30,4 +33,5 @@ for nn = 1:NN
     awmv_coupled(:,nn) = computeAWMV_1D(X_hat,...
                                         var_theta);
 end
+lambda2_inds
     

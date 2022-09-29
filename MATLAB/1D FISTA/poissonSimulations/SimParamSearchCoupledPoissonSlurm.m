@@ -5,8 +5,8 @@ mkdir(output_dir)
 % Fits for different parameters/noise levels
 NN = numel(snr_levels);
 P.params.maxIter = 100;
-P.params.rho1 = 1.5;
-P.params.rho2 = 0.5;
+P.params.rho1 = 5;
+P.params.rho2 = 1.5;
 
 % Job directory
 jobDir = fullfile('/cluster','home','dbanco02',['job_',sim_name]);

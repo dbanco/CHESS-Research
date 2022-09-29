@@ -9,7 +9,7 @@ mkdir(top_dir)
 
 % Simulation name
 sim = 'linear';
-sim_name = [sim,'PoissonNoise5'];
+sim_name = [sim,'PoissonNoise6'];
 file_name = 'lineSearchNoise';
 
 % Define poisson dataset
