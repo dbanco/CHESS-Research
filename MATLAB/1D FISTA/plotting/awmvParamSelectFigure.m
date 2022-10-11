@@ -4,7 +4,7 @@ function figOut = awmvParamSelectFigure(awmv_indep,awmv_coupled,theta_stds,level
 
 figOut = figure;
 % figOut.Position = [1000,500,800 240];
-figOut.Position = [1000,500,600 400];
+figOut.Position = [1000,500,500,300];
 rows = 3;
 cols = 3;
 [ha_awmv, ~] = tight_subplot(rows,cols,[.005 .005],[.01 .01],[.01 .01]);

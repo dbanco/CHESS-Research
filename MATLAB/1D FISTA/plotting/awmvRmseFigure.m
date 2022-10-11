@@ -18,12 +18,12 @@ errorbar(snrs,avg_awmv_coup,std_awmv_coup,...
     'LineWidth',2,...
     'color','red',...
     'Linestyle','--')
-xlabel('SNR','FontSize',16)
-ylabel('Average AWMV RSE (50 trials)','FontSize',16)
+xlabel('SNR','FontSize',12)
+ylabel('Average AWMV RSE (100 trials)','FontSize',12)
 legend('\gamma = 0','\gamma = \gamma*','Location','NorthEast','FontSize',16)
 set(gca,'xscale','log')
 grid on
-figOut.Position = [1000,500,700 350];
-
+figOut.Position = [1000,500,600 300];
+xticks([1 2  5 10])
 end
 

@@ -8,7 +8,7 @@ else
 end
 
 for i = 1:KU
-    subplot(KU/K,K,i)
+    subplot(K,KU/K,i)
     plot(AD(:,:,i)) 
 %     if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
 %         title(sprintf('Usage: %1.2f',sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) ))
@@ -16,7 +16,7 @@ for i = 1:KU
 %     set(gca,'YTickLabel',[]);
 %     set(gca,'XTickLabel',[]);
     p = 1+(f.Number-1)*400;
-    f.Position =[p 1 400 1000];
+    f.Position =[p 1 1000 400];
 end
 
 end

@@ -20,7 +20,7 @@ for t = 1:T
     Bn(:,t) = bn/alpha/rms1;
     
     rel_err(t) = norm(B(:,t)-Bn(:,t))/norm(B(:,t));
-    rms(t) = sqrt(mean(B(:,t).^2));
+    rms(t) = rms1
     snr(t) = sqrt(mean(B(:,t).^2))/sqrt(mean((Bn(:,t)-B(:,t)).^2));
 end
 

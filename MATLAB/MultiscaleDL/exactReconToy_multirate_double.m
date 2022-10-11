@@ -47,21 +47,22 @@ D0 = zeros(1,N0,K);
 D0(1,:,1) = yd(1,1:N0,U+1);% + 100*rand(1,N0,1)/100;
 D0(1,:,2) = yd(1,1:N0,U+1+2*U);% + 100*rand(1,N0,1)/100;
 
-Dr = reSample(N,D0,[1 1 1 2;...
-                    4 2 1 1]);
+sampFactors = [1 1 1 2;...
+               4 2 1 1];
+Dr = reSample(N,D0,sampFactors);
 plotDictUsage(Dr,K,X_true)
-%%
-% Initial Solution
-fff=checkDict_upDwnSample(X_true,D0,opt.numScales);
+%% **all below needs updating
+% Initial Solution 
+fff=checkDict_multirateSample(X_true,D0,sampFactors,N);
 saveas(fff,fullfile(topDir,['init',dName,'.png']))
 
-% Show true dictionary
-f5 = checkDict_upDwnSample(X_true,yd(1,1:N0,[U+1,U+1+2*U+1 ]),opt.numScales);
+% Show true dictionary *
+f5 = checkDict_multirateSample(X_true,yd(1,1:N0,[U+1,U+1+2*U+1 ]),sampFactors,N);
 saveas(f5,fullfile(topDir,['truth',dName,'.png']))
 
 % Define Dictionary function
 opt.DictSize = (2*U+1)*K;
-XAd = @(in,xf) ifft2(sum(bsxfun(@times,xf,fft2(upDwnSample(in,opt.numScales))),3),'symmetric');
+XAd = @(in,xf) ifft2(sum(bsxfun(@times,xf,fft2(resample(N,in,sampFactors))),3),'symmetric');
 AtXty = @(in,xf) upDwnSampleTrans(ifft2(sum(bsxfun(@times, conj(xf), fft2(in)), 4),'symmetric'),opt.numScales);
 
 % Check init solution (good)
