@@ -2,7 +2,7 @@ function [y,N,T] = loadMMPAD1D
 
 % Load MMPAD subset
 data_dir = 'D:\MMPAD_data_nr1\ring1_zero';
-t = 1:4:100;
+t = 1:100;
 T = numel(t);
 for i = 1:T
 	load(fullfile(data_dir,['mmpad_img_',num2str(t(i)),'.mat']))

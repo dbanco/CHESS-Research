@@ -1,4 +1,4 @@
-function [y,ydu,X_true,N,T,K,c1,c2] = rand_multirate_problem
+function [y,ydu,X_true,N,T,K,U,c1,c2] = rand_multirate_problem
 %% Construct 1D test problem Box and Gaussian
 T = 60;
 N = 128;
@@ -6,11 +6,12 @@ K = 2;
 denLim = 22;
 nu = 2*rand+1;
 [c1,c2] = fareyApprox(nu,denLim);
+% c1 = 7; c2 = 5;
 scales = [c2^2 c2 1 c1 c1^2;
           c1^2 c1 1 c2 c2^2];
 U = size(scales,2);
-ydu1 = multiRateSinc(N,scales);
-ydu2 = multiRateShape(N,scales);
+ydu1 = multiRateSincNu(N,c1,c2,U);
+ydu2 = multiRateShapeNu(N,c1,c2,U);
 
 % plotDictionary(ydu2)
 Pos = round(48*sin( 2*pi*(1:T)/(T/2))+48);

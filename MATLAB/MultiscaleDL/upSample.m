@@ -15,6 +15,9 @@ for k = 1:K
         i = j+(k-1)*numScales;
         jj = 2^(j-1);
         Xu(:,2:2:N2*jj,i,:) = Xu(:,1:N2*(jj/2),i-1,:);
+%         norm(Xu(:))
+%         figure(12)
+%         plot(Xu(:,:,2))
         Xu(:,1:N2*jj,i,:) = lwpass4(Xu(:,1:N2*jj,i,:),0);
     end
 end

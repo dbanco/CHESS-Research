@@ -1,14 +1,14 @@
-function [y,AD,D,X_true,N,M,T,scales,c1,c2] = upDwn_double_multirate_problem
+function [y,AD,D,X_true,N,M,T,scales,c1,c2] = gaussian_multirate_problem
 %% Construct 1D test problem Box and Gaussian
 T = 60;
 N = 128; M = 32;
 K = 2;
-c1 = 13;
-c2 = 11;
+c1 = 11;
+c2 = 7;
 scales = [ c2 1 c1 ;
            c1 1 c2 ];
 U = size(scales,2);
-d1 = multiRateSinc(M);
+d1 = multiRateGaussian(M);
 d2 = multiRateShape(M);
 
 D = zeros(1,M,K);

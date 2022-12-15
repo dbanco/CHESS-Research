@@ -8,7 +8,7 @@ Dud = zeros(N1,N2*(2^numScales),U,K);
 for k = 1:K
     Du = upSample(D(:,:,k),nSp1);
     Dd = decimate(D(:,:,k),nSp1);
-
+%     norm(Du(:))
     Dud(:,1:N2,1:numScales,k) = Dd(:,:,nSp1:-1:2);
     Dud(:,1:N2,nSp1,k) = Dd(:,:,1);
     Dud(:,:,(nSp1+1):U,k) = Du(:,:,2:nSp1);

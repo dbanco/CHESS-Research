@@ -17,7 +17,7 @@ for k = 1:K
     Xtd = decimateTrans(Xd,numScales+1);
     Xtu = upSampleTrans(Xu,numScales+1);
 
-    Xud(:,1:N0,k) = Xud(:,1:N0,k) + Xtd(:,1:N0,:) + Xtu...
+    Xud(:,1:N0,k) = Xud(:,1:N0,k) + Xtd(:,1:N0,:) + Xtu(:,1:N0,:)...
         - Xarray(:,1:N0,numScales+1,k);
     % subtract double counted identity terms
      Xudo = Xud(:,1:N0,:);

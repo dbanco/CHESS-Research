@@ -7,7 +7,7 @@ T = size(y,2);
 figure
 for t = 1:T
     plot(y(:,t))
-    pause(0.2)
+    pause()
 end
 
 

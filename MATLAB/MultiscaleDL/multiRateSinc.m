@@ -1,11 +1,12 @@
-function ydu = multiRateSinc(N,scales)
+function f = multiRateSinc(M)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-f = zeros(1,N);
-x = 1:N-16;
-f(9:N-8) = sinc(8*x/N - pi) + 0.25;
+f = zeros(1,M);
+x = 0.5:M-0.5;
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
-fd = reSample(N,Pnrm(f(1:N/2)),[1;2]);
-ydu = reSample(N,Pnrm(fd),scales);
+
+f = Pnrm(sinc(2*pi*x/M - pi) + 0.25);
+
+
 end
 

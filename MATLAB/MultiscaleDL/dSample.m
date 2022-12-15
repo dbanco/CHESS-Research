@@ -2,8 +2,12 @@ function dd = dSample(d,m)
 %decimatedDictionary Summary of this function goes here
 %   Detailed explanation goes here
 
-d1 = lowpassM(d,m,1);
-dd = d1(1:m:end);
+if m == 1
+    dd = d;
+else
+    d1 = lowpassM(d,m,0);
+    dd = d1(m:m:end);
+end
 
 end
 

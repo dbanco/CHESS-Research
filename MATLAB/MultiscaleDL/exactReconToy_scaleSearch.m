@@ -13,7 +13,7 @@ close all
 lambda = 3e-1;
 opt = [];
 opt.Verbose = 1;
-opt.MaxMainIter = 200;
+opt.MaxMainIter = 500;
 opt.MaxCGIter = 200;
 opt.CGTol = 1e-9;
 opt.rho = 70*lambda + 0.5;
@@ -25,7 +25,7 @@ opt.AutoSigmaPeriod = 10;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 K = 2;
-N0 = 32;
+N0 = N/2^U;
 opt.DictFilterSizes = [ones(1,K);
                        N0*ones(1,K)];
 %                        N,N,N,N,N,N];
@@ -48,12 +48,12 @@ D0(1,:,1) = yd(1,1:N0,U+1) + 100*rand(1,N0,1)/100;
 D0(1,:,2) = yd(1,1:N0,U+1+2*U+1) + 100*rand(1,N0,1)/100;
 
 % Initial Solution
-% fff=checkDict_upDwnSample(X_true,D0,opt.numScales);
-% saveas(fff,fullfile(topDir,['init',dName,'.png']))
+fff=checkDict_upDwnSample(X_true,D0,opt.numScales);
+saveas(fff,fullfile(topDir,['init',dName,'.png']))
 
 % Show true dictionary
 f5 = checkDict_upDwnSample(X_true,yd(1,1:N0,[U+1,U+1+2*U+1 ]),opt.numScales);
-% saveas(f5,fullfile(topDir,['truth',dName,'.png']))
+saveas(f5,fullfile(topDir,['truth',dName,'.png']))
 
 % Define Dictionary function
 opt.DictSize = (2*U+1)*K;
@@ -69,29 +69,18 @@ AD0 = upDwnSample(D0,opt.numScales);
 AD0f = fft2(AD0);
 Yhat0 = squeeze(ifft2(sum(bsxfun(@times,AD0f,fft2(opt.Y0)),3),'symmetric'));
 
-% f0 = figure;
-% subplot(1,2,1)
-% imagesc(squeeze(y))
-% subplot(1,2,2)
-% imagesc(Yhat0)
-% title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
+f0 = figure;
+subplot(1,2,1)
+imagesc(squeeze(y))
+subplot(1,2,2)
+imagesc(Yhat0)
+title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
 
 %% Dictionary learning
 opt.LinSolve = 'CGD';
-% tic
-[D, X, optinf] = cbpdndl_cg_upDwnSample(D0,y,lambda,opt);
-% toc
-% tic
-% [D, X, optinf] = cbpdndl_cg_multirate(D0,y,lambda,opt,2,1,5);
-% toc
-% U = 5;
-% denLim = 9;
-% opt.Verbose = 0;
-% cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt)
+[D, X, optinf] = cbpdndlScaleSearch(y,N,D0,opt.Y0,U,denLim,opt);
 Df = fft2(D);
 Xf = fft2(X);
-
-%%
 % For regular dictionary
 % Yhat = squeeze(ifft2(sum(bsxfun(@times,Df,Xf),3),'symmetric'));
 % For decimated
