@@ -1,10 +1,11 @@
 function [D, Y, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,S,lambda,U,denLim,opt)
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
-probes = [1, 2, 3, 3;
+probes = [1, 2, 3, 4;
           1, 1, 1, 1];
 Jiters = 200;
 opt.MaxMainIter = Jiters;
+opt.Verbose = 0;
 states = struct([]);
 % Begin solutions for the 4 probe points
 for i = 1:4
@@ -22,7 +23,7 @@ end
 % D0 = states(ind).D;
 output = probes(:,ind);
 
-while relErr > 0.10
+while relErr > 0.01
     if states(2).obj < states(3).obj
         probes(:,4) = probes(:,3);
         states(4) = states(3);
@@ -68,9 +69,9 @@ while relErr > 0.10
         len2 = probes(1,3)/probes(2,3) - probes(1,1)/probes(2,1);
         if len1 < len2
             probes(:,2) = probes(:,1) + probes(:,3);
-            fprintf('Updating Probe %i: ',2)
+            fprintf('Updating Probe %i as %i/%i ',2,probes(1,2),probes(2,2))
             [D, Y, optinf, obj,relErr] = cbpdndl_cg_multirate(D0, S, lambda, opt,probes(1,2),probes(2,2),U);
-            fprintf('relErr = %0.3f\n', relErr)
+            fprintf('relErr = %0.3f, obj = %2.3f\n', relErr, obj)
             states(2).D = D;
             states(2).Y = Y;
             states(2).opt = optinf;

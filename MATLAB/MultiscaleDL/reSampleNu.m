@@ -1,4 +1,4 @@
-function Dout = reSampleNu(N,D,c1,c2,U)
+function [Dout,FLo,FHi] = reSampleNu(N,D,c1,c2,U)
 %Dud = reSampleNu(N,D,c1,c2,U)
 % N - Length of data
 % D - Dictionary of dimensions [N1 x 1 x K]
@@ -37,6 +37,7 @@ for k = 1:K
         Dud(:,1:Nud,i,k) = D2;
     end
 end
+
 
 Dout = reshape(Dud,[N1,N,K*U]);
 

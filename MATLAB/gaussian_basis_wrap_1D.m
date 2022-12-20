@@ -23,11 +23,19 @@ mean_x = wrapN(mean_x,N_x);
 upDiff = ceil(mean_x) - mean_x;
 downDiff = mean_x - floor(mean_x);
 
-upDist = idx - 1 + upDiff;
-downDist = flip( idx - 1 +downDiff);
+if (mod(mean_x,1)==0) & (upDiff == downDiff)
+    upDist = idx - 1 + upDiff;
+    downDist = flip( idx - 1 +downDiff);
 
-dist1 = circshift(upDist,floor(mean_x)-1);
-dist2 = circshift(downDist,floor(mean_x));
+    dist1 = circshift(upDist,floor(mean_x)-1);
+    dist2 = circshift(downDist,floor(mean_x));   
+else
+    upDist = idx - 1 + upDiff;
+    downDist = flip( idx - 1 +downDiff);
+
+    dist1 = circshift(upDist,floor(mean_x));
+    dist2 = circshift(downDist,floor(mean_x));
+end
 
 % Compute values
 b1 = exp(-dist1.^2/(2*std_x^2) )';
