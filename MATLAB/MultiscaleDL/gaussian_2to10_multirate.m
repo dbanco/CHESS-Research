@@ -2,17 +2,18 @@
 [y,N,M,T] = gaussian_2to10_problem;
 M = 32;
 y = reshape(y,[1,N,1,T]); 
-K = 1;
+K = 2;
 U = 3;
 V = (U-1)/2;
 % plotDataSeq(y)
 
 close all
 % Set up cbpdndl parameters
-lambda = 8e-2;
+lambda = 5e-2;
 opt = [];
 opt.Verbose = 1;
-opt.MaxMainIter = 200;
+opt.plotDict = 1;
+opt.MaxMainIter = 5;
 opt.MaxCGIter = 200;
 opt.CGTol = 1e-9;
 opt.rho = 500*lambda + 0.5;
@@ -31,25 +32,24 @@ opt.DictFilterSizes = [ones(1,K);
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
-D0 = zeros(1,M,K);
-D0(1,:,1) = rand(1,M,1);
+D0 = rand(1,M,K);
 % D0(1,:,2) = AD(1,1:M,2*U-V); + 100*rand(1,M,1)/100;
 
 %% Solve
-opt.Y0 = zeros(size(X_true));
+opt.Y0 = zeros(1,N,K*U,T);
 opt.LinSolve = 'CGD';
 opt.Verbose = 1;
-opt.MaxMainIter = 200;
 denLim = 11;
 
-% [D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
-% c1 = output(1);
-% c2 = output(2);
+[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+c1 = output(1);
+c2 = output(2);
 
-[D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,13,7,U);
+% c1 = 13;
+% c2 = 7;
+% [D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,c1,c2,U);
  
-c1 = 13;
-c2 = 7;
+
 AD = reSampleNu(N,D,c1,c2,U);
 
 %% Test norms
@@ -75,7 +75,7 @@ AD = reSampleNu(N,D,c1,c2,U);
 ADf = fft2(AD);
 Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 
-topDir = 'C:\Users\dpqb1\Desktop\gaussian_2to10_problem2\';
+topDir = 'C:\Users\dpqb1\Desktop\gaussian_2to10_problem_K2\';
 dName = 'gaussian_2to10';
 mkdir(topDir)
 

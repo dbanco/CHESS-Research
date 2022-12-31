@@ -1,4 +1,4 @@
-function [Dout,FLo,FHi] = reSampleNu(N,D,c1,c2,U)
+function [Dout,NormVals] = reSampleNu(N,D,c1,c2,U,NormVals)
 %Dud = reSampleNu(N,D,c1,c2,U)
 % N - Length of data
 % D - Dictionary of dimensions [N1 x 1 x K]
@@ -40,6 +40,17 @@ end
 
 
 Dout = reshape(Dud,[N1,N,K*U]);
+if nargin ==6
+    for i = 1:K*U
+        Dout(:,:,i) = Dout(:,:,i)/NormVals(i);
+    end
+else
+    NormVals = zeros(K*U,1);
+    for i = 1:K*U
+        NormVals(i) = norm(Dout(:,:,i));
+        Dout(:,:,i) = Dout(:,:,i)/NormVals(i);
+    end
+end
 
 
 

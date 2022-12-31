@@ -43,9 +43,14 @@ opt.LinSolve = 'CGD';
 opt.Verbose = 1;
 opt.MaxMainIter = 200;
 denLim = 11;
-[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
-c1 = output(1);
-c2 = output(2);
+% [D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+% c1 = output(1);
+% c2 = output(2);
+c1 = 9; c2 = 4;
+opt.MaxMainIter = 40;
+[D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,c1,c2,U);
+    
+
 AD = reSampleNu(N,D,c1,c2,U);
 
 %% Test norms
@@ -73,7 +78,7 @@ ADf = fft2(AD);
 Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 
 %%
-topDir = 'C:\Users\dpqb1\Desktop\gaussian_3_problem\';
+topDir = 'C:\Users\dpqb1\Desktop\gaussian_3_problemNorm1\';
 dName = 'gaussian_3';
 mkdir(topDir)
 

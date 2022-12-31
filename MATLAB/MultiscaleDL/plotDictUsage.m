@@ -15,8 +15,8 @@ for i = 1:KU
 %     end
 %     set(gca,'YTickLabel',[]);
 %     set(gca,'XTickLabel',[]);
-    p = 1+(f.Number-1)*400;
-    f.Position =[p 1 1000 400];
+%     p = 1+(f.Number)*400;
+    f.Position =[1 500 1000 400];
 end
 
 end

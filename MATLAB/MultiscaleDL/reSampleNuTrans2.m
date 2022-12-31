@@ -1,4 +1,4 @@
-function Xout = reSampleNuTrans2(M,X,c1,c2,U)
+function Xout = reSampleNuTrans2(M,X,c1,c2,U,NormVals)
 %Dud = reSampleNu(N,D,c1,c2,U)
 % N - Length of data
 % D - Dictionary of dimensions [N1 x 1 x K]
@@ -30,7 +30,7 @@ for k = 1:K
             clear Xin2
         end
         Nud = min(size(Xin,2),N2);
-        Xud(:,1:Nud,k) = Xud(:,1:Nud,k) + Xin(:,1:Nud);
+        Xud(:,1:Nud,k) = Xud(:,1:Nud,k) + Xin(:,1:Nud)/NormVals(i+U*(k-1));
     end
 
     % upscalings
@@ -43,7 +43,7 @@ for k = 1:K
             clear Xin2
         end
         Nud = min(size(Xin,2),N2);
-        Xud(:,1:Nud,k) = Xud(:,1:Nud,k) + Xin(:,1:Nud);
+        Xud(:,1:Nud,k) = Xud(:,1:Nud,k) + Xin(:,1:Nud)/NormVals(i+U*(k-1));
     end
 end
 Xout = Xud(N1,1:M,:);

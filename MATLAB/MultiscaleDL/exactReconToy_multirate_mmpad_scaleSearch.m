@@ -16,10 +16,10 @@ for K = 2:5
 
     close all
     % Set up cbpdndl parameters
-    lambda = 8e-2;
+    lambda = 8e-3;
     opt = [];
     opt.Verbose = 1;
-    opt.MaxMainIter = 200;
+    opt.MaxMainIter = 40;
     opt.MaxCGIter = 200;
     opt.CGTol = 1e-9;
     opt.rho = 50*lambda + 0.5;
@@ -56,24 +56,26 @@ for K = 2:5
     opt.LinSolve = 'CGD';
     opt.Verbose = 1;
     denLim = 7;
-    [D, Y, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+%     [D, Y, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+[D, Y, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,4,1,U);
+        
     results(K-1).D = D;
     results(K-1).Y = Y;
     results(K-1).obj = obj;
-    results(K-1).output = output;
-    results(K-1).minObj = minObj;
+%     results(K-1).output = output;
+%     results(K-1).minObj = minObj;
 end
 
 %%  
 
-topDir = 'C:\Users\dpqb1\Desktop\scaleSearch_K_mmpad128\';
+topDir = 'C:\Users\dpqb1\Desktop\scaleSearch_K_mmpad128_Norm_4_1\';
 mkdir(topDir)
 for K = 2:5
     close all
     dName = sprintf('_K_%i',K);
     i = K-1;
-    c1 = results(i).output(1);
-    c2 = results(i).output(2);
+%     c1 = results(i).output(1);
+%     c2 = results(i).output(2);
     D = results(i).D;
     X = results(i).Y;
 
