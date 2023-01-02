@@ -78,7 +78,10 @@ title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
 
 %% Dictionary learning
 opt.LinSolve = 'CGD';
-[D, X, optinf] = cbpdndlScaleSearch(y,N,D0,opt.Y0,U,denLim,opt);
+denLim = 11;
+
+[D, Y, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+
 Df = fft2(D);
 Xf = fft2(X);
 % For regular dictionary

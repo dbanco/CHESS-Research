@@ -16,7 +16,7 @@ close all
 lambda = 8e-2;
 opt = [];
 opt.Verbose = 1;
-opt.MaxMainIter = 200;
+opt.MaxMainIter = 50;
 opt.MaxCGIter = 200;
 opt.CGTol = 1e-9;
 opt.rho = 500*lambda + 0.5;
@@ -36,8 +36,8 @@ opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
 D0 = zeros(1,M,K);
-D0(1,:,1) = AD(1,1:M,U-V); + 100*rand(1,M,1)/100;
-D0(1,:,2) = AD(1,1:M,2*U-V); + 100*rand(1,M,1)/100;
+D0(1,:,1) = AD(1,1:M,U-V); %+ 100*rand(1,M,1)/100;
+D0(1,:,2) = AD(1,1:M,2*U-V); %+ 100*rand(1,M,1)/100;
 
 
 %% **all below needs updating
@@ -57,18 +57,19 @@ imagesc(Yhat0)
 title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
 
 %% Dictionary learning
-% opt.LinSolve = 'CGD';
-% 
-% denLim = 9;
-% opt.Verbose = 0;
-% [D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(Dtrue,y,lambda,U,denLim,opt);
-% AD = reSampleNu(N,D,output(1),output(2),U);
-% ADf = fft2(AD);
-% Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
+opt.LinSolve = 'CGD';
+
+denLim = 9;
+opt.Verbose = 0;
+[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(Dtrue,y,lambda,U,denLim,opt);
+AD = reSampleNu(N,D,output(1),output(2),U);
+ADf = fft2(AD);
+Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 
 %% Test Ax, Atb
 ADtrue = reSampleNu(N,Dtrue,c1,c2,U);
 plotDictUsage(ADtrue,K,1)
+
 % ADtrue2 =  upDwnSample(Dtrue,V);
 % % plotDictUsage(ADtrue(:,1:64,:)-ADtrue2,K,1)
 % norm(vec(ADtrue(:,1:64,:)-ADtrue2))

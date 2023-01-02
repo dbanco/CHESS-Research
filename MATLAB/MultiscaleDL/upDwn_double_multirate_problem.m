@@ -3,10 +3,10 @@ function [y,AD,D,X_true,N,M,T,scales,c1,c2] = upDwn_double_multirate_problem
 T = 60;
 N = 128; M = 32;
 K = 2;
-c1 = 13;
-c2 = 11;
-scales = [ c2 1 c1 ;
-           c1 1 c2 ];
+c1 = 5;
+c2 = 3;
+scales = [ c2 1 c1;
+           c1 1 c2];
 U = size(scales,2);
 d1 = multiRateSinc(M);
 d2 = multiRateShape(M);
