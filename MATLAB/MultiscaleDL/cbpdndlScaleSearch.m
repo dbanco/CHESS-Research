@@ -1,4 +1,4 @@
-function [D, Y, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,S,lambda,U,denLim,opt)
+function [D, Y, optinf, obj, relErr,output,minObj,prbCount] = cbpdndlScaleSearch(D0,S,lambda,U,denLim,opt)
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 probes = [1, 2, 3, 4;
@@ -28,8 +28,9 @@ hold on
 % opt.Y0 = states(ind).Y;
 % D0 = states(ind).D;
 output = probes(:,ind);
-
+prbCount = 4;
 while relErr > 0.01
+    prbCount = prbCount + 1;
     if states(2).obj < states(3).obj
         probes(:,4) = probes(:,3);
         states(4) = states(3);
