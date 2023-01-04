@@ -1,8 +1,8 @@
 function [y,AD,D,X_true,N,M,T,scales,c1,c2] = upDwn_double_multirate_problem(c1,c2)
 %% Construct 1D test problem Box and Gaussian
 if nargin < 2
-    c1 = 5;
-    c2 = 3;
+    c1 = 13;
+    c2 = 4;
 end
 T = 60;
 N = 128; M = 32;

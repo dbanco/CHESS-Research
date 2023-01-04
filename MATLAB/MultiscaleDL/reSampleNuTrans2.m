@@ -18,7 +18,7 @@ Xarray = reshape(X,[N1,N2,U,K]);
 
 for k = 1:K
     % neutral
-    Xud(:,1:N2,k) = Xarray(:,1:N2,V+1,k);
+    Xud(:,:,k) = Xarray(:,:,V+1,k);
     
     % downscalings
     for i = 1:V

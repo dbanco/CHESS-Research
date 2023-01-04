@@ -12,7 +12,7 @@ else
 end
 f = f/norm(f);
 
-fout = zeros(1,N);
+fout = zeros(size(x));
 if m > 1
     if trans 
         fout(1) = f(1);

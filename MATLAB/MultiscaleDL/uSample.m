@@ -6,8 +6,13 @@ if m == 1
     du = d;
 else
     [N1,N2] = size(d);
-    du = zeros(N1,N2*m);
-    du(:,m*(1:N2)) = d;
+    if N2 > N1
+        du = zeros(N1,N2*m);
+        du(:,m*(1:N2)) = d;
+    else
+        du = zeros(N1*m,N2);
+        du(m*(1:N1),:) = d;
+    end
 %     norm(du(:))
 %     figure(12)
 %     hold on
