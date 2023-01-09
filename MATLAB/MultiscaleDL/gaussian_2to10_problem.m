@@ -1,7 +1,7 @@
 function [y,N,M,T] = gaussian_2to10_problem
 %% Construct 1D test problem Box and Gaussian
 T = 60;
-N = 128; M = N;
+N = 128+160; M = N;
 K = 1;
 U = 3;
 scaling = '2-norm';
@@ -10,8 +10,8 @@ scaling = '2-norm';
 sig = linspace(2,10,T);
 
 % Position in time
-minPos = 28;
-maxPos = 100;
+minPos = 28+80;
+maxPos = 100+80;
 amp = (maxPos-minPos)/2;
 Pos = round( amp*sin( 2*pi*(1:T)/(T/2)) + amp + minPos);
 
@@ -21,5 +21,5 @@ for t = 1:T
     d1 = gaussian_basis_wrap_1D(N,1,sig(t),scaling);
     y(:,:,t) = y(:,:,t) + circshift([d1', zeros(1,N-M)],Pos(t));
 end
-
+imagesc(squeeze(y))
 end

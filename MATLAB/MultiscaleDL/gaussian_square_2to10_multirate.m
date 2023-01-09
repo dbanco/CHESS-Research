@@ -2,21 +2,21 @@
 [y,N,M,T] = gaussian_square_2to10_problem;
 M = 32;
 y = reshape(y,[1,N,1,T]); 
-K = 3;
-U = 3;
+K = 1;
+U = 5;
 V = (U-1)/2;
 % plotDataSeq(y)
 
 close all
 % Set up cbpdndl parameters
-lambda = 4e-2;
+lambda = 35e-2;
 opt = [];
 opt.Verbose = 1;
 opt.MaxMainIter = 200;
 opt.MaxCGIter = 200;
 opt.CGTol = 1e-9;
 opt.rho = 500*lambda + 0.5;
-opt.sigma = size(y,3);
+opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
 opt.AutoSigma = 1;
@@ -39,12 +39,12 @@ opt.LinSolve = 'CGD';
 opt.Verbose = 1;
 denLim = 11;
 
-% [D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
-% c1 = output(1);
-% c2 = output(2);
+[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+c1 = output(1);
+c2 = output(2);
 
-c1 = 13;
-c2 = 7;
+% c1 = 13;
+% c2 = 7;
 [D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,c1,c2,U);
  
 
@@ -78,7 +78,13 @@ dName = 'gaussian_square_2to10';
 mkdir(topDir)
 
 % Show dicitonary
-f1 = plotDictUsage(AD,K,1);
+[~,~,KU] = size(AD);
+for i = 1:KU
+    subplot(K,KU/K,i)
+    plot(AD(:,1:128,i),'Linewidth',2) 
+    ylim([0 0.53])
+    f.Position =[1 500 1000 400];
+end
 saveas(f1,fullfile(topDir,['dict',dName,'.png']))
 
 % Show usage

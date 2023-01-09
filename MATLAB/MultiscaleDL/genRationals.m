@@ -3,12 +3,12 @@ function rationals = genRationals(lowLim,hiLim,denLim,numLim)
 % denominator limit
 rationals = [lowLim,hiLim];
 numVals = size(rationals,2);
-while (numVals < numLim)
+while (numVals <= numLim)
     N = 2*numVals-1;
     rationals_new = zeros(2,N);
     rationals_new(:,1:2:N) = rationals;
     for i = 2:2:N-1
-        if (rationals_new(2,i-1)+rationals_new(2,i+1)) < denLim
+        if (rationals_new(2,i-1)+rationals_new(2,i+1)) <= denLim
             [Nu,De] = rat((rationals_new(1,i-1)+rationals_new(1,i+1))/(rationals_new(2,i-1)+rationals_new(2,i+1)));
             rationals_new(:,i) = [Nu;De];
         end
@@ -16,9 +16,6 @@ while (numVals < numLim)
     % eliminate terms not set
     zeroTerms = rationals_new(1,:) == 0;
     rationals_new(:,zeroTerms) = [];
-    
-    % reduce fractoins
-    fractions = mod(rationals_new(1,:),rationals_new(2,:));
     
     if size(rationals_new,2) == numVals
         break;

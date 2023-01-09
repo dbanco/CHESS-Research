@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 lowLim = [1;1];
 hiLim = [4;1]; 
-denLim = 9;
+denLim = 7;
 % Count rationals
 % numLim = 1000;
 % rationals = genRationals(lowLim,hiLim,denLim,numLim)
@@ -11,12 +11,12 @@ denLim = 9;
 % plot(y,y,'-o')
 
 % Setup rationals to be tested
-numLim = 12;
+numLim = 1000;
 rationals = genRationals(lowLim,hiLim,denLim,numLim);
 
 %%
 results = struct([]);
-for i = 2:size(rationals,2)
+for i = 1:size(rationals,2)
     c1 = rationals(1,i);
     c2 = rationals(2,i);
     [y,AD,Dtrue,X_true,N,M,T,scales,c1,c2] = upDwn_double_multirate_problem(c1,c2);
@@ -27,20 +27,20 @@ for i = 2:size(rationals,2)
     V = (U-1)/2;
     % plotDataSeq(y)
 
-    topDir = 'C:\Users\dpqb1\Desktop\multiDict_multirate_double_experiment2\';
+    topDir = 'C:\Users\dpqb1\Desktop\multiDict_multirate_double_experiment6\';
     dName = sprintf('doubleToy_%i_c1c2_%i_%i',i,c1,c2);
     mkdir(topDir)
 
     close all
     % Set up cbpdndl parameters
-    lambda = 3e-2;
+    lambda = 10e-2;
     opt = [];
     opt.Verbose = 1;
     opt.MaxMainIter = 50;
     opt.MaxCGIter = 200;
-    opt.CGTol = 1e-9;
+    opt.CGTol = 1e-8;
     opt.rho = 50*lambda + 0.5;
-    opt.sigma = size(y,3);
+    opt.sigma = T;
     opt.AutoRho = 1;
     opt.AutoRhoPeriod = 10;
     opt.AutoSigma = 1;
@@ -71,10 +71,10 @@ for i = 2:size(rationals,2)
 
     %% Dictionary learning
     opt.LinSolve = 'CGD';
-    [~, X, ~, ~, ~,output,minObj,prbCount] = cbpdndlScaleSearch(Dtrue,y,lambda,U,denLim,opt);
+    [D, X, ~, ~, ~,output,minObj,prbCount] = cbpdndlScaleSearch(Dtrue,y,lambda,U,denLim,opt);
     opt.MaxMainIter = 200;
     opt.Y0 = X;
-    [D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,output(1),output(2),U);
+    [D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D, y, lambda, opt,output(1),output(2),U);
     save(fullfile(topDir,sprintf('output_%i.mat',i)),'D','X','opt','obj','relErr','c1','c2','output','prbCount','N','M','K','U');
     
     % Solution
@@ -120,4 +120,4 @@ for i = 2:size(rationals,2)
     saveas(f3,fullfile(topDir,['dictDist',dName,'.png']))
 end
 
-save(fullfile(topDir,'results_exp2.mat'),'results')
+save(fullfile(topDir,'results_exp6.mat'),'results')

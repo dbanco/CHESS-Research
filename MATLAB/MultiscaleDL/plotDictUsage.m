@@ -11,7 +11,7 @@ for i = 1:KU
     subplot(K,KU/K,i)
     plot(AD(:,:,i),'Linewidth',2) 
 %     set(gca,'visible','off');
-    ylim([0 1])
+%     ylim([0 1])
 %     if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
 %         title(sprintf('Usage: %1.2f',sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) ))
 %     end

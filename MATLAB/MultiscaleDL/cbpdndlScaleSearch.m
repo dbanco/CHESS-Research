@@ -1,8 +1,12 @@
 function [D, Y, optinf, obj, relErr,output,minObj,prbCount] = cbpdndlScaleSearch(D0,S,lambda,U,denLim,opt)
-%UNTITLED4 Summary of this function goes here
+%cbpdndlScaleSearch Summary of this function goes here
 %   Detailed explanation goes here
-probes = [1, 2, 3, 4;
-          1, 1, 1, 1];
+% probes = [1, 2, 3, 4;
+%           1, 1, 1, 1];
+probes = [1, 2, 5, 3;
+          1, 1, 2, 1];
+% probes = [ 2, 5, 8, 11;
+%            1, 2, 3, 4];
 opt.Verbose = 0;
 states = struct([]);
 

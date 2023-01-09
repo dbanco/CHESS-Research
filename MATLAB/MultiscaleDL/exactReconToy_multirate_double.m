@@ -13,14 +13,14 @@ mkdir(topDir)
 
 close all
 % Set up cbpdndl parameters
-lambda = 3e-2;
+lambda = 10e-2;
 opt = [];
 opt.Verbose = 1;
-opt.MaxMainIter = 50;
+opt.MaxMainIter = 100;
 opt.MaxCGIter = 200;
-opt.CGTol = 1e-9;
+opt.CGTol = 1e-8;
 opt.rho = 50*lambda + 0.5;
-opt.sigma = size(y,3);
+opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
 opt.AutoSigma = 1;
@@ -60,11 +60,12 @@ title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat0,'fro')/norm(y(:),'fro')))
 opt.LinSolve = 'CGD';
 
 denLim = 9;
-[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(Dtrue,y,lambda,U,denLim,opt);
+[D, X, optinf, obj, relErr,output,minObj] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
 opt.MaxMainIter = 200;
 opt.Y0 = X;
 opt.Verbose = 1;
-[D, Y, optinf, obj, relErr] = cbpdndl_cg_multirate(D,y,lambda,opt,output(1),output(2),U);
+% output = [13,4];
+[D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0,y,lambda,opt,output(1),output(2),U);
 
 % Solution
 AD = reSampleNu(N,D,output(1),output(2),U);
@@ -83,9 +84,28 @@ dictErr = min(de1,de2)
 % results(i).c2 = c2;
 % results(i).opt = opt;
 
-
+ADtrue = reSampleNu(N,Dtrue,output(1),output(2),U);
 f1 = figure;
-plotDictUsage(AD,K,1,f1)
+
+for i = 1:6
+    subplot(1,6,i)  
+    hold off
+%     plot(AD(:,:,i),'Linewidth',3)
+%     hold on
+    plot(ADtrue(:,:,i),'Color',[0.8500 0.3250 0.0980],'Linewidth',2)
+    set(gca,'FontSize',20)
+%     set(gca,'visible','off');
+%     ylim([0 1])
+%     if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
+%         title(sprintf('Usage: %1.2f',sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) ))
+%     end
+%     set(gca,'YTickLabel',[]);
+%     set(gca,'XTickLabel',[]);
+%     p = 1+(f.Number)*400;
+    f.Position =[1 500 1000 400];
+end
+
+% plotDictUsage(AD,K,1,f1)
 % saveas(f1,fullfile(topDir,['dict',dName,'.png']))
 
 % Recon and data
@@ -107,3 +127,9 @@ imagesc(squeeze(sum(sum(X_true,1),2)))
 title('Truth')
 f3.Position = [800 100 600 300];
 % saveas(f3,fullfile(topDir,['dictDist',dName,'.png']))
+
+
+f4 = figure;
+waterfall(squeeze(y)')
+set(gca,'FontSize',20)
+    set(gca,'XTickLabel',[]);

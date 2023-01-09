@@ -2,22 +2,22 @@
 [y,N,M,T] = gaussian_2to10_problem;
 M = 32;
 y = reshape(y,[1,N,1,T]); 
-K = 2;
-U = 3;
+K = 1;
+U = 5;
 V = (U-1)/2;
 % plotDataSeq(y)
 
 close all
 % Set up cbpdndl parameters
-lambda = 5e-2;
+lambda = 8e-2;
 opt = [];
 opt.Verbose = 1;
-opt.plotDict = 1;
-opt.MaxMainIter = 5;
+opt.plotDict = 0;
+opt.MaxMainIter = 200;
 opt.MaxCGIter = 200;
-opt.CGTol = 1e-9;
-opt.rho = 500*lambda + 0.5;
-opt.sigma = size(y,3);
+opt.CGTol = 1e-8;
+opt.rho = 50*lambda + 0.5;
+opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
 opt.AutoSigma = 1;
@@ -32,7 +32,12 @@ opt.DictFilterSizes = [ones(1,K);
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
-D0 = rand(1,M,K);
+D0 = zeros(1,M,K);
+for k = 1:K
+    D0(1,round(M/3):round(2*M/3),k) = rand;
+    D0(:,:,k) = D0(:,:,k)/norm(D0(:,:,k));
+end
+
 % D0(1,:,2) = AD(1,1:M,2*U-V); + 100*rand(1,M,1)/100;
 
 %% Solve
@@ -80,13 +85,25 @@ dName = 'gaussian_2to10';
 mkdir(topDir)
 
 % Show dicitonary
-f1 = plotDictUsage(AD,K,1);
-saveas(f1,fullfile(topDir,['dict',dName,'.png']))
+[~,~,KU] = size(AD);
+for i = 1:KU
+    subplot(K,KU/K,i)
+    plot(AD(:,:,i),'Linewidth',2)
+if i > 3    
+    ylim([0 0.52])
+else
+    ylim([0 0.52])
+end
+    set(gca,'XTickLabel',[]);
+end
+
+% saveas(f1,fullfile(topDir,['dict',dName,'.png']))
 
 % Show usage
 f2 = figure;
 imagesc(squeeze(sum(sum(X,1),2)))
-title('vdf')
+% title('vdf')
+set(gca, 'FontSize', 20)
 saveas(f2,fullfile(topDir,['vdf',dName,'.png']))
 
 % Show recon
@@ -97,3 +114,9 @@ subplot(1,2,2)
 imagesc(Yhat)
 title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat,'fro')/norm(y(:),'fro')))
 saveas(f3,fullfile(topDir,['recon',dName,'.png']))
+
+f4 = figure;
+waterfall(squeeze(y(1,80:228,1,:))')
+set(gca, 'XtickLabel','')
+set(gca, 'ZtickLabel','')
+set(gca, 'FontSize', 24)
