@@ -8,8 +8,8 @@ else
 end
 
 for i = 1:KU
-    subplot(K,KU/K,i)
-    plot(AD(:,:,i),'Linewidth',2) 
+    subplot(2,ceil(KU/2),i)
+    plot(AD(:,:,i),'Linewidth',1) 
 %     set(gca,'visible','off');
 %     ylim([0 1])
 %     if sum(squeeze(X(:,:,i,:)),'all')/sum(X(:)) > 0
@@ -18,7 +18,7 @@ for i = 1:KU
 %     set(gca,'YTickLabel',[]);
 %     set(gca,'XTickLabel',[]);
 %     p = 1+(f.Number)*400;
-    f.Position =[1 500 1000 400];
+    f.Position(3:4) =[1800 400];
 end
 
 end

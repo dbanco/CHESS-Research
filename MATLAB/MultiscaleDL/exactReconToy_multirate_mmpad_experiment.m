@@ -1,5 +1,5 @@
 %% Multiscale 1D dictionary learning toy problem
-y = loadMMPAD1DmCDL();
+y = loadMMPAD1D(1,1);
 [N,T] = size(y);
 y = reshape(y,[1,N,T]);
 % plotDataSeq(y)
@@ -59,9 +59,9 @@ opt.Y0 = zeros(1,N,K*U,T);
 
 %% Dictionary learning
 opt.LinSolve = 'CGD';
-[D, X, optinf, obj, relErr,output,minObj,prbCount] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
+% [D, X, optinf, obj, relErr,output,minObj,prbCount] = cbpdndlScaleSearch(D0,y,lambda,U,denLim,opt);
 opt.MaxMainIter = 200;
-opt.Y0 = X;
+output = [3;1];
 [D, X, optinf, obj, relErr] = cbpdndl_cg_multirate(D0, y, lambda, opt,output(1),output(2),U);
 % save(fullfile(topDir,sprintf('output_%i.mat',i)),'D','X','opt','obj','relErr','c1','c2','output','prbCount','N','M','K','U');
 
