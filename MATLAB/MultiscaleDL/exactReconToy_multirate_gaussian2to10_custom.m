@@ -1,38 +1,40 @@
 %% Multiscale 1D dictionary learning toy problem
-y = loadMMPAD1D(1,1);
-[N,T] = size(y);
+[y,N,M,T] = gaussian_2to10_problem;
+[~,N,T] = size(y);
 y = reshape(y,[1,N,T]);
 % plotDataSeq(y)
 % scales = [[1;8],[1;6],[1;5],[1;4],[1;3],[1;2],[2;3],[1;1],[3;2],...
 %           [2;1],[3;1],[4;1],[5;1],[6;1],[7;1],[8;1],[49;6]];
-scales = [[1;20],[1;10],[1;9],[1;8],[1;6],[1;5],[1;4],[1;3],[1;2],[2;3],[1;1]];
+% scales = [[1;20],[1;10],[1;8],[1;6],[1;5],[1;4],[1;3],[1;2],[2;3],[1;1]];
+scales = [[2;3],[1;1],[2;1]];
 U = size(scales,2);
-K = 2;
-M = 261;
-opt.DictFilterSizes = [1 1;
-                       120 M];
+K = 1;
+M = 50;
+opt.DictFilterSizes = [1;
+                       M];
 % Init solution
 opt.Y0 = zeros(1,N,K*U,T);
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
-D0 = Pnrm(rand(1,M,K));
-D0(1,121:end,1) = 0;
+D0 = zeros(1,M,K);
+D0(1,20:50,1) = 1;
+D0 = Pnrm(D0);
                    
-% topDir = 'C:\Users\dpqb1\Desktop\multiDict_multirate_custom_mmpad6\';
-% dName = sprintf('mmpad');
-% mkdir(topDir)
+topDir = 'C:\Users\dpqb1\Documents\Outputs\multiDict_multirate_gaussian2to10_4\';
+dName = sprintf('gaussian2to10');
+mkdir(topDir)
 % results = struct([]);
 
 close all
 % Set up cbpdndl parameters
-lambda = 3e-2;
+lambda = 8e-2;
 opt = [];
 opt.plotDict = 1;
 opt.Verbose = 1;
 opt.MaxMainIter = 200;
 opt.MaxCGIter = 200;
 opt.CGTol = 1e-9;
-opt.rho = 50*lambda + 0.5;
+opt.rho = 500*lambda + 0.5;
 opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
@@ -48,7 +50,7 @@ opt.NonnegativeDict = 1;
 %% Dictionary learning
 opt.LinSolve = 'CGD';
 
-[D, X, optinf, obj, relErr] = cbpdndl_cg_multirate_custom(D0, y, lambda, opt,scales);
+[D, X, optinf, obj, relErr] = cbpdndl_cg_multirate_custom(D0, y, lambda, opt, scales);
 % save(fullfile(topDir,sprintf('output_%i.mat',i)),'D','X','opt','obj','relErr','c1','c2','output','prbCount','N','M','K','U');
 
 % Solution
