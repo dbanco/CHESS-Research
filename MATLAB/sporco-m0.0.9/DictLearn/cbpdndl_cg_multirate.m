@@ -319,8 +319,6 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
   % solve for D using the main coefficient variable X as the coefficients,
   % but it appears to be more stable to use the shrunk coefficient variable Y
   
-  % REPLACE
-  %AYS = upDwnSampleTrans(ifft2(sum(bsxfun(@times, conj(Yf), fft2(S)), 4),'symmetric'),opt.numScales);
   AYS = reSampleNuTrans2(M,ifft2(sum(bsxfun(@times, conj(Yf), fft2(S)), 4),'symmetric'),c1,c2,Ufactors,NormVals);
   if strcmp(opt.LinSolve, 'SM'),
     Df = solvemdbi_ism(Yf, sigma, YSf + sigma*fft2(G - H));

@@ -1,6 +1,8 @@
-function y = loadMMPAD1D(ring,interp)
+function y = loadMMPAD1D(ring,interp,topDir)
 % Load MMPAD subset
-topDir = ['D:\MMPAD_data_nr1\ring',num2str(ring),'_zero'];
+if nargin < 3
+    topDir = ['D:\MMPAD_data_nr1\ring',num2str(ring),'_zero'];
+end
 fName = 'mmpad_img_%i.mat';
 % Load first image
 f=load(fullfile(topDir,sprintf(fName,1)));
@@ -23,7 +25,7 @@ for i = t_step:t_step:sub_T
 
     % Interpolate missing region
     if interp
-        x(130:134) = (1:5)/6*(x(135)-x(129)) + x(129);
+        x(129:134) = (1:6)/7*(x(135)-x(128)) + x(128);
     end
     y(:,j) = x/norm(x);
 

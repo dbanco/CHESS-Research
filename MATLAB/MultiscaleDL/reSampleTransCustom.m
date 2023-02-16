@@ -11,7 +11,7 @@ K = KU/U;
 
 if nargin < 4
     warning('Normalization factors not provided')
-    NormVals = ones(U,1);
+    NormVals = ones(K*U,1);
 end
 
 Xud = zeros(N1,N2,K);
@@ -26,8 +26,8 @@ for k = 1:K
             Xud(:,:,k) = Xud(:,:,k) + Xarray(:,:,i,k);
         else
             Xin = Xarray(:,:,i,k);
-            Xin2 = dSampleTrans(M,Xin,c1); clear Xin
-            Xin = uSampleTrans(M,Xin2,c2); clear Xin2
+            Xin2 = dSampleTrans(M,Xin,c2); clear Xin
+            Xin = uSampleTrans(M,Xin2,c1); clear Xin2
             Nud = min(size(Xin,2),N2);
             Xud(:,1:Nud,k) = Xud(:,1:Nud,k) + Xin(:,1:Nud)/NormVals(i+U*(k-1));
         end

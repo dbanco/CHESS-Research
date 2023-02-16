@@ -68,7 +68,7 @@ x = reshape(xv, asz);
 end
 
 function out = wrapAhA(in,N2,scales,ah,M,NormVals)
-A1 = reSampleCustom(N2,in,scales,NormVals);
+A1 = reSampleCustomArray(N2,in,scales,NormVals);
 Ain = sum(bsxfun(@times,ah,fft2( A1 )),3);
-out = reSampleTransCustom(M,ifft2(sum(bsxfun(@times, conj(ah), Ain), 4),'symmetric'),scales,NormVals);
+out = reSampleTransCustomArray(M,ifft2(sum(bsxfun(@times, conj(ah), Ain), 4),'symmetric'),scales,NormVals);
 end
