@@ -1,21 +1,21 @@
-function [y,N,M,T] = gaussian_square_2to10_problem
+function [y,N,M,T] = gaussian_pwlinear_2to10_problem
 %% Construct 1D test problem Box and Gaussian
 T = 60;
-N = 160+140; M = N;
+N = 350; M = N;
 
 scaling = '2-norm';
 
 % Width in time
-sig = linspace(2,10,T);
-wid1 = 2*round(linspace(2,14,T));
-wid2 = 2*round(linspace(1,7,T));
+sig = 2*linspace(2,10,T);
+width = 4*round(linspace(2,14,T));
+
 
 % Position in time
-minPos = 35+70;
-maxPos = 107+70;
+minPos = 35+90;
+maxPos = 107+100;
 amp = (maxPos-minPos)/2;
-Pos  = round( amp*sin( 4*pi/T*(1:T))      + amp + minPos);
-Pos2 = round( amp*sin( 4*pi/T*(1:T) + pi) + amp + minPos);
+Pos  = round( amp*sin( 4*pi/T*(1:T))      + amp + minPos)-2*amp+4;
+Pos2 = round( amp*sin( 4*pi/T*(1:T) + pi) + amp + minPos)+2*amp-4;
 
 y = zeros(N,T);
 for t = 1:T
@@ -24,8 +24,8 @@ for t = 1:T
 end
 for t = 1:T
     d2 = zeros(N,1);
-    d2(1:wid1(t)) = 2;
-    d2(1:wid2(t)) = 1;
+    d2(1:width(t)) = linspace(0,10,width(t));
+%     d2(width(t)+1:2*width(t)-1) = d2((width(t)-1):-1:1);
     d2 = d2/norm(d2);
     y(:,t) = y(:,t) + circshift([d2; zeros(N-M,1)],Pos2(t));
 end

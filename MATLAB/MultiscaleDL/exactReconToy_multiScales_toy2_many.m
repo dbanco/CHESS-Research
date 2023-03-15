@@ -1,29 +1,30 @@
 %% Multiscale 1D dictionary learning toy problem
-y = loadMMPAD1D(1,1,'C:\Users\dpqb1\Documents\Data\ring1_zero');
-[N,T] = size(y);
+[y,N,M,T] = gaussian_pwlinear_2to10_problem;
 y = reshape(y,[1,N,T]);
 
-topDir = 'C:\Users\dpqb1\Documents\Outputs\multiScales_mmpad_many4\';
-dName = sprintf('mmpad');
+topDir = 'C:\Users\dpqb1\Documents\Outputs\multiScales_toy2_many1\';
+dName = sprintf('gs_sq');
 mkdir(topDir)
-% plotDataSeq(y,topDir)
 
-scales = cell(3,1);
+plotDataSeq(y,topDir)
+K = 2;
+scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,100, 1/8);
 scales{2} = genRationals([0;1],[1;1],8,100, 1/8);
-scales{3} = genRationals([0;1],[1;1],8,100, 1/8);
+% scales{3} = genRationals([0;1],[1;1],8,100, 1/8);
 
 Uarray = zeros(numel(scales),1);
 for i = 1:numel(scales)
     Uarray(i) = size(scales{i},2);
 end
 Utotal = sum(Uarray);
-K = 3;
-M = 261;
+
 
 opt = [];
-opt.DictFilterSizes = [1,1,1;
-                       M,M,M];
+% opt.DictFilterSizes = [1,1,1;
+%                        M,M,M];
+opt.DictFilterSizes = [1,1;
+                       M,M];
 % Init solution
 opt.Y0 = zeros(1,N,Utotal,T);
 % Init dictionary
@@ -31,15 +32,12 @@ Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
 D0 = zeros(1,M,K);
 D0(1,60:140,1) = 1;
 D0(1,40:180,2) = 1;
-D0(1,20:200,3) = 1;
+% D0(1,20:200,3) = 1;
 D0 = Pnrm(D0);
-                   
-
-% results = struct([]);
-
+                  
 close all
 % Set up cbpdndl parameters
-lambda = 8e-2;
+lambda = 7e-2;
 
 opt.plotDict = 0;
 opt.Verbose = 1;
@@ -74,7 +72,7 @@ Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 % Show dictionary
 f1 = figure;
 for i = 1:Utotal
-    subplot(9,8,i)
+    subplot(7,7,i)
     plot(AD(:,:,i),'Linewidth',1)
  set(gca, 'XtickLabel','')
 set(gca, 'FontSize', 16)
@@ -119,3 +117,20 @@ set(gca, 'FontSize', 20)
 f3.Position = [1 100 800 400];
 saveas(f3,fullfile(topDir,['vdf',dName,'.png']))
 
+% Spatial placement of atom groups
+i = 1;
+for k = 1:K
+    figure;
+    Ui = size(scales{k},2) + i - 1;
+    imagesc( squeeze(sum(X(:,:,i:Ui,:),3)) )
+    i = i + Ui;
+end
+
+% % Spatial placement of atom groups
+% for k = 1:Utotal
+%     xk = squeeze(X(:,:,k,:));
+%     if(max(xk(:))>1e-8)
+%         figure(k);
+%         imagesc( xk )
+%     end
+% end

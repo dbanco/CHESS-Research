@@ -1,13 +1,17 @@
-function plotDataSeq(y,gifDir,fName)
+function plotDataRecon(y,recon,gifDir,fName)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 y = squeeze(y);
+recon = squeeze(recon);
 T = size(y,2);
 yMax = max(y(:));
 
 fig = figure;
 for t = 1:T
     plot(y(:,t))
+    hold on
+    plot(recon(:,t))
+    hold off
     
     if t == 1
         ylim([0 yMax*1.1])
