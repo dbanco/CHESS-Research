@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1noVelocity';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -64,7 +64,7 @@ opt.LinSolve = 'CGD';
 close all
 lambda2s = [5e-2 5e-1 20e-1 ];
 %% Dictionary learning
-for i = 2:numel(sigmas)
+for i = 3%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     % Data
@@ -73,7 +73,8 @@ for i = 2:numel(sigmas)
 %     for j = 18 %1:numel(lambdas)
     for j = 1
         % Solve
-        lambda = 27e-2;
+        lambda = 30e-2;
+        lambda2 = 10e-2;
         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
@@ -90,16 +91,18 @@ for i = 2:numel(sigmas)
         outputs.K = K;
         outputs.opt = opt;
         outputs.lambda = lambda;
-        outputs.lambda2 = lambda2s(j);
-        save(fullfile(figDir,sprintf('output_%i.mat',j)),'outputs');
+        outputs.lambda2 = lambda2
+        suffix = sprintf('_sig_%i_lam1_%0.2e_lam2_%0.2e',...
+                          j,outputs.lambda,outputs.lambda2);
+        save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures
-        generateFiguresToy1(figDir,outputs,j)
+        generateFiguresToy1(figDir,outputs,suffix)
 
         AD = reSampleCustomArray(N,D,scales);
         ADf = fft2(AD);
         Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
-        plotDataRecon(y,Yhat,figDir,sprintf('y_recon_%i.gif',j))
+        plotDataRecon(y,Yhat,figDir,['y_recon',suffix,'.gif'])
         close all
     end
 end

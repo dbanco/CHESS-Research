@@ -1,4 +1,4 @@
-function generateFiguresToy1(topDir,outputs,lam_j)
+function generateFiguresToy1(topDir,outputs,suffix)
 mkdir(topDir)
 D = outputs.D;
 X = outputs.X;
@@ -26,7 +26,7 @@ for i = 1:Utotal
 set(gca, 'FontSize', 16)
 end
 f1.Position = [1 100 1800 500];
-saveas(f1,fullfile(topDir,['dict',num2str(lam_j),'.png']))
+saveas(f1,fullfile(topDir,['dict',suffix,'.png']))
 
 % Recon and data regular scale
 f2 = figure;
@@ -40,7 +40,7 @@ imagesc(squeeze(Yhat))
 set(gca, 'FontSize', 20)
 title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat,'fro')/norm(y(:),'fro')))
 f2.Position = [1 100 800 500];
-saveas(f2,fullfile(topDir,['recon',num2str(lam_j),'.png']))
+saveas(f2,fullfile(topDir,['recon',suffix,'.png']))
 
 % Recovered VDF(t)
 f3 = figure;
@@ -49,7 +49,7 @@ imagesc(squeeze(sum(sum(X,1),2)))
 f3.Position = [800 100 600 300];
 set(gca, 'FontSize', 20)
 f3.Position = [1 100 800 400];
-saveas(f3,fullfile(topDir,['vdf',num2str(lam_j),'.png']))
+saveas(f3,fullfile(topDir,['vdf',suffix,'.png']))
 
 % Spatial placement of atom groups
 i = 1;
@@ -58,7 +58,7 @@ for k = 1:K
     Ui = size(scales{k},2) + i - 1;
     imagesc( squeeze(sum(X(:,:,i:Ui,:),3)) )
     i = i + Ui;
-    saveas(gcf,fullfile(topDir,['X',num2str(k),'_',num2str(lam_j),'.png']))
+    saveas(gcf,fullfile(topDir,['X',num2str(k),suffix,'.png']))
 end
 
 %% Remove whitespace from pngs
