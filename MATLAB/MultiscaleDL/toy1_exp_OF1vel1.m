@@ -1,6 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
+% topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
+topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -39,7 +40,7 @@ D0 = Pnrm(D0);
                   
 % Set up algorithm parameters
 lambda = 30e-2;
-lambda2 = 12e-2;%10e-2
+lambda2 = 12e-2;
 opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 200;
@@ -47,9 +48,6 @@ opt.MaxCGIter = 100;
 opt.CGTol = 1e-9;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
-
-opt.rho = 50*lambda + 0.5;
-opt.rho2 = 5*lambda2;
 opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
@@ -59,10 +57,9 @@ opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
-opt.LinSolve = 'CGD';
 
 close all
-lambda2s = [5e-2 5e-1 20e-1 ];
+lambda2s = [1e-2 5e-2 1e-1 5e-1 1];
 %% Dictionary learning
 for i = 3%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
@@ -71,10 +68,12 @@ for i = 3%2:numel(sigmas)
     [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 1
+    for j = 1:5
         % Solve
         lambda = 30e-2;
-        lambda2 = 10e-2;
+        lambda2 = lambda2s(j);
+        opt.rho = 50*lambda + 0.5;
+        opt.rho2 = 5*lambda2;
         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
@@ -91,7 +90,7 @@ for i = 3%2:numel(sigmas)
         outputs.K = K;
         outputs.opt = opt;
         outputs.lambda = lambda;
-        outputs.lambda2 = lambda2
+        outputs.lambda2 = lambda2;
         suffix = sprintf('_sig_%i_lam1_%0.2e_lam2_%0.2e',...
                           j,outputs.lambda,outputs.lambda2);
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
