@@ -44,8 +44,7 @@ tau = params.tau;
 alpha = params.alpha;
 maxIter = params.maxIter;
 isNonnegative = params.isNonnegative;
-
-zPad = params.zeroPad;
+% zPad = params.zeroPad;
 zMask = params.zeroMask;
 
 [N,K,T] = size(X_init);
@@ -60,7 +59,6 @@ for j = 1:T
 end
 
 % Initialize variables
-X_init = forceMaskToZeroArray(X_init,zMask);
 Xk = X_init;
 Xmin = X_init;
 

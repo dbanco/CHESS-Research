@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_TV19';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF3';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -49,7 +49,7 @@ opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 
 opt.rho = 50*lambda + 0.5;
-opt.rho2 = 50*lambda2;
+opt.rho2 = 5*lambda2;
 opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
@@ -71,16 +71,18 @@ for i = 5:numel(sigmas)
     [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 2
+    for j = 1:3
         % Solve
         lambda = 20e-2;
-        [D, X, optinf, obj, relErr] = cbpdndl_cg_TVphi_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
+        [D, X,Dmin,Xmin optinf, obj, relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
         outputs = struct();
         outputs.y = y;
         outputs.D = D;
         outputs.X = X;
+        outputs.Dmin = Dmin;
+        outputs.Xmin = Xmin;
         outputs.scales = scales;
         outputs.N = N;
         outputs.M = M;
@@ -100,4 +102,19 @@ for i = 5:numel(sigmas)
         plotDataRecon(y,Yhat,figDir,sprintf('y_recon_%i.gif',j))
         close all
     end
+end
+%% Load outputs and regen figures with min instead
+for j = 1:3
+    load(fullfile(figDir,sprintf('output_%i.mat',j)))
+    outputs.D = outputs.Dmin;
+    outputs.X = outputs.Xmin;
+    
+    % Generate figures
+    generateFiguresToy1(figDir,outputs,j)
+    
+    AD = reSampleCustomArray(N,Dmin,scales);
+    ADf = fft2(AD);
+    Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(Xmin)),3),'symmetric'));
+    plotDataRecon(y,Yhat,figDir,sprintf('y_recon_%i.gif',j))
+    close all
 end

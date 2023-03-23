@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_TV19';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_Dx1';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -49,7 +49,7 @@ opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 
 opt.rho = 50*lambda + 0.5;
-opt.rho2 = 50*lambda2;
+opt.rho2 = 5*lambda2;
 opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
@@ -71,10 +71,10 @@ for i = 5:numel(sigmas)
     [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 2
+    for j = 1:5
         % Solve
         lambda = 20e-2;
-        [D, X, optinf, obj, relErr] = cbpdndl_cg_TVphi_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
+        [D, X, optinf, obj, relErr] = cbpdndl_cg_Dx_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
         outputs = struct();
