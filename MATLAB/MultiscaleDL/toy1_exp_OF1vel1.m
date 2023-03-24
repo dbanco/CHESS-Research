@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 % topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
-topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1';
+topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF2vel1';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -59,6 +59,7 @@ opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
 close all
+lambdas = [1e-2 10e-2 20e-2 40e-2 100e-2];
 lambda2s = [1e-2 5e-2 1e-1 5e-1 1 1.5 2 5];
 %% Dictionary learning
 for i = 3%2:numel(sigmas)
@@ -68,10 +69,10 @@ for i = 3%2:numel(sigmas)
     [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 6:8
+    for j = 1:5
         % Solve
-        lambda = 30e-2;
-        lambda2 = lambda2s(j);
+        lambda = lambdas(j);
+        lambda2 = 5;
         opt.rho = 50*lambda + 0.5;
         opt.rho2 = 5*lambda2;
         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
@@ -91,8 +92,8 @@ for i = 3%2:numel(sigmas)
         outputs.opt = opt;
         outputs.lambda = lambda;
         outputs.lambda2 = lambda2;
-        suffix = sprintf('_sig_%i_lam1_%0.2e_lam2_%0.2e',...
-                          i,outputs.lambda,outputs.lambda2);
+        suffix = sprintf('_j%i_sig_%i_lam1_%0.2e_lam2_%0.2e',...
+                          j,i,outputs.lambda,outputs.lambda2);
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures
