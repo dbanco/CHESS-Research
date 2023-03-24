@@ -59,7 +59,7 @@ opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
 close all
-lambda2s = [1e-2 5e-2 1e-1 5e-1 1];
+lambda2s = [1e-2 5e-2 1e-1 5e-1 1 1.5 2 5];
 %% Dictionary learning
 for i = 3%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
@@ -68,7 +68,7 @@ for i = 3%2:numel(sigmas)
     [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 1:5
+    for j = 6:8
         % Solve
         lambda = 30e-2;
         lambda2 = lambda2s(j);
@@ -92,7 +92,7 @@ for i = 3%2:numel(sigmas)
         outputs.lambda = lambda;
         outputs.lambda2 = lambda2;
         suffix = sprintf('_sig_%i_lam1_%0.2e_lam2_%0.2e',...
-                          j,outputs.lambda,outputs.lambda2);
+                          i,outputs.lambda,outputs.lambda2);
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures
