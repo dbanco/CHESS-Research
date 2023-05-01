@@ -4,8 +4,13 @@ function [Dout,NormVals] = reSampleCustomArray(N,D,scales,NormVals)
 % D - Dictionary of dimensions [N1 x 1 x K]
 % scales_k - Cell array of arrays of scaling fators [2 x Ui]
 % NormVals (optional) - Array of normalization factors [U x 1]
-
-[N1,N2,K] = size(D);
+if numel(size(D)) == 2
+    N1 = 1;
+    [N2,K] = size(D);
+    D = reshape(D,[N1,N2,K]);
+else
+    [N1,N2,K] = size(D);
+end
 
 Uarray = zeros(K,1);
 for i = 1:K

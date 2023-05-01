@@ -1,16 +1,14 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-% topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
-topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF2vel1';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF_Jterm_DXVtrue_100_1';
+% topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 % mkdir(topDir)
 
 % Experiment Setup
-% lambdas = logspace(-2,-0.5,20);
-lambdas = [logspace(-2,-0.5,20), logspace(-0.4,0,10)];
-sigmas = 0.01:0.01:0.05;
+sigmas = 0:0.01:0.05;
 
 % Data parameters
-[y,~,N,M,T] = gaus_linear_osc_signal_long(0.04);
+[y,~,N,M,T] = gaus_linear_osc_signal_matched(0);
 y = reshape(y,[1,N,T]);
 
 % Model Setup
@@ -29,24 +27,20 @@ opt.DictFilterSizes = [1,1;...
 
 % Init solution
 opt.Y0 = zeros(1,N,KM,T);
+% opt.U0 = zeros(1,N,KM,T);
 
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
-D0 = zeros(1,M,K);
-D0(1,121:180,1) = 1;
-D0(1,101:200,2) = 1;
-D0 = Pnrm(D0);
-                  
+D0 = zeros(1,M,K); 
+
 % Set up algorithm parameters
-lambda = 30e-2;
-lambda2 = 12e-2;
 opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 200;
 opt.MaxCGIter = 100;
-opt.CGTol = 1e-9;
+opt.CGTol = 1e-8;
 opt.MaxCGIterX = 100;
-opt.CGTolX = 1e-6;
+opt.CGTolX = 1e-8;
 opt.sigma = T;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
@@ -58,23 +52,38 @@ opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
 close all
-lambdas = [1e-2 10e-2 20e-2 40e-2 100e-2];
-lambda2s = [1e-2 5e-2 1e-1 5e-1 1 1.5 2 5];
+lambdas = [1e-2 10e-2];
+lambda2s = [1e-1 5e-1 1];
 %% Dictionary learning
-for i = 3%2:numel(sigmas)
+for i = 1%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     % Data
-    [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
+    [y,y_true,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched(sigmas(i));
+    smoothness = 1e-6;
+    maxIt = 1;
+    [u,v,Fy,Fx,Ft]  = computeHornSchunkDict(squeeze(Xtrue),K,smoothness,maxIt);
+    Jterm = Ft == 0;
+%     D0(1,:,1) = Dtrue(:,:,1);
+%     D0(1,:,2) = Dtrue(:,:,2);
+    D0(1,round(M/3):round(2*M/3),1) = 1;
+    D0(1,round(M/4):round(3*M/4),2) = 1;
+    D0 = Pnrm(D0);
+%     plotOpticalFlow(Xtrue,K)
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 1:5
+    for j = 4:5
         % Solve
-        lambda = lambdas(j);
-        lambda2 = 5;
+        lambda = lambdas(j-3);
+        lambda2 = 1;
         opt.rho = 50*lambda + 0.5;
-        opt.rho2 = 5*lambda2;
-        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
+        opt.rho2 = 50*lambda2;
+        opt.Y0 = Xtrue;
+%         opt.Y0 = zeros(1,N,KM,T);
+%         opt.Y0(:,:,1,:) = y;
+%         opt.Y0(:,:,2,:) = y;
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(Dtrue, y, lambda,lambda2, opt, scales,u,v,Jterm);
+%         [D, X, optinf, obj, relErr] = cbpdndl_cg_multiScales(D0, y, lambda, opt, scales);
         
         % Save outputs
         outputs = struct();
@@ -91,8 +100,8 @@ for i = 3%2:numel(sigmas)
         outputs.opt = opt;
         outputs.lambda = lambda;
         outputs.lambda2 = lambda2;
-        suffix = sprintf('_j%i_sig_%i_lam1_%0.2e_lam2_%0.2e',...
-                          j,i,outputs.lambda,outputs.lambda2);
+        suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+                          j,sigmas(i),outputs.lambda,outputs.lambda2);
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures

@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-% topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
-topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF2vel1';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_extra_exp_OFLapFilt_1';
+% topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1';
 % mkdir(topDir)
 
 % Experiment Setup
@@ -10,14 +10,15 @@ lambdas = [logspace(-2,-0.5,20), logspace(-0.4,0,10)];
 sigmas = 0.01:0.01:0.05;
 
 % Data parameters
-[y,~,N,M,T] = gaus_linear_osc_signal_long(0.04);
+[y,~,N,M,T] = gaus_linear_osc_signal_extra(0.04);
 y = reshape(y,[1,N,T]);
 
 % Model Setup
 K = 2;
+fareyLimit = 8;
 scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],8,100, 1/8);
-scales{2} = genRationals([0;1],[1;1],8,100, 1/8);
+scales{1} = genRationals([0;1],[1;1],fareyLimit,100, 1/fareyLimit);
+scales{2} = genRationals([0;1],[1;1],fareyLimit,100, 1/fareyLimit);
 Uarray = zeros(numel(scales),1);
 for i = 1:numel(scales)
     Uarray(i) = size(scales{i},2);
@@ -38,7 +39,7 @@ D0(1,101:200,2) = 1;
 D0 = Pnrm(D0);
                   
 % Set up algorithm parameters
-lambda = 30e-2;
+lambda = 20e-2;
 lambda2 = 12e-2;
 opt.plotDict = 0;
 opt.Verbose = 1;
@@ -58,23 +59,23 @@ opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 
 close all
-lambdas = [1e-2 10e-2 20e-2 40e-2 100e-2];
+lambdas = [1e-2 10e-2 20e-2 40e-2];
 lambda2s = [1e-2 5e-2 1e-1 5e-1 1 1.5 2 5];
 %% Dictionary learning
-for i = 3%2:numel(sigmas)
+for i = 1%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     % Data
-    [y,y_true,N,M,T] = gaus_linear_osc_signal(sigmas(i));
+    [y,y_true,N,M,T] = gaus_linear_osc_signal_extra(sigmas(i));
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 1:5
+    for j = 3:8
         % Solve
-        lambda = lambdas(j);
-        lambda2 = 5;
+        lambda = 30e-2;
+        lambda2 = lambda2s(j);
         opt.rho = 50*lambda + 0.5;
         opt.rho2 = 5*lambda2;
-        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_Lap_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
         outputs = struct();

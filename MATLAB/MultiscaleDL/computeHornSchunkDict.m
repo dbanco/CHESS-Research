@@ -28,10 +28,4 @@ for k = 1:K
     Ft(:,i1:i2,:) = Ftk;
 end
 
-norm(Fx(:))
-norm(Fy(:))
-norm(Ft(:))
-norm(u(:))
-norm(v(:))
-
 end

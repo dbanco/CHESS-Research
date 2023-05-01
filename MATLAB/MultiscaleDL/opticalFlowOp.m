@@ -1,41 +1,47 @@
-function out = opticalFlowOp(x,u,v,K,trans)
+function out = opticalFlowOp(x,u,v,K,trans,Jterm)
 %opticalFlowOp
 
-if nargin < 5
+if nargin < 4
     trans = 0;
+end
+if numel(size(x)) == 4
+    reshapeIt = 1;
+else
+    reshapeIt = 0;
 end
 
 x = squeeze(x);
 U = size(x,2)/K;
 
-Fx = zeros(size(x));
-Fy = zeros(size(x));
-Ft = zeros(size(x));
+[Fx,Fy] = sobelDict(x,K,U);
+Ft = timeDiffDict(x,K,U);
 
-% Apply space time differences to each of K atoms
-for k = 1:K
-    i1 = 1+(k-1)*U;
-    i2 = k*U;
+Jx = x;
+if nargin < 6
+    Jx(Ft==0) = 0;
+else
 
-    Fy(:,i1:i2,:) = sobel(x(:,i1:i2,:),1);
-    Fx(:,i1:i2,:) = sobel(x(:,i1:i2,:),2);
-    Ft(:,i1:i2,:) = timeDiff(x(:,i1:i2,:));
+    Jx(Jterm) = 0;
 end
 
 % Option to additionally apply operation transposed
 if trans
-    Ax = Fx.*u + Fy.*v + Ft;
-    for k = 1:K
-        i1 = 1+(k-1)*U;
-        i2 = k*U;
+    Ax = Fx.*u + Fy.*v + Ft + Jx;
+    [Fx,Fy] = sobelDict(Ax,K,U,trans);
+    Ft = timeDiffDict(Ax,K,U,trans);
     
-        Fy(:,i1:i2,:) = sobel(Ax(:,i1:i2,:),1,1);
-        Fx(:,i1:i2,:) = sobel(Ax(:,i1:i2,:),2,1);
-        Ft(:,i1:i2,:) = timeDiff(Ax(:,i1:i2,:),1);
+    Jx = Ax;
+    if nargin < 6 
+        Jx(Ft==0) = 0;
+    else
+        Jx(Jterm) = 0;
     end
-    out = Fx.*u + Fy.*v + Ft;
+    out = Fx.*u + Fy.*v + Ft + Jx;
 else
-    out = Fx.*u + Fy.*v + Ft;
+    out = Fx.*u + Fy.*v + Ft + Jx;
+end
+if reshapeIt
+    out = reshape(out,[1 size(out)]);
 end
 
 end

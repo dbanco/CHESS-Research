@@ -1,16 +1,14 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-% topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1';
-topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF2vel1';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OFL1_1';
+% topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OFL1_1';
 % mkdir(topDir)
 
 % Experiment Setup
-% lambdas = logspace(-2,-0.5,20);
-lambdas = [logspace(-2,-0.5,20), logspace(-0.4,0,10)];
 sigmas = 0.01:0.01:0.05;
 
 % Data parameters
-[y,~,N,M,T] = gaus_linear_osc_signal_long(0.04);
+[y,~,N,M,T] = gaus_linear_osc_signal(0.04);
 y = reshape(y,[1,N,T]);
 
 % Model Setup
@@ -29,6 +27,7 @@ opt.DictFilterSizes = [1,1;...
 
 % Init solution
 opt.Y0 = zeros(1,N,KM,T);
+opt.Z0 = zeros(1,N,KM,T);
 
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
@@ -74,7 +73,7 @@ for i = 3%2:numel(sigmas)
         lambda2 = 5;
         opt.rho = 50*lambda + 0.5;
         opt.rho2 = 5*lambda2;
-        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OFl1_multiScales(D0, y, lambda,lambda2s(j), opt, scales);
         
         % Save outputs
         outputs = struct();

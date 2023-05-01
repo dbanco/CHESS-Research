@@ -1,5 +1,5 @@
-function d = sobel(x,dim,trans)
-%sobel Sobel edge detector in row dimenion(1) or column dimension(2)
+function d = laplaceFilt(x,trans)
+%laplace Laplace smoothing filt in row dimenion(1) or column dimension(2)
 %Equivalent to zero padding x and multiplying by BCCB of kernel
 % xpad = padarray(x,[1,1],0);
 % k = zeros(size(xpad,1),size(xpad,2));
@@ -11,23 +11,13 @@ function d = sobel(x,dim,trans)
 % dx = ifft2(xft.*kft,'symmetric');
 % dx = dx2(2:end-1,2:end-1,:);
 
-kernel = [-1 -2 -1; 0 0 0; 1 2 1]/8;
-% kernel = [0 -1 0; 0 0 0; 0 1 0]/2;
-% kernel = [0 -1 0; 0 1 0; 0 0 0];
+kernel = [-1 -1 -1; -1 8 -1; -1 -1 -1]/8;
 
-if nargin < 3
+if nargin < 2
     trans = 0;
 end
 
-if dim == 2
-    kernel = kernel';
-elseif dim ~= 1
-    error('Invalid dimension')
-end
-
 if trans == 0
-%     xPad = padarray(x,[1,1],'replicate');
-%     d = convn(xPad,kernel,'valid');
     d = convn(x,kernel,'same');
 elseif trans == 1
     xpad = padarray(x,[1,1],0);
