@@ -1,4 +1,4 @@
-function [Xk, err, obj, l_1, t_k, L] = FISTA_Circulant_cpu(Df,b,params)
+function [Xk, L, err, obj, l_1, t_k] = FISTA_Circulant_cpu(Df,b,Xk,params)
 %FISTA_Circulant Image regression by solving LASSO problem 
 %                argmin_x 0.5*||Ax-b||^2 + lambda||x||_1
 %
@@ -52,20 +52,14 @@ isNonnegative = params.isNonnegative;
 
 bf = fft2(b);
 c = ifft2(Atx_cpu(Df,bf),'symmetric');
-Dtbf = Atx_cpu(Df,bf);
-
-% Initialize solution
-% Xkf = solvedbi_sm(Df, 1, Dtbf);
-% Xk = ifft2(Xkf, 'symmetric');
-Xk = zeros(size(Dtbf));
-Xkf = zeros(size(Dtbf));
-Xkf = Xk;
-Xkm1 = Xk;
+Xkf = fft2(Xk);
 Zk = Xk;
 Zkf = Xkf;
+Xkm1 = Xk;
 
 % Track error, objective, and sparsity
 err = nan(1,maxIter);
+relErr = nan(1,maxIter);
 obj = nan(1,maxIter);
 l_1 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
@@ -76,7 +70,7 @@ end
 
 
 % Initial sparsity and objective
-f = 0.5*norm(b-ifft2(Ax_cpu(Df,Xkf),'symmetric'))^2 +...
+f = 0.5*sum( (b-ifft2(Ax_cpu(Df,Xkf),'symmetric')).^2,'all') +...
     lambda * norm(Xk(:),1);
 
 % Used to compute gradient
@@ -125,15 +119,16 @@ while keep_going && (nIter < maxIter)
 
     % Track and display error, objective, sparsity
     prev_f = f;
-    err(nIter) = norm(b(:)-fitX(:))^2;
+    err(nIter) = sum( (b(:)-fitX(:)).^2);
+    relErr(nIter) = sqrt(err(nIter))/norm(b(:));
     l_1(nIter) = sum(abs(Xk(:)));
     l_0(nIter) = sum(abs(Xk(:))>eps*10);
     f = 0.5*err(nIter) + lambda*l_1(nIter);
-    err(nIter) = norm(b(:)-fitX(:))/norm(b(:));
+    
     obj(nIter) = f;
 
     if params.verbose
-        fprintf(disp_string,nIter,f,L,l_0(nIter),l_1(nIter),err(nIter))
+        fprintf(disp_string,nIter,f,L,l_0(nIter),l_1(nIter),relErr(nIter))
     end
     
     if params.plotProgress
