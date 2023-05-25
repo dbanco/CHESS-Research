@@ -39,7 +39,7 @@ for t = 1:5
     params.isNonnegative = 1; % flag to enforce nonnegativity
     
     params.stoppingCriterion = 'OBJECTIVE_VALUE';
-    params.maxIter = 100;
+    params.maxIter = 3;
     params.tolerance = 1e-3;
     
     params.plotProgress = 0; % flag to plot intermediate solution at each iteration 
@@ -51,8 +51,6 @@ for t = 1:5
     Df = fft2(D);
     
     % Initialize solution
-    
-    b = b;
     
     % Solve
     tic

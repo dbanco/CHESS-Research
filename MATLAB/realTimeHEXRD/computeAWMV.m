@@ -15,12 +15,12 @@ rad_signal = squeeze(sum(x,[1,2,4]));
 total = sum(az_signal,'all');
 
 % Compute awmv_rad
-awmv_rad = P.sigma1(:)'.*rad_signal./total;
-awmv_rad = sum(awmv_rad(:));
+awmv_rad = P.sigma1(:)'*rad_signal./total;
+
 
 % Compute awmv_az
-awmv_az = P.sigma2(:)'.*az_signal./total;
-awmv_az = sum(awmv_az(:));
+awmv_az = P.sigma2(:)'*az_signal./total;
+
 
 
 end

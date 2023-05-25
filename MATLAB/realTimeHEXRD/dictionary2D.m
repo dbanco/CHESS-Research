@@ -11,21 +11,21 @@ function D = dictionary2D(P)
 % A0ft_stack - Dictionary atoms [N,K]
 
 
-D = zeros(P.N1,P.N2,P.K);
+D = zeros(P.N1,P.N2,P.K1,P.K2);
 % try
 %     Pmeans = P.means;
 % catch
 %     Pmeans = ones(P.K,2);
 % end
-i = 1;
 for i1 = 1:P.K1
     for i2 = 1:P.K2
         d = gaussian_basis_wrap_2D(P.N1, P.mu1, P.sigma1(i1),...
-                                     P.N2, P.mu2, P.sigma2(i2),'2-norm');               
-        D(:,:,i) = d;
-        i = i + 1;
+                                   P.N2, P.mu2, P.sigma2(i2),'2-norm');               
+        D(:,:,i1,i2) = d;
     end
 end
+
+D = reshape(D,[P.N1,P.N2,P.K]);
 
 end
 
