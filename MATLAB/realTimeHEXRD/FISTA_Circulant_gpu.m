@@ -53,14 +53,14 @@ isNonnegative = params.isNonnegative;
 Df = gpuArray(complex(Df));
 b = gpuArray(b);
 bf = gpuArray(complex(fft2(b)));
-c = ifft2(Atx_cpu(Df,bf));
+c = real(ifft2(Atx_cpu(Df,bf)));
 Xkf = gpuArray(complex(fft2(Xk)));
 Zk = Xk;
 Zkf = gpuArray(complex(Xkf));
 Xkm1 = Xk;
 
 if params.verbose
-    disp('Iter    Obj     L        ||x||_0         ||x||_1     RelErr ')
+    disp('Iter    Obj     L        ||x||_0     ||x||_1    RelErr ')
     disp_string = '%i       %0.2f   %0.1f     %i     %0.2f     %0.2f \n';
 end
 
@@ -77,7 +77,7 @@ while keep_going && (nIter < maxIter)
         
     % Compute gradient of f
     
-    grad = ifft2(Atx_gpu(Df,Ax_gpu(Df,Zkf))) - c; % gradient of f at zk
+    grad = real(ifft2(Atx_gpu(Df,Ax_gpu(Df,Zkf)))) - c; % gradient of f at zk
     
     % Backtracking Line Search
     stop_backtrack = 0 ;

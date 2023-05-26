@@ -2,16 +2,16 @@ center = [1025,1020];
 r1 = 430;
 r2 = 450;
 % factor = 5;
-% fname = 'C:\Users\dpqb1\Documents\Data\c103-90-ff-1\1\ff\ff_000277.ge2';
-% onlineDir = 'C:\Users\dpqb1\Documents\Data\c103-90-ff-1\1\ff\277\';
+fname = 'C:\Users\dpqb1\Documents\Data\c103-90-ff-1\1\ff\ff_000277.ge2';
+onlineDir = 'C:\Users\dpqb1\Documents\Data\c103-90-ff-1\1\ff\277\';
 
-fname = '/nfs/chess/raw/2023-1/id1a3/miller-3528-b/c103-90-s2-4/3/ff/ff_000807.ge2';
-onlineDir = '/nfs/chess/user/dbanco/realTimeHEXRD/onlineDir';
+% fname = '/nfs/chess/raw/2023-1/id1a3/miller-3528-b/c103-90-s2-4/3/ff/ff_000807.ge2';
+% onlineDir = '/nfs/chess/user/dbanco/realTimeHEXRD/onlineDir';
 
 % fname = 'C:\Users\dpqb1\Documents\Data\c103_Feb\ff_000807.ge2';
 % onlineDir = 'C:\Users\dpqb1\Documents\Data\c103_Feb\onlineDir';
 mkdir(onlineDir)
-x_init = zeros(size(Df));
+
 for t = 1:5
     b = loadGE2polar(t,fname,center,r1,r2);
     b = b./norm(b(:))*10;
@@ -51,7 +51,7 @@ for t = 1:5
     Df = fft2(D);
     
     % Initialize solution
-    
+    x_init = zeros(P.N1,P.N2,P.K);
     % Solve
     tic
     [X,L] = FISTA_Circulant_gpu(Df,b,x_init,params);

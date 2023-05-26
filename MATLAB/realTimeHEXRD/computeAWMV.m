@@ -1,4 +1,4 @@
-function [awmv_az, awmv_rad] = computeAWMV(x,P)
+function [awmv_rad, awmv_az] = computeAWMV(x,P)
 %computeAWMV
 % Inputs
 % x- (z,x,az_var,rad_var) array of fitted coefficients

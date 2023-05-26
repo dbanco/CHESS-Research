@@ -8,15 +8,15 @@ rad = zeros(num_rad,T);
 az = zeros(num_eta,T);
 
 img = readGE2img(fname,Trange);
-
+img = img(1:1000,:);
 dtheta = 2*pi./num_eta;
 for t = 1:T
-    [ring, radt, azt] = extract_ring( img(:,:,t),r1,r2,center,dtheta,num_eta );
-    b(:,:,t) = ring;
+    [ring, radt, azt,ind] = extract_ring( img(:,:,t),r1,r2,center,dtheta,num_eta );
+    b(:,ind,t) = ring;
     rad(:,t) = radt;
-    az(:,t) = azt;
+    az(ind,t) = azt;
 end
-
-
-
+rowSum = sum(b,[1,3]);
+b(:,rowSum == 0,:) = [];
+az(rowSum == 0,:) = [];
 end

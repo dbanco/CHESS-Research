@@ -64,7 +64,7 @@ obj = nan(1,maxIter);
 l_1 = nan(1,maxIter);
 l_0 = nan(1,maxIter);
 if params.verbose
-    disp('Iter    Obj     L        ||x||_0         ||x||_1     RelErr ')
+    disp('Iter    Obj     L        ||x||_0     ||x||_1    RelErr ')
     disp_string = '%i       %0.2f   %0.1f     %i     %0.2f     %0.2f \n';
 end
 
