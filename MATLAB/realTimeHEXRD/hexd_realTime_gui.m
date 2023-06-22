@@ -8,8 +8,35 @@ function hexd_realTime_gui
     resetButton = uibutton(fig, 'Text', 'Reset', 'Position', [300 20 120 40]);
     processH5Button = uibutton(fig, 'Text', 'Read H5', 'Position', [500 20 120 40]);
     nextImageButton = uibutton(fig, 'Text', 'Next Image', 'Position', [640 20 120 40]);
+    loadGE2Button = uibutton(fig, 'Text', 'Read Ge2', 'Position', [780 20 120 40]);
+        
+    fileLabel = uilabel(fig, 'Text', 'No file being processed', 'Position', [20 495 150 30]);
     
-    fileLabel = uilabel(fig, 'Text', 'No file being processed', 'Position', [20 495 400 30]);
+
+    lambdaField = uieditfield(fig,'numeric','Position',[190 495 60 30],'Limits',[0 100]);
+    rad1Field = uieditfield(fig,'numeric','Position',[295 495 40 30],'Limits',[0 10000]);
+    rad2Field = uieditfield(fig,'numeric','Position',[345 495 40 30],'Limits',[0 10000]);
+    center1Field = uieditfield(fig,'numeric','Position',[475 495 40 30],'Limits',[0 10000]);
+    center2Field = uieditfield(fig,'numeric','Position',[525 495 40 30],'Limits',[0 10000]);
+    updateButton = uibutton(fig,'Text','Update','Position',[600 495 60 30]);
+
+    uilabel(fig, 'Text', '$\lambda$:','Interpreter','Latex', 'Position', [170 495 40 30]);
+    uilabel(fig, 'Text', '$r_1, r_2$:','Interpreter','Latex', 'Position', [260 495 50 30]);
+    uilabel(fig, 'Text', '$center (x,y)$:','Interpreter','Latex', 'Position', [400 495 70 30]);
+
+
+    % GE2 detector/ring position
+    center = [1025,1020];
+    r1 = 430;
+    r2 = 445;
+
+    lambdaField.Value = 1e-4;
+    rad1Field.Value = r1;
+    rad2Field.Value = r2;
+    center1Field.Value = center(1);
+    center2Field.Value = center(2);
+    
+    % Set up axes
     dictionaryAxes = uiaxes(fig, 'Position', [20 300 600 200]);
     vdfAxes = uiaxes(fig, 'Position', [620 300 400 200]);
     awmvPlot = uiaxes(fig, 'Position', [1020 300 400 200]);
@@ -49,23 +76,19 @@ function hexd_realTime_gui
     fileName = [];
     processedFiles = {};
 
-    onlineDir = '/nfs/chess/raw/2023-1/id1a3/miller-3528-b/c103-90-s2-4/3/ff';
-%     onlineDir = 'C:\Users\dpqb1\Documents\Data\c103_Feb\onlineDir';
+%     onlineDir = '/nfs/chess/raw/2023-1/id1a3/miller-3528-b/c103-90-s2-4/3/ff';
+    onlineDir = 'C:\Users\dpqb1\Documents\Data\c103_Feb\onlineDir';
 
     x_init = [];
     D = []; 
     Df = [];
+    b = [];
     vdf = [];
     awmv_eta = [];
     awmv_2th = [];
     t = 0;  % Number of files processed
     rel_error = 1;
     oldbsize = [];
-
-    % Algorithm setup for ge2
-    center = [1025,1020];
-    r1 = 425;
-    r2 = 445;
     
     % Parameters
     % Basis function variance parameters
@@ -102,7 +125,69 @@ function hexd_realTime_gui
     resetButton.ButtonPushedFcn = @(~,~) resetData();
     processH5Button.ButtonPushedFcn = @(~,~) processH5();
     nextImageButton.ButtonPushedFcn = @(~,~) nextImage();
+    loadGE2Button.ButtonPushedFcn = @(~,~) processGE2();
+    lambdaField.ValueChangedFcn = @(~,~) updateFields();
+    rad1Field.ValueChangedFcn = @(~,~) updateFields();
+    rad2Field.ValueChangedFcn = @(~,~) updateFields();
+    center1Field.ValueChangedFcn = @(~,~) updateFields();
+    center2Field.ValueChangedFcn = @(~,~) updateFilds();
+    updateButton.ButtonPushedFcn = @(~,~) updateRecon();
     
+    function processGE2()
+        % Check for and read new ge2 image
+        [filePath, fileName] = selectFile(onlineDir);
+        try
+            t = 1;
+            [b,rad,az, fname] = readGE2();
+        catch
+            return
+        end
+
+        fileLabel.Text = fname; % Update file name in gui
+        t = 1;  % Increment file counter
+        
+        % Update dictionary if size of b changes
+        updateDPX();
+
+        processImage(rad,az)
+    end
+
+    function updateDPX()
+        if  ~isequal(size(b), oldbsize)
+            P.N1 = size(b,1);
+            P.N2 = size(b,2);
+            P.mu1 = round(P.N1/2);
+            P.mu2 = round(P.N2/2);
+            D = dictionary2D(P);
+            Df = fft2(D);
+            updateDictionary();
+            x_init = zeros(P.N1,P.N2,P.K);
+        end
+        if isempty(x_init)
+            x_init = zeros(P.N1,P.N2,P.K);
+        end
+    end
+
+    function updateRecon()
+        try
+            [b,rad,az,~] = readGE2();
+        catch
+            return
+        end
+
+        % Update dictionary if size of b changes
+        updateDPX();
+
+        processImage(rad,az);
+    end
+    function updateFields()
+        params.lambda = lambdaField.Value;
+        r1 =  rad1Field.Value;
+        r2 =  rad2Field.Value;
+        center(1) = center1Field.Value;
+        center(2) = center2Field.Value;
+    end
+
     % Start the timer
     function startTimer()
         start(timerObj);
@@ -119,6 +204,7 @@ function hexd_realTime_gui
     function resetData()
         D = [];  % Clear the dictionary
         vdf = [];  % Clear the vdf
+        b = [];
         awmv_eta = [];
         awmv_2th = [];
         t = 0;
@@ -136,7 +222,7 @@ function hexd_realTime_gui
             
         % Check for and read new ge2 image
         try
-            [b,rad,az, fname] = readGE2();
+            [b,rad,az, fname] = readGE2online();
         catch
             return
         end
@@ -144,22 +230,11 @@ function hexd_realTime_gui
         fileLabel.Text = fname; % Update file name in gui
         t = t + 1;  % Increment file counter
         
+
         % Update dictionary if size of b changes
-        if  ~isequal(size(b), oldbsize)
-            P.N1 = size(b,1);
-            P.N2 = size(b,2);
-            P.mu1 = round(P.N1/2);
-            P.mu2 = round(P.N2/2);
-            D = dictionary2D(P);
-            Df = fft2(D);
-            updateDictionary();
-        end
+        updateDPX();
 
-        if isempty(x_init)
-            x_init = zeros(P.N1,P.N2,P.K);
-        end
-
-        processImage(b,rad,az)
+        processImage(rad,az)
         processedFiles = [processedFiles, fname];
     end
 
@@ -169,67 +244,59 @@ function hexd_realTime_gui
         % Read in a selected H5 image
         [filePath, fileName] = selectFile();
         try
-            img = squeeze(h5read( fullfile(filePath,fileName),...
-                                '/imageseries/images', ...
-                                [1 1 1],[3072 3888 1] ));
+            r1 = 1205;
+            r2 = 1235;
+            center = [1944, 3560];
+            [b, rad, az] = loadH5polar(1,1,fname,center,r1,r2);
         catch
             disp('File not processed')
             return
         end
 
+        % Control data scaling
+        b = b./norm(b(:))*10;
+
+        % Subtract the background
+        b_median = median(b(:));
+        b = b-1.1*b_median;
+        b(b<0) = 0;
+
         fileLabel.Text = fileName; % Update file name in gui
         t = t + 1;  % Increment file counter
         
         % Update dictionary if size of b changes
-        if  ~isequal(size(b), oldbsize)
-            P.N1 = size(b,1);
-            P.N2 = size(b,2);
-            P.mu1 = round(P.N1/2);
-            P.mu2 = round(P.N2/2);
-            D = dictionary2D(P);
-            Df = fft2(D);
-            updateDictionary();
-        end
+        updateDPX();
 
-        if isempty(x_init)
-            x_init = zeros(P.N1,P.N2,P.K);
-        end
-
-        processImage(b,rad,az)
+        processImage(rad,az)
     end
 
     function nextImage()
         % Read in a next H5 image
+%         fname = fullfile(filePath,fileName);
+%         try
+%             t = t + 1;
+%             [b, rad, az] = loadH5polar(t,t,fname,center,r1,r2);
+%         catch
+%             disp('File not loaded')
+%             t = t - 1;
+%             return
+%         end
+        % Read next ge2 image
         try
-            t = t + 1;  % Increment file counter
-            img = squeeze(h5read( fullfile(filePath,fileName),...
-                                '/imageseries/images', ...
-                                [1 1 t],[3072 3888 t] ));
-            % Still need to extract a ring to polar coordinates
+            t = t + 1;
+            [b,rad,az, fname] = readGE2();
         catch
             disp('File not processed')
             t = t - 1;
             return
         end
 
-        fileLabel.Text = fileName; % Update file name in gui
-        
+        fileLabel.Text = fileName; % Update file name in gui        
+
         % Update dictionary if size of b changes
-        if  ~isequal(size(b), oldbsize)
-            P.N1 = size(b,1);
-            P.N2 = size(b,2);
-            P.mu1 = round(P.N1/2);
-            P.mu2 = round(P.N2/2);
-            D = dictionary2D(P);
-            Df = fft2(D);
-            updateDictionary();
-        end
+        updateDPX();
 
-        if isempty(x_init)
-            x_init = zeros(P.N1,P.N2,P.K);
-        end
-
-        processImage(b,rad,az)
+        processImage(rad,az)
     end
 
     % Update the dictionary display
@@ -310,19 +377,19 @@ function hexd_realTime_gui
     end
 
     % Update the b and b_hat images
-    function updateImages(b, b_hat,rad,az)
+    function updateImages(b_hat,rad,az)
         cla(bImageAxes);
         cla(bhatImageAxes);
         
         imagesc(bImageAxes,az,rad, (b));
-        caxis(bImageAxes, [min(b(:)),max(b(:))]);
+        clim(bImageAxes, [min(b(:)),max(b(:))]);
 
         imagesc(bhatImageAxes, az,rad,(b_hat));
-        caxis(bhatImageAxes, [min(b(:)),max(b(:))]);
+        clim(bhatImageAxes, [min(b(:)),max(b(:))]);
         title(bhatImageAxes,sprintf('Reconstruction, Relative Error = %0.2f',rel_error))
     end
 
-    function [b,rad,az,fname]= readGE2()
+    function [b,rad,az,fname]= readGE2online()
         % Check for new files in the directory
         filePattern = fullfile(onlineDir, 'ff_0*.ge2');  % Modify the pattern to match your file type
         files = dir(filePattern);
@@ -338,6 +405,8 @@ function hexd_realTime_gui
                 continue; % Skip processing
             end
 
+            filePath = files(i).folder;
+            fileName = files(i).name;
             fPath = fullfile(files(i).folder, files(i).name);
 
             % Read the image file (replace with your own file reading code)
@@ -359,7 +428,27 @@ function hexd_realTime_gui
         end
     end
 
-    function processImage(b,rad,az)
+    function [b,rad,az,fname]= readGE2()
+        fPath = fullfile(filePath, fileName);
+
+        % Read the image file (replace with your own file reading code)
+        try
+            [b,rad,az] = loadGE2polar(t,fPath,center,r1,r2);
+            b = b./norm(b(:))*10;
+            
+            % Need to subtract the background
+            b_median = median(b(:));
+            b = b-1.1*b_median;
+            b(b<0) = 0;
+
+            fname = fileName;
+            return
+        catch
+            disp([fileName, ' not loaded.'])
+        end
+    end
+
+    function processImage(rad,az)
         % Call the processing function (replace with your own processing code)
         [X,L] = FISTA_Circulant_gpu(Df,b,x_init,params);
         x_init = X;
@@ -379,13 +468,13 @@ function hexd_realTime_gui
         % Update GUI components
         updateVDF();
         updateAWMVPlot();
-        updateImages(b, b_hat,rad,az);
+        updateImages(b_hat,rad,az);
         drawnow           
         oldbsize = size(b);
     end
     
-    function [filePath, fileName] = selectFile()
-        [fileName, filePath] = uigetfile('*.*', 'Select a file');
+    function [filePath, fileName] = selectFile(defaultPath)
+        [fileName, filePath] = uigetfile(fullfile(defaultPath,'*.*'), 'Select a file');
         if isequal(fileName, 0) || isequal(filePath, 0)
             disp('File selection cancelled.');
             filePath = '';
