@@ -8,7 +8,9 @@ b = zeros(num_rad,num_eta,T);
 rad = zeros(num_rad,T);
 az = zeros(num_eta,T);
 img = squeeze(h5read( fname,'/imageseries/images', ...
-                      [1 1 t1],[3072 3888 t2] ));
+                      [1 1 t1],[3072 3888 T] ));
+img = flip(img',1);
+
 for t = 1:T
     [ring, radt, azt,ind] = extract_ring( img(:,:,t),r1,r2,center,dtheta,num_eta );
     b(:,ind,t) = ring;

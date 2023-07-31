@@ -44,8 +44,8 @@ function [ theta_project, theta_domain, theta_ind ] = azimuthal_projection( img,
                 
                 % interpolate
                 a = [x2-x; x-x1];
-                Q = [img(y1,x1), img(y1,x2);
-                     img(y2,x1), img(y2,x2)];     
+                Q = double([img(y1,x1), img(y1,x2);
+                     img(y2,x1), img(y2,x2)]);     
                 b = [y2-y; y-y1];
                 theta_project(tidx) = a'*Q*b/((x2-x1)*(y2-y1));
             end
@@ -55,6 +55,6 @@ function [ theta_project, theta_domain, theta_ind ] = azimuthal_projection( img,
     end
     removeVals = isnan(theta_project);
     theta_project(removeVals) = [];
-    theta_ind = ~removeVals;
+    theta_ind = logical(~removeVals);
 end
 

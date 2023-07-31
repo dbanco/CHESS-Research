@@ -13,6 +13,9 @@ for i = 1:num_rad
 end
 
 rowSum = sum(polar_image,1);
-polar_image(:,rowSum == 0) = [];
+
+theta_ind = logical(rowSum > 0);
 theta_domain(:,rowSum == 0) = [];
+polar_image(:,rowSum == 0) = [];
+
 

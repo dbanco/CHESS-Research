@@ -51,7 +51,6 @@ isNonnegative = params.isNonnegative;
 % end
 
 Df = gpuArray(complex(Df));
-b = gpuArray(b);
 bf = gpuArray(complex(fft2(b)));
 c = real(ifft2(Atx_cpu(Df,bf)));
 Xkf = gpuArray(complex(fft2(Xk)));
@@ -65,7 +64,7 @@ if params.verbose
 end
 
 % Initial sparsity and objective
-f = 0.5*sum( (b-real(ifft2(Ax_gpu(Df,Xkf)))).^2,'all') +...
+f = 0.5*sum( (b-real(ifft2(Ax_cpu(Df,Xkf)))).^2,'all') +...
     lambda * norm(Xk(:),1);
 
 % Used to compute gradient
