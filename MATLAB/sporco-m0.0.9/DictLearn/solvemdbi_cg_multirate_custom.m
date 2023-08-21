@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_multirate_custom(ah, rho, b, tol, mit, isn,scales,NormVals)
+function [x, cgst] = solvemdbi_cg_multirate_custom(ah, rho, b, tol, mit, isn,M,scales,NormVals)
 
 % solvemdbi_ism -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -44,14 +44,16 @@ end
 if nargin < 4 || isempty(tol),
   tol = 1e-5;
 end
+
 U = size(scales,2);
-M = size(b,2);
 K = size(b,3);
 N2 = size(ah,2);
 asz = [1 M K];
+a = conj(ah);
+
 % Aop = @(in) ifft2(sum(bsxfun(@times,ah,fft2( reSampleNu(N2,in,c1,c2,Ufactors) )),3),'symmetric');
 % Ahop = @(in) reSampleNuTrans2(M,ifft2(sum(bsxfun(@times, conj(ah), fft2(in)), 4),'symmetric'),c1,c2,Ufactors);
-AhAvop = @(in) vec(wrapAhA(reshape(in, asz),N2,scales,ah,M,NormVals));
+AhAvop = @(in) vec(wrapAhA(reshape(in, asz),N2,scales,ah,a,M,NormVals));
 
 % Aop = @(u) ifft2(sum(bsxfun(@times, ah, fft2(u)), 3),'symmetric');
 % Ahop = @(u) ifft2(sum(bsxfun(@times, conj(ah), fft2(u)), 4),'symmetric');
@@ -59,7 +61,7 @@ AhAvop = @(in) vec(wrapAhA(reshape(in, asz),N2,scales,ah,M,NormVals));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
-[xv,flg,rlr,pit] = pcg(@(u) AhAvop(u)+rho*u, b(:), tol, mit, [], [], isn);
+[xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u)+rho*u, b(:), tol, mit, [], [], isn);
 warning(wrn.state, 'MATLAB:ignoreImagPart');
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 
@@ -67,8 +69,8 @@ x = reshape(xv, asz);
 
 end
 
-function out = wrapAhA(in,N2,scales,ah,M,NormVals)
+function out = wrapAhA(in,N2,scales,ah,a,M,NormVals)
 A1 = reSampleCustomArray(N2,in,scales,NormVals);
 Ain = sum(bsxfun(@times,ah,fft2( A1 )),3);
-out = reSampleTransCustomArray(M,ifft2(sum(bsxfun(@times, conj(ah), Ain), 4),'symmetric'),scales,NormVals);
+out = reSampleTransCustomArray(M,ifft2(sum(bsxfun(@times, a, Ain), 4),'symmetric'),scales,NormVals);
 end

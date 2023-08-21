@@ -236,7 +236,7 @@ function hexd_realTime_gui(filePath,outPath,r,r1,r2,center,omInd,omInd2,startFnu
             pause(0.01)
             return
         end
-        % Check for and read new ge2 image
+        % Check for and read new image
         try
             [b, fname] = readH5online();
         catch
@@ -288,6 +288,7 @@ function hexd_realTime_gui(filePath,outPath,r,r1,r2,center,omInd,omInd2,startFnu
                 if isempty(b)
                     error('b is empty')
                 end
+                % Normalize
                 normb = 10/norm(b(:));
                 b = b./norm(b(:))*10;
 

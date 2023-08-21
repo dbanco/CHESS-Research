@@ -1,4 +1,4 @@
-function Ax = Ax_ft_2D( A0ft_stack, x )
+function Ax = Ax_ft_2D( Af, xf )
 %Ax_ft_2D Computes matrix vector product between A and x
 % Elementwise multiplies each basis function of A0ft_stack with fft2(x)
 %
@@ -11,15 +11,10 @@ function Ax = Ax_ft_2D( A0ft_stack, x )
 % Outputs:
 % Ax - (n x m) array
 
-Ax = zeros(size(A0ft_stack,1),size(A0ft_stack,2));
+Ax = zeros(size(Af,1),size(A0ft_stack,2));
 
-x_ft = fft2(x);
-
-for tv = 1:size(A0ft_stack,3)
-    for rv = 1:size(A0ft_stack,4)
-        Ax = Ax + real(ifft2(A0ft_stack(:,:,tv,rv).*x_ft(:,:,tv,rv)));
-    end
-end
+if 
+Axf = bsxfun(@times, conj(Af), xf);
 
 
 end

@@ -17,7 +17,7 @@ AtR = zeros(size(A0ft_stack));
 R_ft = fft(R);
 
 for tv = 1:size(A0ft_stack,2)
-        y = real(ifft(A0ft_stack(:,tv).*R_ft(:)));
+        y = real(ifft(conj(A0ft_stack(:,tv)).*R_ft(:)));
         AtR(:,tv) = y;
 end
 

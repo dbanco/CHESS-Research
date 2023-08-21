@@ -1,4 +1,4 @@
-function [awmv_az, awmv_rad] = computeAWMV(x,var_theta,var_rad)
+function [awmv_az, awmv_rad] = computeAWMV(x,P)
 %computeAWMV
 % Inputs
 % x- (z,x,az_var,rad_var) array of fitted coefficients
@@ -11,13 +11,15 @@ function [awmv_az, awmv_rad] = computeAWMV(x,var_theta,var_rad)
 % Sum over space, variance
 az_signal = squeeze(sum(sum(sum(x,1),2),4));
 rad_signal = squeeze(sum(sum(sum(x,1),2),3));
-total = sum(az_signal);
-
-% Compute awmv_az
-awmv_az = var_theta'.*az_signal./total;
-awmv_az = sum(awmv_az(:));
+total = sum(az_signal,'all');
 
 % Compute awmv_rad
-awmv_rad = var_rad'.*rad_signal./total;
+awmv_rad = P.sigma1'.*rad_signal./total;
 awmv_rad = sum(awmv_rad(:));
+
+% Compute awmv_az
+awmv_az = P.sigma2'.*az_signal./total;
+awmv_az = sum(awmv_az(:));
+
+
 end

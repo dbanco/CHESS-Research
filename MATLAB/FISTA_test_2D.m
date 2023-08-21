@@ -22,7 +22,7 @@ P.basis = 'norm2';
 % fista params
 params.lambda = 0.08; % sparsity penalty
 params.L = 75000;  %
-params.beta = 1.1; %
+params.beta = 2; %
 params.noBacktrack = 0;
 
 params.isNonnegative = 1; % flag to enforce nonnegativity
