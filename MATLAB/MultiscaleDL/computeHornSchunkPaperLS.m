@@ -9,11 +9,11 @@ if nargin <5 || isempty(maxIters)
     maxIters = 100;
 end
 if nargin < 6 || isempty(tol)
-  tol = 1e-4;
+  tol = 1e-6;
 end
 
 % Compute partial derivatives
-dataPad = padarray(data,[1 1 1],0,'pre');
+dataPad = gpuArray(padarray(data,[1 1 1],0,'pre'));
 Fx = diffxHS(dataPad);
 Fy = diffyHS(dataPad);
 Ft = difftHS(dataPad);

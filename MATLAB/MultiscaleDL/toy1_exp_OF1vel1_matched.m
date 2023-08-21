@@ -1,6 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF_Jterm_DXVtrue_100_1';
+% topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF_Jterm_DXVtrue_150_1';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF_Jterm_Dtrue_X0_Vtrue_150_6noJ_alpha1';
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 % mkdir(topDir)
 
@@ -50,39 +51,51 @@ opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
+opt.UpdateVelocity = 0;
+opt.Smoothness = 1;%opt.Smoothness = 1e-8;
+opt. HSiters = 300;
 
 close all
 lambdas = [1e-2 10e-2];
-lambda2s = [1e-1 5e-1 1];
+lambda2s = [5 10 20 100];
 %% Dictionary learning
 for i = 1%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     % Data
     [y,y_true,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched(sigmas(i));
-    smoothness = 1e-6;
-    maxIt = 1;
-    [u,v,Fy,Fx,Ft]  = computeHornSchunkDict(squeeze(Xtrue),K,smoothness,maxIt);
+    [u,v,Fy,Fx,Ft]  = computeHornSchunkDict(Xtrue,K,opt.Smoothness,opt.HSiters);
     Jterm = Ft == 0;
 %     D0(1,:,1) = Dtrue(:,:,1);
 %     D0(1,:,2) = Dtrue(:,:,2);
     D0(1,round(M/3):round(2*M/3),1) = 1;
     D0(1,round(M/4):round(3*M/4),2) = 1;
     D0 = Pnrm(D0);
+    Jof = sum(vec(opticalFlowOp(Xtrue,u,v,K,0,Jterm)).^2);
 %     plotOpticalFlow(Xtrue,K)
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j = 4:5
+    for j = 1:4
         % Solve
-        lambda = lambdas(j-3);
-        lambda2 = 1;
+%         lambda = 1e-2;
+%         lambda2 = 1;
+        lambda = 20e-2;
+        lambda2 = lambda2s(j);
         opt.rho = 50*lambda + 0.5;
         opt.rho2 = 50*lambda2;
-        opt.Y0 = Xtrue;
-%         opt.Y0 = zeros(1,N,KM,T);
+%         opt.Y0 = Xtrue;
+        opt.Y0 = zeros(1,N,KM,T);
 %         opt.Y0(:,:,1,:) = y;
 %         opt.Y0(:,:,2,:) = y;
-        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(Dtrue, y, lambda,lambda2, opt, scales,u,v,Jterm);
+%         tic
+        Jterm = [];
+        [D1,X1,Dindep,Xindep,~,~,~,~,~] = cbpdndl_cg_OF_multiScales_gpu(Dtrue, y, lambda,0, opt, scales,u,v,Jterm);
+        opt.Y0 = Xindep;
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales_gpu(Dtrue, y, lambda,lambda2, opt, scales,u,v,Jterm);
+%         toc
+%         tic
+%         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales(Dtrue, y, lambda,lambda2, opt, scales,u,v,Jterm);
+%         toc
 %         [D, X, optinf, obj, relErr] = cbpdndl_cg_multiScales(D0, y, lambda, opt, scales);
         
         % Save outputs
@@ -105,8 +118,17 @@ for i = 1%2:numel(sigmas)
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures
-        generateFiguresToy1(figDir,outputs,suffix)
+        indepOutputs = outputs;
+        indepOutputs.D = Dindep;
+        indepOutputs.X = Xindep;
+        indepOutputs.Dmin = Dindep;
+        indepOutputs.Xmin = Xindep;
+        indepOutputs.lambda2 = 0;
+        suffixIndep = sprintf('_indep_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+                          j,sigmas(i),outputs.lambda,outputs.lambda2);
+        generateFiguresToy1(figDir,indepOutputs,suffixIndep)
 
+        generateFiguresToy1(figDir,outputs,suffix)
         AD = reSampleCustomArray(N,D,scales);
         ADf = fft2(AD);
         Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));

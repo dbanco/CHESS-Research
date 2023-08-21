@@ -19,14 +19,8 @@ if trans == 0
     d = x;
     d(2:end,:,:) = x(2:end,:,:)-x(1:end-1,:,:);
 elseif trans == 1
-%     xpad = padarray(x,[1,1],0);
-%     k = zeros(size(xpad,1),size(xpad,2));
-%     k(1:3,1:3) = kernel;
-%     k = circshift(k,[-1,-1]);
-%     xft = fft2(xpad);
-%     kft = fft2(k);
-%     d = ifft2(bsxfun(@times,conj(kft),xft),'symmetric');
-%     d = d(2:end-1,2:end-1,:);
+    d = x;
+    d(1:end-1,:,:) = d(1:end-1,:,:) - x(2:end,:,:);
 end
 
 end

@@ -1,6 +1,6 @@
 function Aty = opticalFlowOpTran(y,u,v,K)
 %opticalFlowOpTran
-
+[N1,N2,KJ,T] = size(y);
 y = squeeze(y);
 U = size(y,2)/K;
 
@@ -16,5 +16,5 @@ for k = 1:K
     Ft(:,i1:i2,:) = timeDiff(y(:,i1:i2,:),1);
 end
 Aty = Fx.*u + Fy.*v + Ft;
-
+Aty = reshape(Aty,[N1,N2,KJ,T]);
 end

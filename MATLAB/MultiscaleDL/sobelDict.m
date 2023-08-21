@@ -4,7 +4,9 @@ function [Fx,Fy] = sobelDict(X,K,U,trans)
 if nargin < 4
     trans = 0;
 end
+if trans
 
+else
 X = squeeze(X);
 Fy = zeros(size(X));
 Fx = zeros(size(X));

@@ -29,8 +29,10 @@ for i = 1:maxIters
     u = uAvg - Fx.*factor;
     v = vAvg - Fy.*factor;
 
-%     [~, ~, sys] = HSobjectivePaper(Fx,Fy,Ft,u,v,1,smoothness);
-%     norm(sys(:))
+    
+%     [obj1, obj2, sys] = HSobjectivePaper(Fx,Fy,Ft,u,v,1,smoothness);
+%     ofObj = obj1+obj2*smoothness
+%     hsObj = norm(sys(:))
 end
 
 end

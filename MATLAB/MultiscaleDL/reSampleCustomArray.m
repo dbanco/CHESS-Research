@@ -1,5 +1,5 @@
 function [Dout,NormVals] = reSampleCustomArray(N,D,scales,NormVals)
-%Dud = reSampleNu(N,D,c1,c2,U)
+%Dud = reSampleCustomArray(N,D,scales,NormVals)
 % N - Length of data
 % D - Dictionary of dimensions [N1 x 1 x K]
 % scales_k - Cell array of arrays of scaling fators [2 x Ui]

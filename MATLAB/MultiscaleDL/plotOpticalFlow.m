@@ -1,7 +1,7 @@
-function plotOpticalFlow(X,K,fName,outputDir)
+function plotOpticalFlow(X,K,opt,fName,outputDir)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
-if nargin > 2
+if nargin > 3
     gifDir = outputDir;
     outFile = fullfile(gifDir,fName);
 end
@@ -9,7 +9,7 @@ X = squeeze(X);
 [N,KJ,T] = size(X);
 J = KJ/K;
 % Compute opticalflow
-[u,v] = computeHornSchunkDict(X,K);
+[u,v] = computeHornSchunkDict(X,K,opt.Smoothness,opt.HSiters);
 
 % Show velocity in time
 % avgU = mean(mean(u,1),2);
@@ -34,7 +34,7 @@ window = 50:100;
 
 % View optical flow
 fig = figure;
-fig.Position = [2716.2 313.8 1.6452e+03 554.8000];
+fig.Position = [1 1 1.6452e+03 554.8000];
 opticFlow1 = opticalFlowHS;
 opticFlow2 = opticalFlowFarneback;
 opticFlow3 = opticalFlowLK;
@@ -77,7 +77,7 @@ for t = 1:T
     q.Color = 'w';
     hold off
     % Save the image to a GIF file
-    if nargin > 2
+    if nargin > 3
         frame = getframe(fig);
         im = frame2im(frame);
         [imind,cm] = rgb2ind(im,256);

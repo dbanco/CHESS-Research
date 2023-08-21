@@ -8,6 +8,7 @@ if nargin <4
     maxIters = 10;
 end
 
+data = squeeze(data);
 KU = size(data,2);
 U = KU/K;
 

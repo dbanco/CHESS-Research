@@ -8,15 +8,17 @@ U = KU/K;
 objOF = sum((Fy.*v + Fx.*u + Ft).^2,'all');
 objHS = sum((nablaV2).^2,'all') + sum((nablaU2).^2,'all');
 
-b = [-Fx(:).*Ft(:); -Fy(:).*Ft(:)];
-
-FxFy = Fx(:).*Fy(:);
-Au = Fx(:).^2.*u(:) + FxFy.*v(:) - smoothness*nablaU2(:) ;
-Av = Fy(:).^2.*v(:) + FxFy.*u(:) - smoothness*nablaV2(:) ;
-
-Ax = [Au; Av];
-
-sys = b-Ax;
+if nargout > 2
+    b = [-Fx(:).*Ft(:); -Fy(:).*Ft(:)];
+    
+    FxFy = Fx(:).*Fy(:);
+    Au = Fx(:).^2.*u(:) + FxFy.*v(:) - smoothness*nablaU2(:) ;
+    Av = Fy(:).^2.*v(:) + FxFy.*u(:) - smoothness*nablaV2(:) ;
+    
+    Ax = [Au; Av];
+    
+    sys = b-Ax;
+end
 
 
 

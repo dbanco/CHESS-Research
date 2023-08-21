@@ -12,10 +12,10 @@ fName{2} = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF1vel1_matched_initD0_200
 
 K = 2;
 smoothness = [1e-8 1 10];
-maxIt = 10;
+maxIt = 1;
 
-fprintf(    'Dataset   smoothness     OF1     OF2    \n')
-outString = '%i        %2.2f          %2.2f   %2.2f  \n';
+fprintf(    'Dataset   smoothness     OF1     OF2     OF3     OF4    \n')
+outString = '%i        %2.2f          %2.2f   %2.2f   %2.2f   %2.2f  \n';
 
 close all
   
@@ -25,15 +25,33 @@ for i = 1:3
         data = squeeze(outputs.X);
         data = convn(data,ones(3,3),'same');
         [N, KJ, T] = size(data);
-        [u,v,Fy,Fx,Ft]  = computeHornSchunkDict(data,K,smoothness(i),maxIt);
+        
+        % Blob data first
+        blobData = convn(data,ones(3,3),'same');
+
+        [u,v,Fy,Fx,Ft]  = computeHornSchunkDict(blobData,K,smoothness(i),maxIt);
 %         uArray{exNum} = u;
 %         vArray{exNum} = v;
+        Jterm = [];
+        of_con = opticalFlowOp(data,u,v,1,0,Jterm);
+%         out = norm(vec(of_con));
+        out = sum(abs(vec(of_con(:))));
+
+        Jterm = Ft == 0;
+        of_con2 = opticalFlowOp(data,u,v,1,0,Jterm);
+%         out2 = norm(vec(of_con2));
+        out2 = sum(abs(vec(of_con2(:))));
+
+        Jterm = [];
+        of_con3 = opticalFlowOp(blobData,u,v,1,0,Jterm);
+%         out3 = norm(vec(of_con3));
+        out3 = sum(abs(vec(of_con3(:))));
+        
+        Jterm = Ft == 0;
+        of_con4 = opticalFlowOp(blobData,u,v,1,0,Jterm);
+%         out4 = norm(vec(of_con4));
+        out4 = sum(abs(vec(of_con4(:))));
     
-        of_con = opticalFlowOp(data,u,v,1,0,0);
-        out = norm(vec(of_con));
-        of_con2 = opticalFlowOp(data,u,v,1,0,1);
-        out2 = norm(vec(of_con2));
-    
-        fprintf(outString,dataNum,smoothness(i),out,out2)
+        fprintf(outString,dataNum,smoothness(i),out,out2,out3,out4)
     end
 end

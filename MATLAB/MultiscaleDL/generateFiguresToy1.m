@@ -1,4 +1,4 @@
-function generateFiguresToy1(topDir,outputs,suffix)
+function generateFiguresToy1(topDir,outputs,suffix,gridDim)
 mkdir(topDir)
 D = outputs.D;
 X = outputs.X;
@@ -20,10 +20,10 @@ Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 % Show dictionary
 f1 = figure;
 for i = 1:Utotal
-    subplot(7,7,i)
-    plot(AD(:,:,i),'Linewidth',1)
- set(gca, 'XtickLabel','')
-set(gca, 'FontSize', 16)
+    subplot(gridDim(1),gridDim(2),i)
+    plot(real(AD(:,:,i)),'Linewidth',1)
+    set(gca, 'XtickLabel','')
+    set(gca, 'FontSize', 16)
 end
 f1.Position = [1 100 1800 500];
 saveas(f1,fullfile(topDir,['dict',suffix,'.png']))

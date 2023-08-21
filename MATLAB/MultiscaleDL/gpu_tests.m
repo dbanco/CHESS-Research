@@ -1,7 +1,7 @@
-A = randn(100,300,40,100);
-dictA = randn(100,300,40);
-B = gpuArray(complex(randn(1,300,40,100)));
-dictB = gpuArray(randn(1,300,40));
+A = randn(10,300,40,100);
+dictA = randn(10,300,40);
+B = gpuArray(complex(randn(10,300,40,100)));
+dictB = gpuArray(randn(10,300,40));
 
 tic
 for t=1:10

@@ -37,7 +37,7 @@ maxIt = opt.HSiters;
 %% Different optical flows
 % [u1,v1,Fx1,Fy1,Ft1] = computeHornSchunkDict(Xtrue,K,smth,maxIt);
 % [u2,v2,Fx2,Fy2,Ft2] = computeHornSchunkDictLS(Xtrue,K,[],[],smth,maxIt);
-% [u3,v3,Fx3,Fy3,Ft3] = computeHornSchunkDictPaper(Xtrue,K,smth,maxIt);
+[u3,v3,Fx3,Fy3,Ft3] = computeHornSchunkDictPaper(Xtrue,K,smth,maxIt);
 [u4,v4,Fx4,Fy4,Ft4] = computeHornSchunkDictPaperLS(Xtrue,K,[],[],smth,maxIt);
 
 % OFtrue1 =     norm(opticalFlowOp(Xtrue,u1,v1,K),'fro');
@@ -59,7 +59,8 @@ OfindepPaperLS = norm(opticalFlowOpPaper(Xindep,u4i,v4i,K),'fro');
 [objOF4, objHS4, sys_4] = HSobjectivePaper(Fx4,Fy4,Ft4,u4,v4,K,smth);
 [objOF4i, objHS4i, sys_4i] = HSobjectivePaper(Fx4i,Fy4i,Ft4i,u4i,v4i,K,smth);
 
-opticalFlowObjective
+ofTrue = objOF4 + objHS4*smth;
+ofIndep = objOF4i + objHS4i*smth;
 
 % sys_3norm = norm(sys_3(:));
 sys_4norm = norm(sys_4(:));

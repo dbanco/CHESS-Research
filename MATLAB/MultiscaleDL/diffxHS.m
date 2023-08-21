@@ -12,9 +12,10 @@ function d = diffxHS(x)
 % dx = dx2(2:end-1,2:end-1,:);
 
 kernel = zeros(2,2,2);
-kernel(:,:,1) = [ 1 1; -1 -1];
-kernel(:,:,2) = [ 1 1; -1 -1];
+kernel(:,:,1) = [ -1 1; -1 1];
+kernel(:,:,2) = [ -1 1; -1 1];
 
+
+% d = convn(x,rot90(kernel,2),'valid');
 d = convn(x,kernel,'valid');
-
 end

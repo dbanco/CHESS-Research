@@ -1,6 +1,6 @@
 function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched(sigma)
 %% Construct 1D test problem Gaussian and linear 
-T = 100;
+T = 150;
 N = 300; M = 150;
 if nargin < 1
     sigma = 0.015;
@@ -29,14 +29,14 @@ tt = (1:T)/(T/20)/pFactor;
 sig = round(10.5*sin(tt) + 11.5);
 width = round(10.5*cos(tt) + 11.5)+22;
 
-sigMax = 20;
+sigMax = 18;
 widthMax = 80;
 
 % Define dictionary atoms
 scaling = '2-norm';
 Dtrue = zeros(1,M,K);
 Dtrue(1,:,1) = gaussian_basis_wrap_1D(M,80,sigMax,scaling);
-Dtrue(1,1:widthMax,2) = linspace(0,10,widthMax)/norm(linspace(0,10,widthMax));
+Dtrue(1,21:widthMax+20,2) = linspace(0,10,widthMax)/norm(linspace(0,10,widthMax));
 ADtrue = reSampleCustomArray(N,Dtrue,scales);
 ADf = fft2(ADtrue);
 
@@ -54,15 +54,15 @@ end
 Xf = fft2(Xtrue);
 y = ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric');
 yn = y + randn(1,N,1,T)*sigma;
-
 yn = reshape(yn,[1,N,T]);
 
 % Reduce data to a time subset
-% yn = yn(:,:,111:150);
-% y = y(:,:,111:150);
-% Xtrue = Xtrue(:,:,111:150);
-% T = 40;
+% trange = 1:60;
+% yn = yn(:,:,trange);
+% y = y(:,:,trange);
+% Xtrue = Xtrue(:,:,:,trange);
+% T = numel(trange);
 
-imagesc(squeeze(yn))
+% imagesc(squeeze(yn))
 
 end

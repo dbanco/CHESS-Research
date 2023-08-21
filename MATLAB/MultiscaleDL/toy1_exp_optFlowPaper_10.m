@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 % topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_OF_Jterm_DXVtrue_150_1';
-topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_optFlowPaper_10_Xtrue_Dtrue_Vtrue1';
+topDir = 'C:\Users\dpqb1\Documents\Outputs\toy1_exp_optFlowPaper7_14_10_Xtrue_Dtrue_Vtrue4';
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 % mkdir(topDir)
 
@@ -28,14 +28,14 @@ Uarray = zeros(numel(scales),1);
 for i = 1:numel(scales)
     Uarray(i) = size(scales{i},2);
 end
-KM = sum(Uarray);
+KJ = sum(Uarray);
 opt = [];
 opt.DictFilterSizes = [1,1;...
                        M,M];
 
 % Init solution
-opt.Y0 = zeros(1,N,KM,T);
-% opt.U0 = zeros(1,N,KM,T);
+opt.Y0 = zeros(1,N,KJ,T);
+% opt.U0 = zeros(1,N,KJ,T);
 
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
@@ -44,12 +44,11 @@ D0 = zeros(1,M,K);
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter =   200;
+opt.MaxMainIter = 500;
 opt.MaxCGIter = 100;
-opt.CGTol = 1e-3;
+opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
-opt.CGTolX = 1e-3;
-opt.sigma = T;
+opt.CGTolX = 1e-6;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 10;
 opt.AutoSigma = 1;
@@ -59,12 +58,12 @@ opt.DRelaxParam = 1.8;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
-opt.Smoothness = 1e-4;%opt.Smoothness = 1e-8;
-opt. HSiters = 30;
+opt.Smoothness = 1;%1e-6;%opt.Smoothness = 1e-8;
+opt. HSiters = 100;
 
 close all
 lambdas = [1e-2 10e-2];
-lambda2s = [1e-3 1e-2 0.1 1 5 10 20 100];
+lambda2s = [1e-3 1e-2 0.1 1 5 10 20 100 1000];
 %% Dictionary learning
 for i = 1%2:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
@@ -78,18 +77,23 @@ for i = 1%2:numel(sigmas)
     Xtrue = Xtrue(:,:,:,trange);
     T = numel(trange);
 
-    % Independent solution initialization
+    % Independent solution initialization 
     D0(1,round(M/3):round(2*M/3),1) = 1;
     D0(1,round(M/4):round(3*M/4),2) = 1;
     D0 = Pnrm(D0);
-    opt.Y0 = zeros(1,N,KM,T);
-    lambda = 1e-1;
+    opt.Y0 = zeros(1,N,KJ,T);
+    lambda = 3e-2;
     lambda2 = 0;
-    opt.rho = 50*lambda + 0.5;
-    opt.UpdateVelocity = 1;
-%     load('indepOutputs.mat')
+% opt.rho = 50*lambda + 0.5;
+% opt.sigma = T;
+    opt.rho = 100;
+    opt.sigma = 100;
+    opt.UpdateVelocity = 0;
+    load('indepOutputs_7_7.mat')
+
     [u,v,~,~,~]  = computeHornSchunkDictPaperLS(Xtrue,K,[],[],opt.Smoothness,opt.HSiters);
-%     [D1,X1,Dindep,Xindep,~,~,~,~,~] = cbpdndl_cg_OF_multiScales_gpu(D0, y, lambda,lambda2, opt, scales,u,v);
+%     [D1,X1,Dindep,Xindep,~,~,optinf,~,~] = cbpdndl_cg_OF_multiScales_gpu(D0, y, lambda,lambda2, opt, scales,u,v);
+%     [uIndep,vIndep,~,~,~]  = computeHornSchunkDictPaperLS(Xindep,K,[],[],opt.Smoothness,opt.HSiters);
 %     indepOutputs.y = y;
 %     indepOutputs.D = Dindep;
 %     indepOutputs.X = Xindep;
@@ -108,16 +112,17 @@ for i = 1%2:numel(sigmas)
 %     generateFiguresToy1(figDir,indepOutputs,suffixIndep)
 %     opt.Y0 = indepOutputs.X;
     opt.Y0 = Xtrue;
+%     opt.rho = optinf.rho;
+%     opt.sigma = optinf.sigma;
 %     [uIndep,vIndep,Fy,Fx,Ft]  = computeHornSchunkDictPaperLS(Xindep,K,[],[],opt.Smoothness,opt.HSiters);
 
 %     plotOpticalFlow2(Xtrue,K,opt)
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
 
-    for j = 4:8
+    for j = 1:3
         % Optical flow coupled solution
         lambda2 = lambda2s(j);     
-        opt.rho2 = 50*lambda2;
         opt.UpdateVelocity = 1;
         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales_gpu(Dtrue, y, lambda,lambda2, opt, scales,u,v);
         
@@ -144,6 +149,9 @@ for i = 1%2:numel(sigmas)
         
         % Generate figures
         generateFiguresToy1(figDir,outputs,suffix)
+%         generateFiguresToy1min([figDir,'min'],outputs,suffix)
+%         generateFiguresToy1([figDir,'indep'],inde,suffix)
+
         AD = reSampleCustomArray(N,D,scales);
         ADf = fft2(AD);
         Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
@@ -166,3 +174,46 @@ end
 %     plotDataRecon(y,Yhat,figDir,sprintf('y_recon_%i.gif',j))
 %     close all
 % end
+
+%% View optical flow
+% window =1:300;
+X = outputs.X;
+Uvel = outputs.Uvel;
+Vvel = outputs.Vvel;
+
+T = 10;
+window =140:200;
+J = 22;
+fig = figure;
+fig.Position = [1 1 1.6452e+03 554.8000];
+for t = 1:T
+    framePlot = squeeze(X(1,window,1:J,t));
+    subplot(3,1,1)
+    imagesc(framePlot')
+    hold on
+    quiver(Vvel(window,1:J,t)',Uvel(window,1:J,t)')
+    q = findobj(gca,'type','Quiver');
+    q.Color = 'w';
+    hold off
+
+%     framePlot = squeeze(Xindep(1,window,1:J,t));
+%     subplot(3,1,2)
+%     imagesc(framePlot')
+%     hold on
+%     quiver(vIndep(window,1:J,t)',uIndep(window,1:J,t)')
+%     q = findobj(gca,'type','Quiver');
+%     q.Color = 'w';
+%     hold off
+% 
+%     framePlot = squeeze(Xtrue(1,window,1:J,t));
+%     subplot(3,1,3)
+%     imagesc(framePlot')
+%     hold on
+%     quiver(v(window,1:J,t)',u(window,1:J,t)')
+%     q = findobj(gca,'type','Quiver');
+%     q.Color = 'w';
+%     hold off
+
+    pause()
+end
+
