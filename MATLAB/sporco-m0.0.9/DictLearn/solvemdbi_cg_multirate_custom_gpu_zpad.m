@@ -1,11 +1,11 @@
-function [x, cgst] = solvemdbi_cg_OF(a, rho, b, tol, mit, isn,N,K,J,T,lambda2,U,V,Jterm)
+function [x, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad(ah, rho, b, tol, mit, isn,N2,M,scales,NormVals)
 
-% solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
+% solvemdbi_ism -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
 %
 %         The solution is obtained by independently solving a set of linear
 %         systems of the form (see wohlberg-2016-efficient)
-%s
+%
 %                  (rho I + a_0 a_0^H + a_1 a_1^H + ...) x = b
 %
 %         In this equation inner products and matrix products are taken along
@@ -35,35 +35,47 @@ function [x, cgst] = solvemdbi_cg_OF(a, rho, b, tol, mit, isn,N,K,J,T,lambda2,U,
 % and user license can be found in the 'License' file distributed with
 % the library.
 
-if nargin < 6
+if nargin < 6,
   isn = [];
 end
-if nargin < 5 || isempty(mit)
+if nargin < 5 || isempty(mit),
   mit = 1000;
 end
-if nargin < 4 || isempty(tol)
+if nargin < 4 || isempty(tol),
   tol = 1e-5;
 end
 
-xsz = [1,N,K*J,T];
-ah = conj(a);
-Aop = @(u) sum(bsxfun(@times, a, u), 3);
-Ahop = @(u) bsxfun(@times, ah, u);
-AhAvop = @(u) vec(Ahop(Aop(reshape(u, xsz))));
-AhAvop2 = @(u) vec(fft2(opticalFlowOp(ifft2(reshape(u,xsz),'symmetric'),U,V,K,1,Jterm) ));
+K = size(b,3);
+asz = [1 M K];
+
+% GPU setup
+ah = gpuArray(complex(ah));
+a = conj(ah);
+b = gpuArray(complex(b));
+isn = gpuArray(complex(isn));
+
+% Aop = @(in) ifft2(sum(bsxfun(@times,ah,fft2( reSampleNu(N2,in,c1,c2,Ufactors) )),3),'symmetric');
+% Ahop = @(in) reSampleNuTrans2(M,ifft2(sum(bsxfun(@times, conj(ah), fft2(in)), 4),'symmetric'),c1,c2,Ufactors);
+AhAvop = @(in) vec(wrapAhA(reshape(in, asz),N2,scales,ah,a,M,NormVals));
+
+% Aop = @(u) ifft2(sum(bsxfun(@times, ah, fft2(u)), 3),'symmetric');
+% Ahop = @(u) ifft2(sum(bsxfun(@times, conj(ah), fft2(u)), 4),'symmetric');
+% AhAvop = @(u) vec(Ahop(Aop(reshape(u, asz))));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
-if lambda2 == 0
-    [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u,...
-    b(:), tol, mit, [], [], isn);
-else
-    [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
-    b(:), tol, mit, [], [], isn);
-end
-warning(wrn.state, 'MATLAB:ignoreImagPart'); % 
+[xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u)+rho*u, b(:), tol, mit, [], [], isn);
+warning(wrn.state, 'MATLAB:ignoreImagPart');
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 
-x = reshape(xv, xsz);
+x = reshape(xv, asz);
 
-return
+end
+
+function out = wrapAhA(in,N2,scales,ah,a,M,NormVals)
+A1 = reSampleCustomArray(N2,in,scales,NormVals);
+A2 = padarray(A1,[0 M-1 0 0],0,'post');
+Ain = ifft2(sum(pagefun(@times,ah,fft2( A2 )),3),'symmetric');
+Ain(:,1:M-1,:,:) = 0;
+out = reSampleTransCustomArray(M,ifft2(sum(pagefun(@times, a, fft2(Ain)), 4),'symmetric'),scales,NormVals);
+end

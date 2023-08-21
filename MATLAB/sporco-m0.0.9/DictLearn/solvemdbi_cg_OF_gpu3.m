@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_OF(a, rho, b, tol, mit, isn,N,K,J,T,lambda2,U,V,Jterm)
+function [x, cgst] = solvemdbi_cg_OF_gpu3(a, rho, b, tol, mit, isn,N,K,J,T,lambda2,U,V)
 
 % solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -46,11 +46,14 @@ if nargin < 4 || isempty(tol)
 end
 
 xsz = [1,N,K*J,T];
-ah = conj(a);
-Aop = @(u) sum(bsxfun(@times, a, u), 3);
-Ahop = @(u) bsxfun(@times, ah, u);
+a = gpuArray(complex(a));
+ah = gpuArray(complex(conj(a)));
+b = gpuArray(complex(b));
+
+Aop = @(u) sum(pagefun(@times, a, u), 3);
+Ahop = @(u) pagefun(@times, ah, u);
 AhAvop = @(u) vec(Ahop(Aop(reshape(u, xsz))));
-AhAvop2 = @(u) vec(fft2(opticalFlowOp(ifft2(reshape(u,xsz),'symmetric'),U,V,K,1,Jterm) ));
+AhAvop2 = @(u) vec(fft2(opticalFlowOp3(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,1) ));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');

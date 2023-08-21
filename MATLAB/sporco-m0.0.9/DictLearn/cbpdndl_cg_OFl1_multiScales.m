@@ -1,4 +1,4 @@
-function [D, Y, Dmin,Ymin,optinf, Jfn, relErr] = cbpdndl_cg_OFl1_multiScales(D0, S, lambda, lambda2, opt, scales)
+function [D, Y, Dmin,Uvel,Vvel,Ymin,optinf, Jfn, relErr] = cbpdndl_cg_OFl1_multiScales(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -100,7 +100,7 @@ opt = defaultopts(opt);
 cgIters1 = 0;
 
 % Set up status display for verbose operation
-hstr = ['Itn   Fnc       DFid      l1        TV        Cnstr     CGIters      '...
+hstr = ['Itn   Fnc       DFid      l1        OFL1        Cnstr     CGIters      '...
         'r(X)      s(X)      r(D)      s(D) '];
 sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
 nsep = 84;
@@ -216,7 +216,6 @@ eduax2 = 0;
 
 
 % Initialise main working variables
-X = [];
 if isempty(opt.Y0),
   Y = zeros(xsz, class(S));
 else
@@ -276,19 +275,22 @@ minCount = 0;
 [AG,NormVals] = reSampleCustomArray(N2,G,scales);
 AGf = fft2(AG);
 AGSf = bsxfun(@times, conj(AGf), Sf);
-Xinit = zeros(1,N2,KJ,T);
+
 % Main loop
 k = 1;
+Uvel = ones(N2,KJ,T);
+Vvel = ones(N2,KJ,T);
 while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
   % Solve X subproblem. It would be simpler and more efficient (since the
   % DFT is already available) to solve for X using the main dictionary
   % variable D as the dictionary, but this appears to be unstable. Instead,
   % use the projected dictionary variable G
   if mod(k,41)==0
-      [Uvel,Vvel] = computeHornSchunkDict(squeeze(Y),K);
+%       [Uvel,Vvel] = computeHornSchunkDict(squeeze(Y),K);
   end
-  [Xf, cgst] = solvemdbi_cg_OFl1(AGf, rho, AGSf + rho*fft2(Y - U) + rho2*fft2(opticalFLowOpTran(Z - V,Uvel,Vvel,K)),...
-                      opt.CGTolX, opt.MaxCGIterX, Xinit(:),N2,K,J,T,rho2,Uvel,Vvel);
+  [Xf, cgst] = solvemdbi_cg_OFl1(AGf, rho, AGSf + rho*fft2(Y - U) +...
+                   rho2*fft(opticalFlowOpTran(Z - V,Uvel,Vvel,K)),...
+                   opt.CGTolX, opt.MaxCGIterX, Y(:),N2,K,J,T,rho2,Uvel,Vvel);
   cgIters2 = cgst.pit;
   X = ifft2(Xf, 'symmetric');
 
@@ -314,7 +316,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
   end
   Yf = fft2(Y);
 
-  OFY = opticalFLowOp(Y,Uvel,Vvel,K);
+  OFY = opticalFlowOp(Y,Uvel,Vvel,K);
   OFY = reshape(OFY,[1 N2,KJ,T]);
 
   % Solve Z subproblem
@@ -322,7 +324,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
 
   % Update dual variable corresponding to X, Y, Z
   U = U + Xr - Y;
-  V = V + DPYr- Z;
+  V = V + OFY- Z;
   clear DPYr Xr;
 
   % Compute primal and dual residuals and stopping thresholds for X update
@@ -341,7 +343,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
   end
   
-OFX = reshape(opticalFLowOp(X,Uvel,Vvel,K),[1,N2,KJ,T]);
+OFX = reshape(opticalFlowOp(X,Uvel,Vvel,K),[1,N2,KJ,T]);
 nZ = norm(Z(:)); nOFX = norm(OFX(:)); nV = norm(V(:)); Nz = numel(Z);
 if opt.StdResiduals,
     % See pp. 19-20 of boyd-2010-distributed
@@ -361,8 +363,8 @@ if opt.StdResiduals,
   % Compute l1 norm of Y
   Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
 
-  % Compute TV of Y
-  OFY = reshape(opticalFLowOp(Y,Uvel,Vvel,K),[1,N2,KJ,T]);
+  % Compute OFL1 of Y
+  OFY = reshape(opticalFlowOp(Y,Uvel,Vvel,K),[1,N2,KJ,T]);
   Jof = sum(abs(vec(OFY)));
   clear OFY;
 

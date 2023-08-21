@@ -134,15 +134,14 @@ switch numel(size(S))
     otherwise
         error('Check size of S')
 end
-N0 = size(D0,2);
-M = N0;
+M = size(D0,2);
 K = size(D0,3);
-totalScales = 0;
+KJ = 0;
 for i = 1:numel(scales)
-    totalScales = totalScales + size(scales{i},2);
+    KJ = KJ + size(scales{i},2);
 end
-
-xsz = [size(S,1) size(S,2) totalScales T];
+J = KJ/K;
+xsz = [size(S,1) size(S,2) KJ T];
 % Insert singleton 3rd dimension (for number of filters) so that
 % 4th dimension is number of images in input s volume
 S = reshape(S, [size(S,1) size(S,2) 1 T]);
@@ -246,6 +245,9 @@ end
 
 if opt.plotDict
     fdict = figure;
+    frecon = figure;
+    freconA = figure;
+    xFig = figure;
 end
 
 [AG,NormVals] = reSampleCustomArray(N2,G,scales);
@@ -264,7 +266,24 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
   X = ifft2(Xf, 'symmetric');
 %   checkSolution(S,X,G,opt.numScales);
 %   checkDict_upDwnSample(X,G,opt.numScales,fdict);
-
+if opt.plotDict
+    reconA = sum(bsxfun(@times,AGf,Xf),3);
+    
+    figure(freconA)
+    plot(squeeze(S(:,:,:,10)))
+    hold on
+    plot(squeeze(ifft2(reconA(:,:,:,10),'symmetric')))
+    hold off
+    
+    figure(xFig)
+    ii = 1;
+    for kk = 1:K
+        subplot(1,2,kk)
+        Ui = size(scales{kk},2) + ii - 1;
+        imagesc( squeeze(sum(X(:,:,ii:Ui,:),3)) )
+        ii = ii + Ui;
+    end
+end
   clear Xf AGf AGSf;
 
   % See pg. 21 of boyd-2010-distributed
@@ -320,36 +339,11 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
   % but it appears to be more stable to use the shrunk coefficient variable Y
 
   AYS = reSampleTransCustomArray(M,ifft2(sum(bsxfun(@times, conj(Yf), fft2(S)), 4),'symmetric'),scales,NormVals);
-  if strcmp(opt.LinSolve, 'SM'),
-    Df = solvemdbi_ism(Yf, sigma, YSf + sigma*fft2(G - H));
-  elseif strcmp(opt.LinSolve, 'LSQR')
-    tol = 1e-9;
-    c = [S(:);(G(:) - H(:))];
-    A = @(in,type) Alsqr(in,type,opt.numScales,Yf,N2,T,K,sigma);
-    [D,~,cgIters] = lsqrSOL(N2*T+N2*K,N2*K,A,c,D(:),0,tol,tol,1e6,100,0);
-    D = reshape(D,[N1,N2,K,1]);
-    Df = fft2(D);
-  elseif strcmp(opt.LinSolve, 'LSQRM')
-    tol = 1e-9;
-    c = [S(:);(G(:) - H(:))];
-    A = @(in,type) Alsqrm(in,type,opt.numScales,Yf,N2,T,K,sigma);
-    [D,~,~,cgIters] = lsqr(A,c,tol,100,N2*T+N2*K,N2*K);
-    D = reshape(D,[N1,N2,K,1]);
-    Df = fft2(D);
-  elseif strcmp(opt.LinSolve, 'CGD')
-    [D, cgst] = solvemdbi_cg_multirate_custom(Yf, sigma, AYS + sigma*(G - H), ...
-                      cgt, opt.MaxCGIter, D(:),scales,NormVals);
-    cgIters = cgst.pit;
-    Df = fft2(D);
-  elseif strcmp(opt.LinSolve, 'CGreal')
-    [D, cgst] = solvemdbi_cg_real(Yf, sigma, YS + sigma*(G - H), ...
-                      cgt, opt.MaxCGIter, D(:));
-    Df = fft2(D);
-  elseif strcmp(opt.LinSolve, 'CG')
-    [Df, cgst] = solvemdbi_cg(Yf, sigma, YSf + sigma*fft2(G - H), ...
-                              cgt, opt.MaxCGIter, Df(:));
-    cgIters = cgst.pit;
-  end
+  [D, cgst] = solvemdbi_cg_multirate_custom(Yf, sigma, AYS + sigma*(G - H), ...
+                                          cgt, opt.MaxCGIter, D(:),scales,NormVals);
+  cgIters = cgst.pit;
+  Df = fft2(D);
+  
   clear YSf;
   D = ifft2(Df, 'symmetric');
   if strcmp(opt.LinSolve, 'SM'), clear Df; end
@@ -407,11 +401,19 @@ end
   Gprv = G;
 
   % Compute data fidelity term in Fourier domain (note normalisation)
-  Jdf = sum(vec(abs(sum(bsxfun(@times,AGf,Yf),3)-Sf).^2))/(2*xsz(1)*xsz(2));
+  recon = sum(bsxfun(@times,AGf,Yf),3);
+  Jdf = sum(vec(abs(recon-Sf).^2))/(2*xsz(1)*xsz(2));
   clear Yf;
   Jfn = Jdf + lambda*Jl1;
   relErr = Jdf*(2*xsz(1)*xsz(2))/sum(vec((Sf).^2));
 
+  if opt.plotDict
+    figure(frecon)
+    plot(squeeze(S(:,:,:,10)))
+    hold on
+    plot(squeeze(ifft2(recon(:,:,:,10),'symmetric')))
+    hold off
+  end
   % Record and display iteration details
   tk = toc(tstart);
   optinf.itstat = [optinf.itstat;...
