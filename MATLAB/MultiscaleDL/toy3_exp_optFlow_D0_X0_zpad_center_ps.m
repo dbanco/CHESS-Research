@@ -1,16 +1,17 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [  5e-2 6e-2 7e-2 8e-2 9e-2 2e-1 4e-1 1 2 5 10];
-lambdaHSVals = [1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
-lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
+lambdaVals = [ 1e-3 5e-3 1e-2 2e-2 5e-2 6e-2 7e-2 8e-2 9e-2 2e-1 4e-1 1 2];
+lambdaHSVals = [0 1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1 2];
+lambdaOFVals = [0 1e-4 2e-4,...   
+                5e-4 1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
                 1    2    4    6    8,...
                 10   15   20   25   30,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-for j_hs = 6
-topDir = ['C:\Users\dpqb1\Documents\Outputs\toy_matched_9_12_23_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+for j_hs = 7
+topDir = ['C:\Users\dpqb1\Documents\Outputs2024\toy_matched_HS_test2',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup
@@ -83,8 +84,8 @@ for i = 2%2:numel(sigmas)
     opt.sigma = 1e3;%100;
 
 
-    for j_s = 11
-        for j_of = 31
+    for j_s = 6
+        for j_of = 2:20
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);

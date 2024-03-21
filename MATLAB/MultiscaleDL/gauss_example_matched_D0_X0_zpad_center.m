@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [  5e-2 6e-2 7e-2 8e-2 9e-2 2e-1 4e-1 1 2 5 10];
+lambdaVals = [  5e-2 ];
 lambdaHSVals = [1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
@@ -10,25 +10,29 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 100 200 500 1000 2000,...
                 1e5];
 for j_hs = 6
-topDir = ['C:\Users\dpqb1\Documents\Outputs\toy_matched_9_12_23_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+topDir = ['C:\Users\dpqb1\Documents\Outputs\gaus_example_matched_9_14_23_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup
 sigmas = 0:0.01:0.05;
 
 % Data parameters
-[y,~,K,J,N,M,T,~,~,scales] = gaus_linear_osc_signal_matched_small_zpad2_center(0);
+[y,y_true,N,M,T] = gaus_example_matched_multiscale_dl(0.01);
 y = reshape(y,[1,N,T]);
 
 % Model Setup
+K = 1;
+scales = cell(K,1);
+scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
+J = size(scales{1},2);
 KJ = K*J;
 opt = [];
-opt.DictFilterSizes = [1,1;...
-                       M,M];
+opt.DictFilterSizes = [1;...
+                       M];
 
 % Init solution
 opt.Y0 = zeros(1,N+M-1,KJ,T);
-% opt.U0 = zeros(1,N,KJ,T);
+
 
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
@@ -61,20 +65,15 @@ for i = 2%2:numel(sigmas)
     mkdir(figDir)
     
     % Data  
-    [y,y_true,K,J,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigmas(i));
+    [y,~,N,M,T] = gaus_example_matched_multiscale_dl();
+    y = reshape(y,[1,N,T]);
     center = (M+1)/2;
     
     % Initialization 
     D0(1,round(M/3):round(2*M/3),1) = 1;
-    D0(1,round(M/4):round(3*M/4),2) = 1;
     D0 = Pnrm(D0);
-    opt.Y0 = Xtrue;
-    opt.Y0 = zeros(size(Xtrue));
     opt.G0 = D0;
-%     load("C:\Users\dpqb1\Documents\Outputs\toy3_center_exp_optFlow8_17_X0_D0_V0_zpad_HS0.002_sig_2\output_j10_sig_1.00e-02_lam1_6.00e-02_lam2_5.00e-01.mat")
-%     D0 = outputs.D;
-%     opt.Y0 = outputs.X;
-    opt.G0 = D0;
+
 
     % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
@@ -83,8 +82,8 @@ for i = 2%2:numel(sigmas)
     opt.sigma = 1e3;%100;
 
 
-    for j_s = 11
-        for j_of = 31
+    for j_s = 1
+        for j_of = 1
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);
@@ -127,65 +126,3 @@ for i = 2%2:numel(sigmas)
     end
 end
 end
-%% Load outputs and regen figures with min instead
-% for j = 1:3
-%     load(fullfile(figDir,sprintf('output_%i.mat',j)))
-%     outputs.D = outputs.Dmin;
-%     outputs.X = outputs.Xmin;
-%     
-%     % Generate figures
-%     generateFiguresToy1(figDir,outputs,j)
-%     
-%     AD = reSampleCustomArray(N,Dmin,scales);
-%     ADf = fft2(AD);
-%     Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(Xmin)),3),'symmetric'));
-%     plotDataRecon(y,Yhat,figDir,sprintf('y_recon_%i.gif',j))
-%     close all
-% end
-
-%% View optical flow
-% 
-% X = outputs.X;
-% Uvel = outputs.Uvel;
-% Vvel = outputs.Vvel;
-% [u,v,~,~,~]    = computeHornSchunkDictPaperLS(Xtrue, K,[],[],1,opt.HSiters);
-% [u2,v2,~,~,~]  = computeHornSchunkDictPaperLS2(Xtrue,K,[],[],1,opt.HSiters);
-% [u3,v3,~,~,~]  = computeHornSchunkDictPaperLS3(Xtrue,K,[],[],1,opt.HSiters);
-% T = 20;
-% window = 1:55;
-% J = 16;
-% fig = figure;
-% fig.Position = [1 1 1.6452e+03 554.8000];
-% 
-% 
-% for t = 1:T
-%     framePlot = squeeze(Xtrue(1,window,1:J,t));
-%     subplot(3,1,1)
-%     imagesc(framePlot')
-%     hold on
-%     quiver(v(window,1:J,t)',u(window,1:J,t)')
-%     q = findobj(gca,'type','Quiver');
-%     q.Color = 'w';
-%     hold off
-% 
-%     framePlot = squeeze(Xtrue(1,window,1:J,t));
-%     subplot(3,1,2)
-%     imagesc(framePlot')
-%     hold on
-%     quiver(v2(window,1:J,t)',u2(window,1:J,t)')
-%     q = findobj(gca,'type','Quiver');
-%     q.Color = 'w';
-%     hold off
-% 
-%     framePlot = squeeze(Xtrue(1,window,1:J,t));
-%     subplot(3,1,3)
-%     imagesc(framePlot')
-%     hold on
-%     quiver(v3(window,1:J,t)',u3(window,1:J,t)')
-%     q = findobj(gca,'type','Quiver');
-%     q.Color = 'w';
-%     hold off
-% 
-%     pause()
-% end
-

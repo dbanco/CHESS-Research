@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b, tol, mit, isn,N,M,K,J,T,lambda2,U,V)
+function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b1, b2, tol, mit, isn,N,M,K,J,T,lambda2,U,V)
 
 % solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -49,34 +49,58 @@ xsz = [1,N+M-1,K*J,T];
 % xszPad = [1,N+2*round(M/2),K*J,T];
 a = gpuArray(complex(a));
 ah = gpuArray(complex(conj(a)));
-b = gpuArray(complex(b));
 
-Aop = @(u) ifft2(sum(pagefun(@times, a, u), 3),'symmetric');
-Ahop = @(u) pagefun(@times, ah, u);
-AhAvop = @(u) vec(Ahop(fft2(maskPad(Aop(reshape(u, xsz)),M))));
-AhAvop2 = @(u) vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,1) ));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
 if lambda2 == 0
-    [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u,...
-    b(:), tol, mit, [], [], isn);
+    b = gpuArray(complex([b1(:);b2(:)]));
+    [xv,flg,rlr,pit] = cgls(@(u,ind) Aops1(u,ind,a,ah,xsz,M,rho),...
+    b(:),0, tol, mit, [], isn);
 else
-    [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
-    b(:), tol, mit, [], [], isn);
-end
-if lambda2 == 0
-    [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u,...
-    b(:), tol, mit, [], [], isn);
-else
-    [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
-    b(:), tol, mit, [], [], isn);
+    b = gpuArray(complex([b1(:);b2(:);zeros((N+M-1)*K*J*T,1)]));
+    [xv,flg,rlr,pit] = cgls(@(u,ind) Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2),...
+    b(:),0, tol, mit, [], isn);
 end
 warning(wrn.state, 'MATLAB:ignoreImagPart'); % 
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 
 x = reshape(xv, xsz);
 
+end
+
+function out = Aops1(u,ind,a,ah,xsz,M,rho)
+    if ind==1 
+        u = reshape(u, xsz);
+        out1 = sum(pagefun(@times, a, u), 3);
+        out = [vec(out1);rho*vec(u)];
+    else 
+        numelb = xsz(2)*xsz(4);
+        numelx = xsz(2)*xsz(3)*xsz(4);
+        bsz = [1,xsz(2),1,xsz(4)];
+        u1 = reshape(u(1:numelb),bsz);
+        u2 = reshape(u(numelb+1:numelb+numelx), xsz);
+        out1 = pagefun(@times, ah, fft2(maskPad(ifft2(u1,'symmetric'),M)));
+        out = vec(out1) + rho*vec(u2);
+    end
+end
+function out = Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2)
+    if ind==1 
+        u = reshape(u, xsz);
+        out1 = sum(pagefun(@times, a, u), 3);
+        out2 = vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,0) ));
+        out = [vec(out1);rho*vec(u);lambda2*vec(out2)];
+    else 
+        numelb = xsz(2)*xsz(4);
+        numelx = xsz(2)*xsz(3)*xsz(4);
+        bsz = [1,xsz(2),1,xsz(4)];
+        u1 = reshape(u(1:numelb),bsz);
+        u2 = reshape(u(numelb+1:numelb+numelx), xsz);
+        u3 = reshape(u(numelb+numelx+1:end), xsz);
+        out1 = pagefun(@times, ah, fft2(maskPad(ifft2(u1,'symmetric'),M)));
+        out2 = vec(fft2(opticalFlowOp(real(ifft2(reshape(u3,xsz),'symmetric')),U,V,K,2) ));
+        out = vec(out1) + rho*vec(u2) + lambda2*vec(out2);
+    end
 end
 
 function u = maskPad(u,M)

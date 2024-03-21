@@ -1,4 +1,4 @@
-function [D, Y, Dmin,Ymin,Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
+function [D, Y, Dmin,Ymin,Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_Lap_multiScales(D0, S, lambda, lambda2, opt, scales)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -97,11 +97,12 @@ if nargin < 4,
 end
 checkopt(opt, defaultopts([]));
 opt = defaultopts(opt);
+cgIters1 = 0;
 
 % Set up status display for verbose operation
-hstr = ['Itn   Fnc       DFid      l1        OF        HS        XYU       DGH       Cnstr     CGIters      '...
+hstr = ['Itn   Fnc       DFid      l1        OF        Cnstr     CGIters      '...
         'r(X)      s(X)      r(D)      s(D) '];
-sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
+sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
 nsep = 84;
 if opt.AutoRho,
   hstr = [hstr '     rho'];
@@ -113,7 +114,6 @@ if opt.AutoSigma,
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
-sfms = [sfms,'\n'];
 if opt.Verbose && opt.MaxMainIter > 0,
   disp(hstr);
   disp(char('-' * ones(1,nsep)));
@@ -141,13 +141,10 @@ for i = 1:numel(scales)
     KJ = KJ + size(scales{i},2);
 end
 J = KJ/K;
-center = round((M+1)/2);
 xsz = [size(S,1) size(S,2) KJ T];
 % Insert singleton 3rd dimension (for number of filters) so that
 % 4th dimension is number of images in input s volume
 S = reshape(S, [size(S,1) size(S,2) 1 T]);
-Spad = padarray(S,[0 M-1 0 0],0,'pre');
-
 
 Nx = prod(xsz);
 Nd = prod(xsz(1:2))*size(D0,3);
@@ -188,7 +185,6 @@ D = Pnrm(D0);
 
 % Compute signal in DFT domain
 Sf = fft2(S);
-Sfpad = fft2(Spad);
 
 % Set up algorithm parameters and initialise variables
 rho = opt.rho;
@@ -212,6 +208,7 @@ eprix = 0;
 eduax = 0;
 eprid = 0;
 eduad = 0;
+
 
 % Initialise main working variables
 if isempty(opt.Y0),
@@ -237,289 +234,197 @@ else
 end
 Gprv = G;
 if isempty(opt.H0),
-%   if isempty(opt.G0),
+  if isempty(opt.G0),
     H = zeros(size(G), class(S));
-%   else
-%     H = G;
-%   end
+  else
+    H = G;
+  end
 else
   H = opt.H0;
 end
 
 if opt.plotDict
     fdict = figure;
-    frecon = figure;
-    freconA = figure;
-    xFig = figure;
 end
 
-[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
-AGpad = padarray(AG,[0 M-1 0 0],0,'post');
-
-AGf = fft2(AGpad);
-AGSf = bsxfun(@times, conj(AGf), Sfpad);
-
-Yf = fft2(Y);
-
-% Initial solution
-k=0;
-tk = toc(tstart);
-Jcn = norm(vec(Pcn(D) - D));
-recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
-Jdf = sum(vec(abs(recon-S).^2))/2;
-Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-Jlg1 = rho*sum((U(:)).^2);
-Jlg2 = sigma*sum((H(:)).^2);
-if lambda2 > 0
-    [~,~,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
-    [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
-else
-    Jhs = 0;
-    Jof = 0;
-end
-Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;% + Jlg1 + Jlg2;
-
-% Initial min solution
+minJfn = 1e12;
 Ymin = Y;
 Gmin = G;
-minJfn = Jfn;
 minCount = 0;
 
-optinf.itstat = [optinf.itstat;...
-       [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
+[AG,NormVals] = reSampleCustomArray(N2,G,scales);
+AGf = fft2(AG);
+AGSf = bsxfun(@times, conj(AGf), Sf);
+
+% Main loop
+k = 1;
+Uvel = ones(N2,KJ,T);
+Vvel = ones(N2,KJ,T);
+while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
+  % Solve X subproblem. It would be simpler and more efficient (since the
+  % DFT is already available) to solve for X using the main dictionary
+  % variable D as the dictionary, but this appears to be unstable. Instead,
+  % use the projected dictionary variable G
+  if mod(k,41)==0
+%       [Uvel,Vvel] = computeHornSchunkDict(squeeze(Y),K);
+  end
+    [Xf, cgst] = solvemdbi_cg_OF_Lap(AGf, rho, AGSf + rho*fft2(Y - U) ,...
+        opt.CGTolX, opt.MaxCGIterX, Y(:),N2,K,J,T,lambda2);
+    cgIters2 = cgst.pit;
+    X = ifft2(Xf, 'symmetric');
+
+  clear Xf AGf AGSf;
+
+  % See pg. 21 of boyd-2010-distributed
+  if opt.XRelaxParam == 1,
+    Xr = X;
+  else
+    Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
+  end
+    
+  % Solve Y subproblem
+  Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+  if opt.NonNegCoef,
+    Y(Y < 0) = 0;
+  end
+  if opt.NoBndryCross,
+    %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
+    Y((end-size(D0,1)+2):end,:,:,:) = 0;
+    %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
+    Y(:,(end-size(D0,2)+2):end,:,:) = 0;
+  end
+  Yf = fft2(Y);
+
+  % Update dual variable corresponding to X, Y, Z
+  U = U + Xr - Y;
+  clear DPXr Xr;
+
+  % Compute primal and dual residuals and stopping thresholds for X update
+  nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
+  if opt.StdResiduals,
+    % See pp. 19-20 of boyd-2010-distributed
+    rx = norm(vec(X - Y));
+    sx = norm(vec(rho*(Yprv - Y)));
+    eprix = sqrt(Nx)*opt.AbsStopTol+max(nX,nY)*opt.RelStopTol;
+    eduax = sqrt(Nx)*opt.AbsStopTol+rho*nU*opt.RelStopTol;
+  else
+    % See wohlberg-2015-adaptive
+    rx = norm(vec(X - Y))/max(nX,nY);
+    sx = norm(vec(Yprv - Y))/nU;
+    eprix = sqrt(Nx)*opt.AbsStopTol/max(nX,nY)+opt.RelStopTol;
+    eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
+  end
+  
+  clear X;
+
+  % Compute l1 norm of Y
+  Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+
+  % Compute OF constraint
+  Jof = sum(vec(opticalFlowOpLap(Y,K)).^2);
+  
+  % Update record of previous step Y
+  Yprv = Y;
+
+  % Solve D subproblem. Similarly, it would be simpler and more efficient to
+  % solve for D using the main coefficient variable X as the coefficients,
+  % but it appears to be more stable to use the shrunk coefficient variable Y
+  AYS = reSampleTransCustomArray(M,ifft2(sum(bsxfun(@times, conj(Yf), fft2(S)), 4),'symmetric'),scales,NormVals);
+  [D, cgst] = solvemdbi_cg_multirate_custom(Yf, sigma, AYS + sigma*(G - H),...
+                      cgt, opt.MaxCGIter, D(:),scales,NormVals);
+  cgIters1 = cgst.pit;
+  Df = fft2(D);
+
+  clear YSf;
+  D = ifft2(Df, 'symmetric');
+  if strcmp(opt.LinSolve, 'SM'), clear Df; end
+
+  % See pg. 21 of boyd-2010-distributed
+  if opt.DRelaxParam == 1,
+    Dr = D;
+  else
+    Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
+  end
+
+  % Solve G subproblem
+  G = Pcn(Dr + H);
+  [AG,NormVals] = reSampleCustomArray(N2,G,scales);
+  AGf = fft2(AG);
+  AGSf = bsxfun(@times, conj(AGf), Sf);
+  
+  % Update dual variable corresponding to D, G
+  H = H + Dr - G;
+  clear Dr;
+if opt.plotDict
+    AD = reSampleCustomArray(N2,D,scales);
+    plotDictUsage(AD,K,1,fdict);
+    pause(0.0001)
+end
+
+  % Compute primal and dual residuals and stopping thresholds for D update
+  nD = norm(D(:)); nG = norm(G(:)); nH = norm(H(:));
+  if opt.StdResiduals,
+    % See pp. 19-20 of boyd-2010-distributed
+    rd = norm(vec(D - G));
+    sd = norm(vec(sigma*(Gprv - G)));
+    eprid = sqrt(Nd)*opt.AbsStopTol+max(nD,nG)*opt.RelStopTol;
+    eduad = sqrt(Nd)*opt.AbsStopTol+sigma*nH*opt.RelStopTol;
+  else
+    % See wohlberg-2015-adaptive
+    rd = norm(vec(D - G))/max(nD,nG);
+    sd = norm(vec(Gprv - G))/nH;
+    eprid = sqrt(Nd)*opt.AbsStopTol/max(nD,nG)+opt.RelStopTol;
+    eduad = sqrt(Nd)*opt.AbsStopTol/(sigma*nH)+opt.RelStopTol;
+  end
+
+  % Apply CG auto tolerance policy if enabled
+  if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt,
+    cgt = rd/opt.CGTolFactor;
+  end
+
+  % Compute measure of D constraint violation
+  Jcn = norm(vec(Pcn(D) - D));
+%   clear D;
+
+  % Update record of previous step G
+  Gprv = G;
+
+  % Compute data fidelity term in Fourier domain (note normalisation)
+  Jdf = sum(vec(abs(sum(bsxfun(@times,AGf,Yf),3)-Sf).^2))/(2*xsz(1)*xsz(2));
+  clear Yf;
+  Jfn = Jdf + lambda*Jl1 + lambda2*Jof;
+  relErr = Jdf*(2*xsz(1)*xsz(2))/sum(vec((Sf).^2));
+  if Jfn < minJfn
+      Ymin = Y;
+      Gmin = G;
+      minJfn = Jfn;
+      minCount = 0;
+  else
+      minCount = minCount + 1;
+      if minCount >10
+%           break
+      end
+  end
+
+  % Record and display iteration details
+  tk = toc(tstart);
+  optinf.itstat = [optinf.itstat;...
+       [k Jfn Jdf Jl1 Jof rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
   if opt.Verbose,
-    dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
+    dvc = [k, Jfn, Jdf, Jl1, Jof, Jcn, cgIters1,cgIters2, rx, sx, rd, sd];
     if opt.AutoRho,
       dvc = [dvc rho];
     end
     if opt.AutoSigma,
       dvc = [dvc sigma];
     end
-    fprintf(sfms, dvc);
+    disp(sprintf(sfms, dvc));
   end
 
-% Main loop
-k = 1;
-while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
-    % Solve X subproblem. It would be simpler and more efficient (since the
-    % DFT is already available) to solve for X using the main dictionary
-    % variable D as the dictionary, but this appears to be unstable. Instead,
-    % use the projected dictionary variable G
-
-    % Solve subproblem
-%     recon = sum(bsxfun(@times,AGf,Yf),3);
-%     Jdf1 = sum(vec(abs(recon-Sf).^2))
-    [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, AGSf + rho*fft2(Y-U) ,...
-        opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
-    cgIters2 = cgst.pit;
-    X = ifft2(Xf, 'symmetric');
-    
-%     figure(7)
-%     showX(X)
-
-%     fdict = figure(8);
-%     plotDictUsage(AG,K,1,fdict);
-
-    % Data fidelity term in Fourier domain
-%     recon = sum(bsxfun(@times,AGf,Xf),3);
-%     Jdf2 = sum(vec(abs(recon-Sf).^2))
-    
-    clear Xf AGf AGSf;
-    
-    % See pg. 21 of boyd-2010-distributed
-    if opt.XRelaxParam == 1,
-        Xr = X;
-    else
-        Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
-    end
-    
-    % Solve Y subproblem
-    Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-    if opt.NonNegCoef,
-        Y(Y < 0) = 0;
-    end
-    
-    if opt.NoBndryCross,
-        %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
-        Y((end-size(D0,1)+2):end,:,:,:) = 0;
-        %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
-        Y(:,(end-size(D0,2)+2):end,:,:) = 0;
-    end
-    Yf = fft2(Y);
-    
-    % Data fidelity term in Fourier domain
-%     recon = sum(bsxfun(@times,AGf,Yf),3);
-%     Jdf3 = sum(vec(abs(recon-Sf).^2))
-
-    % Update dual variable corresponding to X, Y, Z
-    U = U + Xr - Y;
-    clear DPXr Xr;
-    
-    % Compute primal and dual residuals and stopping thresholds for X update
-    nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
-    if opt.StdResiduals,
-        % See pp. 19-20 of boyd-2010-distributed
-        rx = norm(vec(X - Y));
-        sx = norm(vec(rho*(Yprv - Y)));
-        eprix = sqrt(Nx)*opt.AbsStopTol+max(nX,nY)*opt.RelStopTol;
-        eduax = sqrt(Nx)*opt.AbsStopTol+rho*nU*opt.RelStopTol;
-    else
-        % See wohlberg-2015-adaptive
-        rx = norm(vec(X - Y))/max(nX,nY);
-        sx = norm(vec(Yprv - Y))/nU;
-        eprix = sqrt(Nx)*opt.AbsStopTol/max(nX,nY)+opt.RelStopTol;
-        eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
-    end
-
-    Jlg1 = rho*sum((X(:)-Y(:)+U(:)).^2);
-
-    clear X;
-    
-    % Update record of previous step Y
-    Yprv = Y;
-    
-    % Solve D subproblem. Similarly, it would be simpler and more efficient to
-    % solve for D using the main coefficient variable X as the coefficients,
-    % but it appears to be more stable to use the shrunk coefficient variable Y
-    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
-    [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                      cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center);
-    cgIters1 = cgst.pit;
-    Df = fft2(D);
-    
-    clear YSf;
-    D = ifft2(Df, 'symmetric');
-    if strcmp(opt.LinSolve, 'SM'), clear Df; end
-    
-    % See pg. 21 of boyd-2010-distributed
-    if opt.DRelaxParam == 1,
-        Dr = D;
-    else
-        Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
-    end
-    
-    % Solve G subproblem
-    G = Pcn(Dr + H);
-    
-    % Update alphas
-    [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
-    AG = padarray(AG,[0 M-1 0 0],0,'post');
-    AGf = fft2(AG);
-    AGSf = bsxfun(@times, conj(AGf), Sfpad);
-    
-    % Update dual variable corresponding to D, G
-    H = H + Dr - G;
-    clear Dr;
-    
-    % Compute primal and dual residuals and stopping thresholds for D update
-    nD = norm(D(:)); nG = norm(G(:)); nH = norm(H(:));
-    if opt.StdResiduals,
-        % See pp. 19-20 of boyd-2010-distributed
-        rd = norm(vec(D - G));
-        sd = norm(vec(sigma*(Gprv - G)));
-        eprid = sqrt(Nd)*opt.AbsStopTol+max(nD,nG)*opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol+sigma*nH*opt.RelStopTol;
-    else
-        % See wohlberg-2015-adaptive
-        rd = norm(vec(D - G))/max(nD,nG);
-        sd = norm(vec(Gprv - G))/nH;
-        eprid = sqrt(Nd)*opt.AbsStopTol/max(nD,nG)+opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol/(sigma*nH)+opt.RelStopTol;
-    end
-    
-    % Apply CG auto tolerance policy if enabled
-    if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt,
-        cgt = rd/opt.CGTolFactor;
-    end
-
-    % Update optical flow velocities
-    if (opt.UpdateVelocity && (lambda2 > 0)) || nargin < 6
-        [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
-    end
-    
-    % Compute measure of D constraint violation
-    Jcn = norm(vec(Pcn(D) - D));
-    
-    % Update record of previous step G
-    Gprv = G;
-    
-    % Data fidelity term in Fourier domain
-    recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
-    Jdf = sum(vec(abs(recon-S).^2))/2;
-    
-    % Sparsity term
-    Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-    
-    % Optical flow terms
-    if lambda2 > 0
-        [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
-    else
-        Jof = 0;
-        Jhs = 0;
-    end
-    
-    Jlg2 = sigma*sum((D(:)-G(:)+H(:)).^2);
-    % Full objective
-    Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;% + Jlg1 + Jlg2;
-    
-
-    % Plot dictionary progress
-    if opt.plotDict
-        reconA = sum(bsxfun(@times,AGf,Yf),3);
-        
-        figure(freconA)
-        plot(squeeze(S(:,:,:,10)))
-        hold on
-        plot(squeeze(ifft2(reconA(:,:,:,10),'symmetric')))
-        hold off
-        
-        figure(xFig)
-        ii = 1;
-        for kk = 1:K
-            subplot(1,2,kk)
-            Ui = size(scales{kk},2) + ii - 1;
-            imagesc( squeeze(sum(Y(:,:,ii:Ui,:),3)) )
-            ii = ii + Ui;
-        end
-    end 
-
-    if opt.plotDict
-        AG = reSampleCustomArrayCenter(N2,G,scales,center);
-        plotDictUsage(AG,K,1,fdict);
-        pause(0.0001)
-    end    
-    
-    if Jfn < minJfn
-        Ymin = Y;
-        Gmin = G;
-        minJfn = Jfn;
-        minCount = 0;
-    else
-        minCount = minCount + 1;
-    if minCount >10
-    %           break
-    end
-    end
-    
-    % Record and display iteration details
-    tk = toc(tstart);
-    optinf.itstat = [optinf.itstat;...
-    [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
-    if opt.Verbose
-        dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, cgIters1,cgIters2, rx, sx, rd, sd];
-        if opt.AutoRho
-            dvc = [dvc rho];
-        end
-        if opt.AutoSigma
-            dvc = [dvc sigma];
-        end
-        fprintf(sfms, dvc);
-    end
-
   % See wohlberg-2015-adaptive and pp. 20-21 of boyd-2010-distributed
-  if opt.AutoRho
-    if k ~= 1 && mod(k, opt.AutoRhoPeriod) == 0
-      if opt.AutoRhoScaling
+  if opt.AutoRho,
+    if k ~= 1 && mod(k, opt.AutoRhoPeriod) == 0,
+      if opt.AutoRhoScaling,
         rhomlt = sqrt(rx/sx);
         if rhomlt < 1, rhomlt = 1/rhomlt; end
         if rhomlt > opt.RhoScaling, rhomlt = opt.RhoScaling; end
@@ -556,8 +461,6 @@ end
 
 D = PzpT(G);
 Dmin = PzpT(Gmin);
-relErr = Jdf/sum(vec((Sf).^2));
-
 % Record run time and working variables
 optinf.runtime = toc(tstart);
 optinf.Y = Y;
@@ -645,10 +548,10 @@ function opt = defaultopts(opt)
     opt.MaxMainIter = 1000;
   end
   if ~isfield(opt,'AbsStopTol'),
-    opt.AbsStopTol = 1e-5;
+    opt.AbsStopTol = 1e-6;
   end
   if ~isfield(opt,'RelStopTol'),
-    opt.RelStopTol = 1e-3;
+    opt.RelStopTol = 1e-4;
   end
   if ~isfield(opt,'L1Weight'),
     opt.L1Weight = 1;
@@ -724,9 +627,6 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'CGTol'),
     opt.CGTol = 1e-3;
-  end
-  if ~isfield(opt,'CGTolX'),
-    opt.CGTolX = 1e-3;
   end
   if ~isfield(opt,'CGTolAuto'),
     opt.CGTolAuto = 0;

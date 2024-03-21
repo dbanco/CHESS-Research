@@ -15,13 +15,17 @@ U = size(x,2)/K;
 
 [Fx,Fy,Ft] = diffDict(x,K,U);
 
-% Option to additionally apply operation transposed
-if trans
+% Option to additionally apply operation transposed or just apply operation
+% transposed
+if trans == 1
     Ax = Fx.*u + Fy.*v + Ft;
     [uFx,vFy,Ft] = diffDictTrans(Ax,K,U,u,v);
     out = uFx + vFy + Ft;
-else
+elseif trans == 0
     out = Fx.*u + Fy.*v + Ft;
+elseif trans == 2
+    [uFx,vFy,Ft] = diffDictTrans(x,K,U,u,v);
+    out = uFx + vFy + Ft;
 end
 if reshapeIt
     out = reshape(out,[1 size(out)]);

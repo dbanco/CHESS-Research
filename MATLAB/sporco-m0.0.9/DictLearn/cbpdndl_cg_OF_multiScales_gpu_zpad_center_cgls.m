@@ -309,7 +309,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     % Solve subproblem
 %     recon = sum(bsxfun(@times,AGf,Yf),3);
 %     Jdf1 = sum(vec(abs(recon-Sf).^2))
-    [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, AGSf + rho*fft2(Y-U) ,...
+    [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, Sfpad,fft2(Y-U) ,...
         opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
     cgIters2 = cgst.pit;
     X = ifft2(Xf, 'symmetric');

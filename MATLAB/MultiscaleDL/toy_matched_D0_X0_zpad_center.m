@@ -17,18 +17,22 @@ topDir = ['C:\Users\dpqb1\Documents\Outputs\toy_matched_9_12_23_X0_D0_V0',num2st
 sigmas = 0:0.01:0.05;
 
 % Data parameters
-[y,~,K,J,N,M,T,~,~,scales] = gaus_linear_osc_signal_matched_small_zpad2_center(0);
+[y,~,N,M,T] = gaus_example_multiscale_dl();
 y = reshape(y,[1,N,T]);
 
 % Model Setup
+K = 1;
+scales = cell(K,1);
+scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
+J = size(scales{1},2);
 KJ = K*J;
 opt = [];
-opt.DictFilterSizes = [1,1;...
-                       M,M];
+opt.DictFilterSizes = [1;...
+                       M];
 
 % Init solution
 opt.Y0 = zeros(1,N+M-1,KJ,T);
-% opt.U0 = zeros(1,N,KJ,T);
+
 
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
@@ -61,20 +65,15 @@ for i = 2%2:numel(sigmas)
     mkdir(figDir)
     
     % Data  
-    [y,y_true,K,J,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigmas(i));
+    [y,~,N,M,T] = gaus_example_multiscale_dl();
+    y = reshape(y,[1,N,T]);
     center = (M+1)/2;
     
     % Initialization 
     D0(1,round(M/3):round(2*M/3),1) = 1;
-    D0(1,round(M/4):round(3*M/4),2) = 1;
     D0 = Pnrm(D0);
-    opt.Y0 = Xtrue;
-    opt.Y0 = zeros(size(Xtrue));
     opt.G0 = D0;
-%     load("C:\Users\dpqb1\Documents\Outputs\toy3_center_exp_optFlow8_17_X0_D0_V0_zpad_HS0.002_sig_2\output_j10_sig_1.00e-02_lam1_6.00e-02_lam2_5.00e-01.mat")
-%     D0 = outputs.D;
-%     opt.Y0 = outputs.X;
-    opt.G0 = D0;
+
 
     % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;

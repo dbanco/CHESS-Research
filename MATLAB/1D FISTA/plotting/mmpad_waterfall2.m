@@ -54,6 +54,7 @@ mmpad_dims = [396,265];
 total_time = 136.25;
 fps = 4;
 x_time = 0:1/fps:total_time;
+x_time = 1:T;
 
 % eta axis
 pixel_side = 150e-6;
@@ -75,7 +76,7 @@ el = 60;
 s1 = 500;
 s2 = 360;
 f1 = figure(5);
-waterfall((eta_range),(x_time(1:100)),(B(:,1:100)'))
+waterfall((eta_range),(x_time(1:120)),(B(:,1:120)'))
 % title(rings{ring_num})
 ylabel('time(s)','FontSize',18)
 xlabel('\eta (\circ)','FontSize',18)

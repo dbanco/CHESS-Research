@@ -1,5 +1,7 @@
 function generateFiguresToy1zpad_center(topDir,outputs,suffix,gridDim)
-mkdir(topDir)
+if ~isempty(topDir)
+    mkdir(topDir)
+end
 D = outputs.D;
 X = outputs.X;
 scales = outputs.scales;
@@ -35,12 +37,15 @@ Yhat = unpad(Yhat,M-1,'pre');
 f1 = figure;
 for i = 1:Utotal
     subplot(gridDim(1),gridDim(2),i)
-    plot(real(AD(:,:,i)),'Linewidth',1)
-    set(gca, 'XtickLabel','')
+    plot(real(AD(:,1:M,i)),'Linewidth',2)
+%     set(gca, 'XtickLabel','')
     set(gca, 'FontSize', 16)
+    ylim([0,0.75])
 end
 f1.Position = [1 100 1800 500];
-saveas(f1,fullfile(topDir,['dict',suffix,'.png']))
+if ~isempty(topDir)
+    saveas(f1,fullfile(topDir,['dict',suffix,'.png']))
+end
 
 % Recon and data regular scale
 f2 = figure;
@@ -54,7 +59,9 @@ imagesc(squeeze(Yhat))
 set(gca, 'FontSize', 20)
 title(sprintf('Rel Error: %0.3f',norm(squeeze(y)-Yhat,'fro')/norm(y(:),'fro')))
 f2.Position = [1 100 800 500];
-saveas(f2,fullfile(topDir,['recon',suffix,'.png']))
+if ~isempty(topDir)
+    saveas(f2,fullfile(topDir,['recon',suffix,'.png']))
+end
 
 % Recovered VDF(t)
 f3 = figure;
@@ -63,7 +70,9 @@ imagesc(squeeze(sum(sum(X,1),2)))
 f3.Position = [800 100 600 300];
 set(gca, 'FontSize', 20)
 f3.Position = [1 100 800 400];
-saveas(f3,fullfile(topDir,['vdf',suffix,'.png']))
+if ~isempty(topDir)
+    saveas(f3,fullfile(topDir,['vdf',suffix,'.png']))
+end
 
 % Spatial placement of atom groups
 i = 1;
@@ -71,7 +80,7 @@ for k = 1:K
     figure;
     Ui = size(scales{k},2) + i - 1;
     imagesc( squeeze(sum(X(:,:,i:Ui,:),3)) )
-    i = i + Ui;
+    i = i + size(scales{k},2);
     saveas(gcf,fullfile(topDir,['X',num2str(k),suffix,'.png']))
 end
 

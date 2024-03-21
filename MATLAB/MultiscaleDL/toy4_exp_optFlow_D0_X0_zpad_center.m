@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [  5e-2 6e-2 7e-2 8e-2 9e-2 2e-1 4e-1 1 2 5 10];
+lambdaVals = [  5e-2 6e-2 7e-2 8e-2 9e-2];
 lambdaHSVals = [1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
@@ -9,15 +9,15 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-for j_hs = 6
-topDir = ['C:\Users\dpqb1\Documents\Outputs\toy_matched_9_12_23_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+for j_hs = 4
+topDir = ['C:\Users\dpqb1\Documents\Outputs\toy4_center_exp_optFlow8_24_X0_D0_V0_zpad_HS2',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup
 sigmas = 0:0.01:0.05;
 
 % Data parameters
-[y,~,K,J,N,M,T,~,~,scales] = gaus_linear_osc_signal_matched_small_zpad2_center(0);
+[y,~,K,J,N,M,T,~,~,scales] = gaus_linear_osc_signal_matched_small_zpad3_center(0);
 y = reshape(y,[1,N,T]);
 
 % Model Setup
@@ -61,7 +61,7 @@ for i = 2%2:numel(sigmas)
     mkdir(figDir)
     
     % Data  
-    [y,y_true,K,J,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigmas(i));
+    [y,y_true,K,J,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad3_center(sigmas(i));
     center = (M+1)/2;
     
     % Initialization 
@@ -74,17 +74,17 @@ for i = 2%2:numel(sigmas)
 %     load("C:\Users\dpqb1\Documents\Outputs\toy3_center_exp_optFlow8_17_X0_D0_V0_zpad_HS0.002_sig_2\output_j10_sig_1.00e-02_lam1_6.00e-02_lam2_5.00e-01.mat")
 %     D0 = outputs.D;
 %     opt.Y0 = outputs.X;
-    opt.G0 = D0;
+%     opt.G0 = D0;
 
     % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
     opt.rho = 1e3;%100;
     opt.sigma = 1e3;%100;
+    opt.UpdateVelocity = 0;
 
-
-    for j_s = 11
-        for j_of = 31
+    for j_s = 4
+        for j_of = 8:12
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);

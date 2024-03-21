@@ -1,10 +1,10 @@
-function [yn,y,K,J,N,M,T,Xtrue,Dtrue,scales] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma)
+function [yn,y,K,J,N,M,T,Xtrue,Dtrue,scales] = gaus_linear_osc_signal_matched_small_zpad3_center(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 30;
 N = 55; M = 45;
 center = (M+1)/2;
 if nargin < 1
-    sigma = 0.01;
+    sigma = 0.02;
 %     sigma = 0.015;
 end
 
@@ -28,12 +28,12 @@ opt.DictFilterSizes = [1,1;...
 % sig = 2*linspace(2,10,T);
 % width = 4*round(linspace(2,14,T));
 pFactor = 3.5;
-tt = ((1:T)+20)/(50/20)/pFactor;
+tt = ((1:T))/5;
 sig = round(   (J-1)/2*sin(tt) + (J-1)/2+1 );
 width = round( (J-1)/2*cos(tt) + (J-1)/2+1 )+ J;
  
 sigMax = 4;
-widthMax = 30;
+widthMax = 20;
  
 % Define dictionary atoms
 scaling = '2-norm';
@@ -47,8 +47,8 @@ ADf = fft2(ADtrue);
 minPos1 = 0;
 minPos2 = -5;
 amp = 15;
-Pos  = M-1-12 + mod(round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi/2 )      + amp + minPos1),N);
-Pos2 =     M-1-12 + round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi + pi/2 ) + amp + minPos2);
+Pos  = M-1-1 + mod(round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi/2 )      + amp + minPos1),N);
+Pos2 =     M-1-1 + round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi + pi/2 ) + amp + minPos2);
 Xtrue = zeros(1,N+M-1,KJ,T);
 for t = 1:T
     Xtrue(1,Pos(t),sig(t),t) = 1;
@@ -67,30 +67,30 @@ yn = reshape(yn,[1,N,T]);
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
 
-% figure
-% imagesc(squeeze(yn))
-% 
-% f1 = figure;
-% hold on
-% for i = 1:J
-% %     subplot(7,7,i)
-%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
-%     set(gca, 'XtickLabel','')
-%     set(gca, 'FontSize', 16)
-% end
-% f1.Position = [1 100 900 500];
-% 
-% f2 = figure;
-% hold on
-% for i = J+1:J+J
-% %     subplot(7,7,i)
-%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
-%     set(gca, 'XtickLabel','')
-%     set(gca, 'FontSize', 16)
-% end
-% f2.Position = [1 100 900 500];
-% 
-% figure
-% imagesc(squeeze(sum(Xtrue,[1,2])))
+figure
+imagesc(squeeze(yn))
+
+f1 = figure;
+hold on
+for i = 1:J
+%     subplot(7,7,i)
+    plot(real(ADtrue(:,:,i)),'Linewidth',1)
+    set(gca, 'XtickLabel','')
+    set(gca, 'FontSize', 16)
+end
+f1.Position = [1 100 900 500];
+
+f2 = figure;
+hold on
+for i = J+1:J+J
+%     subplot(7,7,i)
+    plot(real(ADtrue(:,:,i)),'Linewidth',1)
+    set(gca, 'XtickLabel','')
+    set(gca, 'FontSize', 16)
+end
+f2.Position = [1 100 900 500];
+
+figure
+imagesc(squeeze(sum(Xtrue,[1,2])))
 
 end

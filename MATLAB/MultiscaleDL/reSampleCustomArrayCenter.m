@@ -7,7 +7,13 @@ function [Dout,NormVals] = reSampleCustomArrayCenter(N,D,scales,center,NormVals)
 if numel(size(D)) == 2
     N1 = 1;
     [M,K] = size(D);
-    D = reshape(D,[N1,M,K]);
+    if M == 1
+        [~,M,K] = size(D);
+        D = reshape(D,[N1,M,K]);
+        
+    else
+        D = reshape(D,[N1,M,K]);
+    end
 else
     [N1,M,K] = size(D);
 end

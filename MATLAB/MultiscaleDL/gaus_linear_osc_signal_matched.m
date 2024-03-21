@@ -1,16 +1,15 @@
 function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 150;
-N = 300; M = 150;
+N = 75; M = 55;
 if nargin < 1
     sigma = 0.015;
 end
 
 % Model Setup
-K = 2;
+K = 1;
 scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,100, 1/8);
-scales{2} = genRationals([0;1],[1;1],8,100, 1/8);
 Uarray = zeros(numel(scales),1);
 for i = 1:numel(scales)
     Uarray(i) = size(scales{i},2);
