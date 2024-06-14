@@ -35,68 +35,7 @@ folder_path = "spots_11032023"
 # folder_path = "spots_11022023"
 # folder_path = "spots_11132023"  
 
-# %% Getting ROIs from spot files
-
-# Get a list of file names in the directory and sort them
-all_entries = os.listdir(folder_path)
-directories = [entry for entry in all_entries if os.path.isdir(os.path.join(folder_path,entry))]
-fold_names = sorted(directories)
-
-created = 0
-# Loop through sorted file names
-for fold_name in fold_names:
-    file_names = sorted(os.listdir(os.path.join(folder_path, fold_name)))
-    print(fold_name)
-    for file_name in file_names:
-        if file_name.endswith(".out"):  # Check if the file has a ".out" extension
-            file_path = os.path.join(folder_path,fold_name, file_name)
-            
-            # Load .out file
-            df = pd.read_csv(file_path,sep=' \s+',engine='python')  
-            
-            # Get a HEXD spot location
-            if not created:
-                Xs = np.array(df['pred X'])
-                Ys = np.array(df['pred Y'])
-                id_nums = np.array(df['# ID'])
-                grain_nums = int(file_name[-7:-4])*np.ones(df['pred X'].shape)
-                tths = np.array(df['meas tth'])
-                etas = np.array(df['meas eta'])
-                omes = np.array(df['meas ome'])*180/np.pi
-                created = 1
-            else:
-                Xs = np.append(Xs, np.array(df['pred X']))
-                Ys = np.append(Ys, np.array(df['pred Y']))
-                id_nums = np.append(id_nums, np.array(df['# ID']))
-                grain_nums = np.append(grain_nums,int(file_name[-7:-4])*np.ones(df['pred X'].shape))
-                tths = np.append(tths, np.array(df['meas tth']))
-                etas = np.append(etas, np.array(df['meas eta']))
-                omes = np.append(omes, np.array(df['meas ome'])*180/np.pi)
-            
-invalid_nums = id_nums == -999        
-Xs = np.delete(Xs, invalid_nums).astype(float)
-Ys = np.delete(Ys, invalid_nums).astype(float)
-id_nums = np.delete(id_nums, invalid_nums).astype(float)
-grain_nums = np.delete(grain_nums, invalid_nums).astype(float)
-tths = np.delete(tths, invalid_nums).astype(float)
-etas = np.delete(etas, invalid_nums).astype(float)
-omes = np.delete(omes, invalid_nums).astype(float)
-
-ome_idxs = sf.omegaToFrame(omes)
-
-sort_ind = np.argsort(omes)
-
-ome_idxs = ome_idxs[sort_ind]
-Xs = Xs[sort_ind]
-Ys = Ys[sort_ind]
-id_nums = id_nums[sort_ind]
-tths = tths[sort_ind]
-etas = etas[sort_ind]
-omes = omes[sort_ind]
-grain_nums = grain_nums[sort_ind]
-
-np.savez(folder_path+'.npz',Xs=Xs,Ys=Ys,id_nums=id_nums,\
-tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
+sf.collectSpotsData(folder_path)
 
 # %% First load indexed spot data
 folder_path = "spots_11032023"  

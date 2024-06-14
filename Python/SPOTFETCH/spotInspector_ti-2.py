@@ -7,8 +7,7 @@ Created on Thu May  2 10:07:45 2024
 
 import numpy as np
 import spotfetch as sf
-# from hexrd.fitting import fitpeak
-# import matplotlib.pyplot as plt
+
 
 # %% First load indexed spot data
 folder_path = "spots_11032023"  

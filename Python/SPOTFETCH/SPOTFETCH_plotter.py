@@ -21,7 +21,7 @@ class DataPlotter:
     def __init__(self, root):
         self.root = root
         self.root.title("Live Data Plotter")
-        self.read_path = "C:\\Users\\dpqb1\\Documents\\Data\\indexed_grains\\outputs"
+        self.read_path = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
         self.cb_present = [False, False, False, False, False]
         self.cb = [None, None, None, None, None]
         # Explicitly create a figure and pass it to subplots
@@ -126,7 +126,7 @@ class DataPlotter:
                     # Your plot logic for Omega Detections
                     T = len(self.trackData)
                     for t in range(T):
-                        if self.trackData[t] != []:
+                        if self.trackDats[i][t] != []:
                             L = len(self.trackData[t][k])
                             if L > 0:
                                 for j in range(L):
@@ -215,15 +215,18 @@ class DataPlotter:
     def update_plots(self):
         def read_data():
             while True:
-                try:
-                    with open(os.path.join(self.read_path,'trackData.pkl'), 'rb') as f:
-                        self.trackData = pickle.load(f)
-                    self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
-                except FileNotFoundError:
-                    self.trackData = []
-                except pickle.UnpicklingError:
-                    self.trackData = []
-                time.sleep(1)
+                spot_numbers = [spot_entry.get() for spot_entry in self.spot_entries]
+                for i in range(5):
+                    try:
+                        k = spot_numbers[i]
+                        with open(os.path.join(self.read_path,f'trackData_{k}.pkl'), 'rb') as f:
+                            self.trackData = pickle.load(f)
+                        self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
+                    except FileNotFoundError:
+                        self.trackData = []
+                    except pickle.UnpicklingError:
+                        self.trackData = []
+                    time.sleep(1)
         
         threading.Thread(target=read_data, daemon=True).start()
         

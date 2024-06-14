@@ -42,6 +42,7 @@ fDir = "D:\\CHESS_raw_data\\ti-2-tension\\"
 fname1 = fDir + dNum + '\\ff\\ff1_000' + fNum + '.h5'
 fname2 = fDir + dNum + '\\ff\\ff2_000' + fNum + '.h5'
 
+
 # Extract ROIS
 roi_list = sf.loadSpotsAtFrame(spot_data,fname1,fname2,yamlFile,frame,imSize,roi_size)
 

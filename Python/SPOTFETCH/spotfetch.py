@@ -9,13 +9,15 @@ import scipy as sp
 import h5py
 # import hdf5plugin
 import pickle
+import pandas as pd
 import os
+import subprocess
+import time
 import yaml
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from hexrd.fitting import fitpeak
 # from hexrd.fitting import peakfunctions as pkfuncs
-
 
 def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
     step = omegaRange/endFrame
@@ -84,7 +86,7 @@ def load_eiger(fname,yamlFile,t,t2=None,imSize=(4362,4148)):
     
     return img    
     
-def load_dex(fname1,fname2,yamlFile,t,t2=None,imSize=(4888,7300),dexSize=(3888,3072)):
+def load_dex(fname1,fname2,params,t,t2=None,dexSize=(3888,3072)):
     if t2 is None:
         with h5py.File(fname1, 'r') as file1, h5py.File(fname2, 'r') as file2:
             img1 = file1['/imageseries/images'][t, :, :]
@@ -98,6 +100,8 @@ def load_dex(fname1,fname2,yamlFile,t,t2=None,imSize=(4888,7300),dexSize=(3888,3
         img1 = np.max(img1, axis=0)
         img2 = np.max(img2, axis=0)
 
+    imSize = params['imSize']
+    yamlFile = params['yamlFile']
     # Pad image
     bpad = np.zeros(imSize)
     center = (imSize[0]/2, imSize[1]/2)
@@ -186,7 +190,6 @@ def loadDexPolarRoi(fname1,fname2,tth,eta,frame,params):
     # 0. Load params, YAML data
     yamlFile = params['yamlFile']
     roiSize = params['roiSize']
-    imSize = params['imSize']
     detectDist, mmPerPixel, ff_trans = loadYamlDataDexela(yamlFile,tth,eta)
     
     # 1. Construct rad, eta domain
@@ -197,7 +200,7 @@ def loadDexPolarRoi(fname1,fname2,tth,eta,frame,params):
     
     # 3. Load needed Cartesian ROI pixels
     ff1_pix, ff2_pix = panelPixels(ff_trans,mmPerPixel)
-    roi = loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,imSize)
+    roi = loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,params)
     
     # 4. Apply interpolation matrix to Cartesian pixels get Polar values
     roi_polar_vec = Ainterp.dot(roi.flatten())
@@ -257,7 +260,7 @@ def loadDexPolarRoiPrecomp(fname1,fname2,yamlFile,tth,eta,frame,\
     
     return roi_polar
           
-def loadSpotsAtFrame(spot_data,fname1,fname2,yamlFile,frame,imSize,roi_size):
+def loadSpotsAtFrame(spot_data,fname1,fname2,frame,params):
     tths = spot_data['tths']
     etas = spot_data['etas']     
     ome_idxs = spot_data['ome_idxs'] 
@@ -275,8 +278,7 @@ def loadSpotsAtFrame(spot_data,fname1,fname2,yamlFile,frame,imSize,roi_size):
         eta = etas[ind]
 
         # 2. Load ROI and interpolate to polar coordinates 
-        roi_polar = loadDexPolarRoi(fname1,fname2,yamlFile,\
-                    tth,eta,frame,imSize,roi_size)
+        roi_polar = loadDexPolarRoi(fname1,fname2,tth,eta,frame,params)
         # roi_polar_p1 = loadDexPolarRoi(fname1,fname2,yamlFile,\
         #             tth,eta,frame+1,imSize,roi_size)
         # roi_polar_m1 = loadDexPolarRoi(fname1,fname2,yamlFile,\
@@ -286,8 +288,9 @@ def loadSpotsAtFrame(spot_data,fname1,fname2,yamlFile,frame,imSize,roi_size):
         
     return roi_list
 
-def loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,\
-                    imSize=(4888,7300),dexShape=(3888,3072)):
+def loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,params,\
+                    dexShape=(3888,3072)):
+    imSize = params['imSize']
     center = (imSize[0]/2,imSize[1]/2)
     
     if x_cart[0] < ff2_pix[0]: x_cart[0] = ff2_pix[0]
@@ -406,7 +409,6 @@ def polarDomain(detectDist,mmPerPixel,tth,eta,roi_size):
     r1 = r - roi_size//2
     r2 = r + roi_size//2
 
-
     rad_domain = np.arange(r1,r2,1)
     
     deta = 1/r2
@@ -443,7 +445,10 @@ def plot_ring(radius,center):
     y = radius*np.cos(eta) + center[0]
     plt.plot(x, y, color='red', linewidth=1)
 
-def add_spot_rect(detectDist,mmPerPixel,center,tth,eta,roi_size=40):
+def add_spot_rect(params,tth,eta,roi_size=40):
+    detectDist,mmPerPixel,ff_trans = loadYamlData(params, tth, eta) 
+    imSize = params['imSize']
+    center = (imSize[0]//2,imSize[1]//2)
     radius = detectDist*np.tan(tth)/mmPerPixel
     x = radius*np.cos(eta) + center[1]
     y = -radius*np.sin(eta) + center[0] #Negative sign because rows increase downwards?
@@ -494,38 +499,40 @@ def plotROIs(roi_list,num_cols = 5):
     
     return fig
     
-def plotSpotWedges(spot_data,fname1,fname2,\
-                   yamlFile,frame,center,roi_size):
-    tths = spot_data['tths']
-    etas = spot_data['etas']     
-    ome_idxs = spot_data['ome_idxs'] 
+def plotSpotWedges(spotData,fname1,fname2,frame,params):
+    tths = spotData['tths']
+    etas = spotData['etas']     
+    ome_idxs = spotData['ome_idxs'] 
     # Get spot indices at frame
     spotInds = np.where(ome_idxs == frame)[0]
     
+    yamlFile = params['yamlFile']
+    roiSize = params['roiSize']
+    imSize = params['imSize']
+    center = (imSize[0]//2,imSize[1]//2,)
 
-    b = load_dex(fname1,fname2,yamlFile,frame)
+    b = load_dex(fname1,fname2,params,frame)
     
     fig = plt.figure()
     plt.imshow(b)
     plt.clim(290,550)
     
     for ind in spotInds:
-       
         # 0. Load spot information
         tth = tths[ind]
         eta = -etas[ind]
 
         # 1. Load YAML data
-        detectDist, mmPerPixel, ff_trans = loadYamlData(yamlFile,tth,eta)
+        detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
         
         # 2. Construct rad, eta domain
-        rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roi_size)
+        rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
    
         rad = np.round(detectDist*np.tan(tth)/mmPerPixel)
         
-        wedge = patches.Wedge([center[1],center[0]],rad+roi_size/2,\
+        wedge = patches.Wedge([center[1],center[0]],rad+roiSize/2,\
                 180/np.pi*eta_dom[0],180/np.pi*eta_dom[-1],\
-                linewidth=1,width=roi_size,fill=0,color='r')
+                linewidth=1,width=roiSize,fill=0,color='r')
         plt.gca().add_patch(wedge)
         x = rad*np.cos(eta) + center[1]
         y = rad*np.sin(eta) + center[0]
@@ -578,6 +585,11 @@ def timeToFile(t,fDir):
     
     return fname1, fname2
 
+def pathToFile(path):
+    fnames = os.listdir(path)
+    fnames.sort()
+    return fnames
+
 def timeToFileB(t):
     dirNum = t+1
     # Do stupid logic because we are missing a timestep
@@ -612,26 +624,9 @@ def roiAdjacent(yamlFile,ind,tth,eta,imSize,roi_size,frame,omFrms,timeFrms):
             fig.colorbar(img, ax=axes[i,j])
             axes[i,j].set_title(f'$\omega={frm}$, t={t}')
             
-def trackData(spot_data,spotInds):
-    # Define list of list of dictionaries
-    # 1st index: spot index
-    # 2nd index: initial omega index
-    # 3rd index: time index
-    # At each, a dictionary?
-    trackData = [[]]
-    initData = {}
-    
- 
-    initData['tths'] = spot_data['tths'][spotInds]
-    initData['etas'] = spot_data['etas'][spotInds]
-    initData['frms'] = spot_data['ome_idxs'][spotInds]
-    
-    return trackData, initData
     
 def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     # 0. Parameters
-    yamlFile = params['yamlFile']
-    imSize = params['imSize']
     roiSize = params['roiSize']
     
     # 1. Load ROI
@@ -661,7 +656,9 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     
     newTrack = {}
     newTrack['p'] = p
-    newTrack['err'] =  rel_error     
+    newTrack['err'] =  rel_error 
+    newTrack['etaRoi'] = eta
+    newTrack['tthRoi'] = tth  
     newTrack['eta'] =  etaNew
     newTrack['tth'] =  tthNew
     newTrack['frm'] =  frm
@@ -684,6 +681,7 @@ def peakDetected(newTrack,prevTracks,params):
     p = newTrack['p']
     eta = newTrack['eta']
     tth = newTrack['tth']
+    gamma = params['gamma']
     detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
     rad_dom, eta_dom = polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
     deta = eta_dom[1]-eta_dom[0]
@@ -694,10 +692,6 @@ def peakDetected(newTrack,prevTracks,params):
         # print('Mean exceeds ROI')
         return peakFound
     
-    # if (p[3]==0) | (p[4]==0):
-    #     peakFound = False
-    #     print('A FWHM is 0')
-    #     return peakFound
     if (p[3]==0): p[3] += 0.001
     if (p[4]==0): p[4] += 0.001
     
@@ -712,10 +706,9 @@ def peakDetected(newTrack,prevTracks,params):
         etaPrev = pTrack['eta']
         tthPrev = pTrack['tth']
         # New track criterion
-        shiftDist = np.sqrt(((eta-etaPrev)/deta)**2 + ((tth-tthPrev)/dtth)**2)
-        sizeDiff = np.linalg.norm(p[3:5]-pPrev[3:5])
-        if (shiftDist < 3) & (sizeDiff < 5):
-            # print(f'shiftDist={shiftDist}, sizeDiff={sizeDiff}')
+        crit1 = (abs(eta-etaPrev)/deta < gamma[0]) & (abs(tth-tthPrev)/dtth < gamma[1])
+        crit2 = (abs(p[3] - pPrev[3]) < gamma[2]) & (abs(p[4] - pPrev[4]) < gamma[3])
+        if crit1 & crit2:
             peakFound = True
             return peakFound
         else:
@@ -759,101 +752,249 @@ def scatterOmeg(trackData):
 
     return fig
 
-def spotTracker(dataPath,outFile,spotData,spotInds,params,scan1):
+def collectSpotsData(topPath,spotsDir):
+    # Get a list of file names in the directory and sort them
+    spotsPath = topPath + spotsDir
+    all_entries = os.listdir(spotsPath)
+    directories = [entry for entry in all_entries if os.path.isdir(os.path.join(spotsPath,entry))]
+    fold_names = sorted(directories)
+    
+    created = 0
+    # Loop through sorted file names
+    for fold_name in fold_names:
+        file_names = sorted(os.listdir(os.path.join(spotsPath, fold_name)))
+        print(fold_name)
+        for file_name in file_names:
+            if file_name.endswith(".out"):  # Check if the file has a ".out" extension
+                file_path = os.path.join(spotsPath,fold_name, file_name)
+                
+                # Load .out file
+                df = pd.read_csv(file_path,sep=' \s+',engine='python')  
+                
+                # Get a HEXD spot location
+                if not created:
+                    Xs = np.array(df['pred X'])
+                    Ys = np.array(df['pred Y'])
+                    id_nums = np.array(df['# ID'])
+                    grain_nums = int(file_name[-7:-4])*np.ones(df['pred X'].shape)
+                    tths = np.array(df['meas tth'])
+                    etas = np.array(df['meas eta'])
+                    omes = np.array(df['meas ome'])*180/np.pi
+                    created = 1
+                else:
+                    Xs = np.append(Xs, np.array(df['pred X']))
+                    Ys = np.append(Ys, np.array(df['pred Y']))
+                    id_nums = np.append(id_nums, np.array(df['# ID']))
+                    grain_nums = np.append(grain_nums,int(file_name[-7:-4])*np.ones(df['pred X'].shape))
+                    tths = np.append(tths, np.array(df['meas tth']))
+                    etas = np.append(etas, np.array(df['meas eta']))
+                    omes = np.append(omes, np.array(df['meas ome'])*180/np.pi)
+                
+    invalid_nums = id_nums == -999        
+    Xs = np.delete(Xs, invalid_nums).astype(float)
+    Ys = np.delete(Ys, invalid_nums).astype(float)
+    id_nums = np.delete(id_nums, invalid_nums).astype(float)
+    grain_nums = np.delete(grain_nums, invalid_nums).astype(float)
+    tths = np.delete(tths, invalid_nums).astype(float)
+    etas = np.delete(etas, invalid_nums).astype(float)
+    omes = np.delete(omes, invalid_nums).astype(float)
+    
+    ome_idxs = omegaToFrame(omes)
+    
+    sort_ind = np.argsort(omes)
+    
+    ome_idxs = ome_idxs[sort_ind]
+    Xs = Xs[sort_ind]
+    Ys = Ys[sort_ind]
+    id_nums = id_nums[sort_ind]
+    tths = tths[sort_ind]
+    etas = etas[sort_ind]
+    omes = omes[sort_ind]
+    grain_nums = grain_nums[sort_ind]
+    
+    np.savez(topPath + spotsDir + '.npz',Xs=Xs,Ys=Ys,id_nums=id_nums,\
+    tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
+
+def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     # Initialize 
-    trackData = [[]]
     initData = {}
     initData['tths'] = spotData['tths'][spotInds]
     initData['etas'] = spotData['etas'][spotInds]
     initData['frms'] = spotData['ome_idxs'][spotInds]
     
+    # Initialize tracks
+    fnames = pathToFile(exsituPath)
+    fname1 = exsituPath+fnames[0]
+    fname2 = exsituPath+fnames[1]
     i = 0
     t = scan1 # Scan index
+    print('')
+    print(f'Scan {t}, Spot:', end=" ")
+    for k,s in enumerate(spotInds):
+        print(f'{k}', end=" ")
+        etaRoi = initData['etas'][s]
+        tthRoi = initData['tths'][s]
+        frm = initData['frms'][s]
+        initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
+    
+    i += 1
+    t += 1
     while True:
         # Try reading in file for new scan
-        fname1,fname2 = timeToFile(t,dataPath)
-        
+        dataDir = dataPath + f'{t}\\ff\\'
+        try:
+            fnames = pathToFile(dataDir)
+        except:
+            print('No new data')
+            time.sleep(1)
+            continue
         # if read is successful...
-        trackData.append([])
-        print('')
-        print('Spot:', end=" ")
-        for k,s in enumerate(spotInds):#initData['etas'].shape[0]):    
-            print(f'{k}', end=" ")
-            trackData[i].append([])
-            if i == 0:           
-                eta = initData['etas'][s]
-                tth = initData['tths'][s]
-                frm = initData['frms'][s]
-                prevTracks = []
-                newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
-                                    tth,eta,int(frm),t,params)
-                trackData[i][k].append(newTrack)
-            else:
-                prevTracks = trackData[i-1][k]
-                if len(prevTracks) == 0:
-                    continue
-                
-            # Initial Search: through all current omega tracks, then check up and down for\
-            # tracks (not sure exactly when search through omega will be considered done)    
-            for track in prevTracks:
-                eta = track['eta']
-                tth = track['tth']
-                frm = track['frm']
-                # print(f'Checking prev track at frame {frm}')
-                # Load ROI and fit peak
-                newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
-                                    tth,eta,int(frm),t,params)
-                
-                # Add to list if peakFound
-                if peakFound: 
-                    # print(f'Peak found at frame {frm}')
-                    trackData[i][k].append(newTrack)
+        if len(fnames) > 0:
+            fname1 = dataDir + fnames[0]
+            fname2 = dataDir + fnames[1]
+
+            print('')
+            print(f'Scan {t}, Spot:', end=" ")
+            for k,s in enumerate(spotInds): 
+                print(f'{k}', end=" ")
+                processSpot(k,s,t,params,outPath,fname1,fname2)
             
-            # If we have a track
-            if len(trackData[i][k]) > 0:
-                compareTrack = trackData[i][k]
-                frm1 = trackData[i][k][0]['frm']
-                frm2 = trackData[i][k][-1]['frm']
-            else:
-                compareTrack = trackData[i-1][k]
-                frm1 = trackData[i-1][k][0]['frm']
-                frm2 = trackData[i-1][k][-1]['frm']
+            i += 1
+            t += 1
+        
+def initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
+    prevTracks = []
+    newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
+                        tthRoi,etaRoi,int(frm),t,params)
+    trackData = []
+    trackData.append([newTrack])
+    with open(outPath + f'trackData_{k}.pkl', 'wb') as f:
+        pickle.dump(trackData, f)
+    
+def processSpot(k,s,t,params,outPath,fname1,fname2):
+    outFile = outPath + f'trackData_{k}.pkl'
+    # Load in track so far
+    with open(outFile, 'rb') as f:
+        trackData = pickle.load(f)
+    trackData.append([])
+    T = len(trackData)
+
+    prevTracks = []
+    lag = 1
+    while (len(prevTracks) == 0) & (T-lag >= 0):
+        prevTracks = trackData[T-lag]
+        lag = lag + 1
+        
+    # Initial Search: through all current omega tracks, then check up and down for\
+    # tracks (not sure exactly when search through omega will be considered done)    
+    for track in prevTracks:
+        eta = track['eta']
+        tth = track['tth']
+        frm = track['frm']
+
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
+                            tth,eta,int(frm),t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Peak found at frame {frm}')
+            trackData[T-1].append(newTrack)
+            compareTrack = trackData[T-1]
+            frm1 = trackData[T-1][0]['frm']
+            frm2 = trackData[T-1][-1]['frm']
+            break
+    
+    # Conduct Expanded Search if no peaks were found
+    if len(trackData[T-1]) == 0:
+        frm1 = prevTracks[0]['frm']
+        frm2 = prevTracks[-1]['frm']
+        expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
+        for frm in expandRange:
+            frm = int(wrapFrame(frm))
+            newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
+                                tth,eta,frm,t,params)
+            if peakFound: 
+                # print(f'Peak found at frame {frm}')
+                trackData[T-1].append(newTrack)
+                compareTrack = trackData[T-1]
+                frm1 = trackData[T-1][0]['frm']
+                frm2 = trackData[T-1][-1]['frm']
+                break
+    
+    # Incremental Search if we have a peak found
+    # Search down
+    if len(trackData[T-1]) > 0: peakFound = True
+    while peakFound:
+        frm1 = frm1 - 1
+        frm = int(wrapFrame(frm1))
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
+                                          tth,eta,frm,t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Found more at {frm1}')
+            trackData[T-1].insert(0,newTrack)
+
+    # Search up
+    if len(trackData[T-1]) > 0: peakFound = True
+    while peakFound:
+        frm2 = frm2 + 1
+        frm = int(wrapFrame(frm2))
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
+                                          tth,eta,frm,t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Found more at {frm2}')
+            trackData[T-1].append(newTrack)
+
+    with open(outFile, 'wb') as f:
+        pickle.dump(trackData, f)
+        
+def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
+    # Initialize 
+    initData = {}
+    initData['tths'] = spotData['tths'][spotInds]
+    initData['etas'] = spotData['etas'][spotInds]
+    initData['frms'] = spotData['ome_idxs'][spotInds]
+    
+    # Initialize tracks
+    fnames = pathToFile(exsituPath)
+    fname1 = exsituPath + fnames[0]
+    fname2 = exsituPath + fnames[1]
+    i = 0
+    t = scan1  # Scan index
+    print('')
+    print(f'Scan {t}, Spot:', end=" ")
+    for k, s in enumerate(spotInds):
+        print(f'{k}', end=" ")
+        etaRoi = initData['etas'][s]
+        tthRoi = initData['tths'][s]
+        frm = initData['frms'][s]
+        initSpot(k, s, t, etaRoi, tthRoi, frm, params, outPath, fname1, fname2)
+    
+    i += 1
+    t += 1
+    while True:
+        # Try reading in file for new scan
+        dataDir = dataPath + f'{t}\\ff\\'
+        try:
+            fnames = pathToFile(dataDir)
+        except:
+            print('No new data')
+            time.sleep(1)
+            continue
+        # If read is successful...
+        if len(fnames) > 0:
+            fname1 = dataDir + fnames[0]
+            fname2 = dataDir + fnames[1]
+
+            print('')
+            print(f'Scan {t}, Spot:', end=" ")
+            for k, s in enumerate(spotInds): 
+                print(f'{k}', end=" ")
+                subprocess.run(['qsub', '-N', f'processSpotJob_{k}', '-o', f'output_{k}.txt', '-e', f'error_{k}.txt', '-b', 'y', 
+                                'python', 'process_spot.py', str(k), str(s), str(t), str(params), outPath, fname1, fname2])
             
-            # Search down
-            count = 0
-            while count < 3:
-                frm1 = wrapFrame(frm1 - 1)
-                
-                # Load ROI and fit peak
-                newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
-                                    tth,eta,int(frm1),t,params)
-      
-                # Add to list if peakFound
-                if peakFound: 
-                    print(f'Found more at {frm1}')
-                    trackData[i][k].insert(0,newTrack)
-                    count = 0
-                else:
-                    count += 1
-     
-            # Search Up
-            count = 0
-            while count < 3:
-                frm2 = wrapFrame(frm2 + 1)
-                # Load ROI and fit peak
-                newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
-                                    tth,eta,int(frm2),t,params)
-                           
-                # Add to list if peakFound
-                if peakFound: 
-                    # print(f'Found more at {frm2}')
-                    trackData[i][k].append(newTrack)
-                    count = 0
-                else:
-                    count += 1
-        
-        with open(outFile, 'wb') as f:
-            pickle.dump(trackData, f)
-        
-        i += 1
-        t += 1
+            i += 1
+            t += 1
