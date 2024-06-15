@@ -11,7 +11,7 @@ import spotfetch as sf
 # %% Processing Setup
 
 # Output data path
-topPath = "/nfs/chess/user/dbanco"
+topPath = "/nfs/chess/user/dbanco/"
 outPath = "/nfs/chess/user/dbanco/outputs"
 
 # Raw HEXD Data
