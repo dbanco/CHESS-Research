@@ -952,6 +952,24 @@ def processSpot(k,s,t,params,outPath,fname1,fname2):
         pickle.dump(trackData, f)
         
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
+    # Job template
+    job_script_template = """#!/bin/bash
+    #$ -N process_spot
+    #$ -cwd
+    #$ -pe smp 1
+    #$ -l h_vmem=4G
+    #$ -l h_rt=1:00:00
+    #$ -j y
+    #$ -o process_spot_$TASK_ID.out
+
+    # Activate virtual environment
+    source hexrdenv/bin/activate
+
+    conda activate hexrd-env
+
+    python3 process_spots.py {inputFile}
+    """
+    
     # Initialize 
     initData = {}
     initData['tths'] = spotData['tths'][spotInds]
@@ -977,7 +995,7 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
     t += 1
     while True:
         # Try reading in file for new scan
-        dataDir = dataPath + f'{t}\\ff\\'
+        dataDir = dataPath + f'{t}/ff/'
         try:
             fnames = pathToFile(dataDir)
         except:
@@ -993,8 +1011,17 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
             print(f'Scan {t}, Spot:', end=" ")
             for k, s in enumerate(spotInds): 
                 print(f'{k}', end=" ")
-                subprocess.run(['qsub', '-N', f'processSpotJob_{k}', '-o', f'output_{k}.txt', '-e', f'error_{k}.txt', '-b', 'y', 
-                                'python', 'process_spot.py', str(k), str(s), str(t), str(params), outPath, fname1, fname2])
-            
+                # Save input file
+                inputFile = f'inputs_{k}.pkl'
+                with open(inputFile, 'wb') as f:
+                    pickle.dump(k,s,t,params,outPath,fname1,fname2, f)
+                # Write job .sh file
+                job_script = job_script_template.format(inputFile=inputFile)
+                script_filename = f"job_{k}.sh"
+                with open(script_filename, 'w') as f:
+                    f.write(job_script)
+                # Submit job
+                os.system(f"qsub {script_filename}")
+ 
             i += 1
             t += 1

@@ -11,12 +11,12 @@ import spotfetch as sf
 # %% Processing Setup
 
 # Output data path
-topPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\"
-outPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
+topPath = "/nfs/chess/user/dbanco"
+outPath = "/nfs/chess/user/dbanco/outputs"
 
 # Raw HEXD Data
-exsituPath = "D:\\CHESS_raw_data\\ti-2-exsitu\\12\\ff\\"
-dataPath = "D:\\CHESS_raw_data\\ti-2-tension\\"
+exsituPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-exsitu/12/ff/"
+dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
 
 # Load in or collect spots data
 spotsDir = "spots_11032023"
@@ -31,7 +31,7 @@ spotInds = np.arange(0,5)
 params = {}
 # params['detector'] = 'eiger'
 params['detector'] = 'dexela'
-params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\dex-refined-1.yml"
+params['yamlFile'] = "/nfs/chess/user/dbanco/dex-refined-1.yml"
 params['imSize'] = (4888,7300) 
 params['roiSize'] = 40
 params['gamma'] = [3,5,3,3]
