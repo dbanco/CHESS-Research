@@ -954,22 +954,21 @@ def processSpot(k,s,t,params,outPath,fname1,fname2):
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
     # Job template
     job_script_template = """#!/bin/bash
-    #$ -N process_spot
+    #$ -N spotTrackerJobs
     #$ -cwd
     #$ -pe smp 1
     #$ -l h_vmem=4G
     #$ -l h_rt=1:00:00
     #$ -j y
-    #$ -o process_spot_$TASK_ID.out
+    #$ -o spotTrack_$TASK_ID.out
 
     # Activate virtual environment
     source hexrdenv/bin/activate
-
+    conda init bash
     conda activate hexrd-env
-
-    python3 process_spots.py {inputFile}
+    python3 CHESS-Research/Python/SPOTFETCH/process_spots.py {inputFile}
     """
-    
+
     # Initialize 
     initData = {}
     initData['tths'] = spotData['tths'][spotInds]

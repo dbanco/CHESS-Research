@@ -38,4 +38,4 @@ params['gamma'] = [3,5,3,3]
 
 scan1 = 43
 
-sf.spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1)
+sf.spotTrackerJobs(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1)
