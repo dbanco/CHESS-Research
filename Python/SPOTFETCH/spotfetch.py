@@ -1105,3 +1105,4 @@ python3 CHESS-Research/Python/SPOTFETCH/processSpotJob.py {inputFile}
  
             i += 1
             t += 1
+            break
