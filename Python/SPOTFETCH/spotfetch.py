@@ -951,6 +951,90 @@ def processSpot(k,s,t,params,outPath,fname1,fname2):
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
         
+def processSpotJob(inputFile):
+    
+    with open(inputFile, 'rb') as f:
+        k,s,t,params,outPath,fname1,fname2 = pickle.load(f)
+    
+    outFile = outPath + f'trackData_{k}.pkl'
+    # Load in track so far
+    with open(outFile, 'rb') as f:
+        trackData = pickle.load(f)
+    trackData.append([])
+    T = len(trackData)
+
+    prevTracks = []
+    lag = 1
+    while (len(prevTracks) == 0) & (T-lag >= 0):
+        prevTracks = trackData[T-lag]
+        lag = lag + 1
+        
+    # Initial Search: through all current omega tracks, then check up and down for\
+    # tracks (not sure exactly when search through omega will be considered done)    
+    for track in prevTracks:
+        eta = track['eta']
+        tth = track['tth']
+        frm = track['frm']
+
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
+                            tth,eta,int(frm),t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Peak found at frame {frm}')
+            trackData[T-1].append(newTrack)
+            compareTrack = trackData[T-1]
+            frm1 = trackData[T-1][0]['frm']
+            frm2 = trackData[T-1][-1]['frm']
+            break
+    
+    # Conduct Expanded Search if no peaks were found
+    if len(trackData[T-1]) == 0:
+        frm1 = prevTracks[0]['frm']
+        frm2 = prevTracks[-1]['frm']
+        expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
+        for frm in expandRange:
+            frm = int(wrapFrame(frm))
+            newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
+                                tth,eta,frm,t,params)
+            if peakFound: 
+                # print(f'Peak found at frame {frm}')
+                trackData[T-1].append(newTrack)
+                compareTrack = trackData[T-1]
+                frm1 = trackData[T-1][0]['frm']
+                frm2 = trackData[T-1][-1]['frm']
+                break
+    
+    # Incremental Search if we have a peak found
+    # Search down
+    if len(trackData[T-1]) > 0: peakFound = True
+    while peakFound:
+        frm1 = frm1 - 1
+        frm = int(wrapFrame(frm1))
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
+                                          tth,eta,frm,t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Found more at {frm1}')
+            trackData[T-1].insert(0,newTrack)
+
+    # Search up
+    if len(trackData[T-1]) > 0: peakFound = True
+    while peakFound:
+        frm2 = frm2 + 1
+        frm = int(wrapFrame(frm2))
+        # Load ROI and fit peak
+        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
+                                          tth,eta,frm,t,params)
+        # Add to list if peakFound
+        if peakFound: 
+            # print(f'Found more at {frm2}')
+            trackData[T-1].append(newTrack)
+
+    with open(outFile, 'wb') as f:
+        pickle.dump(trackData, f)
+        
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
     # Job template
     job_script_template = """#!/bin/bash
@@ -966,7 +1050,7 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
     source hexrdenv/bin/activate
     conda init bash
     conda activate hexrd-env
-    python3 CHESS-Research/Python/SPOTFETCH/process_spots.py {inputFile}
+    python3 CHESS-Research/Python/SPOTFETCH/processSpotJob.py {inputFile}
     """
 
     # Initialize 
@@ -1013,7 +1097,7 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
                 # Save input file
                 inputFile = f'inputs_{k}.pkl'
                 with open(inputFile, 'wb') as f:
-                    pickle.dump(k,s,t,params,outPath,fname1,fname2, f)
+                    pickle.dump((k,s,t,params,outPath,fname1,fname2), f)
                 # Write job .sh file
                 job_script = job_script_template.format(inputFile=inputFile)
                 script_filename = f"job_{k}.sh"
