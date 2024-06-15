@@ -1047,7 +1047,7 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
 source hexrdenv/bin/activate
 conda init bash
 conda activate hexrd-env
-python3 "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); import spotfetch as sf; sf.processSpotJob('{inputFile}')
+python3 "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); import spotfetch as sf; sf.processSpotJob('{inputFile}')"
 """
 
     # Initialize 
