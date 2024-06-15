@@ -1038,20 +1038,17 @@ def processSpotJob(inputFile):
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
     # Job template
     job_script_template = """#!/bin/bash
-    #$ -N spotTrackerJobs
-    #$ -cwd
-    #$ -pe smp 1
-    #$ -l h_vmem=4G
-    #$ -l h_rt=1:00:00
-    #$ -j y
-    #$ -o spotTrack_$TASK_ID.out
-
-    # Activate virtual environment
-    source hexrdenv/bin/activate
-    conda init bash
-    conda activate hexrd-env
-    python3 CHESS-Research/Python/SPOTFETCH/processSpotJob.py {inputFile}
-    """
+#$ -N spotTrackerJobs
+#$ -cwd
+#$ -l h_vmem=4G
+#$ -l h_rt=1:00:00
+#$ -j y
+#$ -o spotTrack_$TASK_ID.out
+source hexrdenv/bin/activate
+conda init bash
+conda activate hexrd-env
+python3 CHESS-Research/Python/SPOTFETCH/processSpotJob.py {inputFile}
+"""
 
     # Initialize 
     initData = {}
