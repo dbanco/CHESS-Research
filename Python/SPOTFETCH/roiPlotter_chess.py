@@ -67,7 +67,7 @@ for k in [0]:#range(10):
     params = {}
     # params['detector'] = 'eiger'
     params['detector'] = 'dexela'
-    params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\dex-refined-1.yml"
+    params['yamlFile'] = "/nfs/chess/user/dbanco/dex-refined-1.yml"
     params['imSize'] = (4888,7300) 
     params['roiSize'] = 40
     

@@ -577,7 +577,7 @@ def wrapFrame(frm,frm0=4,frmEnd=1441):
 
 def timeToFile(t,fDir):
     dNum = str(t)
-    topDir = fDir + dNum + '\\ff'
+    topDir = os.path.join(fDir + dNum, 'ff')
     fnames = os.listdir(topDir)
     fnames.sort()
     fname1 = os.path.join(topDir,fnames[0])
