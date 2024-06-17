@@ -1029,7 +1029,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
  
             i += 1
             t += 1
-            # break
+            break
 
     
 def compAvgParams(track):   
