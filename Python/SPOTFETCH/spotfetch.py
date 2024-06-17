@@ -987,7 +987,7 @@ def collect_job_ids():
         return []
     
 def check_job_status(job_id):
-    result = subprocess.run(['qstat -u dbanco'], capture_output=True, text=True)
+    result = subprocess.run(['qstat'], capture_output=True, text=True)
     return job_id in result.stdout
 
 def wait_for_jobs(job_ids):
