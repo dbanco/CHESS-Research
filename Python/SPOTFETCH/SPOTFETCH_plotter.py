@@ -25,7 +25,7 @@ class DataPlotter:
         self.cb_present = [False, False, False, False, False]
         self.cb = [None, None, None, None, None]
         # Explicitly create a figure and pass it to subplots
-        self.fig = Figure(figsize=(5, 10))
+        self.fig = Figure(figsize=(5, 8))
         self.gs = gridspec.GridSpec(5, 1, height_ratios=[1, 1, 1, 1, 1])
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=45)
@@ -38,7 +38,7 @@ class DataPlotter:
 
         # Dropdown menu for selecting plot
         self.dropdown_menus = []
-        dropdown_options = ["ROI/Track", "Omega Detections", "FWHM_eta", "FWHM_tth", "Mean_eta", "Mean_tth"]
+        dropdown_options = ["Omega Detections", "FWHM_eta", "FWHM_tth", "Mean_eta", "Mean_tth","ROI/Track"]
         skip = 9
         for i in range(5):
             var = tk.StringVar()
@@ -85,7 +85,6 @@ class DataPlotter:
             ax.clear()
             # ax.set_title(f'{selected_plot_type} of Spot {spot_number}')
             
-            
             if spot_number.isnumeric():
                 k = int(spot_number)
             
@@ -94,11 +93,11 @@ class DataPlotter:
                     # Your plot logic for ROI/Track
                     T = len(self.trackData)
                     numROIs = 4
-                    full_roi = self.trackData[T-numROIs-1][k][0]['roi']
+                    full_roi = self.trackData[T-numROIs-1][0]['roi']
                     maxVal = max(full_roi.ravel())
                     for t in range(T-numROIs,T-1):
                     # if self.trackData[T-2] != []:
-                        full_roi = np.hstack((full_roi,maxVal*np.ones((40,2)),self.trackData[T-2][k][0]['roi']))
+                        full_roi = np.hstack((full_roi,maxVal*np.ones((40,2)),self.trackData[t][0]['roi']))
                     
                     img=ax.imshow(full_roi)
                     ax.set_xticks([])
@@ -112,8 +111,8 @@ class DataPlotter:
                     boxSize = 10
                     tt = 0
                     for t in range(T-numROIs-1,T-1):
-                        x = self.trackData[t][k][0]['p'][1]
-                        y = self.trackData[t][k][0]['p'][2]
+                        x = self.trackData[t][0]['p'][1]
+                        y = self.trackData[t][0]['p'][2]
                         start_col = round(x - boxSize//2) + 42*tt
                         start_row = round(y - boxSize//2)
                         tt += 1
@@ -126,15 +125,15 @@ class DataPlotter:
                     # Your plot logic for Omega Detections
                     T = len(self.trackData)
                     for t in range(T):
-                        if self.trackDats[i][t] != []:
-                            L = len(self.trackData[t][k])
+                        if self.trackData[t] != []:
+                            L = len(self.trackData[t])
                             if L > 0:
                                 for j in range(L):
-                                    omega = sf.frameToOmega(self.trackData[t][k][j]['frm'])
-                                    scan = self.trackData[t][k][j]['scan']
+                                    omega = sf.frameToOmega(self.trackData[t][j]['frm'])
+                                    scan = self.trackData[t][j]['scan']
                                     ax.scatter(scan,omega,marker='s',color='b')
-                                    ax.set_ylabel(r"$\omega$")  # Set y-axis label
-                                    ax.set_xlabel("Scan #")  # Set x-axis label
+                    ax.set_ylabel(r"$\omega$")  # Set y-axis label
+                    ax.set_xlabel("Scan #")  # Set x-axis label
                             
                     pass
                 elif selected_plot_type == "FWHM_eta":
@@ -144,9 +143,9 @@ class DataPlotter:
                     scan = np.zeros((T,1))
                     for t in range(T):
                         if self.trackData[t] != []:
-                            if self.trackData[t][k] != []:
-                                FWHMeta[t] = self.trackData[t][k][0]['p'][3]
-                                scan[t] = self.trackData[t][k][0]['scan']
+                            if self.trackData[t] != []:
+                                FWHMeta[t] = self.trackData[t][0]['p'][3]
+                                scan[t] = self.trackData[t][0]['scan']
                         else:
                             FWHMeta[t] = None
                             scan[t] = None
@@ -161,9 +160,9 @@ class DataPlotter:
                     scan = np.zeros((T,1))
                     for t in range(T):
                         if self.trackData[t] != []:
-                            if self.trackData[t][k] != []:
-                                MEANeta[t] = self.trackData[t][k][0]['eta']
-                                scan[t] = self.trackData[t][k][0]['scan']
+                            if self.trackData[t] != []:
+                                MEANeta[t] = self.trackData[t][0]['eta']
+                                scan[t] = self.trackData[t][0]['scan']
                         else:
                             MEANeta[t] = None
                             scan[t] = None
@@ -178,9 +177,9 @@ class DataPlotter:
                     scan = np.zeros((T,1))
                     for t in range(T):
                         if self.trackData[t] != []:
-                            if self.trackData[t][k] != []:
-                                FWHMtth[t] = self.trackData[t][k][0]['p'][4]
-                                scan[t] = self.trackData[t][k][0]['scan']
+                            if self.trackData[t] != []:
+                                FWHMtth[t] = self.trackData[t][0]['p'][4]
+                                scan[t] = self.trackData[t][0]['scan']
                         else:
                             FWHMtth[t] = None
                             scan[t] = None
@@ -195,9 +194,9 @@ class DataPlotter:
                     scan = np.zeros((T,1))
                     for t in range(T):
                         if self.trackData[t] != []:
-                            if self.trackData[t][k] != []:
-                                MEANtth[t] = self.trackData[t][k][0]['tth']
-                                scan[t] = self.trackData[t][k][0]['scan']
+                            if self.trackData[t] != []:
+                                MEANtth[t] = self.trackData[t][0]['tth']
+                                scan[t] = self.trackData[t][0]['scan']
                         else:
                             MEANtth[t] = None
                             scan[t] = None

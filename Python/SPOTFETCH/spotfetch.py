@@ -952,88 +952,12 @@ def processSpot(k,s,t,params,outPath,fname1,fname2):
         pickle.dump(trackData, f)
         
 def processSpotJob(inputFile):
-    
+
     with open(inputFile, 'rb') as f:
         k,s,t,params,outPath,fname1,fname2 = pickle.load(f)
-    
-    outFile = outPath + f'trackData_{k}.pkl'
-    # Load in track so far
-    with open(outFile, 'rb') as f:
-        trackData = pickle.load(f)
-    trackData.append([])
-    T = len(trackData)
-
-    prevTracks = []
-    lag = 1
-    while (len(prevTracks) == 0) & (T-lag >= 0):
-        prevTracks = trackData[T-lag]
-        lag = lag + 1
         
-    # Initial Search: through all current omega tracks, then check up and down for\
-    # tracks (not sure exactly when search through omega will be considered done)    
-    for track in prevTracks:
-        eta = track['eta']
-        tth = track['tth']
-        frm = track['frm']
-
-        # Load ROI and fit peak
-        newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
-                            tth,eta,int(frm),t,params)
-        # Add to list if peakFound
-        if peakFound: 
-            # print(f'Peak found at frame {frm}')
-            trackData[T-1].append(newTrack)
-            compareTrack = trackData[T-1]
-            frm1 = trackData[T-1][0]['frm']
-            frm2 = trackData[T-1][-1]['frm']
-            break
+    processSpot(k,s,t,params,outPath,fname1,fname2)
     
-    # Conduct Expanded Search if no peaks were found
-    if len(trackData[T-1]) == 0:
-        frm1 = prevTracks[0]['frm']
-        frm2 = prevTracks[-1]['frm']
-        expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
-        for frm in expandRange:
-            frm = int(wrapFrame(frm))
-            newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
-                                tth,eta,frm,t,params)
-            if peakFound: 
-                # print(f'Peak found at frame {frm}')
-                trackData[T-1].append(newTrack)
-                compareTrack = trackData[T-1]
-                frm1 = trackData[T-1][0]['frm']
-                frm2 = trackData[T-1][-1]['frm']
-                break
-    
-    # Incremental Search if we have a peak found
-    # Search down
-    if len(trackData[T-1]) > 0: peakFound = True
-    while peakFound:
-        frm1 = frm1 - 1
-        frm = int(wrapFrame(frm1))
-        # Load ROI and fit peak
-        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
-                                          tth,eta,frm,t,params)
-        # Add to list if peakFound
-        if peakFound: 
-            # print(f'Found more at {frm1}')
-            trackData[T-1].insert(0,newTrack)
-
-    # Search up
-    if len(trackData[T-1]) > 0: peakFound = True
-    while peakFound:
-        frm2 = frm2 + 1
-        frm = int(wrapFrame(frm2))
-        # Load ROI and fit peak
-        newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
-                                          tth,eta,frm,t,params)
-        # Add to list if peakFound
-        if peakFound: 
-            # print(f'Found more at {frm2}')
-            trackData[T-1].append(newTrack)
-
-    with open(outFile, 'wb') as f:
-        pickle.dump(trackData, f)
         
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
     # Job template
@@ -1105,4 +1029,20 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
  
             i += 1
             t += 1
-            break
+            # break
+
+    
+def compAvgParams(track):   
+    J = len(track) 
+    avgFWHMeta = 0
+    avgFWHMtth = 0
+    avgEta = 0
+    avgTth = 0
+    for j in range(J):
+        avgFWHMeta += track[j]['p'][3]/J
+        avgFWHMtth += track[j]['p'][4]/J
+        avgEta += track[j]['eta']/J
+        avgTth += track[j]['tth']/J
+    
+    return avgFWHMeta,avgFWHMtth,avgEta,avgTth
+        
