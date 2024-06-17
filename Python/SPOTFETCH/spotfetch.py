@@ -967,7 +967,7 @@ def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, s
 #$ -l h_vmem=4G
 #$ -l h_rt=1:00:00
 #$ -j y
-#$ -o spotTrack_$TASK_ID.out
+#$ -o spotTrack_{k}.out
 source hexrdenv/bin/activate
 conda init bash
 conda activate hexrd-env
@@ -1020,7 +1020,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
                 with open(inputFile, 'wb') as f:
                     pickle.dump((k,s,t,params,outPath,fname1,fname2), f)
                 # Write job .sh file
-                job_script = job_script_template.format(inputFile=inputFile)
+                job_script = job_script_template.format(k=k,inputFile=inputFile)
                 script_filename = f"job_{k}.sh"
                 with open(script_filename, 'w') as f:
                     f.write(job_script)
