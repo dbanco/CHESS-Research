@@ -827,7 +827,7 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     fname1 = exsituPath+fnames[0]
     fname2 = exsituPath+fnames[1]
     i = 0
-    t = 0
+    t = scan1-1
      # Scan index
     print('')
     print(f'Scan {t}, Spot:', end=" ")
@@ -1030,7 +1030,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
     fname1 = os.path.join(exsituPath,fnames[0])
     fname2 = os.path.join(exsituPath,fnames[1])
     i = 0
-    t = scan1  # Scan index
+    t = scan1-1  # Scan index
     print('')
     print(f'Scan {t}, Spot:', end=" ")
     for k, s in enumerate(spotInds):
