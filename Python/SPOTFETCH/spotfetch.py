@@ -811,8 +811,8 @@ def collectSpotsData(topPath,spotsDir):
     etas = etas[sort_ind]
     omes = omes[sort_ind]
     grain_nums = grain_nums[sort_ind]
-    
-    np.savez(topPath + spotsDir + '.npz',Xs=Xs,Ys=Ys,id_nums=id_nums,\
+    saveFile = os.path.join(topPath,'spots',spotsDir + '.npz')
+    np.savez(saveFile,Xs=Xs,Ys=Ys,id_nums=id_nums,\
     tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
 
 def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
@@ -830,7 +830,7 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     t = scan1-1
      # Scan index
     print('')
-    print(f'Scan {t}, Spot:', end=" ")
+    print(f'Ex-Situ Scan ({t}), Spot:', end=" ")
     for k,s in enumerate(spotInds):
         print(f'{k}', end=" ")
         etaRoi = initData['etas'][s]

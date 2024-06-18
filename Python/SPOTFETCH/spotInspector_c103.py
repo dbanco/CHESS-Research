@@ -9,23 +9,27 @@ import numpy as np
 import spotfetch as sf
 
 # Output data path
-outPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\"
+# outPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\"
+for i in range(1,3):
+    for j in range(1,3):
+        outPath = "/nfs/chess/user/dbanco/c103_processing/Sample-{i}/layer-{j}/spots"
+        
+        # Load in or collect spots data
+        topPath = '/nfs/chess/aux/user/wkk32/C103-spots-grains-files'
+        spotsDir = 'Sample-{i}/c103-{i}-reconstruction_grains-layer-{j}'
+        # Get data from spots data
+        sf.collectSpotsData(outPath, spotsDir)
+# spotsFile = spotsDir + ".npz"  
+# spotData = np.load(outPath + spotsFile)
 
-# Load in or collect spots data
-spotsDir = "Sample-1\\c103-1-reconstruction_grains-layer-1"
-# Get data from spots data
-# sf.collectSpotsData(outPath, spotsDir)
-spotsFile = spotsDir + ".npz"  
-spotData = np.load(outPath + spotsFile)
-
-# Full dexela image size and roi size
-params = {}
-# params['detector'] = 'eiger'
-params['detector'] = 'dexela'
-# params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\dexelas_calibrated_ce02_80725_v01.yml"
-params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\dexelas_calibrated_ruby_0504_v01.yml"
-params['imSize'] = (4300,7000) 
-params['roiSize'] = 40   
+# # Full dexela image size and roi size
+# params = {}
+# # params['detector'] = 'eiger'
+# params['detector'] = 'dexela'
+# # params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\dexelas_calibrated_ce02_80725_v01.yml"
+# params['yamlFile'] = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\dexelas_calibrated_ruby_0504_v01.yml"
+# params['imSize'] = (4300,7000) 
+# params['roiSize'] = 40   
 
 # interpDirFile = folder_path + "_interp\\" + folder_path+'_interp_frame_'
 

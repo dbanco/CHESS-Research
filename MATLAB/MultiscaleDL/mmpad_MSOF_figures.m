@@ -34,8 +34,8 @@ ylabel('\sigma')
 xlabel('t')
 
 %%
-saveas(f2a,fullfile(figDir,['vdf1','.png']))
-saveas(f2b,fullfile(figDir,['vdf2','.png']))
+% saveas(f2a,fullfile(figDir,['vdf1','.png']))
+% saveas(f2b,fullfile(figDir,['vdf2','.png']))
 
 %% Plot multiscale dict atoms
 D = outputs.D;
@@ -77,7 +77,7 @@ for i = 0:7
     xlim([0 261])
     ylim([0 0.33])
     f13j{i+1}.Position = [500  500-50*i  340 110];
-    saveas(f13j{i+1},fullfile(figDir,['atom_K2_J',num2str(i+1),'.png']))
+%     saveas(f13j{i+1},fullfile(figDir,['atom_K2_J',num2str(i+1),'.png']))
 end
 
 %%
@@ -103,8 +103,8 @@ yticklabels({'0', '120'});
 ff2=figure;
 waterfall(squeeze(y)')
 ff2.Position = fig_pos2;
-xlim([0,261])
-ylim([0,120])
+% xlim([0,261])
+% ylim([0,120])
 clim([0,0.9])
 view(azimuth, elevation);
 xticks([61 161,261]); 

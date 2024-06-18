@@ -84,7 +84,7 @@ set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
 set(gca,'CLim', [clim1 clim2])
 view( az , el )
-f1.Position = [1200,600,s1,s2];
+f1.Position = [600,300,s1,s2];
 
 f2 = figure(6);
 waterfall((eta_range),(x_time),B')
@@ -96,7 +96,7 @@ set(gca, 'ZScale', 'log');
 set(gca, 'ColorScale', 'log');
 set(gca,'CLim', [clim1 clim2])
 view( az , el )
-f2.Position = [1200,200,s1,s2];
+f2.Position = [600,200,s1,s2];
 % 
 % %% Create color legend
 % leg_str = cell(m,1);
