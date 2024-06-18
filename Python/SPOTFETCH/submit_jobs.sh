@@ -1,7 +1,7 @@
 #!/bin/bash
 
-dataPath="D:\\CHESS_raw_data\\ti-2-tension\\"
-outPath="C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
+dataPath="/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
+outPath="nfs/chess/user/dbanco/outputs/"
 params="params_string"  # Make sure this is formatted correctly to be parsed in the Python script
 
 # Initial values

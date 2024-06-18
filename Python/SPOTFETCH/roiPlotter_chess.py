@@ -10,13 +10,13 @@ import numpy as np
 import pickle
 import os
 
-topPath = "/nfs/chess/user/dbanco/"
-outPath = "/nfs/chess/user/dbanco/outputs/"
+topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+outPath = os.path.join(topPath,'outputs')
 dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
 
 # Get initial tracks
-spotsFile= "spots_11032023.npz"
-spotData = np.load(topPath + spotsFile)
+spotsFile= os.path.join(topPath,'spots','spots_11032023.npz')
+spotData = np.load(spotsFile)
 
 initData = {
     'tths': spotData['tths'],
@@ -61,13 +61,13 @@ for k in [0]:#range(10):
     fig.text(0.5, 0.95, f'Spot {k}', ha='center', fontsize=32)
     
     # Path to the track data file
-    track_file = outPath + f'trackData_{k}.pkl'
+    track_file = os.path.join(outPath,f'trackData_{k}.pkl')
     
     # Full dexela image size and roi size
     params = {}
     # params['detector'] = 'eiger'
     params['detector'] = 'dexela'
-    params['yamlFile'] = "/nfs/chess/user/dbanco/dex-refined-1.yml"
+    params['yamlFile'] = "/nfs/chess/user/dbanco/ti-2_processing/dex-refined-1.yml"
     params['imSize'] = (4888,7300) 
     params['roiSize'] = 40
     
