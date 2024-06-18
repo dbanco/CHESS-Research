@@ -851,8 +851,8 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
             continue
         # if read is successful...
         if len(fnames) > 0:
-            fname1 = dataDir + fnames[0]
-            fname2 = dataDir + fnames[1]
+            fname1 = os.path.join(dataDir,fnames[0])
+            fname2 = os.path.join(dataDir,fnames[1])
 
             print('')
             print(f'Scan {t}, Spot:', end=" ")
@@ -1027,8 +1027,8 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
     
     # Initialize tracks
     fnames = pathToFile(exsituPath)
-    fname1 = exsituPath + fnames[0]
-    fname2 = exsituPath + fnames[1]
+    fname1 = os.path.join(exsituPath,fnames[0])
+    fname2 = os.path.join(exsituPath,fnames[1])
     i = 0
     t = scan1  # Scan index
     print('')
@@ -1053,8 +1053,8 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
             continue
         # If read is successful...
         if len(fnames) > 0:
-            fname1 = dataDir + fnames[0]
-            fname2 = dataDir + fnames[1]
+            fname1 = os.path.join(dataDir,fnames[0])
+            fname2 = os.path.join(dataDir,fnames[1])
 
             print('')
             print(f'Scan {t}, Spot:', end=" ")
