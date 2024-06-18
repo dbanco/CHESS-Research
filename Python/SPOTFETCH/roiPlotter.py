@@ -19,7 +19,7 @@ outPath = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
 dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
 
 # Get initial tracks
-spotsFile= os.path.join(topPath,'spots_11032023.npz')
+spotsFile= os.path.join(topPath,'spots','spots_11032023.npz')
 spotData = np.load(spotsFile)
 
 initData = {
