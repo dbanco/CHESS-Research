@@ -24,7 +24,7 @@ spotsDir = "spots_11032023"
 # sf.collectSpotsData(dataPath, spotsDir)
 spotsFile = spotsDir + ".npz"  
 spotData = np.load(os.path.join(topPath,'spots',spotsFile))
-spotInds = np.arange(0,50) 
+spotInds = np.arange(0,25) 
 
 
 # Full dexela image size and roi size
@@ -34,7 +34,7 @@ params['detector'] = 'dexela'
 params['yamlFile'] = os.path.join(topPath,'dex-refined-1.yml')
 params['imSize'] = (4888,7300) 
 params['roiSize'] = 40
-params['gamma'] = [3,5,3,3]
+params['gamma'] = [10,10,4,4]
 
 scan1 = 43
 

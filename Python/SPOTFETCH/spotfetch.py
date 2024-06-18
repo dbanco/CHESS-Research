@@ -634,7 +634,11 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     tth_vals, eta_vals = np.indices(roi.shape)
     
     # 2. Estimate peak parameters (use from previous timestep)
+    # try:
+        # p0 = prevTracks[0]['p']
+    # except:
     p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
+    
     
     # 3. Fit peak
     p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
@@ -824,19 +828,19 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     
     # Initialize tracks
     fnames = pathToFile(exsituPath)
-    fname1 = exsituPath+fnames[0]
-    fname2 = exsituPath+fnames[1]
+    fname1 = os.path.join(exsituPath,fnames[0])
+    fname2 = os.path.join(exsituPath,fnames[1])
     i = 0
     t = scan1-1
      # Scan index
     print('')
     print(f'Ex-Situ Scan ({t}), Spot:', end=" ")
-    for k,s in enumerate(spotInds):
+    for s,k in enumerate(spotInds):
         print(f'{k}', end=" ")
         etaRoi = initData['etas'][s]
         tthRoi = initData['tths'][s]
         frm = initData['frms'][s]
-        initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
+        initSpot(k,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
     
     i += 1
     t = scan1
@@ -856,14 +860,14 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
 
             print('')
             print(f'Scan {t}, Spot:', end=" ")
-            for k,s in enumerate(spotInds): 
+            for s,k in enumerate(spotInds): 
                 print(f'{k}', end=" ")
-                processSpot(k,s,t,params,outPath,fname1,fname2)
+                processSpot(k,t,params,outPath,fname1,fname2)
             
             i += 1
             t += 1
         
-def initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
+def initSpot(k,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
     prevTracks = []
     newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
                         tthRoi,etaRoi,int(frm),t,params)
@@ -873,7 +877,7 @@ def initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
     
-def processSpot(k,s,t,params,outPath,fname1,fname2):
+def processSpot(k,t,params,outPath,fname1,fname2):
     outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
     # Load in track so far
     with open(outFile, 'rb') as f:
@@ -956,9 +960,9 @@ def processSpot(k,s,t,params,outPath,fname1,fname2):
 def processSpotJob(inputFile):
 
     with open(inputFile, 'rb') as f:
-        k,s,t,params,outPath,fname1,fname2 = pickle.load(f)
+        k,t,params,outPath,fname1,fname2 = pickle.load(f)
         
-    processSpot(k,s,t,params,outPath,fname1,fname2)
+    processSpot(k,t,params,outPath,fname1,fname2)
     
 def collect_job_ids():
     """
@@ -1033,12 +1037,12 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
     t = scan1-1  # Scan index
     print('')
     print(f'Scan {t}, Spot:', end=" ")
-    for k, s in enumerate(spotInds):
+    for s, k in enumerate(spotInds):
         print(f'{k}', end=" ")
         etaRoi = initData['etas'][s]
         tthRoi = initData['tths'][s]
         frm = initData['frms'][s]
-        initSpot(k, s, t, etaRoi, tthRoi, frm, params, outPath, fname1, fname2)
+        initSpot(k, t, etaRoi, tthRoi, frm, params, outPath, fname1, fname2)
     
     i += 1
     t += 1
@@ -1058,7 +1062,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
 
             print('')
             print(f'Scan {t}, Spot:', end=" ")
-            for k, s in enumerate(spotInds): 
+            for s, k in enumerate(spotInds): 
                 print(f'{k}', end=" ")
                 # Save input file
                 inputFile = os.path.join(outPath,'inputs',f'inputs_{k}.pkl')
