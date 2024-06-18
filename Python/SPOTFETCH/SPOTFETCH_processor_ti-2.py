@@ -12,8 +12,6 @@ import spotfetch as sf
 
 # Output data path
 topPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\"
-outPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
-
 # Raw HEXD Data
 exsituPath = "D:\\CHESS_raw_data\\ti-2-exsitu\\12\\ff\\"
 dataPath = "D:\\CHESS_raw_data\\ti-2-tension\\"
@@ -38,4 +36,4 @@ params['gamma'] = [3,5,4,4]
 
 scan1 = 43
 
-sf.spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1)
+sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)

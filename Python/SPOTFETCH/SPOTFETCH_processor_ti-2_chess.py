@@ -13,7 +13,6 @@ import os
 
 # Output data path
 topPath = "/nfs/chess/user/dbanco/ti-2_processing"
-outPath = os.path.join(topPath,'outputs')
 
 # Raw HEXD Data
 exsituPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-exsitu/12/ff/"

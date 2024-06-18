@@ -10,9 +10,13 @@ import numpy as np
 import pickle
 import os
 
-topPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\"
-outPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
-dataPath = "D:\\CHESS_raw_data\\ti-2-tension\\"
+# topPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\"
+# outPath = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
+# dataPath = "D:\\CHESS_raw_data\\ti-2-tension\\"
+
+topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+outPath = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
+dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
 
 # Get initial tracks
 spotsFile= "spots_11032023.npz"

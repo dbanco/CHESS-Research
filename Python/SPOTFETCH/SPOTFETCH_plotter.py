@@ -21,7 +21,7 @@ class DataPlotter:
     def __init__(self, root):
         self.root = root
         self.root.title("Live Data Plotter")
-        self.read_path = "C:\\Users\\dpqb1\\Documents\\Data\\ti-2\\outputs\\"
+        self.read_path = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
         self.cb_present = [False, False, False, False, False]
         self.cb = [None, None, None, None, None]
         # Explicitly create a figure and pass it to subplots
