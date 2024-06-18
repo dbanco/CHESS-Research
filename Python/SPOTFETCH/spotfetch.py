@@ -827,7 +827,8 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     fname1 = exsituPath+fnames[0]
     fname2 = exsituPath+fnames[1]
     i = 0
-    t = scan1 # Scan index
+    t = 0
+     # Scan index
     print('')
     print(f'Scan {t}, Spot:', end=" ")
     for k,s in enumerate(spotInds):
@@ -838,10 +839,10 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
         initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
     
     i += 1
-    t += 1
+    t = scan1
     while True:
         # Try reading in file for new scan
-        dataDir = dataPath + f'{t}\\ff\\'
+        dataDir = os.path.join(dataPath,f'{t}','ff')
         try:
             fnames = pathToFile(dataDir)
         except:
@@ -868,11 +869,12 @@ def initSpot(k,s,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
                         tthRoi,etaRoi,int(frm),t,params)
     trackData = []
     trackData.append([newTrack])
-    with open(outPath + f'trackData_{k}.pkl', 'wb') as f:
+    outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
+    with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
     
 def processSpot(k,s,t,params,outPath,fname1,fname2):
-    outFile = outPath + f'trackData_{k}.pkl'
+    outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
     # Load in track so far
     with open(outFile, 'rb') as f:
         trackData = pickle.load(f)
@@ -1005,7 +1007,7 @@ def wait_for_jobs(job_ids):
 def spotTrackerJobs(dataPath, outPath, exsituPath, spotData, spotInds, params, scan1):
     # Job template
     job_script_template = """#!/bin/bash
-#$ -N spotTrackerJobs
+#$ -N spotTrack_{k}
 #$ -cwd
 #$ -l h_vmem=4G
 #$ -l h_rt=1:00:00
@@ -1042,7 +1044,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
     t += 1
     while True:
         # Try reading in file for new scan
-        dataDir = dataPath + f'{t}/ff/'
+        dataDir = os.path.join(dataPath,f'{t}','ff')
         try:
             fnames = pathToFile(dataDir)
         except:
@@ -1059,12 +1061,12 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
             for k, s in enumerate(spotInds): 
                 print(f'{k}', end=" ")
                 # Save input file
-                inputFile = f'inputs_{k}.pkl'
+                inputFile = os.path.join(outPath,'inputs',f'inputs_{k}.pkl')
                 with open(inputFile, 'wb') as f:
                     pickle.dump((k,s,t,params,outPath,fname1,fname2), f)
                 # Write job .sh file
                 job_script = job_script_template.format(k=k,inputFile=inputFile)
-                script_filename = f"job_{k}.sh"
+                script_filename = os.path.join(outPath,'jobs',f'job_{k}.sh')
                 with open(script_filename, 'w') as f:
                     f.write(job_script)
                 # Submit job

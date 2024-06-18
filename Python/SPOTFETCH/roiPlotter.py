@@ -25,7 +25,7 @@ initData = {
 }
 
 # Choose spot
-for k in [0]:#range(10):
+for k in [25]:#range(10):
     print(f'Showing Spot {k}')
     eta0 = initData['etas'][k]
     tth0 = initData['tths'][k]
