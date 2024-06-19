@@ -1001,6 +1001,8 @@ def processSpot(k,t,params,outPath,fname1,fname2):
         if peakFound: 
             # print(f'Found more at {frm1}')
             trackData[T-1].insert(0,newTrack)
+            if len(trackData[T-1]) > 10:
+                break
 
     # Search up
     if len(trackData[T-1]) > 0: peakFound = True
@@ -1014,6 +1016,8 @@ def processSpot(k,t,params,outPath,fname1,fname2):
         if peakFound: 
             # print(f'Found more at {frm2}')
             trackData[T-1].append(newTrack)
+            if len(trackData[T-1]) > 10:
+                break
 
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)

@@ -27,21 +27,6 @@ img[img>50] = 50
 plt.imshow(img)
 plt.colorbar()
 
-
-
-
-# file1 = h5py.File(fname, 'r')
-# print(file1.keys())
-# group = file1['data']
-# print(group.keys())
-# group2 = file1['metadata']
-# meta1 = group2['output_metadata']
-# data1 = group['2']
-# data2 = data1['data']
-# print(data2.shape)
-
-# plt.imshow(img)
-
 # img  = sf.load_eiger(fname, yamlFile, t)
 # plt.imshow(img)
 
