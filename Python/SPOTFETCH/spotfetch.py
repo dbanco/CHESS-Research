@@ -47,7 +47,7 @@ def estMEANomega(track):
     roiOmega = np.zeros(len(track))
     omegaRange = np.zeros(len(track))
     meanOmega = 0
-    for i in len(track):
+    for i in range(len(track)):
         roiOmega[i] = np.sum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
         meanOmega += i*roiOmega
@@ -72,14 +72,14 @@ def estFWHMomega(track):
     omegaRange = np.zeros(len(track))
     meanOmega = 0
     varOmega = 0
-    for i in len(track):
+    for i in range(len(track)):
         roiOmega[i] = np.sum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
         meanOmega += i*roiOmega/step
     meanOmega = meanOmega/np.sum(roiOmega)
     
-    for i in len(track):
-        varOmega += roiOmega[i]*(i/step-meanOmega)**2/np.sum(roiOmega)
+    for i in range(len(track)):
+        varOmega += roiOmega[i]*(i/step-meanOmega)**2/np.sum(roiOmega,None)
 
     fwhmOmega = 2*np.sqrt(2*np.log(2)*varOmega)
     
@@ -972,7 +972,6 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
             t += 1
         
 def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fname1,fname2):
-    print(k)
     prevTracks = []
     newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
                         tthRoi,etaRoi,int(frm),t,params)

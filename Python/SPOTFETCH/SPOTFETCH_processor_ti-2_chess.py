@@ -24,7 +24,7 @@ spotsDir = "spots_11032023"
 # sf.collectSpotsData(dataPath, spotsDir)
 spotsFile = spotsDir + ".npz"  
 spotData = np.load(os.path.join(topPath,'spots',spotsFile))
-spotInds = np.arange(8,9) 
+spotInds = np.arange(10) 
 
 
 # Full dexela image size and roi size
@@ -37,5 +37,6 @@ params['roiSize'] = 40
 params['gamma'] = [7,7,4,4]
 
 scan1 = 43
-
+initTracksPath = os.path.join(topPath,'outputs')
+sf.initExsituTracks(initTracksPath,exsituPath, spotData, spotInds, params, scan1-1)
 sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)
