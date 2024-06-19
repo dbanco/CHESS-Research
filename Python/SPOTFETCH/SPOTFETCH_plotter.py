@@ -38,7 +38,7 @@ class DataPlotter:
 
         # Dropdown menu for selecting plot
         self.dropdown_menus = []
-        dropdown_options = ["FWHM_omega", "FWHM_eta", "FWHM_tth", "Mean_eta", "Mean_tth","Mean_omega"]
+        dropdown_options = ["FWHM_omega","FWHM_eta","FWHM_tth","Mean_omega","Mean_eta","Mean_tth","Omega #"]
         skip = 9
         for i in range(5):
             var = tk.StringVar()
@@ -85,8 +85,6 @@ class DataPlotter:
             # ax.set_title(f'{selected_plot_type} of Spot {spot_number}')
             
             if spot_number.isnumeric():
-            
-                # Handle different plot types based on selected option
                 if selected_plot_type == "FWHM_omega":
                     T = len(self.trackData)
                     FWHMomega = np.zeros((T,1))
@@ -100,7 +98,7 @@ class DataPlotter:
                             FWHMomega[t] = None
                             scan[t] = None
                     ax.plot(scan,FWHMomega,'-o')
-                    ax.set_ylabel(r"$FWHM_\eta$")  # Set y-axis label
+                    ax.set_ylabel(r"$FWHM_\omega$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "FWHM_eta":
@@ -120,7 +118,6 @@ class DataPlotter:
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "FWHM_tth":
-                    # Your plot logic for FWHM_tth
                     T = len(self.trackData)
                     FWHMtth = np.zeros((T,1))
                     scan = np.zeros((T,1))
@@ -137,7 +134,6 @@ class DataPlotter:
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "Mean_omega":
-                    # Your plot logic for Mean_eta
                     T = len(self.trackData)
                     MEANomega = np.zeros((T,1))
                     scan = np.zeros((T,1))
@@ -154,7 +150,6 @@ class DataPlotter:
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "Mean_eta":
-                    # Your plot logic for Mean_eta
                     T = len(self.trackData)
                     MEANeta = np.zeros((T,1))
                     scan = np.zeros((T,1))
@@ -185,6 +180,18 @@ class DataPlotter:
                             scan[t] = None
                     ax.plot(scan,MEANtth,'-o')
                     ax.set_ylabel(r"$\mu_{2\theta}$")  # Set y-axis label
+                    ax.set_xlabel("Scan #")  # Set x-axis label
+                    pass
+                elif selected_plot_type == "Omega #":
+                    # Your plot logic for Mean_tth
+                    T = len(self.trackData)
+                    numOmega = np.zeros((T,1))
+                    scan = np.zeros((T,1))
+                    for t in range(T):
+                        numOmega[t] = len(self.trackData[t])
+                        scan[t] = self.trackData[t][0]['scan']
+                    ax.plot(scan,numOmega,'-o')
+                    ax.set_ylabel(r"# $\omega$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 
