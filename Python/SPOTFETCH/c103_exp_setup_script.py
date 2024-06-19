@@ -12,23 +12,24 @@ import matplotlib.pyplot as plt
 
 # Output data path
 # Sets up directories and loads in the spot files
-# for i in range(1,3):
-#     for j in range(1,3):
-#         outPath = f"/mnt/scratch/dbanco/c103_processing/Sample-{i}"
-#         outPath2 = os.path.join(outPath,f'layer-{j}')
-#         outPath3 = os.path.join(outPath2,'spots')
-#         outPath4 = os.path.join(outPath2,'jobs')
-#         outPath5 = os.path.join(outPath2,'outputs')
-#         for path_i in [outPath,outPath2,outPath3,outPath4,outPath5]:
-#             if not os.path.exists(path_i):
-#                 os.mkdir(path_i)
+for i in range(1,3):
+    for j in range(1,3):
+        outPath = f"/nfs/chess/user/dbanco/c103_processing/Sample-{i}"
+        outPath2 = os.path.join(outPath,f'layer-{j}')
+        outPath3 = os.path.join(outPath2,'spots')
+        outPath4 = os.path.join(outPath2,'jobs')
+        outPath5 = os.path.join(outPath2,'outputs')
+        outPath6 = os.path.join(outPath2,'initTracks')
+        for path_i in [outPath,outPath2,outPath3,outPath4,outPath5,outPath6]:
+            if not os.path.exists(path_i):
+                os.mkdir(path_i)
                 
-#         # Load in or collect spots data
-#         topPath = '/nfs/chess/aux/user/wkk32/C103-spots-grains-files'
-#         spotsDir = f'Sample-{i}/c103-{i}-reconstruction_grains-layer-{j}'
+        # Load in or collect spots data
+        topPath = '/nfs/chess/aux/user/wkk32/C103-spots-grains-files'
+        spotsDir = f'Sample-{i}/c103-{i}-reconstruction_grains-layer-{j}'
         
-#         # Get data from spots data
-#         sf.collectSpotsData(outPath3, os.path.join(topPath,spotsDir))
+        # Get data from spots data
+        sf.collectSpotsData(outPath3, os.path.join(topPath,spotsDir))
       
 # %%
 fname = '/mnt/scratch/pagan-dwellfatigue-series-cycle-2024-2/ti6242-sample1-2_0011_EIG16M_CdTe_000001.h5'
