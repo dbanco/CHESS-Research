@@ -7,7 +7,7 @@ Created on Fri Apr 12 13:22:47 2024
 import numpy as np
 import scipy as sp
 import h5py
-# import hdf5plugin
+import hdf5plugin
 import pickle
 import pandas as pd
 import os
@@ -17,6 +17,7 @@ import yaml
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from hexrd.fitting import fitpeak
+from hexrd import imageseries
 # from hexrd.fitting import peakfunctions as pkfuncs
 
 def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
@@ -39,7 +40,7 @@ def loadYamlData(params,tth,eta):
     if params['detector'] == 'dexela':
         return loadYamlDataDexela(yamlFile,tth,eta)
     elif params['detector'] == 'eiger':
-        return loadYamlDataEiger(yamlFile,tth,eta)
+        return loadYamlDataEiger(yamlFile)
 
 def loadYamlDataDexela(yamlFile,tth,eta):
     yamlData = read_yaml(yamlFile)
@@ -55,36 +56,47 @@ def loadYamlDataDexela(yamlFile,tth,eta):
     
     return detectDist, mmPerPixel,ff_trans
 
-def loadYamlDataEiger(yamlFile,tth,eta):
+def loadYamlDataEiger(yamlFile):
     yamlData = read_yaml(yamlFile)
     ff_trans = yamlData['detectors']['eiger']['transform']['translation']
-    detectDist = ff_trans[2]
+    detectDist = -ff_trans[2]
     mmPerPixel = yamlData['detectors']['eiger']['pixels']['size'][0]
 
     return detectDist, mmPerPixel, ff_trans
 
-def load_eiger(fname,yamlFile,t,t2=None,imSize=(4362,4148)):
+def load_eiger(fname,params,t,t2=None,detectSize=(4362,4148)):
 
+    ims = imageseries.open(fname, format='eiger-stream-v1')
     if t2 is None:
-        with h5py.File(fname, 'r') as file1:
-            group = file1['entry']
-            data1 = group['data']
-            data2 = data1['data']
-            img = data2[t,:,:]
+        img = ims[t,:,:].copy()
     else:
-        with h5py.File(fname, 'r') as file1:
-            group = file1['entry']
-            data1 = group['data']
-            data2 = data1['data']
-            img = data2[t:t2,:,:]
-
-        # Take the maximum of multiple frames in time
+        img = ims[t:t2,:,:].copy()     
         img = np.max(img, axis=0)
 
+    imSize = params['imSize']
+    yamlFile = params['yamlFile']
 
-    # Maybe just need to adjust so center lies at center of image
+    # Pad image
+    bpad = np.zeros(imSize)
+    center = (imSize[0]/2, imSize[1]/2)
     
-    return img    
+    # Shift each panel
+    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    ff1_tx = ff_trans[0]
+    ff1_ty = ff_trans[1]
+    ff1_xshift = int(round(ff1_tx/mmPerPixel))
+    ff1_yshift = int(round(ff1_ty/mmPerPixel))
+    
+    # negative sign on y shift because rows increase downwards
+    ff1r1 = int(center[0]-detectSize[0]/2-ff1_yshift)
+    ff1r2 = int(center[0]+detectSize[0]/2-ff1_yshift)
+    
+    ff1c1 = int(center[1]-detectSize[1]/2+ff1_xshift)
+    ff1c2 = int(center[1]+detectSize[1]/2+ff1_xshift)
+        
+    bpad[ff1r1:ff1r2,ff1c1:ff1c2] = img
+
+    return bpad    
     
 def load_dex(fname1,fname2,params,t,t2=None,dexSize=(3888,3072)):
     if t2 is None:
@@ -170,10 +182,10 @@ def getInterpParamsEiger(tth,eta,params):
     
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
     x_cart, y_cart = fetchCartesian(rad_dom,eta_dom,center)
-    ff1_pix, ff2_pix = panelPixels(ff_trans,mmPerPixel,imSize)
+    ff_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
     
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
-    roiShape = getROIshape(x_cart, y_cart, ff1_pix, ff2_pix, center)
+    roiShape = getROIshapeEiger(x_cart, y_cart, ff1_pix, center)
     
     Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center)
     
@@ -183,7 +195,7 @@ def loadPolarROI(fname1,fname2,tth,eta,frame,params):
     if params['detector'] == 'dexela':
         roi = loadDexPolarRoi(fname1,fname2,tth,eta,frame,params)
     elif params['detector'] == 'eiger':
-        roi = loadEigerPolarRoi(fname1,fname2,tth,eta,frame,params)
+        roi = loadEigerPolarRoi(fname1,tth,eta,frame,params)
     return roi
     
 def loadDexPolarRoi(fname1,fname2,tth,eta,frame,params):
@@ -210,7 +222,7 @@ def loadDexPolarRoi(fname1,fname2,tth,eta,frame,params):
     
     return roi_polar
 
-def loadEigerPolarRoi(fname1,fname2,tth,eta,frame,params):
+def loadEigerPolarRoi(fname,tth,eta,frame,params):
     # 0. Load params, YAML data
     yamlFile = params['yamlFile']
     roiSize = params['roiSize']
@@ -224,8 +236,8 @@ def loadEigerPolarRoi(fname1,fname2,tth,eta,frame,params):
     Ainterp,new_center,x_cart,y_cart = getInterpParamsDexela(imSize,tth,eta,roiSize,yamlFile)
     
     # 3. Load needed Cartesian ROI pixels
-    ff1_pix, ff2_pix = panelPixels(ff_trans,mmPerPixel)
-    roi = loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,imSize)
+    ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel)
+    roi = loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame)
     
     # 4. Apply interpolation matrix to Cartesian pixels get Polar values
     roi_polar_vec = Ainterp.dot(roi.flatten())
@@ -327,6 +339,20 @@ def loadDexPanelROI(x_cart,y_cart,ff1_pix,ff2_pix,fname1,fname2,frame,params,\
       
     return img
 
+def loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
+
+    if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
+    if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
+    if y_cart[0] < ff1_pix[2]: y_cart[0] = ff1_pix[2]
+    if y_cart[1] > ff1_pix[3]: y_cart[1] = ff1_pix[3]
+    x_pan = x_cart - ff1_pix[0]
+    y_pan = y_cart - ff1_pix[2]
+
+    with imageseries.open(fname, format='eiger-stream-v1') as ims:
+            img = ims[frame, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
+      
+    return img
+
 def getROIshape(x_cart,y_cart,ff1_pix,ff2_pix,center,dexShape=(3888,3072)):
     
     if x_cart[0] < ff2_pix[0]: x_cart[0] = ff2_pix[0]
@@ -355,6 +381,17 @@ def getROIshape(x_cart,y_cart,ff1_pix,ff2_pix,center,dexShape=(3888,3072)):
         x_pan[0] = min(flip0,flip1)
         x_pan[1] = max(flip0,flip1)
     
+    return (y_pan[1]-y_pan[0],x_pan[1]-x_pan[0])
+
+def getROIshapeEiger(x_cart,y_cart,ff1_pix,center,eigShape=(4362,4148)):
+    
+    if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
+    if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
+    if y_cart[0] < ff1_pix[2]: y_cart[0] = ff1_pix[2]
+    if y_cart[1] > ff1_pix[3]: y_cart[1] = ff1_pix[3]
+    x_pan = x_cart - ff1_pix[0]
+    y_pan = y_cart - ff1_pix[2]
+
     return (y_pan[1]-y_pan[0],x_pan[1]-x_pan[0])
 
 def bilinearInterpMatrix(roiShape,rad_dom,eta_dom,center):
@@ -403,6 +440,25 @@ def panelPixels(ff_trans,mmPerPixel,imSize=(4888,7300),dexShape=(3888,3072)):
     ff1_pixels = [ff1c1,ff1c2,ff1r1,ff1r2]
     ff2_pixels = [ff2c1,ff2c2,ff2r1,ff2r2]
     return ff1_pixels, ff2_pixels
+
+def panelPixelsEiger(ff_trans,mmPerPixel,imSize=(4600,4400),detectShape=(4362,4148)):
+    center = (imSize[0]/2,imSize[1]/2)
+    ff1_tx = ff_trans[0]
+    ff1_ty = ff_trans[1]
+    
+   
+    ff1_xshift = int(round(ff1_tx/mmPerPixel))
+    ff1_yshift = int(round(ff1_ty/mmPerPixel))
+    
+    # negative sign on y shift because rows increase downwards
+    ff1r1 = int(center[0]-detectShape[0]/2-ff1_yshift)
+    ff1r2 = int(center[0]+detectShape[0]/2-ff1_yshift)
+    
+    ff1c1 = int(center[1]-detectShape[1]/2+ff1_xshift)
+    ff1c2 = int(center[1]+detectShape[1]/2+ff1_xshift)
+    
+    ff1_pixels = [ff1c1,ff1c2,ff1r1,ff1r2]
+    return ff1_pixels
 
 def polarDomain(detectDist,mmPerPixel,tth,eta,roi_size):
     r = np.round(detectDist*np.tan(tth)/mmPerPixel)
@@ -511,11 +567,16 @@ def plotSpotWedges(spotData,fname1,fname2,frame,params):
     imSize = params['imSize']
     center = (imSize[0]//2,imSize[1]//2,)
 
-    b = load_dex(fname1,fname2,params,frame)
+    if params['detector'] == 'dexela':
+        b = load_dex(fname1,fname2,params,frame)
+    elif params['detector'] == 'eiger':
+        b = load_eiger(fname1,params,frame)
+    
     
     fig = plt.figure()
+    b[b>100] = 100
     plt.imshow(b)
-    plt.clim(290,550)
+    # plt.clim(290,550)
     
     for ind in spotInds:
         # 0. Load spot information
@@ -533,10 +594,11 @@ def plotSpotWedges(spotData,fname1,fname2,frame,params):
         wedge = patches.Wedge([center[1],center[0]],rad+roiSize/2,\
                 180/np.pi*eta_dom[0],180/np.pi*eta_dom[-1],\
                 linewidth=1,width=roiSize,fill=0,color='r')
+            
         plt.gca().add_patch(wedge)
-        x = rad*np.cos(eta) + center[1]
-        y = rad*np.sin(eta) + center[0]
-        plt.plot(x,y,color='r',marker='x')
+        # x = rad*np.cos(eta) + center[1]
+        # y = rad*np.sin(eta) + center[0]
+        # plt.plot(x,y,color='r',marker='x')
         
     return fig
 
@@ -756,9 +818,8 @@ def scatterOmeg(trackData):
 
     return fig
 
-def collectSpotsData(topPath,spotsDir):
+def collectSpotsData(outPath,spotsPath):
     # Get a list of file names in the directory and sort them
-    spotsPath = topPath + spotsDir
     all_entries = os.listdir(spotsPath)
     directories = [entry for entry in all_entries if os.path.isdir(os.path.join(spotsPath,entry))]
     fold_names = sorted(directories)
@@ -815,7 +876,7 @@ def collectSpotsData(topPath,spotsDir):
     etas = etas[sort_ind]
     omes = omes[sort_ind]
     grain_nums = grain_nums[sort_ind]
-    saveFile = os.path.join(topPath,'spots',spotsDir + '.npz')
+    saveFile = os.path.join(outPath,'spots.npz')
     np.savez(saveFile,Xs=Xs,Ys=Ys,id_nums=id_nums,\
     tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
 

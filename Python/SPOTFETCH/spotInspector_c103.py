@@ -7,12 +7,17 @@ Created on Thu May  2 10:07:45 2024
 
 import numpy as np
 import spotfetch as sf
+import os
 
 # Output data path
 # outPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024\\"
 for i in range(1,3):
     for j in range(1,3):
-        outPath = "/nfs/chess/user/dbanco/c103_processing/Sample-{i}/layer-{j}/spots"
+        outPath = f"/mnt/scratch/dbanco/c103_processing/Sample-{i}"
+        outPath2 = os.path.join(outPath,f'layer-{j}')
+        outPath3 = os.path.join(outPath2,'spots')
+        outPath4 = os.path.join(outPath2,'jobs')
+        outPath5 = os.path.join(outPath2,'outputs')
         
         # Load in or collect spots data
         topPath = '/nfs/chess/aux/user/wkk32/C103-spots-grains-files'
