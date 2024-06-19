@@ -178,14 +178,14 @@ def getInterpParamsEiger(tth,eta,params):
     imSize = params['imSize']
     
     center = (imSize[0]/2,imSize[1]/2)
-    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile,tth,eta)
+    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
     
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
     x_cart, y_cart = fetchCartesian(rad_dom,eta_dom,center)
     ff_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
     
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
-    roiShape = getROIshapeEiger(x_cart, y_cart, ff1_pix, center)
+    roiShape = getROIshapeEiger(x_cart, y_cart, ff_pix, center)
     
     Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center)
     
@@ -227,13 +227,13 @@ def loadEigerPolarRoi(fname,tth,eta,frame,params):
     yamlFile = params['yamlFile']
     roiSize = params['roiSize']
     imSize = params['imSize']
-    detectDist, mmPerPixel, ff_trans = loadYamlData(yamlFile,tth,eta)
+    detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
     
     # 1. Construct rad, eta domain
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
     
     # 2. Construct interpolation matrix
-    Ainterp,new_center,x_cart,y_cart = getInterpParamsDexela(imSize,tth,eta,roiSize,yamlFile)
+    Ainterp,new_center,x_cart,y_cart = getInterpParamsEiger(tth,eta,params)
     
     # 3. Load needed Cartesian ROI pixels
     ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel)

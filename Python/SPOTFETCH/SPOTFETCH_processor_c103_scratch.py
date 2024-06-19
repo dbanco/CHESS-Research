@@ -15,7 +15,7 @@ import os
 topPath = "/mnt/scratch/dbanco/c103_processing/Sample-1/layer-1"
 
 # Raw HEXD Data
-exsituPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-exsitu/12/ff/"
+exsituPath = "/nfs/chess/raw/2024-2/id3a/miller-3528-c/c103-1-ff-1"
 dataPath = "/mnt/scratch/....TBD"
 
 # Load in or collect spots data
@@ -34,6 +34,6 @@ params['imSize'] = (5000,5000)
 params['roiSize'] = 40
 params['gamma'] = [8,8,4,4]
 
-scan1 = 43
+scan1 = 1
 
 sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)
