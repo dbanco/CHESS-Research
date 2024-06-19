@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 # Sets up directories and loads in the spot files
 for i in range(1,3):
     for j in range(1,3):
-        outPath = f"/mnt/scratch/dbanco/c103_processing/Sample-{i}"
+        # outPath = f"/mnt/scratch/dbanco/c103_processing/Sample-{i}"
+        outPath = f"/nfs/chess/user/dbanco/c103_processing/Sample-{i}"
         outPath2 = os.path.join(outPath,f'layer-{j}')
         outPath3 = os.path.join(outPath2,'spots')
         outPath4 = os.path.join(outPath2,'jobs')

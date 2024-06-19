@@ -855,7 +855,7 @@ def collectSpotsData(outPath,spotsPath):
                     etas = np.append(etas, np.array(df['meas eta']))
                     omes = np.append(omes, np.array(df['meas ome'])*180/np.pi)
                 
-    invalid_nums = id_nums == -999        
+    invalid_nums = (id_nums == -999) | np.isnan(tths.astype(float)) | np.isnan(etas.astype(float))       
     Xs = np.delete(Xs, invalid_nums).astype(float)
     Ys = np.delete(Ys, invalid_nums).astype(float)
     id_nums = np.delete(id_nums, invalid_nums).astype(float)
@@ -881,44 +881,31 @@ def collectSpotsData(outPath,spotsPath):
     tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
 
 def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
-    # Initialize 
-    initData = {}
-    initData['tths'] = spotData['tths'][spotInds]
-    initData['etas'] = spotData['etas'][spotInds]
-    initData['frms'] = spotData['ome_idxs'][spotInds]
-    
-    # Initialize tracks
-    fnames = pathToFile(exsituPath)
-    fname1 = os.path.join(exsituPath,fnames[0])
-    fname2 = os.path.join(exsituPath,fnames[1])
-    i = 0
-    t = scan1-1
-     # Scan index
-    print('')
-    print(f'Ex-Situ Scan ({t}), Spot:', end=" ")
-    for s,k in enumerate(spotInds):
-        print(f'{k}', end=" ")
-        etaRoi = initData['etas'][s]
-        tthRoi = initData['tths'][s]
-        frm = initData['frms'][s]
-        initSpot(k,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
-    
-    i += 1
+
+    i = 1
     t = scan1
+    newData = False
     while True:
         # Try reading in file for new scan
         dataDir = os.path.join(dataPath,f'{t}','ff')
         try:
             fnames = pathToFile(dataDir)
         except:
-            print('No new data')
+            if newData:
+                print('No new data',end=" ")
+                newData = False
+            else:
+                print('.',end="")
             time.sleep(1)
             continue
         # if read is successful...
         if len(fnames) > 0:
+            newData = True
             fname1 = os.path.join(dataDir,fnames[0])
-            fname2 = os.path.join(dataDir,fnames[1])
-
+            if len(fnames) > 1:
+                fname2 = os.path.join(dataDir,fnames[1])
+            elif len(fnames) == 1:
+                fname2 = os.path.join(dataDir,fnames[0])
             print('')
             print(f'Scan {t}, Spot:', end=" ")
             for s,k in enumerate(spotInds): 
@@ -934,7 +921,7 @@ def initSpot(k,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
                         tthRoi,etaRoi,int(frm),t,params)
     trackData = []
     trackData.append([newTrack])
-    outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
+    outFile = os.path.join(outPath,f'trackData_{k}.pkl')
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
     
@@ -1148,6 +1135,27 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
             i += 1
             t += 1
 
+def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
+    # Initialize 
+    initData = {}
+    initData['tths'] = spotData['tths'][spotInds]
+    initData['etas'] = spotData['etas'][spotInds]
+    initData['frms'] = spotData['ome_idxs'][spotInds]
+    
+    # Initialize tracks
+    fnames = pathToFile(exsituPath)
+    fname1 = os.path.join(exsituPath,fnames[0])
+    fname2 = os.path.join(exsituPath,fnames[1])
+
+     # Scan index
+    print('')
+    print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
+    for s,k in enumerate(spotInds):
+        print(f'{k}', end=" ")
+        etaRoi = initData['etas'][s]
+        tthRoi = initData['tths'][s]
+        frm = initData['frms'][s]
+        initSpot(k,scan0,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
     
 def compAvgParams(track):   
     J = len(track) 
