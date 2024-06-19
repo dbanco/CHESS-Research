@@ -65,7 +65,6 @@ class DataPlotter:
         self.update_all_entry.grid(row=45, column=1, padx=5, pady=5)
         self.update_all_entry.bind("<Return>", self.update_all_spot_numbers)
 
-    
         # Button to trigger plotting
         self.plot_button = ttk.Button(self.root, text="Plot", command=self.plot)
         self.plot_button.grid(row=45, column=0,columnspan=2,pady=10)
@@ -151,7 +150,7 @@ class DataPlotter:
                             MEANomega[t] = None
                             scan[t] = None
                     ax.plot(scan,MEANomega,'-o')
-                    ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
+                    ax.set_ylabel(r"$\mu_\omega$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "Mean_eta":
