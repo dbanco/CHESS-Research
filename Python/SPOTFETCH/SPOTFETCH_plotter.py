@@ -38,7 +38,7 @@ class DataPlotter:
 
         # Dropdown menu for selecting plot
         self.dropdown_menus = []
-        dropdown_options = ["FWHM_omega","FWHM_eta","FWHM_tth","Mean_omega","Mean_eta","Mean_tth"]
+        dropdown_options = ["FWHM_omega","FWHM_eta","FWHM_tth","Mean_omega","Mean_eta","Mean_tth","Omega #"]
         skip = 9
         for i in range(5):
             var = tk.StringVar()
@@ -181,6 +181,18 @@ class DataPlotter:
                             scan[t] = None
                     ax.plot(scan,MEANtth,'-o')
                     ax.set_ylabel(r"$\mu_{2\theta}$")  # Set y-axis label
+                    ax.set_xlabel("Scan #")  # Set x-axis label
+                    pass
+                elif selected_plot_type == "Omega #":
+                    # Your plot logic for Mean_tth
+                    T = len(self.trackData)
+                    numOmega = np.zeros((T,1))
+                    scan = np.zeros((T,1))
+                    for t in range(T):
+                        numOmega[t] = len(self.trackData[t])
+                        scan[t] = self.trackData[t][0]['scan']
+                    ax.plot(scan,numOmega,'-o')
+                    ax.set_ylabel(r"# $\omega$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 
