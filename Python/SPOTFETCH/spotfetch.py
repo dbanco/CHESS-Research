@@ -42,7 +42,7 @@ def frameToOmega(frame,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
 def estMEANomega(track):
     step = 360/1441
     if len(track) == 1:
-        return 0
+        return frameToOmega(track[0]['frm'])
     
     roiOmega = np.zeros(len(track))
     omegaRange = np.zeros(len(track))
@@ -50,16 +50,16 @@ def estMEANomega(track):
     for i in range(len(track)):
         roiOmega[i] = np.sum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
-        meanOmega += i*roiOmega
+        meanOmega += i*roiOmega[i]
     meanOmega = meanOmega/np.sum(roiOmega)
 
-    ind1 = np.floor(meanOmega)
-    ind2 = np.ceil(meanOmega)
+    ind1 = int(np.floor(meanOmega))
+    ind2 = int(np.ceil(meanOmega))
     
     if omegaRange[ind1] > omegaRange[ind2]:
-        meanOmega = meanOmega/step
+        meanOmega = omegaRange[ind1] + (meanOmega-ind1)*step
     else:
-        meanOmega = omegaRange(ind1) + (meanOmega-ind1)/step
+        meanOmega = meanOmega*step
 
     return meanOmega
 
@@ -75,11 +75,11 @@ def estFWHMomega(track):
     for i in range(len(track)):
         roiOmega[i] = np.sum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
-        meanOmega += i*roiOmega/step
+        meanOmega += i*roiOmega[i]
     meanOmega = meanOmega/np.sum(roiOmega)
     
     for i in range(len(track)):
-        varOmega += roiOmega[i]*(i/step-meanOmega)**2/np.sum(roiOmega,None)
+        varOmega += roiOmega[i]*(i-meanOmega)**2/np.sum(roiOmega,None)*step**2
 
     fwhmOmega = 2*np.sqrt(2*np.log(2)*varOmega)
     

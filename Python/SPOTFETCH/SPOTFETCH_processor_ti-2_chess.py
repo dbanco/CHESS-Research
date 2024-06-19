@@ -26,7 +26,6 @@ spotsFile = spotsDir + ".npz"
 spotData = np.load(os.path.join(topPath,'spots',spotsFile))
 spotInds = np.arange(10) 
 
-
 # Full dexela image size and roi size
 params = {}
 # params['detector'] = 'eiger'
