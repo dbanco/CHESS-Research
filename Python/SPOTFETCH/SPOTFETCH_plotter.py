@@ -38,7 +38,7 @@ class DataPlotter:
 
         # Dropdown menu for selecting plot
         self.dropdown_menus = []
-        dropdown_options = ["Omega Detections", "FWHM_eta", "FWHM_tth", "Mean_eta", "Mean_tth","ROI/Track"]
+        dropdown_options = ["FWHM_omega", "FWHM_eta", "FWHM_tth", "Mean_eta", "Mean_tth","Mean_omega"]
         skip = 9
         for i in range(5):
             var = tk.StringVar()
@@ -86,58 +86,25 @@ class DataPlotter:
             # ax.set_title(f'{selected_plot_type} of Spot {spot_number}')
             
             if spot_number.isnumeric():
-                k = int(spot_number)
             
                 # Handle different plot types based on selected option
-                if selected_plot_type == "ROI/Track":
-                    # Your plot logic for ROI/Track
+                if selected_plot_type == "FWHM_omega":
                     T = len(self.trackData)
-                    numROIs = 4
-                    full_roi = self.trackData[T-numROIs-1][0]['roi']
-                    maxVal = max(full_roi.ravel())
-                    for t in range(T-numROIs,T-1):
-                    # if self.trackData[T-2] != []:
-                        full_roi = np.hstack((full_roi,maxVal*np.ones((40,2)),self.trackData[t][0]['roi']))
-                    
-                    img=ax.imshow(full_roi)
-                    ax.set_xticks([])
-                    ax.set_yticks([])
-                    if not self.cb[i] == None:
-                        self.cb[i].update_normal(img)
-                    else:
-                        self.cb[i] = self.fig.colorbar(img, ax=ax)
-
-                    # Calculate the starting and ending indices for rows and columns
-                    boxSize = 10
-                    tt = 0
-                    for t in range(T-numROIs-1,T-1):
-                        x = self.trackData[t][0]['p'][1]
-                        y = self.trackData[t][0]['p'][2]
-                        start_col = round(x - boxSize//2) + 42*tt
-                        start_row = round(y - boxSize//2)
-                        tt += 1
-                        rect = plt.Rectangle((start_col, start_row), boxSize, boxSize,
-                                                  linewidth=1, edgecolor='r', facecolor='none')
-                        ax.add_patch(rect)
-                        
-                    pass
-                elif selected_plot_type == "Omega Detections":
-                    # Your plot logic for Omega Detections
-                    T = len(self.trackData)
+                    FWHMomega = np.zeros((T,1))
+                    scan = np.zeros((T,1))
                     for t in range(T):
                         if self.trackData[t] != []:
-                            L = len(self.trackData[t])
-                            if L > 0:
-                                for j in range(L):
-                                    omega = sf.frameToOmega(self.trackData[t][j]['frm'])
-                                    scan = self.trackData[t][j]['scan']
-                                    ax.scatter(scan,omega,marker='s',color='b')
-                    ax.set_ylabel(r"$\omega$")  # Set y-axis label
+                            if self.trackData[t] != []:
+                                FWHMomega[t] = sf.estFWHMomega(self.trackData[t])
+                                scan[t] = self.trackData[t][0]['scan']
+                        else:
+                            FWHMomega[t] = None
+                            scan[t] = None
+                    ax.plot(scan,FWHMomega,'-o')
+                    ax.set_ylabel(r"$FWHM_\eta$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
-                            
                     pass
                 elif selected_plot_type == "FWHM_eta":
-                    # Your plot logic for FWHM_eta
                     T = len(self.trackData)
                     FWHMeta = np.zeros((T,1))
                     scan = np.zeros((T,1))
@@ -151,23 +118,6 @@ class DataPlotter:
                             scan[t] = None
                     ax.plot(scan,FWHMeta,'-o')
                     ax.set_ylabel(r"$FWHM_\eta$")  # Set y-axis label
-                    ax.set_xlabel("Scan #")  # Set x-axis label
-                    pass
-                elif selected_plot_type == "Mean_eta":
-                    # Your plot logic for Mean_eta
-                    T = len(self.trackData)
-                    MEANeta = np.zeros((T,1))
-                    scan = np.zeros((T,1))
-                    for t in range(T):
-                        if self.trackData[t] != []:
-                            if self.trackData[t] != []:
-                                MEANeta[t] = self.trackData[t][0]['eta']
-                                scan[t] = self.trackData[t][0]['scan']
-                        else:
-                            MEANeta[t] = None
-                            scan[t] = None
-                    ax.plot(scan,MEANeta,'-o')
-                    ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "FWHM_tth":
@@ -185,6 +135,40 @@ class DataPlotter:
                             scan[t] = None
                     ax.plot(scan,FWHMtth,'-o')
                     ax.set_ylabel(r"$FWHM_{2\theta}$")  # Set y-axis label
+                    ax.set_xlabel("Scan #")  # Set x-axis label
+                    pass
+                elif selected_plot_type == "Mean_omega":
+                    # Your plot logic for Mean_eta
+                    T = len(self.trackData)
+                    MEANomega = np.zeros((T,1))
+                    scan = np.zeros((T,1))
+                    for t in range(T):
+                        if self.trackData[t] != []:
+                            if self.trackData[t] != []:
+                                MEANomega[t] = sf.estMEANomega(self.trackData[t])
+                                scan[t] = self.trackData[t][0]['scan']
+                        else:
+                            MEANomega[t] = None
+                            scan[t] = None
+                    ax.plot(scan,MEANomega,'-o')
+                    ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
+                    ax.set_xlabel("Scan #")  # Set x-axis label
+                    pass
+                elif selected_plot_type == "Mean_eta":
+                    # Your plot logic for Mean_eta
+                    T = len(self.trackData)
+                    MEANeta = np.zeros((T,1))
+                    scan = np.zeros((T,1))
+                    for t in range(T):
+                        if self.trackData[t] != []:
+                            if self.trackData[t] != []:
+                                MEANeta[t] = self.trackData[t][0]['eta']
+                                scan[t] = self.trackData[t][0]['scan']
+                        else:
+                            MEANeta[t] = None
+                            scan[t] = None
+                    ax.plot(scan,MEANeta,'-o')
+                    ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
                     ax.set_xlabel("Scan #")  # Set x-axis label
                     pass
                 elif selected_plot_type == "Mean_tth":

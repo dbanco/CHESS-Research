@@ -11,6 +11,7 @@ import hdf5plugin
 import pickle
 import pandas as pd
 import os
+import itertools
 import subprocess
 import time
 import yaml
@@ -18,6 +19,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from hexrd.fitting import fitpeak
 from hexrd import imageseries
+from multiprocessing import Pool
+from multiprocessing import Process
 # from hexrd.fitting import peakfunctions as pkfuncs
 
 def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
@@ -25,10 +28,63 @@ def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
     frame = (np.floor((omega-startOmeg)/step) + startFrame).astype(int)
     return frame
 
+def findSpots(spotData,grain,eta,deta):
+    grain_nums = spotData['grain_nums']
+    etas = spotData['etas']
+    spotInds = np.where((grain_nums == grain) & (etas > eta-deta) & (etas > eta-deta))[0]
+    return spotInds
+
 def frameToOmega(frame,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
     step = omegaRange/endFrame
     omega = (frame - startFrame)*step + startOmeg
     return omega
+
+def estMEANomega(track):
+    step = 360/1441
+    if len(track) == 1:
+        return 0
+    
+    roiOmega = np.zeros(len(track))
+    omegaRange = np.zeros(len(track))
+    meanOmega = 0
+    for i in len(track):
+        roiOmega[i] = np.sum(track[i]['roi'],axis=None)
+        omegaRange[i] = frameToOmega(track[i]['frm'])
+        meanOmega += i*roiOmega
+    meanOmega = meanOmega/np.sum(roiOmega)
+
+    ind1 = np.floor(meanOmega)
+    ind2 = np.ceil(meanOmega)
+    
+    if omegaRange[ind1] > omegaRange[ind2]:
+        meanOmega = meanOmega/step
+    else:
+        meanOmega = omegaRange(ind1) + (meanOmega-ind1)/step
+
+    return meanOmega
+
+def estFWHMomega(track):
+    step = 360/1441
+    if len(track) == 1:
+        return 0
+    
+    roiOmega = np.zeros(len(track))
+    omegaRange = np.zeros(len(track))
+    meanOmega = 0
+    varOmega = 0
+    for i in len(track):
+        roiOmega[i] = np.sum(track[i]['roi'],axis=None)
+        omegaRange[i] = frameToOmega(track[i]['frm'])
+        meanOmega += i*roiOmega/step
+    meanOmega = meanOmega/np.sum(roiOmega)
+    
+    for i in len(track):
+        varOmega += roiOmega[i]*(i/step-meanOmega)**2/np.sum(roiOmega)
+
+    fwhmOmega = 2*np.sqrt(2*np.log(2)*varOmega)
+    
+    return fwhmOmega
+    
 
 def read_yaml(file_path):
     with open(file_path, 'r') as file:
@@ -915,7 +971,8 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
             i += 1
             t += 1
         
-def initSpot(k,t,etaRoi,tthRoi,frm,params,outPath,fname1,fname2):
+def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fname1,fname2):
+    print(k)
     prevTracks = []
     newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
                         tthRoi,etaRoi,int(frm),t,params)
@@ -1094,7 +1151,7 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
         etaRoi = initData['etas'][s]
         tthRoi = initData['tths'][s]
         frm = initData['frms'][s]
-        initSpot(k, t, etaRoi, tthRoi, frm, params, outPath, fname1, fname2)
+        initSpot(k, etaRoi, tthRoi, frm,t, params, outPath, fname1, fname2)
     
     i += 1
     t += 1
@@ -1134,6 +1191,10 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
                 
             i += 1
             t += 1
+            
+def testPar(x):
+    print(x**2)
+    
 
 def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     # Initialize 
@@ -1147,7 +1208,7 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     fname1 = os.path.join(exsituPath,fnames[0])
     fname2 = os.path.join(exsituPath,fnames[1])
 
-     # Scan index
+    # Scan index
     print('')
     print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
     for s,k in enumerate(spotInds):
@@ -1155,7 +1216,22 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
         etaRoi = initData['etas'][s]
         tthRoi = initData['tths'][s]
         frm = initData['frms'][s]
-        initSpot(k,scan0,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
+        initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fname1,fname2)
+
+
+    # pool = Pool(20) #defaults to number of available CPU's 
+    # # pool.map(testPar, range(40))
+    # for i in range(40000):
+    #     testPar(i)
+       
+    # inputIter = itertools.zip_longest(spotInds,initData['etas'],initData['tths'],initData['frms'])
+    # # initSpot(k,scan0,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
+    # pool.map(initSpot, iter(inputIter))
+
+    
+    
+    
+        
     
 def compAvgParams(track):   
     J = len(track) 
