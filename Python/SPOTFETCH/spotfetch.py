@@ -21,6 +21,7 @@ from hexrd.fitting import fitpeak
 from hexrd import imageseries
 from multiprocessing import Pool
 from multiprocessing import Process
+from functools import partial
 # from hexrd.fitting import peakfunctions as pkfuncs
 
 def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
@@ -404,8 +405,8 @@ def loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     x_pan = x_cart - ff1_pix[0]
     y_pan = y_cart - ff1_pix[2]
 
-    with imageseries.open(fname, format='eiger-stream-v1') as ims:
-            img = ims[frame, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
+    ims = imageseries.open(fname, format='eiger-stream-v1')
+    img = ims[frame, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
       
     return img
 
@@ -757,7 +758,6 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     # except:
     p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
     
-    
     # 3. Fit peak
     p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
     
@@ -771,6 +771,10 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     
     detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
     rad_dom, eta_dom = polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
+    
+    deta = abs(eta_dom[1] - eta_dom[0])
+    hypot = detectDist*np.cos(tth)
+    dtth = np.arctan(mmPerPixel/hypot)
     
     etaNew = eta_dom[int(np.round(p[1]))]
     radNew = rad_dom[int(np.round(p[2]))]
@@ -786,6 +790,8 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     newTrack['frm'] =  frm
     newTrack['scan'] = scan
     newTrack['roi'] = roi
+    newTrack['deta'] = deta
+    newTrack['dtth'] = dtth
     
     peakFound = peakDetected(newTrack,prevTracks,params)
     
@@ -807,7 +813,8 @@ def peakDetected(newTrack,prevTracks,params):
     detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
     rad_dom, eta_dom = polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
     deta = eta_dom[1]-eta_dom[0]
-    dtth = np.arctan(mmPerPixel/detectDist)
+    dtth = hypot = detectDist*np.cos(tth)
+    dtth = np.arctan(mmPerPixel/hypot)
     
     if (p[1] > roiSize) | (p[2] > roiSize):
         peakFound = False
@@ -962,11 +969,19 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
                 fname2 = os.path.join(dataDir,fnames[1])
             elif len(fnames) == 1:
                 fname2 = os.path.join(dataDir,fnames[0])
-            print('')
-            print(f'Scan {t}, Spot:', end=" ")
-            for s,k in enumerate(spotInds): 
-                print(f'{k}', end=" ")
-                processSpot(k,t,params,outPath,fname1,fname2)
+        
+            # try:
+            pool = Pool()
+            print(f'{pool._processes} workers, Scan {t}')
+            pool.starmap(partial(processSpot,t=t,params=params,\
+                                 outPath=outPath,fname1=fname1,\
+                                 fname2=fname2),zip(spotInds))
+            # except:
+                # print('Not parallel')
+                # print(f'Scan {t}, Spot:', end=" ")
+                # for s,k in enumerate(spotInds): 
+                #     print(f'{k}', end=" ")
+                #     processSpot(k,t,params,outPath,fname1,fname2)
             
             i += 1
             t += 1
@@ -988,6 +1003,18 @@ def processSpot(k,t,params,outPath,fname1,fname2):
         trackData = pickle.load(f)
     trackData.append([])
     T = len(trackData)
+
+    # Determine if scan wraps in omega or if LODI
+    if params['detector'] == 'eiger':
+        ims = imageseries.open(fname1, format='eiger-stream-v1')
+        numFrames = ims.shape[0]
+    elif params['detector'] == 'dexela':
+        with h5py.File(fname1, 'r') as file1:
+            numFrames = file1['/imageseries/images'].shape[0]
+    if numFrames == 1445:
+        wrap = True
+    else:
+        wrap = False
 
     prevTracks = []
     lag = 1
@@ -1020,7 +1047,10 @@ def processSpot(k,t,params,outPath,fname1,fname2):
         frm2 = prevTracks[-1]['frm']
         expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
         for frm in expandRange:
-            frm = int(wrapFrame(frm))
+            if wrap:
+                frm = int(wrapFrame(frm))
+            else:
+                if frm < 4 | frm > 1444: break
             newTrack, peakFound = evaluateROI(fname1,fname2,prevTracks,\
                                 tth,eta,frm,t,params)
             if peakFound: 
@@ -1036,7 +1066,11 @@ def processSpot(k,t,params,outPath,fname1,fname2):
     if len(trackData[T-1]) > 0: peakFound = True
     while peakFound:
         frm1 = frm1 - 1
-        frm = int(wrapFrame(frm1))
+        if wrap:
+            frm = int(wrapFrame(frm1))
+        else:
+            frm = frm1
+            if frm < 4: break
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
                                           tth,eta,frm,t,params)
@@ -1052,6 +1086,11 @@ def processSpot(k,t,params,outPath,fname1,fname2):
     while peakFound:
         frm2 = frm2 + 1
         frm = int(wrapFrame(frm2))
+        if wrap:
+            frm = int(wrapFrame(frm2))
+        else:
+            frm = frm2
+            if frm > 1444: break
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fname1,fname2,compareTrack,\
                                           tth,eta,frm,t,params)
@@ -1191,8 +1230,8 @@ python3 -c "import sys; sys.path.append('CHESS-Research/Python/SPOTFETCH/'); imp
             i += 1
             t += 1
             
-def testPar(x):
-    print(x**2)
+def testPar(x,y):
+    print(x*y)
     
 
 def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
@@ -1207,31 +1246,26 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     fname1 = os.path.join(exsituPath,fnames[0])
     fname2 = os.path.join(exsituPath,fnames[1])
 
-    # Scan index
-    print('')
-    print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
-    for s,k in enumerate(spotInds):
-        print(f'{k}', end=" ")
-        etaRoi = initData['etas'][s]
-        tthRoi = initData['tths'][s]
-        frm = initData['frms'][s]
-        initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fname1,fname2)
+    try:
+        pool = Pool()
+        print(f'{pool._processes} workers, Ex-Situ Scan ({scan0})')
+        inVars = zip(spotInds,initData['etas'],initData['tths'],initData['frms'])
+        pool.starmap(partial(initSpot,t=scan0,params=params,outPath=outPath,\
+                      fname1=fname1,fname2=fname2),inVars)
+    except:
+        # Scan index
+        print('Not parallelized')
+        print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
+        for s,k in enumerate(spotInds):
+            print(f'{k}', end=" ")
+            etaRoi = initData['etas'][s]
+            tthRoi = initData['tths'][s]
+            frm = initData['frms'][s]
+            initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fname1,fname2)
+    
+    
 
 
-    # pool = Pool(20) #defaults to number of available CPU's 
-    # # pool.map(testPar, range(40))
-    # for i in range(40000):
-    #     testPar(i)
-       
-    # inputIter = itertools.zip_longest(spotInds,initData['etas'],initData['tths'],initData['frms'])
-    # # initSpot(k,scan0,etaRoi,tthRoi,frm,params,outPath,fname1,fname2)
-    # pool.map(initSpot, iter(inputIter))
-
-    
-    
-    
-        
-    
 def compAvgParams(track):   
     J = len(track) 
     avgFWHMeta = 0
@@ -1239,8 +1273,8 @@ def compAvgParams(track):
     avgEta = 0
     avgTth = 0
     for j in range(J):
-        avgFWHMeta += track[j]['p'][3]/J
-        avgFWHMtth += track[j]['p'][4]/J
+        avgFWHMeta += track[j]['p'][3]/J*track[j]['deta']
+        avgFWHMtth += track[j]['p'][4]/J*track[j]['dtth']
         avgEta += track[j]['eta']/J
         avgTth += track[j]['tth']/J
     

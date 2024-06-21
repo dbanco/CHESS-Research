@@ -10,6 +10,25 @@ import numpy as np
 import pickle
 import os
 
+####
+# Output data path
+topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+
+# Raw HEXD Data
+exsituPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-exsitu/12/ff/"
+dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
+
+# Load in or collect spots data
+spotsDir = "spots_11032023"
+# Get data from spots data
+# sf.collectSpotsData(dataPath, spotsDir)
+spotsFile = spotsDir + ".npz"  
+spotData = np.load(os.path.join(topPath,'spots',spotsFile))
+spotInds = sf.findSpots(spotData,5,np.pi/2,0.1)
+
+
+
+###
 topPath = "/nfs/chess/user/dbanco/ti-2_processing"
 outPath = os.path.join(topPath,'outputs')
 dataPath = "/nfs/chess/raw/2023-2/id3a/shanks-3731-a/ti-2-tension/"
@@ -25,7 +44,7 @@ initData = {
 }
 
 # Choose spot
-for k in [8]:#range(10):
+for k in [7]:#range(10):
     print(f'Showing Spot {k}')
     eta0 = initData['etas'][k]
     tth0 = initData['tths'][k]

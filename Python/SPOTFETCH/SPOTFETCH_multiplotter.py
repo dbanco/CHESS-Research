@@ -18,143 +18,77 @@ import time
 import os
 
 class DataPlotter:
-    def __init__(self, root,read_path):
+    def __init__(self, root,read_path,spotInds,plotType):
         self.root = root
         self.root.title("Live Data Plotter")
         self.read_path = read_path
-        # Explicitly create a figure and pass it to subplots
-        self.fig = Figure(figsize=(5, 8))
-        self.gs = gridspec.GridSpec(5, 1, height_ratios=[1, 1, 1, 1, 1])
+        self.spotInds = spotInds
+        self.plotType = plotType
+        self.T = 999999
+        # Create figure
+        self.fig = Figure(figsize=(12, 4))
+        self.gs = gridspec.GridSpec(2, 3, height_ratios=[1, 1])
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=45)
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5)
 
         # Create subplots within the same figure
-        self.axes = [self.fig.add_subplot(self.gs[i]) for i in range(5)]
+        self.axes = [self.fig.add_subplot(self.gs[i]) for i in range(6)]
 
         self.trackData = []
+        self.dataArray = np.array((6,len(spotInds)))
         self.i = 1
-
-        # Dropdown menu for selecting plot
-        self.dropdown_menus = []
-        dropdown_options = ["FWHM_omega", "FWHM_eta", "FWHM_tth","Mean_omega","Mean_eta", "Mean_tth",]
-        skip = 9
-        for i in range(5):
-            var = tk.StringVar()
-            var.set(dropdown_options[i])
-            dropdown = ttk.Combobox(self.root, textvariable=var, values=dropdown_options,width=10)
-            dropdown.grid(row=skip*i, column=1,pady=1)
-            dropdown.bind('<<ComboboxSelected>>', self.update_plot)
-            self.dropdown_menus.append((dropdown, var))
-        
         self.update_plots()
+        self.ylabels = ["$FWHM_\omega$ (deg)","$FWHM_\eta (rad)$",r"$FWHM_{2 \theta} (rad)$",\
+                        "$\mu_\omega$ (deg)","$\mu_\eta (rad)$",r"$\mu_{2 \theta}$(rad)"]
         
     def update_plot(self, event=None):
-        selected_plot_types = [dropdown_var.get() for _, dropdown_var in self.dropdown_menus]
-        for i, (ax, selected_plot_type, spot_number) in enumerate(zip(self.axes, selected_plot_types)):
-            ax.clear()
-            # ax.set_title(f'{selected_plot_type} of Spot {spot_number}')
-                # Handle different plot types based on selected option
-            if selected_plot_type == "FWHM_omega":
-                T = len(self.trackData)
-                FWHMomega = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            FWHMomega[t] = sf.estFWHMomega(self.trackData[t])
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        FWHMomega[t] = None
-                        scan[t] = None
-                ax.plot(scan,FWHMomega,'-o')
-                ax.set_ylabel(r"$FWHM_\eta$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-            elif selected_plot_type == "FWHM_eta":
-                T = len(self.trackData)
-                FWHMeta = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            FWHMeta[t] = self.trackData[t][0]['p'][3]
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        FWHMeta[t] = None
-                        scan[t] = None
-                ax.plot(scan,FWHMeta,'-o')
-                ax.set_ylabel(r"$FWHM_\eta$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-            elif selected_plot_type == "FWHM_tth":
-                # Your plot logic for FWHM_tth
-                T = len(self.trackData)
-                FWHMtth = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            FWHMtth[t] = self.trackData[t][0]['p'][4]
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        FWHMtth[t] = None
-                        scan[t] = None
-                ax.plot(scan,FWHMtth,'-o')
-                ax.set_ylabel(r"$FWHM_{2\theta}$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-            elif selected_plot_type == "Mean_omega":
-                # Your plot logic for Mean_eta
-                T = len(self.trackData)
-                MEANomega = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            MEANomega[t] = sf.estMEANomega(self.trackData[t])
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        MEANomega[t] = None
-                        scan[t] = None
-                ax.plot(scan,MEANomega,'-o')
-                ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-            elif selected_plot_type == "Mean_eta":
-                # Your plot logic for Mean_eta
-                T = len(self.trackData)
-                MEANeta = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            MEANeta[t] = self.trackData[t][0]['eta']
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        MEANeta[t] = None
-                        scan[t] = None
-                ax.plot(scan,MEANeta,'-o')
-                ax.set_ylabel(r"$\mu_\eta$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-            elif selected_plot_type == "Mean_tth":
-                # Your plot logic for Mean_tth
-                T = len(self.trackData)
-                MEANtth = np.zeros((T,1))
-                scan = np.zeros((T,1))
-                for t in range(T):
-                    if self.trackData[t] != []:
-                        if self.trackData[t] != []:
-                            MEANtth[t] = self.trackData[t][0]['tth']
-                            scan[t] = self.trackData[t][0]['scan']
-                    else:
-                        MEANtth[t] = None
-                        scan[t] = None
-                ax.plot(scan,MEANtth,'-o')
-                ax.set_ylabel(r"$\mu_{2\theta}$")  # Set y-axis label
-                ax.set_xlabel("Scan #")  # Set x-axis label
-                pass
-                
+        # Length of last track
+        T = len(self.trackData[-1])
+        self.dataArray = np.zeros((6,len(self.spotInds),T))
+        self.dataArray[:] = np.nan
+        scan = np.zeros((T))
+        notDone = True
+        # Update all features
+        for k in range(len(self.spotInds)):
+            if k > len(self.trackData): continue
+            for t in range(T):
+                if t > len(self.trackData[k]): continue
+                if len(self.trackData[k][t]) > 0:
+                    avgFWHMeta,avgFWHMtth,avgEta,avgTth = sf.compAvgParams(self.trackData[k][t])
+                    FWHMome = sf.estFWHMomega(self.trackData[k][t])
+                    Ome = sf.estMEANomega(self.trackData[k][t])
+                    self.dataArray[0,k,t] = FWHMome
+                    self.dataArray[1,k,t] = avgFWHMeta
+                    self.dataArray[2,k,t] = avgFWHMtth
+                    self.dataArray[3,k,t] = Ome
+                    self.dataArray[4,k,t] = avgEta
+                    self.dataArray[5,k,t] = avgTth   
+                    if notDone: 
+                        scan[t] = self.trackData[k][t][0]['scan']
+                        if t == T-1: notDone = False
+        
+        # Plot each of the features
+        for i, ax in enumerate(self.axes):
+            ax.clear() 
+            if self.plotType == 'Delta':
+                for k in range(len(self.spotInds)):
+                    ax.plot(scan,self.dataArray[i,k,:]-self.dataArray[i,k,0],'-o')
+                ax.set_ylabel('$\Delta$ ' + self.ylabels[i])  
+            elif self.plotType == 'Mean':
+                for k in range(len(self.spotInds)):
+                    self.dataArray[i,k,:] = self.dataArray[i,k,:]-self.dataArray[i,k,0]
+                avg = np.nanmean(self.dataArray[i,:,:],0)
+                std = np.nanstd(self.dataArray[i,:,:],0)
+                ax.errorbar(scan,avg,std)
+                ax.set_ylabel('Mean ' + self.ylabels[i])  
+            else:
+                # Orginal
+                for k in range(len(self.spotInds)):
+                    ax.plot(scan,self.dataArray[i,k,:],'-o')
+                ax.set_ylabel(self.ylabels[i])  
+            
+            ax.set_xlabel("Scan #")  
+        
         self.fig.tight_layout(pad=3.0)
         self.canvas.draw()
             
@@ -164,28 +98,37 @@ class DataPlotter:
     def update_plots(self):
         def read_data():
             while True:
-                spot_numbers = [spot_entry.get() for spot_entry in self.spot_entries]
-                for i in range(5):
-                    try:
-                        k = spot_numbers[i]
+                try:
+                    self.trackData = []
+                    self.T = 999999
+                    for k in self.spotInds:
                         with open(os.path.join(self.read_path,f'trackData_{k}.pkl'), 'rb') as f:
-                            self.trackData = pickle.load(f)
+                            self.trackData.append(pickle.load(f))
+                            self.T = min(self.T,len(self.trackData[-1]))
                         self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
-                    except FileNotFoundError:
-                        self.trackData = []
-                    except pickle.UnpicklingError:
-                        self.trackData = []
-                    time.sleep(1)
+                except FileNotFoundError:
+                    self.trackData = []
+                except pickle.UnpicklingError:
+                    self.trackData = []
+                time.sleep(1)
         
         threading.Thread(target=read_data, daemon=True).start()
         
-def start_gui():
+def start_gui(read_path,spotInds,plotType):
     root = tk.Tk()
-    app = DataPlotter(root)
+    app = DataPlotter(root,read_path,spotInds,plotType)
     root.mainloop()
 
 if __name__ == "__main__":
-    read_path1 = '/mnt/scratch/dbanco/....TBD'
-    spotInds1 = np.arange(20)
-    start_gui(read_path1,spotInds1)
+    
+    # Output data path
+    topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+    spotsDir = "spots_11032023"
+    spotsFile = spotsDir + ".npz"  
+    spotData = np.load(os.path.join(topPath,'spots',spotsFile))
+    
+    read_path1 = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
+    # spotInds1 = sf.findSpots(spotData,5,np.pi/2,0.1)
+    spotInds1 = np.arange(16)
+    start_gui(read_path1,spotInds1,'Delta')
 
