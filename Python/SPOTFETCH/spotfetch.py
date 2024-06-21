@@ -32,7 +32,7 @@ def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
 def findSpots(spotData,grain,eta,deta):
     grain_nums = spotData['grain_nums']
     etas = spotData['etas']
-    spotInds = np.where((grain_nums == grain) & (etas > eta-deta) & (etas > eta-deta))[0]
+    spotInds = np.where((grain_nums == grain) & (etas > eta-deta) & (etas < eta+deta))[0]
     return spotInds
 
 def frameToOmega(frame,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):

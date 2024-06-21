@@ -38,8 +38,8 @@ class DataPlotter:
         self.dataArray = np.array((6,len(spotInds)))
         self.i = 1
         self.update_plots()
-        self.ylabels = ["$FWHM_\omega$ (deg)","$FWHM_\eta (rad)$",r"$FWHM_{2 \theta} (rad)$",\
-                        "$\mu_\omega$ (deg)","$\mu_\eta (rad)$",r"$\mu_{2 \theta}$(rad)"]
+        self.ylabels = [r"FWHM_\omega$ (deg)",r"FWHM_\eta (rad)",r"$FWHM_{2 \theta} (rad)",\
+                        r"\mu_\omega$ (deg)",r"\mu_\eta (rad)",r"\mu_{2 \theta} (rad)"]
         
     def update_plot(self, event=None):
         # Length of last track
@@ -50,9 +50,9 @@ class DataPlotter:
         notDone = True
         # Update all features
         for k in range(len(self.spotInds)):
-            if k > len(self.trackData): continue
+            if k > len(self.trackData)-1: continue
             for t in range(T):
-                if t > len(self.trackData[k]): continue
+                if t > len(self.trackData[k])-1: continue
                 if len(self.trackData[k][t]) > 0:
                     avgFWHMeta,avgFWHMtth,avgEta,avgTth = sf.compAvgParams(self.trackData[k][t])
                     FWHMome = sf.estFWHMomega(self.trackData[k][t])
@@ -73,7 +73,7 @@ class DataPlotter:
             if self.plotType == 'Delta':
                 for k in range(len(self.spotInds)):
                     ax.plot(scan,self.dataArray[i,k,:]-self.dataArray[i,k,0],'-o')
-                ax.set_ylabel('$\Delta$ ' + self.ylabels[i])  
+                ax.set_ylabel(r'\Delta ' + self.ylabels[i])  
             elif self.plotType == 'Mean':
                 for k in range(len(self.spotInds)):
                     self.dataArray[i,k,:] = self.dataArray[i,k,:]-self.dataArray[i,k,0]
@@ -105,7 +105,8 @@ class DataPlotter:
                         with open(os.path.join(self.read_path,f'trackData_{k}.pkl'), 'rb') as f:
                             self.trackData.append(pickle.load(f))
                             self.T = min(self.T,len(self.trackData[-1]))
-                        self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
+                    # self.update_plot()
+                    self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
                 except FileNotFoundError:
                     self.trackData = []
                 except pickle.UnpicklingError:
@@ -131,4 +132,3 @@ if __name__ == "__main__":
     # spotInds1 = sf.findSpots(spotData,5,np.pi/2,0.1)
     spotInds1 = np.arange(16)
     start_gui(read_path1,spotInds1,'Delta')
-

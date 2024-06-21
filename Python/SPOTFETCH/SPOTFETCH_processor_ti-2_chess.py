@@ -26,7 +26,8 @@ spotsDir = "spots_11032023"
 spotsFile = spotsDir + ".npz"  
 spotData = np.load(os.path.join(topPath,'spots',spotsFile))
 # spotInds = sf.findSpots(spotData,5,np.pi/2,0.1)
-spotInds = np.arange(16)
+# spotInds = np.arange(120,1000)
+spotInds = np.arange(8)
 
 # Full dexela image size and roi size
 params = {}
