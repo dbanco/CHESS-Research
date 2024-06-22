@@ -39,11 +39,19 @@ fnames = sf.pathToFile(os.path.join(dataPath,f'{scanNum}','ff'))
 
 # %% 5. Determine which spots to process
 # spotInds = np.arange(120,1000)
-grains = [5,11]
-tth_ring = 3.76*np.pi/180
+# grains = [5,11]
+# tth_ring = 3.76*np.pi/180
+# dtth_ring= 4*np.pi/180
+# # spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
+# spotInds = np.arange(20)
+tthdeg = 3.76
+tth_ring = tthdeg*np.pi/180
 dtth_ring= 4*np.pi/180
-# spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
-spotInds = np.arange(20)
+
+grains = [5,11]
+spotIndsList = []
+for grain in grains:
+    spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
 
 # %% 6. Begin Processing
 scan1 = 43

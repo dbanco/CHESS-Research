@@ -41,11 +41,6 @@ class DataPlotter:
         self.ylabels = [r"$FWHM_\omega$ (deg)",r"$\mu_\omega$ (deg)",\
                         r"$FWHM_\eta$ (deg)",r"$\mu_\eta$ (deg)",\
                         r"$FWHM_{2 \theta}$ (deg)",r"$\mu_{2 \theta}$ (deg)"]
-            
-        self.fwhm_eta_vec = np.array(len(spotInds))
-        self.grain_vec = spotData['grain_nums'][spotInds]
-        self.eta_vec = spotData['etas'][spotInds]
-        self.ome_vec = spotData['frm'][spotInds]
 
         # self.fig.text(0.5, 0.97, titleStr, ha='center', fontsize=20)
         self.update_plots()
