@@ -19,7 +19,7 @@ import time
 import os
 
 class DataPlotter:
-    def __init__(self, root,read_path,spotInds,plotType,titleStr):
+    def __init__(self, root,read_path,spotInds,plotType,titleStr,spotData):
         self.root = root
         self.root.title(titleStr)
         self.read_path = read_path
@@ -42,6 +42,10 @@ class DataPlotter:
                         r"$FWHM_\eta$ (deg)",r"$\mu_\eta$ (deg)",\
                         r"$FWHM_{2 \theta}$ (deg)",r"$\mu_{2 \theta}$ (deg)"]
             
+        self.fwhm_eta_vec = np.array(len(spotInds))
+        self.grain_vec = spotData['grain_nums'][spotInds]
+        self.eta_vec = spotData['etas'][spotInds]
+        self.ome_vec = spotData['frm'][spotInds]
 
         # self.fig.text(0.5, 0.97, titleStr, ha='center', fontsize=20)
         self.update_plots()
@@ -123,9 +127,9 @@ class DataPlotter:
         
         threading.Thread(target=read_data, daemon=True).start()
         
-def start_gui(read_path,spotInds,plotType,titleStr):
+def start_gui(read_path,spotInds,plotType,titleStr,spotData):
     root = tk.Tk()
-    app = DataPlotter(root,read_path,spotInds,plotType,titleStr)
+    app = DataPlotter(root,read_path,spotInds,plotType,titleStr,spotData)
     root.mainloop()
 
 if __name__ == "__main__":

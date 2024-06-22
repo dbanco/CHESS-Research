@@ -33,18 +33,17 @@ params['pool'] = 16
 
 # %% 4. Inspect spot tracks on initial scan data
 scanNum = 1
-fNum = 106
 frame = 10
-fname1 = os.path.join(dataPath,f'{scanNum}','ff','ff1_000' + str(fNum) + '.h5')
-fname2 = os.path.join(dataPath,f'{scanNum}','ff','ff2_000' + str(fNum) + '.h5')
-sf.plotSpotWedges(spotData,fname1,fname2,frame,params)
+fnames = sf.pathToFile(os.path.join(dataPath,f'{scanNum}','ff'))
+# sf.plotSpotWedges(spotData,fnames,frame,params)
 
 # %% 5. Determine which spots to process
 # spotInds = np.arange(120,1000)
 grains = [5,11]
 tth_ring = 3.76*np.pi/180
 dtth_ring= 4*np.pi/180
-spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
+# spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
+spotInds = np.arange(20)
 
 # %% 6. Begin Processing
 scan1 = 43
