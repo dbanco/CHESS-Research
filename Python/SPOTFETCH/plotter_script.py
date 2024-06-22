@@ -11,14 +11,18 @@ import numpy as np
 import spotfetch as sf
 import SPOTFETCH_multiplotter as plotter
 
+
+
 #### Params for ti-2-tensions data ####
 # Output data path
-topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+# topPath = "/nfs/chess/user/dbanco/ti-2_processing"
+# read_path1 = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
+topPath = 
+
 spotsDir = "spots_11032023"
 spotsFile = spotsDir + ".npz"  
 spotData = np.load(os.path.join(topPath,'spots',spotsFile))
 
-read_path1 = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
 spotInds1 = sf.findSpots(spotData,5,np.pi/2,0.1)
 # spotInds2 = np.arange(120,1000)
 spotInds2 = np.arange(8)
