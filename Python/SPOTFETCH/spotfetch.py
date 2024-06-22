@@ -22,12 +22,16 @@ from functools import partial
 import job_manager as jm
 import chess_detectors as cd
 
-def omegaToFrame(omega,startFrame=4,numFrames=1441,omegaRange=360,startOmeg = 0):
+FRAME1 = 2
+NUMFRAMES = 1442
+OMEG_RANGE = 360
+
+def omegaToFrame(omega,startFrame=FRAME1,numFrames=NUMFRAMES,omegaRange=OMEG_RANGE,startOmeg = 0):
     step = omegaRange/numFrames
     frame = (np.floor((omega-startOmeg)/step) + startFrame).astype(int)
     return frame
       
-def frameToOmega(frame,startFrame=4,numFrames=1441,omegaRange=360,startOmeg = 0):
+def frameToOmega(frame,startFrame=FRAME1,numFrames=NUMFRAMES,omegaRange=OMEG_RANGE,startOmeg = 0):
     step = omegaRange/numFrames
     omega = (frame - startFrame)*step + startOmeg
     return omega
@@ -40,7 +44,7 @@ def mapOmega(omega):
 def mapDiff(diff):
     return (diff + 180) % 360 - 180
 
-def wrapFrame(frm,frm0=4,numFrms=1441):
+def wrapFrame(frm,frm0=FRAME1,numFrms=NUMFRAMES):
     return np.mod(frm-frm0,numFrms)+frm0
 
 def pathToFile(path):
@@ -93,7 +97,7 @@ def findSpots(spotData, **kwargs):
 
 
 def estMEANomega(track):
-    step = 360/1441
+    step = OMEG_RANGE/NUMFRAMES
     if len(track) == 1:
         return frameToOmega(track[0]['frm'])
     
@@ -120,7 +124,7 @@ def estMEANomega(track):
     return meanOmega
 
 def estFWHMomega(track):
-    step = 360/1441
+    step = OMEG_RANGE/NUMFRAMES
     if len(track) == 1:
         return 0
     
@@ -519,7 +523,7 @@ def processSpot(k,t,params,outPath,fnames):
     elif params['detector'] == 'dexela':
         with h5py.File(fnames[0], 'r') as file1:
             numFrames = file1['/imageseries/images'].shape[0]
-    if numFrames == 1445:
+    if numFrames == NUMFRAMES:
         wrap = True
     else:
         wrap = False
@@ -558,7 +562,7 @@ def processSpot(k,t,params,outPath,fnames):
             if wrap:
                 frm = int(wrapFrame(frm))
             else:
-                if frm < 4 | frm > 1444: break
+                if frm < 0 | frm > NUMFRAMES-1: break
             newTrack, peakFound = evaluateROI(fnames,prevTracks,\
                                 tth,eta,frm,t,params)
             if peakFound: 
@@ -578,7 +582,7 @@ def processSpot(k,t,params,outPath,fnames):
             frm = int(wrapFrame(frm1))
         else:
             frm = frm1
-            if frm < 4: break
+            if frm < 0: break
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,compareTrack,\
                                           tth,eta,frm,t,params)
@@ -598,7 +602,7 @@ def processSpot(k,t,params,outPath,fnames):
             frm = int(wrapFrame(frm2))
         else:
             frm = frm2
-            if frm > 1444: break
+            if frm > NUMFRAMES-1: break
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,compareTrack,\
                                           tth,eta,frm,t,params)

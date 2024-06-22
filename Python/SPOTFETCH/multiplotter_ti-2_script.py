@@ -35,7 +35,7 @@ for grain in grains:
 # spotInds2 = np.arange(20,40)
 # spotIndsList = [spotInds1,spotInds2]
 
-titleStr = f'Grain {grains}at {tthdeg} degress'
+titleStr = f'Grain {grains} at {tthdeg} degress'
 
 processes = []
 p1 = Process(target=plotter.start_gui, args=(read_path, spotIndsList, 'Mean',titleStr,spotData,grains))
