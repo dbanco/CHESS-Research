@@ -60,16 +60,3 @@ scan1 = 1
 initTracksPath = os.path.join(topPath,'outputs')
 sf.initExsituTracks(initTracksPath,exsituPath, spotData, spotInds, params, scan1-1)
 sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)
-
-
-# # Run on Wrangler
-# # Copy track files from init to outputs
-# for k in spotInds:
-#     if np.mod(k,1000) == 0:
-#         print(k)
-#     src = os.path.join(initTracksPath_nfs,f'trackData_{k}.pkl')
-#     des = os.path.join(initTracksPath_mnt,f'trackData_{k}.pkl')
-#     # des = os.path.join(topPath_mnt,'outputs',f'trackData_{k}.pkl')
-#     shutil.copyfile(src,des)
-
-# sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)
