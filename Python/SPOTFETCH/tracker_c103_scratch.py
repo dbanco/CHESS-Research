@@ -23,12 +23,12 @@ spotData = np.load(os.path.join(spotsPath,'spots.npz'))
 
 # %% 3. Detector and tracking parameters
 params = {}
-# params['detector'] = 'eiger'
-# params['imSize'] = (5000,5000)
-# params['yamlFile'] = '/mnt/scratch/dbanco/mruby_eiger_calibration_single_grain_v01.yml'
-params['detector'] = 'dexela'
-params['imSize'] = (4888,7300) 
-params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/dexelas_calibrated_ruby_0504_v01.yml'
+params['detector'] = 'eiger'
+params['imSize'] = (5000,5000)
+params['yamlFile'] = '/mnt/scratch/dbanco/mruby_eiger_calibration_single_grain_v01.yml'
+# params['detector'] = 'dexela'
+# params['imSize'] = (4888,7300) 
+# params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/dexelas_calibrated_ruby_0504_v01.yml'
 params['roiSize'] = 40
 params['gamma'] = [3,5,4,4] #[eta,tth,fwhm_eta,fwhm_tth]
 params['pool'] = 16

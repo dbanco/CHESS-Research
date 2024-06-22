@@ -49,9 +49,7 @@ tth_ring = tthdeg*np.pi/180
 dtth_ring= 4*np.pi/180
 
 grains = [5,11]
-spotIndsList = []
-for grain in grains:
-    spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
+spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
 
 # %% 6. Begin Processing
 scan1 = 43
