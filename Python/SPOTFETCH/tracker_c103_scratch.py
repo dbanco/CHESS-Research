@@ -8,11 +8,12 @@ Created on Thu Jun  6 15:02:29 2024
 import numpy as np
 import spotfetch as sf
 import os
+import multiprocesing
 
 #   1. Set up paths: exsitu, data, outputs
 topPath = "/mnt/scratch/dbanco/c103_processing/Sample-1/layer-1"
 exsituPath = "/nfs/chess/raw/2024-2/id3a/miller-3528-c/c103-1-ff-1/"
-dataPath = "/mnt/scratch/....TBD"
+dataPath = "/mnt/scratch/nygren-series-cycle-2024-2/"
 
 # %% 2. Load in or collect spots data
 spotsDir = "TBD"

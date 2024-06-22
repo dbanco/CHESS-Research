@@ -457,7 +457,6 @@ def collectSpotsData(outPath,spotsPath):
     tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
 
 def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
-
     i = 1
     t = scan1
     newData = False
@@ -540,7 +539,19 @@ def processSpot(k,t,params,outPath,fnames):
         eta = track['eta']
         tth = track['tth']
         frm = track['frm']
-
+        
+        notLoaded = True
+        while notLoaded:
+            try:
+                if params['detector'] == 'eiger':
+                    ims[frm,:,:]
+                    notLoaded = False
+                else:
+                    notLoaded = False                     
+            except:
+                pass
+            
+        
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,prevTracks,\
                             tth,eta,int(frm),t,params)
