@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.gridspec as gridspec
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pickle
 import threading
@@ -18,16 +19,16 @@ import time
 import os
 
 class DataPlotter:
-    def __init__(self, root,read_path,spotInds,plotType):
+    def __init__(self, root,read_path,spotInds,plotType,titleStr):
         self.root = root
-        self.root.title("Live Data Plotter")
+        self.root.title(titleStr)
         self.read_path = read_path
         self.spotInds = spotInds
         self.plotType = plotType
         self.T = 999999
         # Create figure
-        self.fig = Figure(figsize=(12, 4))
-        self.gs = gridspec.GridSpec(2, 3, height_ratios=[1, 1])
+        self.fig = Figure(figsize=(10, 5))
+        self.gs = gridspec.GridSpec(3, 2, height_ratios=[1,1, 1])
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=5)
 
@@ -37,10 +38,14 @@ class DataPlotter:
         self.trackData = []
         self.dataArray = np.array((6,len(spotInds)))
         self.i = 1
+        self.ylabels = [r"$FWHM_\omega$ (deg)",r"$\mu_\omega$ (deg)",\
+                        r"$FWHM_\eta$ (deg)",r"$\mu_\eta$ (deg)",\
+                        r"$FWHM_{2 \theta}$ (deg)",r"$\mu_{2 \theta}$ (deg)"]
+            
+
+        # self.fig.text(0.5, 0.97, titleStr, ha='center', fontsize=20)
         self.update_plots()
-        self.ylabels = [r"FWHM_\omega$ (deg)",r"FWHM_\eta (rad)",r"$FWHM_{2 \theta} (rad)",\
-                        r"\mu_\omega$ (deg)",r"\mu_\eta (rad)",r"\mu_{2 \theta} (rad)"]
-        
+    
     def update_plot(self, event=None):
         # Length of last track
         T = len(self.trackData[-1])
@@ -58,10 +63,10 @@ class DataPlotter:
                     FWHMome = sf.estFWHMomega(self.trackData[k][t])
                     Ome = sf.estMEANomega(self.trackData[k][t])
                     self.dataArray[0,k,t] = FWHMome
-                    self.dataArray[1,k,t] = avgFWHMeta
-                    self.dataArray[2,k,t] = avgFWHMtth
-                    self.dataArray[3,k,t] = Ome
-                    self.dataArray[4,k,t] = avgEta
+                    self.dataArray[2,k,t] = avgFWHMeta
+                    self.dataArray[4,k,t] = avgFWHMtth
+                    self.dataArray[1,k,t] = Ome
+                    self.dataArray[3,k,t] = avgEta
                     self.dataArray[5,k,t] = avgTth   
                     if notDone: 
                         scan[t] = self.trackData[k][t][0]['scan']
@@ -73,10 +78,10 @@ class DataPlotter:
             if self.plotType == 'Delta':
                 for k in range(len(self.spotInds)):
                     ax.plot(scan,self.dataArray[i,k,:]-self.dataArray[i,k,0],'-o')
-                ax.set_ylabel(r'\Delta ' + self.ylabels[i])  
+                ax.set_ylabel(r'$\Delta$ ' + self.ylabels[i])  
             elif self.plotType == 'Mean':
                 for k in range(len(self.spotInds)):
-                    self.dataArray[i,k,:] = self.dataArray[i,k,:]-self.dataArray[i,k,0]
+                    self.dataArray[i,k,:] = sf.mapDiff(self.dataArray[i,k,:]-self.dataArray[i,k,0])
                 avg = np.nanmean(self.dataArray[i,:,:],0)
                 std = np.nanstd(self.dataArray[i,:,:],0)
                 ax.errorbar(scan,avg,std)
@@ -88,8 +93,9 @@ class DataPlotter:
                 ax.set_ylabel(self.ylabels[i])  
             
             ax.set_xlabel("Scan #")  
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         
-        self.fig.tight_layout(pad=3.0)
+        self.fig.tight_layout(pad=2.0)
         self.canvas.draw()
             
     def plot(self):
@@ -111,13 +117,15 @@ class DataPlotter:
                     self.trackData = []
                 except pickle.UnpicklingError:
                     self.trackData = []
+                except EOFError:
+                    self.trackData = []
                 time.sleep(1)
         
         threading.Thread(target=read_data, daemon=True).start()
         
-def start_gui(read_path,spotInds,plotType):
+def start_gui(read_path,spotInds,plotType,titleStr):
     root = tk.Tk()
-    app = DataPlotter(root,read_path,spotInds,plotType)
+    app = DataPlotter(root,read_path,spotInds,plotType,titleStr)
     root.mainloop()
 
 if __name__ == "__main__":
@@ -131,4 +139,5 @@ if __name__ == "__main__":
     read_path1 = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
     # spotInds1 = sf.findSpots(spotData,5,np.pi/2,0.1)
     spotInds1 = np.arange(16)
-    start_gui(read_path1,spotInds1,'Delta')
+    titleStr = 'Spots 0-15'
+    start_gui(read_path1,spotInds1,'Delta',titleStr)

@@ -28,17 +28,54 @@ def omegaToFrame(omega,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
     step = omegaRange/endFrame
     frame = (np.floor((omega-startOmeg)/step) + startFrame).astype(int)
     return frame
-
-def findSpots(spotData,grain,eta,deta):
-    grain_nums = spotData['grain_nums']
-    etas = spotData['etas']
-    spotInds = np.where((grain_nums == grain) & (etas > eta-deta) & (etas < eta+deta))[0]
+      
+def findSpots(spotData, **kwargs):
+    grains = kwargs.get('grains', None)
+    tth = kwargs.get('tth', None)
+    dtth = kwargs.get('dtth', None)
+    eta = kwargs.get('eta', None)
+    deta = kwargs.get('deta', None)
+    ome = kwargs.get('ome', None)
+    dome = kwargs.get('dome', None)
+    
+    if grains != None:
+        grain_nums = spotData['grain_nums']
+        cond1 = np.array(grain_nums.shape)
+        cond1 = False
+        for g in grains:
+            cond1 = cond1 | (grain_nums == g)
+    else:
+        cond1 = True
+    if eta != None:
+        etas = spotData['etas']
+        cond2 = (etas > eta-deta) & (etas < eta+deta)
+    else:
+        cond2 = True
+    if tth != None:
+        tths = spotData['tths']
+        cond3 = (tths > tth-dtth) & (tths < tth+dtth)
+    else:
+        cond3 = True
+    if ome != None:
+        omes = spotData['frms']
+        cond4 = (omes > ome-dome) & (omes < ome+dome)
+    else:
+        cond4 = True
+    spotInds = np.where(cond1 & cond2 & cond3 & cond4)[0]
     return spotInds
 
 def frameToOmega(frame,startFrame=4,endFrame=1441,omegaRange=360,startOmeg = 0):
     step = omegaRange/endFrame
     omega = (frame - startFrame)*step + startOmeg
     return omega
+
+def mapOmega(omega):
+    if omega > 180:
+        omega = omega - 360
+    return omega
+
+def mapDiff(diff):
+    return (diff + 180) % 360 - 180
 
 def estMEANomega(track):
     step = 360/1441
@@ -53,7 +90,7 @@ def estMEANomega(track):
         omegaRange[i] = frameToOmega(track[i]['frm'])
         meanOmega += i*roiOmega[i]
     meanOmega = meanOmega/np.sum(roiOmega)
-
+    
     ind1 = int(np.floor(meanOmega))
     ind2 = int(np.ceil(meanOmega))
     
@@ -62,6 +99,9 @@ def estMEANomega(track):
     else:
         meanOmega = meanOmega*step
 
+    # Map from 180-360 to -180-0 if first omega greater than last omega 
+    # if track[-1]['frm'] > track[0]['frm']:
+    meanOmega = mapOmega(meanOmega)
     return meanOmega
 
 def estFWHMomega(track):
@@ -631,9 +671,10 @@ def plotSpotWedges(spotData,fname1,fname2,frame,params):
     
     
     fig = plt.figure()
-    b[b>100] = 100
+    # b[b>100] = 100
     plt.imshow(b)
-    # plt.clim(290,550)
+    plt.clim(np.median(b),np.median(b)+100)
+    plt.colorbar()
     
     for ind in spotInds:
         # 0. Load spot information
@@ -756,10 +797,14 @@ def evaluateROI(fname1,fname2,prevTracks,tth,eta,frm,scan,params):
     # try:
         # p0 = prevTracks[0]['p']
     # except:
-    p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
-    
-    # 3. Fit peak
-    p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
+    try:
+        p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
+        
+        # 3. Fit peak
+        p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
+    except:
+        peakFound = False
+        return 0, peakFound
     
     if (p[1] > roiSize-0.5) | (p[2] > roiSize-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
         peakFound = False
@@ -948,6 +993,14 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     i = 1
     t = scan1
     newData = False
+    try:
+        pool = Pool(params['pool'])
+        print(f'{pool._processes} workers')
+        parallelFlag = True
+    except:
+        print('Not parallel')
+        parallelFlag = False
+    
     while True:
         # Try reading in file for new scan
         dataDir = os.path.join(dataPath,f'{t}','ff')
@@ -970,18 +1023,16 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
             elif len(fnames) == 1:
                 fname2 = os.path.join(dataDir,fnames[0])
         
-            # try:
-            pool = Pool()
-            print(f'{pool._processes} workers, Scan {t}')
-            pool.starmap(partial(processSpot,t=t,params=params,\
-                                 outPath=outPath,fname1=fname1,\
-                                 fname2=fname2),zip(spotInds))
-            # except:
-                # print('Not parallel')
-                # print(f'Scan {t}, Spot:', end=" ")
-                # for s,k in enumerate(spotInds): 
-                #     print(f'{k}', end=" ")
-                #     processSpot(k,t,params,outPath,fname1,fname2)
+            
+            print(f'Scan {t}, Spot:', end=" ")
+            if parallelFlag:
+                pool.starmap(partial(processSpot,t=t,params=params,\
+                                     outPath=outPath,fname1=fname1,\
+                                     fname2=fname2),zip(spotInds))
+            else:
+                
+                for s,k in enumerate(spotInds): 
+                    processSpot(k,t,params,outPath,fname1,fname2)
             
             i += 1
             t += 1
@@ -997,13 +1048,14 @@ def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fname1,fname2):
         pickle.dump(trackData, f)
     
 def processSpot(k,t,params,outPath,fname1,fname2):
+    print(f'{k}', end=" ")
     outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
     # Load in track so far
     with open(outFile, 'rb') as f:
         trackData = pickle.load(f)
     trackData.append([])
     T = len(trackData)
-
+    
     # Determine if scan wraps in omega or if LODI
     if params['detector'] == 'eiger':
         ims = imageseries.open(fname1, format='eiger-stream-v1')
@@ -1247,7 +1299,7 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     fname2 = os.path.join(exsituPath,fnames[1])
 
     try:
-        pool = Pool()
+        pool = Pool(params['pool'])
         print(f'{pool._processes} workers, Ex-Situ Scan ({scan0})')
         inVars = zip(spotInds,initData['etas'],initData['tths'],initData['frms'])
         pool.starmap(partial(initSpot,t=scan0,params=params,outPath=outPath,\
@@ -1263,7 +1315,8 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
             frm = initData['frms'][s]
             initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fname1,fname2)
     
-    
+    try: pool.close()
+    except: print('Pool close didnt work')
 
 
 def compAvgParams(track):   
@@ -1278,5 +1331,9 @@ def compAvgParams(track):
         avgEta += track[j]['eta']/J
         avgTth += track[j]['tth']/J
     
+    avgEta = avgEta*(180/np.pi)
+    avgTth = avgTth*(180/np.pi)
+    avgFWHMeta = avgFWHMeta*(180/np.pi)
+    avgFWHMtth = avgFWHMtth*(180/np.pi)
     return avgFWHMeta,avgFWHMtth,avgEta,avgTth
         
