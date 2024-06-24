@@ -47,13 +47,11 @@ def loadYamlDataEiger(yamlFile):
 
     return detectDist, mmPerPixel, ff_trans
 
-def load_eiger(fname,params,t,t2=None,detectSize=(4362,4148)):
-    ims = imageseries.open(fname, format='eiger-stream-v1')
-    if t2 is None:
-        img = ims[t,:,:].copy()
-    else:
-        img = ims[t:t2,:,:].copy()     
-        img = np.max(img, axis=0)
+def load_eiger(fnames,params,t,detectSize=(4362,4148)):
+    ims = imageseries.open(fnames[0], format='eiger-stream-v1')
+
+    img = ims[t,:,:].copy()
+    img[img>4294000000] = 0
 
     imSize = params['imSize']
     yamlFile = params['yamlFile']
@@ -209,6 +207,7 @@ def loadDexPolarRoi(fnames,tth,eta,frame,params):
 def loadEigerPolarRoi(fname,tth,eta,frame,params):
     # 0. Load params, YAML data
     roiSize = params['roiSize']
+    imSize = params['imSize']
     detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
     
     # 1. Construct rad, eta domain
@@ -218,7 +217,7 @@ def loadEigerPolarRoi(fname,tth,eta,frame,params):
     Ainterp,new_center,x_cart,y_cart = getInterpParamsEiger(tth,eta,params)
     
     # 3. Load needed Cartesian ROI pixels
-    ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel)
+    ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
     roi = loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame)
     
     # 4. Apply interpolation matrix to Cartesian pixels get Polar values
@@ -228,6 +227,31 @@ def loadEigerPolarRoi(fname,tth,eta,frame,params):
     roi_polar = np.reshape(roi_polar_vec,(len(rad_dom),len(eta_dom)))
     
     return roi_polar
+
+def loadEigerPolarRoiArray(fname,tth,eta,frames,params):
+    # 0. Load params, YAML data
+    imSize = params['imSize']
+    roiSize = params['roiSize']
+    detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
+    
+    # 1. Construct rad, eta domain
+    rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
+    
+    # 2. Construct interpolation matrix
+    Ainterp,new_center,x_cart,y_cart = getInterpParamsEiger(tth,eta,params)
+    
+    # 3. Load needed Cartesian ROI pixels
+    ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
+    roiArray = loadEigerPanelROIArray(x_cart,y_cart,ff1_pix,fname,frames)
+    roi_polar_array = np.zeros((frames[1]-frames[0],len(rad_dom),len(eta_dom)))
+    # 4. Apply interpolation matrix to Cartesian pixels get Polar values
+    for i in range(roiArray.shape[0]):
+        print(i)
+        roi_polar_vec = Ainterp.dot(roiArray[i,:,:].flatten())
+        roi_polar = np.reshape(roi_polar_vec,(len(rad_dom),len(eta_dom)))
+        roi_polar_array[i,:,:] = roi_polar
+    
+    return roi_polar_array
 
 def loadDexPolarRoiPrecomp(fnames,yamlFile,tth,eta,frame,\
                     imSize,roiSize,interp_params):
@@ -300,11 +324,29 @@ def loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     if y_cart[1] > ff1_pix[3]: y_cart[1] = ff1_pix[3]
     x_pan = x_cart - ff1_pix[0]
     y_pan = y_cart - ff1_pix[2]
-
+    
     ims = imageseries.open(fname, format='eiger-stream-v1')
     img = ims[frame, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
-      
+    img[img>4294000000] = 0
     return img
+
+def loadEigerPanelROIArray(x_cart,y_cart,ff1_pix,fname,frames):
+
+    if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
+    if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
+    if y_cart[0] < ff1_pix[2]: y_cart[0] = ff1_pix[2]
+    if y_cart[1] > ff1_pix[3]: y_cart[1] = ff1_pix[3]
+    x_pan = x_cart - ff1_pix[0]
+    y_pan = y_cart - ff1_pix[2]
+    
+    ims = imageseries.open(fname, format='eiger-stream-v1')
+    imgArray = np.zeros((frames[1]-frames[0],y_pan[1]-y_pan[0],x_pan[1]-x_pan[0]))
+    for i in np.arange(frames[0],frames[1]):
+        print(i)
+        imgArray[i-frames[0],:,:] = ims[i, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
+    imgArray[imgArray>4294000000] = 0
+    
+    return imgArray
 
 def getROIshapeDex(x_cart,y_cart,ff1_pix,ff2_pix,center,dexShape=(3888,3072)):
     
@@ -414,15 +456,15 @@ def panelPixelsEiger(ff_trans,mmPerPixel,imSize=(4600,4400),detectShape=(4362,41
 
 def polarDomain(detectDist,mmPerPixel,tth,eta,roi_size):
     r = np.round(detectDist*np.tan(tth)/mmPerPixel)
-    r1 = r - roi_size//2
-    r2 = r + roi_size//2
+    r1 = r - roi_size[0]//2
+    r2 = r + roi_size[0]//2
 
     rad_domain = np.arange(r1,r2,1)
     
     deta = 1/r2
-    eta1 = eta - roi_size/2*deta
-    eta2 = eta + roi_size/2*deta
-    eta_domain = np.linspace(eta1,eta2,roi_size)
+    eta1 = eta - roi_size[1]/2*deta
+    eta2 = eta + roi_size[1]/2*deta
+    eta_domain = np.linspace(eta1,eta2,roi_size[1])
     return rad_domain, eta_domain
 
 def fetchCartesian(rad_dom,eta_dom,center):

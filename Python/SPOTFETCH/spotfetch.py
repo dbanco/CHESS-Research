@@ -145,7 +145,7 @@ def estFWHMomega(track):
     
     return fwhmOmega
     
-def loadSpotsAtFrame(spot_data,fnames,frame,params):
+def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
     tths = spot_data['tths']
     etas = spot_data['etas']     
     ome_idxs = spot_data['ome_idxs'] 
@@ -163,8 +163,13 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params):
         eta = etas[ind]
 
         # 2. Load ROI and interpolate to polar coordinates 
-        roi_polar = cd.loadDexPolarRoi(fnames,tth,eta,frame,params)
-
+        if detectFrame == []:
+            detectFrame = frame
+        if params['detector'] == 'dexela':
+            roi_polar = cd.loadDexPolarRoi(fnames,tth,eta,detectFrame,params)
+        elif params['detector'] == 'eiger':
+            roi_polar = cd.loadEigerPolarRoi(fnames[0],tth,eta,detectFrame,params)
+        
         roi_list.append(roi_polar)
         
     return roi_list
@@ -193,7 +198,7 @@ def plotROIs(roi_list,num_cols = 5):
     
     return fig
     
-def plotSpotWedges(spotData,fnames,frame,params):
+def plotSpotWedges(spotData,fnames,frame,params,detectFrame=[]):
     tths = spotData['tths']
     etas = spotData['etas']     
     ome_idxs = spotData['ome_idxs'] 
@@ -204,16 +209,18 @@ def plotSpotWedges(spotData,fnames,frame,params):
     imSize = params['imSize']
     center = (imSize[0]//2,imSize[1]//2,)
 
+    if detectFrame == []:
+        detectFrame = frame
     if params['detector'] == 'dexela':
-        b = cd.load_dex(fnames,params,frame)
+        b = cd.load_dex(fnames,params,detectFrame)
     elif params['detector'] == 'eiger':
-        b = cd.load_eiger(fnames[0],params,frame)
+        b = cd.load_eiger(fnames,params,detectFrame)
     
     
     fig = plt.figure()
     # b[b>100] = 100
     plt.imshow(b)
-    plt.clim(np.median(b),np.median(b)+100)
+    plt.clim(np.median(b),np.median(b)+10)
     plt.colorbar()
     
     for ind in spotInds:
@@ -229,9 +236,9 @@ def plotSpotWedges(spotData,fnames,frame,params):
    
         rad = np.round(detectDist*np.tan(tth)/mmPerPixel)
         
-        wedge = patches.Wedge([center[1],center[0]],rad+roiSize/2,\
+        wedge = patches.Wedge([center[1],center[0]],rad+roiSize[0]/2,\
                 180/np.pi*eta_dom[0],180/np.pi*eta_dom[-1],\
-                linewidth=1,width=roiSize,fill=0,color='r')
+                linewidth=1,width=roiSize[1],fill=0,color='r')
             
         plt.gca().add_patch(wedge)
         # x = rad*np.cos(eta) + center[1]
@@ -277,7 +284,7 @@ def evaluateROI(fnames,prevTracks,tth,eta,frm,scan,params):
         peakFound = False
         return 0, peakFound
     
-    if (p[1] > roiSize-0.5) | (p[2] > roiSize-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
+    if (p[1] > roiSize[0]-0.5) | (p[2] > roiSize[1]-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
         peakFound = False
         # print('Mean exceeds ROI')
         return 0, peakFound
@@ -332,7 +339,7 @@ def peakDetected(newTrack,prevTracks,params):
     dtth = hypot = detectDist*np.cos(tth)
     dtth = np.arctan(mmPerPixel/hypot)
     
-    if (p[1] > roiSize) | (p[2] > roiSize):
+    if (p[1] > roiSize[0]) | (p[2] > roiSize[1]):
         peakFound = False
         # print('Mean exceeds ROI')
         return peakFound
@@ -545,13 +552,10 @@ def processSpot(k,t,params,outPath,fnames):
             try:
                 if params['detector'] == 'eiger':
                     ims[frm,:,:]
-                    notLoaded = False
-                else:
-                    notLoaded = False                     
+                    notLoaded = False                    
             except:
-                pass
-            
-        
+                ims = imageseries.open(fnames[0], format='eiger-stream-v1')
+                
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,prevTracks,\
                             tth,eta,int(frm),t,params)
