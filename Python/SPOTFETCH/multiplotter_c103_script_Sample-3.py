@@ -13,15 +13,22 @@ from multiprocessing import Process
 
 #### Params for ti-2-tensions data ####
 # Output data path
-topPath = "/mnt/scratch/dbanco/c103_processing/Sample-1/"
+topPath = "/mnt/scratch/dbanco/c103_processing/Sample-3/"
 read_path = os.path.join(topPath,'outputs')
-
 spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
 
-grains = [276,288,342]
-spotIndsList = []
-for grain in grains:
-    spotIndsList.append(sf.findSpots(spotData,grains=[grain]))
+grains = [1,2,3]
+
+tthdeg = 4
+tth_ring = tthdeg*np.pi/180
+dtth_ring= 2*np.pi/180
+deta = 20*np.pi/180
+
+spotInds1 = sf.findSpots(spotData,eta=0,deta=deta,tth=tth_ring,dtth=tth_ring)
+spotInds2 = sf.findSpots(spotData,eta=np.pi/4,deta=deta,tth=tth_ring,dtth=dtth_ring)
+spotInds3 = sf.findSpots(spotData,eta=np.pi/2,deta=deta,tth=tth_ring,dtth=dtth_ring)
+
+spotIndsList = [spotInds1,spotInds2,spotInds3]
 
 # spotInds1 = sf.findSpots(spotData,grains=grains[0],tth=tth_ring,dtth=dtth_ring)
 # spotInds2 = sf.findSpots(spotData,grains=grains[1],tth=tth_ring,dtth=dtth_ring)

@@ -166,7 +166,7 @@ def getInterpParamsEiger(tth,eta,params):
     ff_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
     
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
-    roiShape = getROIshapeEiger(x_cart, y_cart, ff_pix, center)
+    roiShape = getROIshapeEiger(x_cart, y_cart, ff_pix)
     
     Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center)
     
@@ -378,7 +378,7 @@ def getROIshapeDex(x_cart,y_cart,ff1_pix,ff2_pix,center,dexShape=(3888,3072)):
     
     return (y_pan[1]-y_pan[0],x_pan[1]-x_pan[0])
 
-def getROIshapeEiger(x_cart,y_cart,ff1_pix,center,eigShape=(4362,4148)):
+def getROIshapeEiger(x_cart,y_cart,ff1_pix,eigShape=(4362,4148)):
     
     if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
     if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
@@ -436,7 +436,7 @@ def panelPixelsDex(ff_trans,mmPerPixel,imSize=(4888,7300),dexShape=(3888,3072)):
     ff2_pixels = [ff2c1,ff2c2,ff2r1,ff2r2]
     return ff1_pixels, ff2_pixels
 
-def panelPixelsEiger(ff_trans,mmPerPixel,imSize=(4600,4400),detectShape=(4362,4148)):
+def panelPixelsEiger(ff_trans,mmPerPixel,imSize=(5000,5000),detectShape=(4362,4148)):
     center = (imSize[0]/2,imSize[1]/2)
     ff1_tx = ff_trans[0]
     ff1_ty = ff_trans[1]

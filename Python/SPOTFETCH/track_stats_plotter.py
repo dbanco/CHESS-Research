@@ -57,7 +57,7 @@ class DataPlotter:
             if k > len(self.trackData)-1: continue
             for t in range(T):
                 if t > len(self.trackData[k])-1: continue
-                if len(self.trackData[k][t]) > 0:
+                if len(self.trackData[k][t]) > 0:           
                     avgFWHMeta,avgFWHMtth,avgEta,avgTth = sf.compAvgParams(self.trackData[k][t])
                     FWHMome = sf.estFWHMomega(self.trackData[k][t])
                     Ome = sf.estMEANomega(self.trackData[k][t])
@@ -66,7 +66,9 @@ class DataPlotter:
                     self.dataArray[4,k,t] = avgFWHMtth
                     self.dataArray[1,k,t] = Ome
                     self.dataArray[3,k,t] = avgEta
-                    self.dataArray[5,k,t] = avgTth   
+                    self.dataArray[5,k,t] = avgTth 
+                    # print(f'Spot {k}, Time{t}')
+
                     if notDone: 
                         scan[t] = self.trackData[k][t][0]['scan']
                         if t == T-1: notDone = False
@@ -80,10 +82,11 @@ class DataPlotter:
                 ax.set_ylabel(r'$\Delta$ ' + self.ylabels[i])  
             elif self.plotType == 'Mean':
                 for k in range(len(self.spotInds)):
+                    # print(k)
                     self.dataArray[i,k,:] = sf.mapDiff(self.dataArray[i,k,:]-self.dataArray[i,k,0])
                 avg = np.nanmean(self.dataArray[i,:,:],0)
                 std = np.nanstd(self.dataArray[i,:,:],0)
-                ax.errorbar(scan,avg,std)
+                ax.errorbar(scan,avg,std,fmt='-x')
                 ax.set_ylabel('Mean ' + self.ylabels[i])  
             else:
                 # Orginal
@@ -108,7 +111,8 @@ class DataPlotter:
                     self.T = 999999
                     for k in self.spotInds:
                         with open(os.path.join(self.read_path,f'trackData_{k}.pkl'), 'rb') as f:
-                            self.trackData.append(pickle.load(f))
+                            track = pickle.load(f)
+                            self.trackData.append(track)
                             self.T = min(self.T,len(self.trackData[-1]))
                     # self.update_plot()
                     self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
@@ -129,14 +133,13 @@ def start_gui(read_path,spotInds,plotType,titleStr,spotData):
 
 if __name__ == "__main__":
     
-    # Output data path
-    topPath = "/nfs/chess/user/dbanco/ti-2_processing"
-    spotsDir = "spots_11032023"
-    spotsFile = spotsDir + ".npz"  
-    spotData = np.load(os.path.join(topPath,'spots',spotsFile))
-    
-    read_path1 = "/nfs/chess/user/dbanco/ti-2_processing/outputs"
-    # spotInds1 = sf.findSpots(spotData,5,np.pi/2,0.1)
-    spotInds1 = np.arange(16)
-    titleStr = 'Spots 0-15'
-    start_gui(read_path1,spotInds1,'Delta',titleStr)
+    topPath = "/mnt/scratch/dbanco/c103_processing/Sample-1/"
+    read_path = os.path.join(topPath,'outputs')
+    spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
+
+    grains = [276,288,342]
+    spotInds = []
+    for grain in grains:
+        spotInds.append(sf.findSpots(spotData,grains=[grain]))
+    titleStr = f'Grain {grains}'
+    start_gui(read_path,spotInds,'Mean',titleStr,spotData)

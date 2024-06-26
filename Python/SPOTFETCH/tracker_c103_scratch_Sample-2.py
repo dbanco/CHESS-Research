@@ -12,8 +12,7 @@ import os
 
 #   1. Set up paths: exsitu, data, outputs
 topPath = "/mnt/scratch/dbanco/c103_processing/Sample-2/layer-1"
-# exsituPath = "/nfs/chess/raw/2024-2/id3a/miller-3528-c/c103-1-ff-1/"
-# dataPath = "/mnt/scratch/nygren-series-cycle-2024-2/"
+# exsituPathDex = "/nfs/chess/raw/2024-2/id3a/miller-3528-c/c103-1-ff-1/"
 dataPath = "/nfs/chess/id1a3/2024-2/nygren-4125-a/nygren-series-cycle-2024-2-chessdaq/nygren-series-cycle-2024-2"
 num1 = 6
 num2 = 247
@@ -67,7 +66,7 @@ params['pool'] = 64
 # tth_ring = 3.76*np.pi/180
 # dtth_ring= 4*np.pi/180
 # spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
-spotInds = np.arange(len(spotData['tths']))
+spotInds = np.arange(1000)
 
 # # %% 6. Begin Processing
 initTracksPath = os.path.join(topPath,'outputs')

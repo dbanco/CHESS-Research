@@ -56,6 +56,7 @@ class DataPlotter:
             self.dataArray = np.zeros((6,len(spotInds),T))
             self.dataArray[:] = np.nan
             scan = np.zeros((T))
+            scan[:] = np.nan
             notDone = True
             # Update all features
             for k in range(len(spotInds)):
@@ -102,7 +103,7 @@ class DataPlotter:
         self.canvas.draw()
         if self.needLegend:
             handles, labels = ax.get_legend_handles_labels()
-            self.fig.legend(handles, labels, loc='upper center')
+            self.fig.legend(handles, labels, loc='lower center')
             self.needLegend = False
             
     def plot(self):
@@ -112,6 +113,8 @@ class DataPlotter:
         def read_data():
             while True:
                 try:
+                    if self.trackData != []:
+                        dataLength = len(self.trackData[-1][-1])
                     self.trackData = []
                     self.T = 999999
                     for i, spotInds in enumerate(self.spotIndsList):
@@ -120,8 +123,9 @@ class DataPlotter:
                             with open(os.path.join(self.read_path,f'trackData_{k}.pkl'), 'rb') as f:
                                 self.trackData[i].append(pickle.load(f))
                                 self.T = min(self.T,len(self.trackData[i][-1]))
-                        # self.update_plot()
-                        self.root.after(0, self.update_plot)  # Schedule update_plot to run in the main thread
+                                
+                    self.root.after(0, self.update_plot)
+                    
                 except FileNotFoundError:
                     self.trackData = []
                 except pickle.UnpicklingError:

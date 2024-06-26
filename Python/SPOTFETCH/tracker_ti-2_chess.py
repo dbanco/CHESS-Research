@@ -27,7 +27,7 @@ params = {}
 params['detector'] = 'dexela'
 params['yamlFile'] = os.path.join(topPath,'dex-refined-1.yml')
 params['imSize'] = (4888,7300) 
-params['roiSize'] = 40
+params['roiSize'] = [40,40]
 params['gamma'] = [3,5,4,4] #[eta,tth,fwhm_eta,fwhm_tth]
 params['pool'] = 16
 
@@ -55,4 +55,4 @@ spotInds = sf.findSpots(spotData,grains=grains,tth=tth_ring,dtth=dtth_ring)
 scan1 = 43
 initTracksPath = os.path.join(topPath,'outputs')
 sf.initExsituTracks(initTracksPath,exsituPath, spotData, spotInds, params, scan1-1)
-sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)
+# sf.spotTracker(dataPath,topPath,exsituPath,spotData,spotInds,params,scan1)

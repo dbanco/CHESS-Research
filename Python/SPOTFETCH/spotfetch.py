@@ -18,12 +18,14 @@ from hexrd.fitting import fitpeak
 from hexrd import imageseries
 from multiprocessing import Pool
 from functools import partial
+from pathlib import Path
+import glob
 
 import job_manager as jm
 import chess_detectors as cd
 
 FRAME1 = 2
-NUMFRAMES = 1442
+NUMFRAMES = 1440
 OMEG_RANGE = 360
 
 def omegaToFrame(omega,startFrame=FRAME1,numFrames=NUMFRAMES,omegaRange=OMEG_RANGE,startOmeg = 0):
@@ -66,8 +68,8 @@ def findSpots(spotData, **kwargs):
     dtth = kwargs.get('dtth', None)
     eta = kwargs.get('eta', None)
     deta = kwargs.get('deta', None)
-    ome = kwargs.get('ome', None)
-    dome = kwargs.get('dome', None)
+    frm = kwargs.get('frm', None)
+
     
     if grains != None:
         grain_nums = spotData['grain_nums']
@@ -87,9 +89,9 @@ def findSpots(spotData, **kwargs):
         cond3 = (tths > tth-dtth) & (tths < tth+dtth)
     else:
         cond3 = True
-    if ome != None:
-        omes = spotData['frms']
-        cond4 = (omes > ome-dome) & (omes < ome+dome)
+    if frm != None:
+        frms = spotData['ome_idxs']
+        cond4 = frms == frm
     else:
         cond4 = True
     spotInds = np.where(cond1 & cond2 & cond3 & cond4)[0]
@@ -198,17 +200,22 @@ def plotROIs(roi_list,num_cols = 5):
     
     return fig
     
-def plotSpotWedges(spotData,fnames,frame,params,detectFrame=[]):
+def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
     tths = spotData['tths']
     etas = spotData['etas']     
     ome_idxs = spotData['ome_idxs'] 
     # Get spot indices at frame
-    spotInds = np.where(ome_idxs == frame)[0]
+    if grains == []:
+        spotInds = np.where(ome_idxs == frame)[0]
+    else:
+        spotInds = findSpots(spotData,grains=grains,frm=frame)
     
     roiSize = params['roiSize']
     imSize = params['imSize']
     center = (imSize[0]//2,imSize[1]//2,)
 
+    if os.path.isfile(fnames):
+        fnames = [fnames]
     if detectFrame == []:
         detectFrame = frame
     if params['detector'] == 'dexela':
@@ -463,9 +470,9 @@ def collectSpotsData(outPath,spotsPath):
     np.savez(saveFile,Xs=Xs,Ys=Ys,id_nums=id_nums,\
     tths=tths,etas=etas,omes=omes,ome_idxs=ome_idxs,grain_nums=grain_nums)
 
-def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
-    i = 1
-    t = scan1
+def spotTracker(dataPath,outPath,spotData,spotInds,params,num1,num2,advance):
+    # i = 1
+    # t = scan1
     newData = False
     try:
         pool = Pool(params['pool'])
@@ -477,9 +484,29 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
     
     while True:
         # Try reading in file for new scan
-        dataDir = os.path.join(dataPath,f'{t}','ff')
+        
         try:
-            fnames = pathToFile(dataDir)
+            # if os.path.isfile(dataPath):
+            template = dataPath.format(num2=num2)
+            template2 = dataPath.format(num2=num2+1)
+            pattern = os.path.join(template)
+            pattern2 = os.path.join(template2)
+
+            # Use glob to find files that match the pattern
+            fnames = glob.glob(pattern)
+            fnames2 = glob.glob(pattern2)
+            
+            if fnames2 == []:
+                time.sleep(1)
+                continue
+            elif Path(fnames2[0]).stat().st_size >= 2e6:
+                print('File ready')
+            else:
+                time.sleep(1)
+                continue
+            # else:
+                # dataDir = os.path.join(dataPath,f'{num2}','ff')
+                # fnames = pathToFile(dataDir)
         except:
             if newData:
                 print('No new data',end=" ")
@@ -492,23 +519,26 @@ def spotTracker(dataPath,outPath,exsituPath,spotData,spotInds,params,scan1):
         if len(fnames) > 0:
             newData = True        
             
-            print(f'Scan {t}, Spot:', end=" ")
+            print(f'Scan {num2}, Spot:', end=" ")
             if parallelFlag:
-                pool.starmap(partial(processSpot,t=t,params=params,\
-                                     outPath=outPath,fnames=fnames),zip(spotInds))
+                pool.starmap(partial(processSpot,t=num2,params=params,\
+                                      outPath=outPath,fnames=fnames),zip(spotInds))
             else:
-                
                 for s,k in enumerate(spotInds): 
-                    processSpot(k,t,params,outPath,fnames)
-            
-            i += 1
-            t += 1
+                    processSpot(k,num2,params,outPath,fnames)
+            if advance:
+                num1 += 1
+                num2 += 1
+            else:
+                break
         
 def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
+    print(k)
     prevTracks = []
     newTrack, peakFound = evaluateROI(fnames,prevTracks,tthRoi,etaRoi,int(frm),t,params)
     trackData = []
-    trackData.append([newTrack])
+    if peakFound:
+        trackData.append([newTrack])
     outFile = os.path.join(outPath,f'trackData_{k}.pkl')
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
@@ -519,6 +549,10 @@ def processSpot(k,t,params,outPath,fnames):
     # Load in track so far
     with open(outFile, 'rb') as f:
         trackData = pickle.load(f)
+    
+    if len(trackData) == 1 and trackData[0] == []:
+        return 0
+    
     trackData.append([])
     T = len(trackData)
     
@@ -529,7 +563,7 @@ def processSpot(k,t,params,outPath,fnames):
     elif params['detector'] == 'dexela':
         with h5py.File(fnames[0], 'r') as file1:
             numFrames = file1['/imageseries/images'].shape[0]
-    if numFrames == NUMFRAMES:
+    if True:#numFrames == NUMFRAMES:
         wrap = True
     else:
         wrap = False
@@ -569,7 +603,7 @@ def processSpot(k,t,params,outPath,fnames):
             break
     
     # Conduct Expanded Search if no peaks were found
-    if len(trackData[T-1]) == 0:
+    if len(trackData[T-1]) == 0 & len(prevTracks) > 0:
         frm1 = prevTracks[0]['frm']
         frm2 = prevTracks[-1]['frm']
         expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
@@ -587,6 +621,8 @@ def processSpot(k,t,params,outPath,fnames):
                 frm1 = trackData[T-1][0]['frm']
                 frm2 = trackData[T-1][-1]['frm']
                 break
+    else:
+        peakFound = False
     
     # Incremental Search if we have a peak found
     # Search down
@@ -717,9 +753,13 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     initData['frms'] = spotData['ome_idxs'][spotInds]
     
     # Initialize tracks
-    fnames = pathToFile(exsituPath)
-
+    if os.path.isfile(exsituPath):
+        fnames = [exsituPath]
+    else:
+        fnames = pathToFile(exsituPath)
+    
     try:
+        
         pool = Pool(params['pool'])
         print(f'{pool._processes} workers, Ex-Situ Scan ({scan0})')
         inVars = zip(spotInds,initData['etas'],initData['tths'],initData['frms'])
@@ -765,7 +805,7 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
     }
     
     # Choose spot
-    for k in spotInds:#range(10):
+    for k in spotInds: #range(10):
         print(f'Showing Spot {k}')
         eta0 = initData['etas'][k]
         tth0 = initData['tths'][k]
@@ -843,7 +883,13 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                         p2Track[ind2,ind1] = p[2]
                     
         for j in range(columns):
-            fnames = timeToFile(scanRange[j],dataPath)            
+            if os.path.isdir(dataPath):
+                fnames = timeToFile(scanRange[j],dataPath)
+                isFile = False
+            else:
+                fnames = dataPath
+                isFile = True
+                
             for i in range(rows): 
                 ax = axes[i, j]
                 ax.clear()
@@ -855,7 +901,12 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 p1 = p1Track[i,j]
                 p2 = p2Track[i,j]
                 # Show roi
-                roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
+                if isFile:
+                    template = dataPath.format(num2=scan)
+                    fnames = glob.glob(template)
+                    roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
+                else:
+                    roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
                 ax.imshow(roi)
                 
                 if (p1 > 0) & (p2 > 0):

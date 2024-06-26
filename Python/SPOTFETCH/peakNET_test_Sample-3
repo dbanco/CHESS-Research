@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jun 24 10:53:31 2024
+
+@author: dbanco
+"""
+
+import os
+import numpy as np
+import torch
+from peaknet.app import PeakFinder
+seed = 0
+import chess_detectors as cd
+
+# %% Read weights from a checkpoint file...
+timestamp  = "2023_0506_0308_15"
+epoch      = 101
+tag        = ".cpu"
+fl_chkpt   = None if timestamp is None else f"{timestamp}.epoch_{epoch}{tag}.chkpt"
+path_chkpt = os.path.join("/nfs/chess/user/dbanco/peaknet","chkpts", fl_chkpt)
+
+path_cheetah_geom = None
+
+pf = PeakFinder(path_chkpt = path_chkpt, path_cheetah_geom = path_cheetah_geom)
+device = pf.device
+
+# %% Load an eiger image
+topPath = "/mnt/scratch/dbanco/c103_processing/Sample-3"
+dataPath = "/nfs/chess/id1a3/2024-2/nygren-4125-a/nygren-series-cycle-2024-2-chessdaq"
+t1=  5
+t2= 286
+fname = os.path.join(dataPath,f"c103-3-ungripped-2_{t1:0>{4}}_EIG16M_CdTe_{t2:0>{6}}.h5")
+
+paramsE = {}
+paramsE['detector'] = 'eiger'
+paramsE['imSize'] = (5000,5000)
+paramsE['yamlFile'] = '/mnt/scratch/dbanco/c103_processing/eiger16M_monolith_mruby_062224_FINAL.yml'
+paramsE['roiSize'] = [40,40]
+paramsE['gamma'] = [3,5,4,4] #[eta,tth,fwhm_eta,fwhm_tth]
+paramsE['pool'] = 64
+
+detectDist, mmPerPixel, ff_trans = cd.loadYamlDataEiger(paramsE['yamlFile'])
+center = (paramsE['imSize'][0]//2, paramsE['imSize'][1]//2)
+
+# %% Run PeakNET
+
+min_num_peaks = 15
+tths = np.array(())
+etas = np.array(())
+frms = np.array(())
+for frm in np.arange(2,13):
+    print(frm)
+    eigImg = cd.load_eiger([fname],paramsE,frm)
+    eigImg = torch.tensor(eigImg).type(dtype=torch.float)[None,None].to(device) 
+    peak_list = pf.find_peak_w_softmax(eigImg, min_num_peaks = min_num_peaks, uses_geom = False, returns_prediction_map = False, uses_mixed_precision = True)
+    for  peak in peak_list:
+        # Convert detector pixels to tth,eta
+        d1 = peak[1]-center[0]
+        d2 = peak[2]-center[1]
+        rad = np.sqrt((d1)**2 + (peak[2]-center[1])**2)
+        tth =  np.arctan(rad/detectDist*mmPerPixel)
+        if d2 > 0:
+            eta = -np.arcsin(d1/rad)
+        else:
+            eta = -np.pi+np.arcsin(d1/rad)
+        tths = np.append(tths,tth)
+        etas = np.append(etas,eta)
+        frms= np.append(frms,frm)
+
+         
+saveFile = os.path.join(topPath,'spots','spots.npz')
+np.savez(saveFile,tths=tths,etas=etas,ome_idxs=frms)
+    
+# # Plot image
+# data = eigImg[0, 0].cpu().detach().numpy()
+# vmin = np.mean(data) - 1 * data.std()
+# vmax = np.mean(data) + 6 * data.std()
+
+# fig = plt.figure()
+# ax = fig.add_subplot()
+
+# im = plt.imshow(data, vmin = vmin, vmax = vmax)
+
+# # Place a box on a peak
+# offset = 3
+# b_offset = 2
+# for _, y, x in peak_list:
+#     x_bottom_left = x - offset
+#     y_bottom_left = y - offset
+
+#     rec_obj = mpatches.Rectangle((x_bottom_left, y_bottom_left),
+#                                  2 * offset, 2 * offset, 
+#                                  linewidth = 1.0, 
+#                                  edgecolor = 'yellow', 
+#                                  facecolor='none')
+#     ax.add_patch(rec_obj)
+
+# ax.set_xticks([])
+# ax.set_yticks([])
+
+# # Hide the frame box
+# ax.spines['top'   ].set_visible(False)
+# ax.spines['right' ].set_visible(False)
+# ax.spines['left'  ].set_visible(False)
+# ax.spines['bottom'].set_visible(False)
