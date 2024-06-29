@@ -13,7 +13,7 @@ from multiprocessing import Process
 
 #### Params for ti-2-tensions data ####
 # Output data path
-topPath = "/mnt/scratch/dbanco/c103_processing/Sample-1/"
+topPath = "/nfs/chess//user/dbanco/c103_processing/Sample-1/"
 read_path = os.path.join(topPath,'outputs')
 
 spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
