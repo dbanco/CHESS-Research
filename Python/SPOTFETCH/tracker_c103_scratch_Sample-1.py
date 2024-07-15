@@ -45,7 +45,7 @@ dome = 3
 scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
 trackPath = os.path.join(topPath,'outputs')
 
-# sf.roiTrackVisual(np.arange(383,406),spotData,dome,scanRange,trackPath,dataFile,params)
+sf.roiTrackVisual(np.arange(383,406),spotData,dome,scanRange,trackPath,dataFile,params)
 
 # frame = 17
 # sf.plotSpotWedges(spotData,exsituPath,frame,params,grains=grains)

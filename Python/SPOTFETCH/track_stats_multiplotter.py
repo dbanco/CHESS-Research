@@ -73,7 +73,7 @@ class DataPlotter:
                         self.dataArray[1,k,t] = Ome
                         self.dataArray[3,k,t] = avgEta
                         self.dataArray[5,k,t] = avgTth   
-                        if notDone: 
+                        if np.isnan(scan[t]): 
                             scan[t] = self.trackData[ii][k][t][0]['scan']
                             if t == T-1: notDone = False
             
@@ -88,7 +88,7 @@ class DataPlotter:
                         self.dataArray[i,k,:] = sf.mapDiff(self.dataArray[i,k,:]-self.dataArray[i,k,0])
                     avg = np.nanmean(self.dataArray[i,:,:],0)
                     std = np.nanstd(self.dataArray[i,:,:],0)
-                    ax.errorbar(scan,avg,std,fmt='x-',label=f'grain {self.grains[ii]}')
+                    ax.errorbar(scan,avg,std,fmt='-',label=f'grain {self.grains[ii]}')
                     ax.set_ylabel('Mean ' + self.ylabels[i])  
                 else:
                     # Orginal

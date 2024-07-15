@@ -13,7 +13,8 @@ from multiprocessing import Process
 
 #### Params for ti-2-tensions data ####
 # Output data path
-topPath = "/nfs/chess//user/dbanco/c103_processing/Sample-1/"
+topPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_processing\\c103_processing\\Sample-1"
+# topPath = "/nfs/chess//user/dbanco/c103_processing/Sample-1/"
 read_path = os.path.join(topPath,'outputs')
 
 spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
@@ -23,19 +24,21 @@ spotIndsList = []
 for grain in grains:
     spotIndsList.append(sf.findSpots(spotData,grains=[grain]))
 
-# spotInds1 = sf.findSpots(spotData,grains=grains[0],tth=tth_ring,dtth=dtth_ring)
-# spotInds2 = sf.findSpots(spotData,grains=grains[1],tth=tth_ring,dtth=dtth_ring)
-# spotInds1 = np.arange(20)
-# spotInds2 = np.arange(20,40)
-# spotIndsList = [spotInds1,spotInds2]
-
 titleStr = f'Grain {grains}'
 
-processes = []
-p1 = Process(target=plotter.start_gui, args=(read_path, spotIndsList, 'Mean',titleStr,spotData,grains))
-p1.start()
-processes.append(p1)
+plotter.start_gui(read_path, spotIndsList, 'Mean',titleStr,spotData,grains)
 
-for p in processes:
-   p.join()
+# dome = 3
+# scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
+# trackPath = os.path.join(topPath,'outputs')
+# sf.roiTrackVisual(spotIndsList[0],spotData,dome,scanRange,trackPath,dataPath,params):
+
+
+# processes = []
+# p1 = Process(target=plotter.start_gui, args=(read_path, spotIndsList, 'Mean',titleStr,spotData,grains))
+# p1.start()
+# processes.append(p1)
+
+# for p in processes:
+#    p.join()
 
