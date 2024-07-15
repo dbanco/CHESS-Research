@@ -896,7 +896,7 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
     
                 etaRoi = etaRoiTrack[i,j]
                 tthRoi = tthRoiTrack[i,j]
-                frm = frameToOmega(omRange[i])
+                frm = omRange[i]
                 scan = scanRange[j]
                 p1 = p1Track[i,j]
                 p2 = p2Track[i,j]
@@ -929,5 +929,7 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 ax.set_xticks([])
                 ax.set_yticks([])
         plt.draw()
+        plt.savefig(f'fig_{k}.png')
+        plt.close(fig)
 
         
