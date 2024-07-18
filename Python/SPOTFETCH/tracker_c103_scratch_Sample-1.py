@@ -61,5 +61,5 @@ sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
 # num1 = 4
 # num2 = 383
 # advance = False
-# for num2 in scanRange:
-#     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
+for num2 in scanRange:
+    sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
