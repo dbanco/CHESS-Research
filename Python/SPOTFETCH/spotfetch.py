@@ -539,6 +539,51 @@ def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
     trackData = []
     if peakFound:
         trackData.append([newTrack])
+        
+        if True:#numFrames == NUMFRAMES:
+             wrap = True
+        else:
+             wrap = False
+        
+        # Search down
+        frm1 = frm
+        while peakFound:
+            frm1 = frm1 - 1
+            if wrap:
+                frm = int(wrapFrame(frm1))
+            else:
+                frm = frm1
+                if frm < 0: break
+            # Load ROI and fit peak
+            nTrack, peakFound = evaluateROI(fnames,newTrack,\
+                                              tthRoi,etaRoi,frm,t,params)
+            # Add to list if peakFound
+            if peakFound: 
+                # print(f'Found more at {frm1}')
+                trackData[0].insert(0,nTrack)
+                if len(trackData[0]) > 10:
+                    break
+    
+        # Search up
+        frm2 = frm
+        while peakFound:
+            frm2 = frm2 + 1
+            frm = int(wrapFrame(frm2))
+            if wrap:
+                frm = int(wrapFrame(frm2))
+            else:
+                frm = frm2
+                if frm > NUMFRAMES-1: break
+            # Load ROI and fit peak
+            nTrack, peakFound = evaluateROI(fnames,newTrack,\
+                                              tthRoi,etaRoi,frm,t,params)
+            # Add to list if peakFound
+            if peakFound: 
+                # print(f'Found more at {frm2}')
+                trackData[0].append(nTrack)
+                if len(trackData[0]) > 10:
+                    break
+        
     outFile = os.path.join(outPath,f'trackData_{k}.pkl')
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
@@ -775,6 +820,9 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
             tthRoi = initData['tths'][s]
             frm = initData['frms'][s]
             initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fnames)
+            
+            # Follow up by searching adjacent omegaa for a track
+            
     
     try: pool.close()
     except: print('Pool close didnt work')
@@ -900,10 +948,14 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 scan = scanRange[j]
                 p1 = p1Track[i,j]
                 p2 = p2Track[i,j]
+                
                 # Show roi
                 if isFile:
+                    print(dataPath)
                     template = dataPath.format(num2=scan)
+                    print(template)
                     fnames = glob.glob(template)
+                    print(fnames)
                     roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
                 else:
                     roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
