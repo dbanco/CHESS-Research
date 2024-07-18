@@ -556,7 +556,7 @@ def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
                 frm = frm1
                 if frm < 0: break
             # Load ROI and fit peak
-            nTrack, peakFound = evaluateROI(fnames,newTrack,\
+            nTrack, peakFound = evaluateROI(fnames,[newTrack],\
                                               tthRoi,etaRoi,frm,t,params)
             # Add to list if peakFound
             if peakFound: 
@@ -576,7 +576,7 @@ def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
                 frm = frm2
                 if frm > NUMFRAMES-1: break
             # Load ROI and fit peak
-            nTrack, peakFound = evaluateROI(fnames,newTrack,\
+            nTrack, peakFound = evaluateROI(fnames,[newTrack],\
                                               tthRoi,etaRoi,frm,t,params)
             # Add to list if peakFound
             if peakFound: 
