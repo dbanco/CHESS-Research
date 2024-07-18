@@ -956,11 +956,8 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 
                 # Show roi
                 if isFile:
-                    print(dataPath)
                     template = dataPath.format(num2=scan)
-                    print(template)
                     fnames = glob.glob(template)
-                    print(fnames)
                     roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
                 else:
                     roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
