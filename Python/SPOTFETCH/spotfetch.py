@@ -895,6 +895,10 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 
         # Organize all tracks
         T = len(track_data)
+        track = track_data[0]
+        eta0 = track[0]['eta']
+        tth0 = track[0]['tth']
+        
         omTrack = np.zeros((rows,columns)) - 1
         scanTrack = np.zeros((rows,columns)) - 1
         etaRoiTrack = np.zeros((rows,columns)) + eta0
