@@ -535,6 +535,7 @@ def spotTracker(dataPath,outPath,spotData,spotInds,params,num1,num2,advance):
 def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
     print(k)
     prevTracks = []
+    frm = int(frm)
     newTrack, peakFound = evaluateROI(fnames,prevTracks,tthRoi,etaRoi,int(frm),t,params)
     trackData = []
     if peakFound:
