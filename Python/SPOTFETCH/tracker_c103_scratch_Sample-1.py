@@ -46,8 +46,7 @@ dome = 3
 scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
 trackPath = os.path.join(topPath,'outputs')
 
-spotInds = [113,205,413,801]
-sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
+
 
 # frame = 17
 # sf.plotSpotWedges(spotData,exsituPath,frame,params,grains=grains)
@@ -56,9 +55,9 @@ sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
 # sf.plotROIs(roi_list)s
 
 # # %% 6. Begin Processing
-# spotInds = [113,205,413,801]
-# initTracksPath = os.path.join(topPath,'outputs')
-# sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
+spotInds = [113,205,413,801]
+initTracksPath = os.path.join(topPath,'outputs')
+sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
 
 # sf.roiTrackVisual([113],spotData,dome,scanRange,trackPath,dataFile,params)
 
@@ -66,7 +65,10 @@ sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
 # num1 = 4
 # num2 = 383
 
-# advance = False
-# scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
-# for num2 in scanRange:
-#     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
+advance = False
+scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
+for num2 in scanRange:
+    sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
+
+# spotInds = [113,205,413,801]
+sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
