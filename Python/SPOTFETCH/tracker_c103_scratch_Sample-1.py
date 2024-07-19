@@ -35,8 +35,8 @@ params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/eiger16M_monolith_m
 # params['imSize'] = (4888,7300) 
 # params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/dexelas_calibrated_ruby_0504_v01.yml'
 params['roiSize'] = [40,40]
-params['gamma'] = [3,5,8,4] #[eta,tth,fwhm_eta,fwhm_tth]0
-params['pool'] = 16
+params['gamma'] = [4,5,9,5] #[eta,tth,fwhm_eta,fwhm_tth]0
+params['pool'] = 4
 
 # %% 4. Inspect spot tracks on ex-situ and initial scan data
 grains = [276,288,342]
