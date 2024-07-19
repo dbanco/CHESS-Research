@@ -36,17 +36,16 @@ params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/eiger16M_monolith_m
 # params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/dexelas_calibrated_ruby_0504_v01.yml'
 params['roiSize'] = [40,40]
 params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]0
-params['pool'] = 4
+params['pool'] = 16
 
 # %% 4. Inspect spot tracks on ex-situ and initial scan data
 grains = [276,288,342]
-spotInds = sf.findSpots(spotData,grains=grains)
+spotInds = sf.findSpots(spotData,grains=grains)[4:20]
+# spotInds = [113,205,413,801]
 
 dome = 3
 scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
 trackPath = os.path.join(topPath,'outputs')
-
-
 
 # frame = 17
 # sf.plotSpotWedges(spotData,exsituPath,frame,params,grains=grains)
@@ -55,15 +54,8 @@ trackPath = os.path.join(topPath,'outputs')
 # sf.plotROIs(roi_list)s
 
 # # %% 6. Begin Processing
-spotInds = [113,205,413,801]
 initTracksPath = os.path.join(topPath,'outputs')
 sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
-
-# sf.roiTrackVisual([113],spotData,dome,scanRange,trackPath,dataFile,params)
-
-# Sequence: 353, 364, 368, 372, 376, 380
-# num1 = 4
-# num2 = 383
 
 advance = False
 scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
