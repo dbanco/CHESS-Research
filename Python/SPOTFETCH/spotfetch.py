@@ -609,6 +609,7 @@ def processSpot(k,t,params,outPath,fnames):
     elif params['detector'] == 'dexela':
         with h5py.File(fnames[0], 'r') as file1:
             numFrames = file1['/imageseries/images'].shape[0]
+            
     if True:#numFrames == NUMFRAMES:
         wrap = True
     else:
@@ -643,10 +644,9 @@ def processSpot(k,t,params,outPath,fnames):
         if peakFound: 
             # print(f'Peak found at frame {frm}')
             trackData[T-1].append(newTrack)
-            compareTrack = trackData[T-1]
             frm1 = trackData[T-1][0]['frm']
             frm2 = trackData[T-1][-1]['frm']
-            break
+            
     
     # Conduct Expanded Search if no peaks were found
     if len(trackData[T-1]) == 0 & len(prevTracks) > 0:
@@ -663,7 +663,6 @@ def processSpot(k,t,params,outPath,fnames):
             if peakFound: 
                 # print(f'Peak found at frame {frm}')
                 trackData[T-1].append(newTrack)
-                compareTrack = trackData[T-1]
                 frm1 = trackData[T-1][0]['frm']
                 frm2 = trackData[T-1][-1]['frm']
                 break
@@ -672,7 +671,9 @@ def processSpot(k,t,params,outPath,fnames):
     
     # Incremental Search if we have a peak found
     # Search down
-    if len(trackData[T-1]) > 0: peakFound = True
+    if len(trackData[T-1]) > 0: 
+        peakFound = True
+        compareTrack = trackData[T-1]
     while peakFound:
         frm1 = frm1 - 1
         if wrap:
