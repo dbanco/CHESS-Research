@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b1, b2, tol, mit, isn,N,M,K,J,T,lambda2,U,V)
+function [x, cgst] = solvemdbi_cgls_OF_gpu_zpad(a, rho, b1, b2, tol, mit, isn,N,M,K,J,T,lambda2,U,V)
 
 % solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
