@@ -16,7 +16,6 @@ plot(position)
 hold on
 plot(width)
 
-
 for t = 1:T
     y(:,t) = gaussian_basis_wrap_1D(N,position(t),width(t),'2-norm');
 end
