@@ -22,6 +22,6 @@ end
 
 yn = y + randn(N,T)*sigma;
 figure(2)
-imagesc(yn)
+imagesc(y)
 
 end
