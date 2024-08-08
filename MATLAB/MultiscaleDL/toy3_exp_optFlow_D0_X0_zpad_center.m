@@ -7,8 +7,9 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 1    2    4    6    8,...
                 10   15   20   25   30,...
                 17.5 35   40   50   75];
-for j_hs = [1,3,5,7]
-topDir = ['C:\Users\dpqb1\Documents\Outputs\toy3_center_exp_optFlow8_20_X0_D0_V0_zpad_HS',num2str(lambdaHSvals(j_hs))];
+for j_hs = [3,5,7]
+%topDir = ['C:\Users\dpqb1\Documents\Outputs\toy3_center_exp_optFlow8_20_X0_D0_V0_zpad_HS',num2str(lambdaHSVals(j_hs))];
+topDir = ['/cluster/home/dbanco02/Outputs/toy3_center_exp_optFlow8_21_X0_D0_V0_zpad_HS',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup
@@ -106,7 +107,7 @@ for i = 2%2:numel(sigmas)
 %     plotOpticalFlow2(Xtrue,K,opt)
 %     plotDataSeq(y_true,topDir,'y_true.gif')
 %     for j = 18 %1:numel(lambdas)
-    for j_s = [1,3,5,7]
+    for j_s = [1,3,5]
         for j_of = [4,8,11,14,20]
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
