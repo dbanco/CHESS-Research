@@ -11,7 +11,7 @@ lambdaOFVals = [0 1e-4 2e-4,...
                 100 200 500 1000 2000,...
                 1e5];
 for j_hs = 7
-topDir = ['C:\Users\dpqb1\Documents\Outputs2024\toy_matched_HS_test2',num2str(lambdaHSVals(j_hs))];
+topDir = ['C:\Users\dpqb1\Documents\Outputs2024_8_5\toy_matched_HS_test2',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup

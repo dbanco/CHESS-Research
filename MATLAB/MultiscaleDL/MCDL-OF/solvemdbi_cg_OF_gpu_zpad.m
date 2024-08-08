@@ -65,13 +65,13 @@ else
     [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
     b(:), tol, mit, [], [], isn);
 end
-if lambda2 == 0
-    [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u,...
-    b(:), tol, mit, [], [], isn);
-else
-    [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
-    b(:), tol, mit, [], [], isn);
-end
+% if lambda2 == 0
+%     [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u,...
+%     b(:), tol, mit, [], [], isn);
+% else
+%     [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
+%     b(:), tol, mit, [], [], isn);
+% end
 warning(wrn.state, 'MATLAB:ignoreImagPart'); % 
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 

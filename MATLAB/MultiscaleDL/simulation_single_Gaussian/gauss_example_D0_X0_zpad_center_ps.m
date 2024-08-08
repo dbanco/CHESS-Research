@@ -10,7 +10,7 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 100 200 500 1000 2000,...
                 1e5];
 for j_hs = 1
-topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_1_29_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_5_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 % topDir = '/cluster/home/dbanco02/Outputs/toy1_exp_OF1vel1_matched';
 
 % Experiment Setup
@@ -60,7 +60,7 @@ opt.HSiters = 100;
 
 close all
 %% Dictionary learning
-for i = 2%2:numel(sigmas)
+for i = 3:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     
@@ -82,7 +82,7 @@ for i = 2%2:numel(sigmas)
     opt.sigma = 1e3;%100;
 
 
-    for j_s = 11:12
+    for j_s = 3
         for j_of = 1
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);

@@ -53,10 +53,11 @@ ah = gpuArray(complex(conj(a)));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
+m=1;n=1;
 if lambda2 == 0
     b = gpuArray(complex([b1(:);b2(:)]));
-    [xv,flg,rlr,pit] = cgls(@(u,ind) Aops1(u,ind,a,ah,xsz,M,rho),...
-    b(:),0, tol, mit, [], isn);
+    [xv,flg,rlr,pit] = cgls(@(ind,u,m,n) Aops1(ind,u,m,n,a,ah,xsz,M,rho),...
+    0,b(:),m,n,mit,tol,1);
 else
     b = gpuArray(complex([b1(:);b2(:);zeros((N+M-1)*K*J*T,1)]));
     [xv,flg,rlr,pit] = cgls(@(u,ind) Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2),...
@@ -69,7 +70,7 @@ x = reshape(xv, xsz);
 
 end
 
-function out = Aops1(u,ind,a,ah,xsz,M,rho)
+function out = Aops1(ind,u,m,n,a,ah,xsz,M,rho)
     if ind==1 
         u = reshape(u, xsz);
         out1 = sum(pagefun(@times, a, u), 3);

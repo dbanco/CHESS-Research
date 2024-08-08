@@ -16,13 +16,13 @@ function b = gaussian_basis_wrap_1D(N,mu,sigma,scaling)
 % Compute theta distances with wrapping at boundaries
 idx = 1:N;
 wrapN = @(x, N) (1 + mod(x-1, N));
-opposite = (idx(wrapN(floor(mu-N/2),N)) +... 
-            idx(wrapN(ceil(mu-N/2),N)))/2;
+opposite = wrapN((mu-N/2),N);
+            
 if opposite == mu
     opposite = 0.5;
 end
 dist1 = abs(mu - idx);
-dist2 = N/2 - abs(opposite - idx);
+dist2 = abs(N/2 - abs(opposite - idx));
 dist = min(dist1,dist2);
 dist_sq_theta = dist.^2;    % num_theta length vector
 
