@@ -26,7 +26,7 @@ for i = t_step:t_step:sub_T
     if interp
         x(:,129:134) = (1:6)./7.*(x(:,135)-x(:,128)) + x(:,128);
     end
-    y(:,:,j) = x/norm(x(:));
+    y(:,:,j) = x;%/norm(x(:));
 
     j = j+1;
 end

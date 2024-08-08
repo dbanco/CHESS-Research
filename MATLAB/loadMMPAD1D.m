@@ -1,7 +1,7 @@
 function y = loadMMPAD1D(ring,interp,topDir)
 % Load MMPAD subset
 if nargin < 3
-    topDir = ['D:\MMPAD_data_nr1\ring',num2str(ring),'_zero'];
+    topDir = ['C:\Users\dpqb1\Documents\Data\ring',num2str(ring),'_zero'];
 end
 fName = 'mmpad_img_%i.mat';
 % Load first image
@@ -11,7 +11,7 @@ f=load(fullfile(topDir,sprintf(fName,1)));
 T = 546;
 sub_theta = 1:theta;
 sub_eta = 1:eta;
-sub_T = 200;
+sub_T = 120;
 t_step = 1;
 
 % Load subset of data
