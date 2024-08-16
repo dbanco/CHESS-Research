@@ -10,9 +10,9 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-for j_hs = 2:3
-topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-% topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+for j_hs = 2
+%topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -63,6 +63,7 @@ opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
 opt.Smoothness = lambdaHSVals(j_hs);%1e-6;%opt.Smoothness = 1e-8;
 opt.HSiters = 100;
+opt.useGpu = 0;
 
 close all
 %% Dictionary learning
@@ -87,14 +88,14 @@ for i = 2:numel(sigmas)
     opt.rho = 1e3;%100;
     opt.sigma = 1e3;%100;
 
-    for j_s = 1:10
-        for j_of = 1:10
+    for j_s = 3:5
+        for j_of = 4:5
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);
             [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
             opt.UpdateVelocity = 1;
-            [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+            [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndlcg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
             % Save outputs
             outputs = struct();
             outputs.y = y;
