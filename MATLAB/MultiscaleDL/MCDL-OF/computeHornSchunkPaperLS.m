@@ -13,7 +13,13 @@ if nargin < 6 || isempty(tol)
 end
 
 % Compute partial derivatives
-dataPad = gpuArray(padarray(data,[1 1 1],0,'pre'));
+try
+    dataPad = gpuArray(padarray(data,[1 1 1],0,'pre'));
+    useGpu = 1;
+catch
+    dataPad = padarray(data,[1 1 1],0,'pre');
+    useGpu= 0;
+end
 Fx = diffxHS(dataPad);
 Fy = diffyHS(dataPad);
 Ft = difftHS(dataPad);
