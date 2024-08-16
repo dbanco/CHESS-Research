@@ -1,6 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [  4e-2 6e-2 8e-2 1e-1 2e-1 4e-1  5e-3 1e-2 2e-2 8e-1 1e-3 5e-4 ];
+lambdaVals = [  4e-2 6e-2 8e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1,...
+              1.2 1.5 2 3];
 lambdaHSVals = [0 1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
@@ -9,16 +10,21 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-for j_hs = 1
-% topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_5_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+for j_hs = 2:3
+topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+% topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 
 % Experiment Setup
-sigmas = 0:0.01:0.08;
+sigmas = 0:0.01:0.1;
 
 % Data parameters
 [y,y_true,N,M,T] = gaus_example_multiscale_dl();
 y = reshape(y,[1,N,T]);
+
+SNR = zeros(T);
+for t = 1:T
+    SNR(t) = norm(y_true(:,t))/norm(y(1,:,t)-y_true(:,t));
+end
 
 % Model Setup
 K = 1;
@@ -65,7 +71,7 @@ for i = 2:numel(sigmas)
     mkdir(figDir)
     
     % Data  
-    [y,~,N,M,T] = gaus_example_multiscale_dl();
+    [y,~,N,M,T] = gaus_example_multiscale_dl(sigmas(i));
     y = reshape(y,[1,N,T]);
     center = (M+1)/2;
     
@@ -81,8 +87,8 @@ for i = 2:numel(sigmas)
     opt.rho = 1e3;%100;
     opt.sigma = 1e3;%100;
 
-    for j_s = 1:5
-        for j_of = 1
+    for j_s = 1:10
+        for j_of = 1:10
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);

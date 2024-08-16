@@ -1,7 +1,7 @@
 function [yn,y,K,J,N,M,T,Xtrue,Dtrue,scales] = gaus_linear_osc_signal_matched_small_zpad3_center(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 30;
-N = 55; M = 45;
+N = 55; M = 55;
 center = (M+1)/2;
 if nargin < 1
     sigma = 0.02;

@@ -10,10 +10,10 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 100 200 500 1000 2000,...
                 1e5];
 for j_hs = 4
-topDir = ['C:\Users\dpqb1\Documents\Outputs\toy4_center_exp_optFlow8_24_X0_D0_V0_zpad_HS2',num2str(lambdaHSVals(j_hs))];
+topDir = ['C:\Users\dpqb1\Documents\Outputs\toy4_center_exp_optFlow8_11_24_X0_D0_V0_zpad_HS2',num2str(lambdaHSVals(j_hs))];
 
 % Experiment Setup
-sigmas = 0:0.01:0.05;
+sigmas = [0.01,0.05,0.1,0.15,0.2];
 
 % Data parameters
 [y,~,K,J,N,M,T,~,~,scales] = gaus_linear_osc_signal_matched_small_zpad3_center(0);
@@ -55,7 +55,7 @@ opt.HSiters = 100;
 
 close all
 %% Dictionary learning
-for i = 2%2:numel(sigmas)
+for i = 1:numel(sigmas)
     figDir = [topDir,'_sig_',num2str(i)];
     mkdir(figDir)
     
@@ -82,7 +82,7 @@ for i = 2%2:numel(sigmas)
     opt.sigma = 1e3;%100;
     opt.UpdateVelocity = 0;
 
-    for j_s = 4
+    for j_s = 4:5
         for j_of = 8:12
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
