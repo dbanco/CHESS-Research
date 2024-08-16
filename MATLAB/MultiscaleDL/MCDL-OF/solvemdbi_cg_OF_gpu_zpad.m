@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b, tol, mit, isn,N,M,K,J,T,lambda2,U,V)
+function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b, tol, mit, isn,N,M,K,J,T,lambda2,U,V,useGpu)
 
 % solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -47,12 +47,18 @@ end
 
 xsz = [1,N+M-1,K*J,T];
 % xszPad = [1,N+2*round(M/2),K*J,T];
-a = gpuArray(complex(a));
-ah = gpuArray(complex(conj(a)));
-b = gpuArray(complex(b));
+if useGpu
+    a = gpuArray(complex(a));
+    ah = gpuArray(complex(conj(a)));
+    b = gpuArray(complex(b));
+    Aop = @(u) ifft2(sum(pagefun(@times, a, u), 3),'symmetric');
+    Ahop = @(u) pagefun(@times, ah, u);
+else
+    ah = conj(a);
+    Aop = @(u) ifft2(sum(bsxfun(@times, a, u), 3),'symmetric');
+    Ahop = @(u) bsxfun(@times, ah, u);
+end
 
-Aop = @(u) ifft2(sum(pagefun(@times, a, u), 3),'symmetric');
-Ahop = @(u) pagefun(@times, ah, u);
 AhAvop = @(u) vec(Ahop(fft2(maskPad(Aop(reshape(u, xsz)),M))));
 AhAvop2 = @(u) vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,1) ));
 

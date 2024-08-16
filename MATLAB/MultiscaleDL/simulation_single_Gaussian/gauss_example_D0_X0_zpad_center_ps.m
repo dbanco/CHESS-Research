@@ -11,8 +11,10 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 100 200 500 1000 2000,...
                 1e5];
 for j_hs = 2
+
 %topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -88,8 +90,9 @@ for i = 2:numel(sigmas)
     opt.rho = 1e3;%100;
     opt.sigma = 1e3;%100;
 
-    for j_s = 3:5
-        for j_of = 4:5
+
+    for j_s = 4:5
+        for j_of = 3:4
             % Optical flow coupled solution
             lambda = lambdaVals(j_s);
             lambda2 = lambdaOFVals(j_of);
