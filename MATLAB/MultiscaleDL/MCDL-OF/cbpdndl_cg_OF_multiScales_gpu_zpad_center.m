@@ -310,7 +310,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
 %     recon = sum(bsxfun(@times,AGf,Yf),3);
 %     Jdf1 = sum(vec(abs(recon-Sf).^2))
     [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
-        opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
+        opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
     cgIters2 = cgst.pit;
     X = ifft2(Xf, 'symmetric');
     
@@ -383,7 +383,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     % but it appears to be more stable to use the shrunk coefficient variable Y
     AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
     [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                      cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center);
+                      cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
     cgIters1 = cgst.pit;
     Df = fft2(D);
     
@@ -460,7 +460,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     
     Jlg2 = sigma*sum((D(:)-G(:)+H(:)).^2);
     % Full objective
-    Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;% + Jlg1 + Jlg2;
+    Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
     
 
     % Plot dictionary progress
@@ -751,5 +751,8 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'plotDict'),
     opt.plotDict = 0;
+  end
+  if ~isfield(opt,'useGpu')
+      opt.useGpu = 1;
   end
 return
