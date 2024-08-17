@@ -14,7 +14,7 @@ lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
 
 for j_hs = 6
 
-%topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+% topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 % topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 
@@ -97,7 +97,7 @@ for i = 2:numel(sigmas)
         lambda2 = lambdaOFVals(j_of);
         [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
         opt.UpdateVelocity = 1;
-        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndlcg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
         % Save outputs
         outputs = struct();
         outputs.y = y;
