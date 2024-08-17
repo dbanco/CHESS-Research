@@ -10,13 +10,13 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-
 lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
 
 for j_hs = 6
 
 %topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+% topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 
 
 % Experiment Setup
@@ -44,7 +44,6 @@ opt.DictFilterSizes = [1;...
 % Init solution
 opt.Y0 = zeros(1,N+M-1,KJ,T);
 
-
 % Init dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
 D0 = zeros(1,M,K); 
@@ -68,7 +67,7 @@ opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
 opt.Smoothness = lambdaHSVals(j_hs);%1e-6;%opt.Smoothness = 1e-8;
 opt.HSiters = 100;
-opt.useGpu = 0;
+opt.useGpu = 1;
 
 close all
 %% Dictionary learning
@@ -86,55 +85,51 @@ for i = 2:numel(sigmas)
     D0 = Pnrm(D0);
     opt.G0 = D0;
 
-
     % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
     opt.rho = 1e3;%100;
     opt.sigma = 1e3;%100;
+        
+    for j_of = 5:10
+        % Optical flow coupled solution
+        lambda = selected_lam(i);
+        lambda2 = lambdaOFVals(j_of);
+        [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
+        opt.UpdateVelocity = 1;
+        [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndlcg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+        % Save outputs
+        outputs = struct();
+        outputs.y = y;
+        outputs.D = D;
+        outputs.X = X;
+        outputs.Dmin = Dmin;
+        outputs.Xmin = Xmin;
+        outputs.scales = scales;
+        outputs.N = N;
+        outputs.M = M;
+        outputs.T = T;
+        outputs.K = K;
+        outputs.opt = opt;
+        outputs.lambda = lambda;
+        outputs.lambda2 = lambda2;
+        outputs.Uvel = Uvel;
+        outputs.Vvel = Vvel;
+        suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+                          j_of,sigmas(i),outputs.lambda,outputs.lambda2);
+        save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
+        
+        % Generate figures
+        generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
+%         generateFiguresToy1min([figDir,'min'],outputs,suffix)
+%         generateFiguresToy1([figDir,'indep'],inde,suffix)
 
-
-    for j_s = 4:5
-        for j_of = 3:4
-            % Optical flow coupled solution
-            lambda = lambdaVals(j_s);
-            lambda2 = lambdaOFVals(j_of);
-            [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
-            opt.UpdateVelocity = 1;
-            [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndlcg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
-            % Save outputs
-            outputs = struct();
-            outputs.y = y;
-            outputs.D = D;
-            outputs.X = X;
-            outputs.Dmin = Dmin;
-            outputs.Xmin = Xmin;
-            outputs.scales = scales;
-            outputs.N = N;
-            outputs.M = M;
-            outputs.T = T;
-            outputs.K = K;
-            outputs.opt = opt;
-            outputs.lambda = lambda;
-            outputs.lambda2 = lambda2;
-            outputs.Uvel = Uvel;
-            outputs.Vvel = Vvel;
-            suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
-                              j_of,sigmas(i),outputs.lambda,outputs.lambda2);
-            save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
-            
-            % Generate figures
-            generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
-    %         generateFiguresToy1min([figDir,'min'],outputs,suffix)
-    %         generateFiguresToy1([figDir,'indep'],inde,suffix)
-    
-            AD = reSampleCustomArrayCenter(N,D,scales,center);
-            AD = padarray(AD,[0 M-1 0],0,'post');
-            ADf = fft2(AD);
-            Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
-            plotDataRecon(y,Yhat,figDir,['y_recon',suffix,'.gif'])
-            close all
-        end
+        AD = reSampleCustomArrayCenter(N,D,scales,center);
+        AD = padarray(AD,[0 M-1 0],0,'post');
+        ADf = fft2(AD);
+        Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
+        plotDataRecon(y,Yhat,figDir,['y_recon',suffix,'.gif'])
+        close all
     end
 end
 end
