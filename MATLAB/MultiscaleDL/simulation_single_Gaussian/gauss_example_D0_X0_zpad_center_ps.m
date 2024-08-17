@@ -10,9 +10,10 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
+
 lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
 
-for j_hs = 2
+for j_hs = 6
 
 %topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
 topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
