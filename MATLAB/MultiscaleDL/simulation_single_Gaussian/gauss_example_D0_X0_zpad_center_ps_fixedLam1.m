@@ -93,7 +93,7 @@ for i = 2:numel(sigmas)
         
     for j_of = 5:10
         % Optical flow coupled solution
-        lambda = selected_lam(i);
+        lambda = lambdaSel(i);
         lambda2 = lambdaOFVals(j_of);
         [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
         opt.UpdateVelocity = 1;
