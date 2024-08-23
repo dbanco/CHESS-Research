@@ -1,7 +1,8 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [ 4e-2 6e-2 8e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1,...
-              1.2 1.5 2 3];
+% lambdaVals = [ 4e-2 6e-2 8e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1,...
+%               1.2 1.5 2 3];
+lambdaVals = linspace(3e-2,8e-1,25);
 lambdaHSVals = [0 1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
@@ -10,7 +11,7 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 17.5 35   40   50   75,...
                 100 200 500 1000 2000,...
                 1e5];
-lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
+% lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -72,25 +73,25 @@ opt.HSiters = 100;
 opt.useGpu = 0;
 
 k = 1;
+scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
-for j_hs = 6
-    % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-    topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-    % topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-    close all
-
-    for i = 2:numel(sigmas)
-        figDir = [topDir,'_sig_',num2str(i)];
-        mkdir(figDir)
-        
-        for j_of = 5
-            opt.Smoothness = lambdaHSVals(j_hs);%1e-6;%opt.Smoothness = 1e-8;
-            % Save all outputs
-            varin = {lambdaSel,lambdaOFVals,opt,N,M,K,D0,y,scales,Uvel,Vvel,j_of,j_hs,sigmas,i,figDir};
-            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-            k = k + 1;
-            
+for i = 2:numel(sigmas)
+    figDir = [topDir,'_sig_',num2str(i)];
+    mkdir(figDir)
+    for j_s = 1:numel(lambdaVals)
+        for j_hs = 1     
+            for j_of = 1
+                % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_23_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                % topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                close all
+                
+                varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
+                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+                k = k + 1;        
+            end
         end
     end
 end
+slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))

@@ -15,6 +15,9 @@ switch numel(varin)
         funcH(varin{1},varin{2})
     case 3
         funcH(varin{1},varin{2},varin{3})
+    case 12
+        funcH(varin{1},varin{2},varin{3},varin{4},varin{5},varin{6},...
+            varin{7},varin{8},varin{9},varin{10},varin{11},varin{12})
     case 16
         funcH(varin{1},varin{2},varin{3},varin{4},varin{5},varin{6},...
             varin{7},varin{8},varin{9},varin{10},varin{11},varin{12},...
