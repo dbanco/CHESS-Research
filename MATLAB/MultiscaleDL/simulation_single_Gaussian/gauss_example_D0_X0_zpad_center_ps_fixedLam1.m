@@ -12,6 +12,7 @@ lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 1e5];
 lambdaSel = [0 0.04 0.10 0.20 0.40 0.3 0.4 0.4 0.6 0.5 0.7];
 
+k = 1;
 for j_hs = 6
 
 % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
@@ -95,6 +96,12 @@ for i = 2:numel(sigmas)
         % Optical flow coupled solution
         lambda = lambdaSel(i);
         lambda2 = lambdaOFVals(j_of);
+        
+        % Save all outputs
+        varin = {lambda,lambda2,opt,N,M,K,D0,y,scales,Uvel,Vvel,j_of,j_hs,sigmas,i,figDir};
+        save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','mcdlof_wrapper')
+        k = k + 1;
+
         [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
         opt.UpdateVelocity = 1;
         [D,X,Dmin,Xmin,Uvel,Vvel,optinf,obj,relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
