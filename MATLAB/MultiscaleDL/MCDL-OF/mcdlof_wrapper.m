@@ -12,6 +12,7 @@ y = reshape(y,[1,N,T]);
 center = (M+1)/2;
 
 % Initialization 
+Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
 D0(1,:) = 1;
 D0 = Pnrm(D0);
 opt.G0 = D0;
