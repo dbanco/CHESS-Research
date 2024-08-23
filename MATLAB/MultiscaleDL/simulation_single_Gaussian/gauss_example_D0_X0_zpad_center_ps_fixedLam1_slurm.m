@@ -77,14 +77,14 @@ scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 for i = 2:numel(sigmas)
-    figDir = [topDir,'_sig_',num2str(i)];
-    mkdir(figDir)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1
                 % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
                 topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_23_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
                 % topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                figDir = [topDir,'_sig_',num2str(i)];
+                mkdir(figDir)
                 close all
                 
                 varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
