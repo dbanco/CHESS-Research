@@ -13,6 +13,7 @@ center = (M+1)/2;
 
 % Initialization 
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
+D0 = zeros(1,M,K);
 D0(1,:) = 1;
 D0 = Pnrm(D0);
 opt.G0 = D0;
@@ -20,7 +21,6 @@ opt.G0 = D0;
 lambda = lambdaVals(j_s);
 lambda2 = lambdaOFVals(j_of);
 opt.Smoothness = lambdaHSVals(j_hs);
-
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
 opt.UpdateVelocity = 1;

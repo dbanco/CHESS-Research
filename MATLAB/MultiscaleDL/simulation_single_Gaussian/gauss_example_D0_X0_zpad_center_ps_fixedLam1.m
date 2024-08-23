@@ -96,11 +96,6 @@ for i = 2:numel(sigmas)
         % Optical flow coupled solution
         lambda = lambdaSel(i);
         lambda2 = lambdaOFVals(j_of);
-        
-        % Save all outputs
-        varin = {lambda,lambda2,opt,N,M,K,D0,y,scales,Uvel,Vvel,j_of,j_hs,sigmas,i,figDir};
-        save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','mcdlof_wrapper')
-        k = k + 1;
 
         [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
         opt.UpdateVelocity = 1;
