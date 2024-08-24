@@ -2,7 +2,7 @@
 % Directory
 % lambdaVals = [ 4e-2 6e-2 8e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1,...
 %               1.2 1.5 2 3];
-lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,75)];
+lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaHSVals = [0 1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
                 2e-2 5e-2 0.1  0.2  0.5,...
@@ -77,7 +77,7 @@ scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 for i = 2:numel(sigmas)
-    for j_s = 26:numel(lambdaVals)
+    for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1
                 % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
