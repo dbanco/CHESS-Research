@@ -1,9 +1,10 @@
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 selected_lam = zeros(NN,1);
+close all
 for n = 2:NN
-    topDir = 'C:\Users\dpqb1\Documents\Outputs2024\';
-    outDir = "gaus_example_8_8_24_X0_D0_V00_sig_"+num2str(n);
+    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_23\';
+    outDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
     folderPath = fullfile(topDir,outDir);
     
     files = dir(fullfile(folderPath, '*.mat'));
@@ -46,21 +47,25 @@ for n = 2:NN
     [err_sort,ind] = sort(rel_error);
     l1_sort = l1_norm(ind);
     fig_ps = figure(1);
-    plot(l1_sort(1:end-3),err_sort(1:end-3),'o-')
+    plot(l1_sort(1:end),err_sort(1:end),'o-')
     ylabel('Error')
     xlabel('l_1-norm')
     
+%     criterion = abs(err_sort) + abs(l1_sort);
+%     criterion = abs(err_sort)/mean(err_sort) + abs(l1_sort)/mean(l1_sort);
+%     criterion = abs(err_sort)/max(err_sort) + abs(l1_sort)/max(l1_sort);
 %     criterion = abs((err_sort-min(err_sort))/max(err_sort-min(err_sort))) +...
 %                 abs((l1_sort-min(l1_sort))/max(l1_sort-min(l1_sort)));
-    criterion = (diff(err_sort,2)./diff(l1_sort,2));
+    criterion = abs((diff(err_sort,1)./diff(l1_sort,1)) + 0.04);
 
-    [minCrit, selInd] = max(criterion);
+    [minCrit, selInd] = min(criterion);
     
     hold on
-    plot(l1_sort(3),err_sort(3),'sr','MarkerSize',10);
+    plot(l1_sort(selInd),err_sort(selInd),'sr','MarkerSize',10);
     saveas(fig_ps,fullfile(folderPath,'param_select.png'));
     % Get Lambda for chosen parameter
     load(fullfile(folderPath,matFileNames{ind(selInd)}))
     selected_lam(n) = outputs.lambda;
 end
+selected_lam
 
