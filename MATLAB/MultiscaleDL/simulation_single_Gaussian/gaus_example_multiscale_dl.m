@@ -21,6 +21,7 @@ for t = 1:T
 end
 
 yn = y + randn(N,T)*sigma;
+yn(yn<0)=0;
 % figure(2)
 % imagesc(y)
 

@@ -15,6 +15,7 @@ for n = 2:NN
     NN = numel(matFileNames);
     rel_error = zeros(NN,1);
     l1_norm = zeros(NN,1);
+    lambda_s_vec = zeros(NN,1);
     for i = 1:numel(matFileNames)
         % Load outputs
         load(fullfile(folderPath,matFileNames{i}))
@@ -35,15 +36,20 @@ for n = 2:NN
         Yhat = gather(Yhat);
         err = sum((squeeze(y)-Yhat).^2,'all');
         % Compute error
-    %     rel_error(i) = sqrt(err/sum((squeeze(y)).^2,'all'))/T;
         rel_error(i) = sqrt(err);
         % Compute L1-norm
         l1_norm(i) = norm(X(:),1);
+        % Get lambda parameter
+        lambda_s_vec(i) = outputs.lambda;
+
         
     end
     
     % Plot L-curve and selected parameter
-    [err_sort,ind] = sort(rel_error);
+    [lambda_s_sort,ind] = sort(lambda_s_vec);
+%     err_sort = rel_error;
+%     ind = 1:numel(rel_error);
+    err_sort = rel_error(ind);
     l1_sort = l1_norm(ind);
     fig_ps = figure(1);
     plot(l1_sort(1:end),err_sort(1:end),'o-')
@@ -53,34 +59,43 @@ for n = 2:NN
 %     criterion = abs(err_sort) + abs(l1_sort);
 %     criterion = abs(err_sort)/mean(err_sort) + abs(l1_sort)/mean(l1_sort);
 %     criterion = abs(err_sort)/max(err_sort) + abs(l1_sort)/max(l1_sort);
-%     criterion = abs((err_sort-min(err_sort))/max(err_sort-min(err_sort))) +...
-%                 abs((l1_sort-min(l1_sort))/max(l1_sort-min(l1_sort)));
-%     criterion = abs((diff(err_sort,1)./diff(l1_sort,1)) + 0.04);
-%     criterion = abs((diff(err_sort,2)./diff(l1_sort,2)));
-%     if n == 2
-    dx = diff(l1_sort,1);
-    ddx = diff(l1_sort,2);
-    dy = diff(err_sort,1);
-    ddy = diff(err_sort,2);
-    curvature = abs(dx(2:end).*ddy - dy(2:end).*ddx)./(dx(2:end).^2 + dy(2:end).^2).^1.5;
-    criterion = curvature;
-    criterion(1:3) = 0; 
-    criterion(end-2:end)=0;
 
-    [minCrit, selInd] = max(criterion);
+    % Normalized origin distance criterion
+    criterion = 0.9*abs((err_sort-min(err_sort))/max(err_sort-min(err_sort))) +...
+                abs((l1_sort-min(l1_sort))/max(l1_sort-min(l1_sort)));
+    [minCrit, selInd] = min(criterion);
     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
-    l1_sel = l1_sort(selInd);
-%     else
-%         criterion = abs(l1_sort-l1_sel);
-%         [minCrit, selInd] = min(criterion);
-%     end
+
+%     criterion = abs((diff(err_sort,1)./diff(l1_sort,1)) + 0.04);
+
+    % 2nd derivative criterion
+%     criterion = abs((diff(err_sort,2)./diff(l1_sort,2)));
+%     [minCrit, selInd] = max(criterion);
+%     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
+
+    % Knee point criterion
+%     [selVal,selInd] = knee_pt(err_sort,l1_sort);
+%     selInd = selInd - 5;
+
+    % Curvature criterion
+%     dx = diff(l1_sort,1);
+%     ddx = diff(l1_sort,2);
+%     dy = diff(err_sort,1);
+%     ddy = diff(err_sort,2);
+%     curvature = abs(dx(2:end).*ddy - dy(2:end).*ddx)./(dx(2:end).^2 + dy(2:end).^2).^1.5;
+%     criterion = curvature;
+%     criterion(1:3) = 0; 
+%     criterion(end-2:end)=0;
+% 
+%     [minCrit, selInd] = max(criterion);
+%     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
 
     hold on
     plot(l1_sort(selInd),err_sort(selInd),'sr','MarkerSize',10);
     saveas(fig_ps,fullfile(folderPath,'param_select.png'));
+
     % Get Lambda for chosen parameter
-    load(fullfile(folderPath,matFileNames{ind(selInd)}))
-    selected_lam(n) = outputs.lambda;
+    selected_lam(n) = lambda_s_sort(selInd);
 % 
 %     figure
 %     plot(curvature)
@@ -136,6 +151,7 @@ for n = 2:NN
     dataErr(n) = norm(squeeze(outputs.y)-Yhat);
     noiseNorm(n) = norm(randn(N,T)*sigmas(n));
     noiseNorm2(n) = norm(y_true-squeeze(outputs.y));
+
 end
 
 figure()
@@ -147,6 +163,7 @@ plot(meanSNR(2:NN),noiseNorm2(2:NN),'x-')
 xlabel('SNR','Fontsize',14)
 ylabel('Error','Fontsize',14)
 legend('$\|\hat{{\bf b}}-{\bf f}\|_2$','$\|\hat{{\bf b}}-{\bf b}\|_2$',...
-    '$\|\mathcal{N}(0,s)\|_2$','$\|{\bf b}-{\bf f}\|_2$',...
+    '$\|{\bf w}\|_2$','$\|{\bf b}-{\bf f}\|_2$',...
     'interpreter','latex','Fontsize',14)
 
+%% Next copy figures associated with selected parameters to a folder
