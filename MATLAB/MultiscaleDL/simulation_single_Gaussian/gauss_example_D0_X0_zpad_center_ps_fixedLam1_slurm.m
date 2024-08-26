@@ -1,7 +1,5 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-% lambdaVals = [ 4e-2 6e-2 8e-2 1e-1 2e-1 3e-1 4e-1 5e-1 6e-1 7e-1 8e-1 9e-1 1,...
-%               1.2 1.5 2 3];
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaHSVals = [0 1e-8 1e-6 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 0.1 1];
 lambdaOFVals = [0    1e-3 2e-3 5e-3 1e-2,...
@@ -58,8 +56,8 @@ opt.CGTolX = 1e-6;
 % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
-opt.rho = 1e3;%100;
-opt.sigma = 1e3;%100;
+opt.rho = 1;%1000;
+opt.sigma = 1;%1000;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;%10
 opt.AutoSigma = 1;
