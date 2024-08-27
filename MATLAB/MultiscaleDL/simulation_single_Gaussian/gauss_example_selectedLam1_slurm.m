@@ -79,7 +79,7 @@ for i = 2:numel(sigmas)
     [lambda_s_sel,j_s] = param_select_lambda_s(outDir,tradeoff,scaleP);
     for j_hs = 1%2:3     
         for j_of = 1%1:numel(lambdaOFVals)             
-            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
+            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,outDir};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
             k = k + 1;        
         end
