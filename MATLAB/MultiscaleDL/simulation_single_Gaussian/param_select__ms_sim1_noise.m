@@ -18,6 +18,7 @@ for n = 2:NN
     error_true = zeros(NN,1);
     l1_norm = zeros(NN,1);
     lambda_s_vec = zeros(NN,1);
+    lambda_ind_vec = zeros(NN,1);
     for i = 1:numel(matFileNames)
         % Load outputs
         load(fullfile(folderPath,matFileNames{i}))
@@ -74,6 +75,7 @@ for n = 2:NN
     criterion = 0.8*abs((err_sort-minErr)/maxErr) +...
                 abs((l1_sort-minL1)/maxL1);
     [minCrit, selInd] = min(criterion);
+    
     [~,selInd2] = min(error_true);
 %     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
 

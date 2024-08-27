@@ -1,4 +1,4 @@
-function [lambda_s,selInd] = param_select_lambda_s(outputDir,tradeoff)
+function [lambda_s,selInd] = param_select_lambda_s(outputDir,tradeoff,scaleP)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -43,8 +43,8 @@ err_sort = rel_error(ind);
 l1_sort = l1_norm(ind);
 
 % Normalized origin distance criterion
-criterion = tradeoff*abs((err_sort-min(err_sort))/max(err_sort-min(err_sort))) +...
-            abs((l1_sort-min(l1_sort))/max(l1_sort-min(l1_sort)));
+criterion = tradeoff*abs((err_sort-scaleP[1])/scaleP[2]) +...
+                abs((l1_sort-scaleP[3])/scaleP[4]);
 [~, selInd] = min(criterion);
 lambda_s = lambda_s_sort(selInd);
 
