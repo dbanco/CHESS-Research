@@ -46,6 +46,6 @@ l1_sort = l1_norm(ind);
 criterion = tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
                 abs((l1_sort-scaleP(3))/scaleP(4));
 [~, selInd] = min(criterion);
-lambda_s = lambda_s_sort(selInd);
+lambda_s = lambda_s_sort(selInd)
 
 end
