@@ -72,8 +72,8 @@ funcName = 'mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 
 for i = 2:numel(sigmas)
-    inDir = '/cluster/home/dbanco02/Outputs/gaus_example_8_24_24_X0_D0_V00_sig_'+num2str(i);
-    outDir = '/cluster/home/dbanco02/Outputs/gaus_example_8_27_24_X0_D0_V00_sig_'+num2str(i);
+    inDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_24_24_X0_D0_V00_sig_',num2str(i)];
+    outDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_27_24_X0_D0_V00_sig_',num2str(i)];
     mkdir(outDir)
     [lambda_s_sel,j_s] = param_select_lambda_s(outDir);
     for j_hs = 1%2:3     
