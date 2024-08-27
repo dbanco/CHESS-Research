@@ -74,8 +74,8 @@ for i = 2:numel(sigmas)
     outDir = '/cluster/home/dbanco02/Outputs/gaus_example_8_27_24_X0_D0_V00_sig_'+num2str(i);
     mkdir(outDir)
     [lambda_s_sel,j_s] = param_select_lambda_s(outDir);
-    for j_hs = 1%2:3     
-        for j_of = 1%1:numel(lambdaOFVals)             
+    for j_hs = [1]%2:3     
+        for j_of = [1]%1:numel(lambdaOFVals)             
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
             k = k + 1;        
