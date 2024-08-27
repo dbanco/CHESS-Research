@@ -13,7 +13,7 @@ l1_norm = zeros(NN,1);
 lambda_s_vec = zeros(NN,1);
 for i = 1:numel(matFileNames)
     % Load outputs
-    load(fullfile(folderPath,matFileNames{i}))
+    load(fullfile(outputDir,matFileNames{i}))
 
     D = outputs.D;
     N = outputs.N;
