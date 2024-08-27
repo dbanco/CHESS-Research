@@ -75,7 +75,7 @@ for i = 2:numel(sigmas)
     for j_hs = 1%2:3     
         topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_27_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
         inDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_23_24_X0_D0_V0',num2str(lambdaHSVals(j_hs)),'_sig_',num2str(i)];
-        [lambda_s_sel,j_s] = param_select_lambda_s([inDir,tradeoff,scaleP);
+        [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff,scaleP);
         for j_of = 1%1:numel(lambdaOFVals)             
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
