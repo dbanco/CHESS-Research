@@ -145,7 +145,7 @@ outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_24\";
 
 for n = 2:NN
     gausDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
-    dataFile = sprintf("output_j1_sig_%1.2s_lam1_%1.2s_lam2_0.00e+00",sigmas(n),selected_lam_true(n));
+    dataFile = sprintf("output_j1_sig_%1.2s_lam1_%1.2s_lam2_0.00e+00",sigmas(n),selected_lam(n));
     [y,y_true,N,M,T] = gaus_example_multiscale_dl(sigmas(n));
     load(fullfile(outDir,gausDir,dataFile))
     D = outputs.D;
@@ -169,9 +169,11 @@ for n = 2:NN
 
     figure()
     hold on
-    plot(outputs.y(:,:,1),'-')
-    plot(y_true(:,1),'o-')
-    plot(Yhat(:,1),'s-')
+    ttt = 40;
+    plot(outputs.y(:,:,ttt),'-')
+    plot(y_true(:,ttt),'o-')
+    plot(Yhat(:,ttt),'s-')
+    legend('data','truth','recon')
     pause()
 end
 

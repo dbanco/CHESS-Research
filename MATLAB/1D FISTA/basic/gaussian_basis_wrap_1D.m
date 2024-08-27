@@ -1,9 +1,9 @@
-function b = gaussian_basis_wrap_1D(N_x,mean_x,std_x,scaling)
+function b = gaussian_basis_wrap_1D(N,mu,sigma,scaling)
 %gaussian_basis_wrap_1D Generates gaussian peak function vector
 % Inputs:
-% N_x - vector length
-% mean_x - mean of gaussian basis function
-% std_x - standard deviation of gaussian basis function
+% N - vector length
+% mu - mean of gaussian basis function
+% sigma - standard deviation of gaussian basis function
 % scaling - '2-norm' unit 2-norm scaling
 %           '1-norm' unit 1-norm scaling
 %           'max'    unit max scaling factor
@@ -14,20 +14,20 @@ function b = gaussian_basis_wrap_1D(N_x,mean_x,std_x,scaling)
 % b - (N x 1) vector
 
 % Compute theta distances with wrapping at boundaries
-idx = 1:N_x;
+idx = 1:N;
 wrapN = @(x, N) (1 + mod(x-1, N));
-opposite = (idx(wrapN(floor(mean_x-N_x/2),N_x)) +... 
-            idx(wrapN(ceil(mean_x-N_x/2),N_x)))/2;
-if opposite == mean_x
+opposite = wrapN((mu-N/2),N);
+            
+if opposite == mu
     opposite = 0.5;
 end
-dist1 = abs(mean_x - idx);
-dist2 = N_x/2 - abs(opposite - idx);
+dist1 = abs(mu - idx);
+dist2 = abs(N/2 - abs(opposite - idx));
 dist = min(dist1,dist2);
 dist_sq_theta = dist.^2;    % num_theta length vector
 
 % Compute values
-b = exp(-dist_sq_theta/(2*std_x^2) )';
+b = exp(-dist_sq_theta/(2*sigma^2) )';
 if nargin > 3
     switch scaling
         case '2-norm'
@@ -37,9 +37,9 @@ if nargin > 3
         case 'max'
             b = b/max(b(:));
         case 'rms'
-            b = b/sqrt( sum(b(:).^2)/N_x );
+            b = b/sqrt( sum(b(:).^2)/N );
         otherwise
-            b = b/(std_x*sqrt(2*pi));
+            b = b/(sigma*sqrt(2*pi));
     end
 end
 
