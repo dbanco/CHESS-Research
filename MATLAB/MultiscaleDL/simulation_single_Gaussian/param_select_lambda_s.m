@@ -43,8 +43,8 @@ err_sort = rel_error(ind);
 l1_sort = l1_norm(ind);
 
 % Normalized origin distance criterion
-criterion = tradeoff*abs((err_sort-scaleP[1])/scaleP[2]) +...
-                abs((l1_sort-scaleP[3])/scaleP[4]);
+criterion = tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
+                abs((l1_sort-scaleP(3))/scaleP(4));
 [~, selInd] = min(criterion);
 lambda_s = lambda_s_sort(selInd);
 
