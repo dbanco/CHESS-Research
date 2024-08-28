@@ -50,8 +50,8 @@ opt.CGTolX = 1e-6;
 % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
-opt.rho = 1;%1000;
-opt.sigma = 1;%1000;
+opt.rho = 1e-1;%1000;
+opt.sigma = 1e-1;%1000;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;%10
 opt.AutoSigma = 1;
@@ -72,9 +72,7 @@ for i = 2:numel(sigmas)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1
-                % topDir = ['C:\Users\dpqb1\Documents\Outputs2024\gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_23_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
-                % topDir = ['/nfs/chess/user/dbanco/Outputs/gaus_example_8_8_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_28_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
                 figDir = [topDir,'_sig_',num2str(i)];
                 mkdir(figDir)
                 close all

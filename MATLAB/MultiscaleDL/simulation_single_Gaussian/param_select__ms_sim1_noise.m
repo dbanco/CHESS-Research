@@ -72,7 +72,7 @@ for n = 2:NN
         maxL1 = max(l1_sort-minL1);
     end
 
-    criterion = 0.8*abs((err_sort-minErr)/maxErr) +...
+    criterion = 0.5*abs((err_sort-minErr)/maxErr) +...
                 abs((l1_sort-minL1)/maxL1);
     [minCrit, selInd] = min(criterion);
     
@@ -135,13 +135,13 @@ for n = 2:numel(sigmas)
     
     meanSNR(n) = mean(SNR);
 end
-
+%%
 NN = numel(sigmas);
 trueErr = zeros(NN,1);
 dataErr = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 noiseNorm2 = zeros(NN,1);
-outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_24\";
+outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_27\";
 
 for n = 2:NN
     gausDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
@@ -167,16 +167,23 @@ for n = 2:NN
     noiseNorm(n) = norm(randn(N,T)*sigmas(n));
     noiseNorm2(n) = norm(y_true-squeeze(outputs.y));
 
-    figure()
+    ff = figure();
     hold on
-    ttt = 40;
-    plot(outputs.y(:,:,ttt),'-')
-    plot(y_true(:,ttt),'o-')
-    plot(Yhat(:,ttt),'s-')
+    kk = 1;
+    for ttt = [1,15,30,45]
+        subplot(4,1,kk)
+        plot(outputs.y(:,:,ttt),'-')
+        hold on
+        plot(y_true(:,ttt),'-')
+        plot(Yhat(:,ttt),'-')
+        kk = kk + 1; 
+    end
+    ff.Position = [941 59 560 825];
     legend('data','truth','recon')
     pause()
 end
 
+%%
 figure()
 hold on
 plot(meanSNR(2:NN),trueErr(2:NN),'o-')
