@@ -16,12 +16,14 @@ width = (70-fliplr(position))/3;
 % hold on
 % plot(width)
 
+y = zeros(N,T);
+
 for t = 1:T
     y(:,t) = gaussian_basis_wrap_1D(N,position(t),width(t),'2-norm');
 end
 
 yn = y + randn(N,T)*sigma;
-yn(yn<0)=0;
+% yn(yn<0)=0;
 % figure(2)
 % imagesc(y)
 

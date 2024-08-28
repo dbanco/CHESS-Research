@@ -4,7 +4,7 @@ selected_lam = zeros(NN,1);
 selected_lam_true = zeros(NN,1);
 close all
 for n = 2:NN
-    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_23\';
+    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_27\';
     outDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
     folderPath = fullfile(topDir,outDir);
     
