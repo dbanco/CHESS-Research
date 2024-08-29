@@ -53,7 +53,6 @@ opt.DRelaxParam = 1.8;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 0;
-opt.Smoothness = lambdaHSVals(j_hs);%1e-6;%opt.Smoothness = 1e-8;
 opt.HSiters = 100;
 opt.useGpu = 0;
 
