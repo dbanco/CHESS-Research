@@ -1,4 +1,4 @@
-function mcdlof_wrapper(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir)
+function mcdlof_wrapper_sim2(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Optical flow coupled solution
@@ -7,16 +7,9 @@ figDir = [topDir,'_sig_',num2str(i)];
 mkdir(figDir)
 
 % Data  
-[y,~,N,M,T] = gaus_example_multiscale_dl(sigmas(i));
+[y,~,N,M,T] = generate_signal_pair(sigmas(i));
 y = reshape(y,[1,N,T]);
 center = (M+1)/2;
-
-% Initialization 
-Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
-D0 = zeros(1,M,K);
-D0(1,:) = 1;
-D0 = Pnrm(D0);
-opt.G0 = D0;
 
 lambda = lambdaVals(j_s);
 lambda2 = lambdaOFVals(j_of);
@@ -48,7 +41,7 @@ suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures
-generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
+generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,4]);
 %         generateFiguresToy1min([figDir,'min'],outputs,suffix)
 %         generateFiguresToy1([figDir,'indep'],inde,suffix)
 
