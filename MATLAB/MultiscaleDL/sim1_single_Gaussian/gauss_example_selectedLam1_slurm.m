@@ -67,7 +67,7 @@ opt.useGpu = 0;
 
 k = 1;
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'mcdlof_wrapper';
+funcName = 'mcdlof_wrapper_sim1';
 jobDir = '/cluster/home/dbanco02/jobs/';
 tradeoff = 0.8;
 scaleP = [0.4,5.4,9.48,116];

@@ -41,10 +41,10 @@ yn = y + randn(N,T)*sigma;
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
 
-figure
-imagesc(squeeze(yn))
-
-figure
-plot(y(:,1))
+% figure
+% imagesc(squeeze(yn))
+% 
+% figure
+% plot(y(:,1))
 
 end

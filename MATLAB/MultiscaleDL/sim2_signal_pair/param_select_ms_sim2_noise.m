@@ -4,12 +4,12 @@ selected_lam = zeros(NN,1);
 selected_lam_true = zeros(NN,1);
 close all
 for n = 2:NN
-    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_28\';
-    outDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
+    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_29\';
+    outDir = "signal_pair_8_29_24_X0_D0_V00_sig_"+num2str(n);
     folderPath = fullfile(topDir,outDir);
     
     files = dir(fullfile(folderPath, '*.mat'));
-    [y,y_true,N,M,T] = gaus_example_multiscale_dl(sigmas(n));
+    [y,y_true,N,M,T] = generate_signal_pair(sigmas(n));
     % Extract the file names and store them in a cell array
     matFileNames = {files.name};
     
@@ -50,8 +50,6 @@ for n = 2:NN
     
     % Plot L-curve and selected parameter
     [lambda_s_sort,ind] = sort(lambda_s_vec);
-%     err_sort = error;
-%     ind = 1:numel(error);
     err_sort = error(ind);
     err_true_sort = error_true(ind);
     l1_sort = l1_norm(ind);
@@ -59,10 +57,6 @@ for n = 2:NN
     plot(l1_sort(1:end),err_sort(1:end),'o-')
     ylabel('Error')
     xlabel('l_1-norm')
-    
-%     criterion = abs(err_sort) + abs(l1_sort);
-%     criterion = abs(err_sort)/mean(err_sort) + abs(l1_sort)/mean(l1_sort);
-%     criterion = abs(err_sort)/max(err_sort) + abs(l1_sort)/max(l1_sort);
 
     % Normalized origin distance criterion
     if n == 2
@@ -72,36 +66,11 @@ for n = 2:NN
         maxL1 = max(l1_sort-minL1);
     end
 
-    criterion = 0.8*abs((err_sort-minErr)/maxErr) +...
+    criterion = 1.5*abs((err_sort-minErr)/maxErr) +...
                 abs((l1_sort-minL1)/maxL1);
     [minCrit, selInd] = min(criterion);
     
     [~,selInd2] = min(error_true);
-%     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
-
-%     criterion = abs((diff(err_sort,1)./diff(l1_sort,1)) + 0.04);
-
-    % 2nd derivative criterion
-%     criterion = abs((diff(err_sort,2)./diff(l1_sort,2)));
-%     [minCrit, selInd] = max(criterion);
-%     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
-
-    % Knee point criterion
-%     [selVal,selInd] = knee_pt(err_sort,l1_sort);
-%     selInd = selInd - 5;
-
-    % Curvature criterion
-%     dx = diff(l1_sort,1);
-%     ddx = diff(l1_sort,2);
-%     dy = diff(err_sort,1);
-%     ddy = diff(err_sort,2);
-%     curvature = abs(dx(2:end).*ddy - dy(2:end).*ddx)./(dx(2:end).^2 + dy(2:end).^2).^1.5;
-%     criterion = curvature;
-%     criterion(1:3) = 0; 
-%     criterion(end-2:end)=0;
-% 
-%     [minCrit, selInd] = max(criterion);
-%     selInd = selInd + (numel(err_sort)-numel(criterion))/2;
 
     hold on
     plot(l1_sort(selInd),err_sort(selInd),'sr','MarkerSize',10);
@@ -122,7 +91,7 @@ selected_lam_true
 sigmas = 0:0.01:0.1;
 meanSNR = zeros(numel(sigmas),1);
 for n = 2:numel(sigmas)
-    [y,y_true,N,M,T] = gaus_example_multiscale_dl(sigmas(n));
+    [y,y_true,N,M,T] = generate_signal_pair(sigmas(n));
     
     SNR = zeros(T,1);
     nPwr = zeros(T,1);
@@ -141,13 +110,13 @@ trueErr = zeros(NN,1);
 dataErr = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 noiseNorm2 = zeros(NN,1);
-outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_28\";
+outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_29\";
 
 for n = 2:NN
-    gausDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
+    outputDir = "signal_pair_8_29_24_X0_D0_V00_sig_"+num2str(n);
     dataFile = sprintf("output_j1_sig_%1.2s_lam1_%1.2s_lam2_0.00e+00",sigmas(n),selected_lam(n));
-    [y,y_true,N,M,T] = gaus_example_multiscale_dl(sigmas(n));
-    load(fullfile(outDir,gausDir,dataFile))
+    [~,y_true,~,~,T] = generate_signal_pair(sigmas(n));
+    load(fullfile(outDir,outputDir,dataFile))
     D = outputs.D;
     N = outputs.N;
     M = outputs.M;
@@ -170,8 +139,8 @@ for n = 2:NN
     ff = figure();
     hold on
     kk = 1;
-    for ttt = [1,15,30,45]
-        subplot(4,1,kk)
+    for ttt = [1,11,21]
+        subplot(3,1,kk)
         plot(outputs.y(:,:,ttt),'-')
         hold on
         plot(y_true(:,ttt),'-')
@@ -198,5 +167,5 @@ legend('$\|\hat{{\bf b}}-{\bf f}\|_2$','$\|\hat{{\bf b}}-{\bf b}\|_2$',...
 %% Next copy figures associated with selected parameters to a folder
 
 % for n = 2:NN
-%     gausDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
+%     outputDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
 % end

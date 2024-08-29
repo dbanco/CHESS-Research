@@ -70,7 +70,8 @@ for i = 2:numel(sigmas)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1
             for j_of = 1
-                topDir = ['/cluster/home/dbanco02/Outputs/signal_pair_8_29_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                topDir = ['/cluster/home/dbanco02/Outputs/signal_pair_8_29_24_coupled',num2str(lambdaHSVals(j_hs))];
+                inDir = ['/cluster/home/dbanco02/Outputs/signal_pair_8_29_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
                 figDir = [topDir,'_sig_',num2str(i)];
                 mkdir(figDir)
                 close all
