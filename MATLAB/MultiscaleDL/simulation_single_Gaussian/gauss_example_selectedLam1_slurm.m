@@ -47,8 +47,8 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho and sigma params
-opt.rho = 1;
-opt.sigma = 1;
+opt.rho = 1e-1;
+opt.sigma = 1e-1;
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
 % opt.rho = 1e3;%100;
