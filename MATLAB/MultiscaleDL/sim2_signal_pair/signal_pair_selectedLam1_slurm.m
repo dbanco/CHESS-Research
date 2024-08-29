@@ -72,8 +72,8 @@ close all
 for i = 2:numel(sigmas)
     inDir = ['/cluster/home/dbanco02/Outputs/signal_pair_8_29_24_X0_D0_V00_sig_',num2str(i)];
     [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff,scaleP);
-    for j_hs = 1
-        for j_of = 1
+    for j_hs = 2:3
+        for j_of = 1:numel(lambdaOFVals)
             topDir = ['/cluster/home/dbanco02/Outputs/signal_pair_8_29_24_coupled',num2str(lambdaHSVals(j_hs))];
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
