@@ -29,8 +29,6 @@ D0 = zeros(1,M,K);
 D0(1,round(M/3):round(2*M/3),1) = 1;
 D0(1,round(M/4):round(3*M/4),2) = 1;
 D0 = Pnrm(D0);
-opt.Y0 = Xtrue;
-opt.Y0 = zeros(size(Xtrue));
 opt.G0 = D0;
 
 % Set up algorithm parameters
