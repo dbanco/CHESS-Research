@@ -4,8 +4,8 @@ selected_lam = zeros(NN,1);
 selected_lam_true = zeros(NN,1);
 close all
 for n = 2:NN
-    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_27\';
-    outDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
+    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_28\';
+    outDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
     folderPath = fullfile(topDir,outDir);
     
     files = dir(fullfile(folderPath, '*.mat'));
@@ -72,7 +72,7 @@ for n = 2:NN
         maxL1 = max(l1_sort-minL1);
     end
 
-    criterion = 0.5*abs((err_sort-minErr)/maxErr) +...
+    criterion = 0.8*abs((err_sort-minErr)/maxErr) +...
                 abs((l1_sort-minL1)/maxL1);
     [minCrit, selInd] = min(criterion);
     
@@ -141,10 +141,10 @@ trueErr = zeros(NN,1);
 dataErr = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 noiseNorm2 = zeros(NN,1);
-outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_27\";
+outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_28\";
 
 for n = 2:NN
-    gausDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
+    gausDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
     dataFile = sprintf("output_j1_sig_%1.2s_lam1_%1.2s_lam2_0.00e+00",sigmas(n),selected_lam(n));
     [y,y_true,N,M,T] = gaus_example_multiscale_dl(sigmas(n));
     load(fullfile(outDir,gausDir,dataFile))
