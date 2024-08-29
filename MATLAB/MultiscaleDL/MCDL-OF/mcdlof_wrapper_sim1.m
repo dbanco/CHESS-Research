@@ -11,20 +11,13 @@ mkdir(figDir)
 y = reshape(y,[1,N,T]);
 center = (M+1)/2;
 
-% Initialization 
-Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
-D0 = zeros(1,M,K);
-D0(1,:) = 1;
-D0 = Pnrm(D0);
-opt.G0 = D0;
-
 lambda = lambdaVals(j_s);
 lambda2 = lambdaOFVals(j_of);
 opt.Smoothness = lambdaHSVals(j_hs);
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
 opt.UpdateVelocity = 1;
-[D,X,Dmin,Xmin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+[D,X,Dmin,Xmin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
 
 % Save outputs
 outputs = struct();
