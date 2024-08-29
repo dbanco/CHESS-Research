@@ -41,7 +41,7 @@ suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures
-generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,4]);
+generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
 %         generateFiguresToy1min([figDir,'min'],outputs,suffix)
 %         generateFiguresToy1([figDir,'indep'],inde,suffix)
 

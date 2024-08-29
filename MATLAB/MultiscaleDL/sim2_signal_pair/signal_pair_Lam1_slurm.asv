@@ -1,0 +1,89 @@
+%% Multiscale 1D dictionary learning toy problem
+% Directory
+lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
+lambdaHSVals = [0 1e-3 2e-3];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
+
+% Experiment Setup
+sigmas = 0:0.01:0.1;
+
+% Data parameters
+[yn,y,N,M,T] = generate_signal_pair();
+y = reshape(y,[1,N,T]);
+
+% Model Setup
+K = 2;
+J = 8;
+KJ = K*J;
+opt = [];
+opt.DictFilterSizes = [1,1;...
+                       M,M];
+
+% Init solution
+opt.Y0 = zeros(1,N+M-1,KJ,T);
+% opt.U0 = zeros(1,N,KJ,T);
+
+% Init dictionary
+Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
+D0 = zeros(1,M,K); 
+D0(1,round(M/3):round(2*M/3),1) = 1;
+D0(1,round(M/4):round(3*M/4),2) = 1;
+D0 = Pnrm(D0);
+opt.Y0 = Xtrue;
+opt.Y0 = zeros(size(Xtrue));
+opt.G0 = D0;
+
+% Set up algorithm parameters
+opt.plotDict = 0;
+opt.Verbose = 1;
+opt.MaxMainIter = 500;
+opt.MaxCGIter = 100;
+opt.CGTol = 1e-6;
+opt.MaxCGIterX = 100;
+opt.CGTolX = 1e-6;
+% Rho and sigma params
+% opt.rho = 50*lambda + 0.5;
+% opt.sigma = T;
+opt.rho = 1e-1;%1000;
+opt.sigma = 1e-1;%1000;
+opt.AutoRho = 1;
+opt.AutoRhoPeriod = 1;%10
+opt.AutoSigma = 1;
+opt.AutoSigmaPeriod = 1;%10
+opt.XRelaxParam = 1.8;
+opt.DRelaxParam = 1.8;
+opt.NonNegCoef = 1;
+opt.NonnegativeDict = 1;
+opt.UpdateVelocity = 0;
+opt.Smoothness = lambdaHSVals(j_hs);%1e-6;%opt.Smoothness = 1e-8;
+opt.HSiters = 100;
+opt.useGpu = 0;
+
+k = 1;
+scriptFileName = 'mcdlof_bash.sh';
+funcName = 'mcdlof_wrapper_sim2';
+jobDir = '/cluster/home/dbanco02/jobs/';
+
+close all
+%% Dictionary learning
+for i = 2:numel(sigmas)
+    for j_s = 1:numel(lambdaVals)
+        for j_of = 8:12
+            figDir = [topDir,'_sig_',num2str(i)];
+            mkdir(figDir)
+
+            
+            % Generate figures
+            generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,4]);
+    %         generateFiguresToy1min([figDir,'min'],outputs,suffix)
+    %         generateFiguresToy1([figDir,'indep'],inde,suffix)
+    
+            AD = reSampleCustomArrayCenter(N,D,scales,center);
+            AD = padarray(AD,[0 M-1 0],0,'post');
+            ADf = fft2(AD);
+            Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
+            plotDataRecon(y,Yhat,figDir,['y_recon',suffix,'.gif'])
+            close all
+        end
+    end
+end
