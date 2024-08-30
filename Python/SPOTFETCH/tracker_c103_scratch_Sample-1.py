@@ -23,8 +23,12 @@ dataFile = os.path.join(dataPath,"c103-1-ff-1_*_EIG16M_CdTe_{num2:0>6}.h5")
 spotsDir = '/nfs/chess/user/wkk32/c103-1-layer1/'
 spotsPath = os.path.join(topPath,'spots')
 
-# sf.collectSpotsData(spotsPath, spotsDir) 
-spotData = np.load(os.path.join(spotsPath,'spots.npz'))
+# The new spots Wiley shared are at
+spotsDir = '/nfs/chess/user/dbanco/C103_1_unloaded_gripped_layer2of4/layer_1/3A_grains/'
+spotsPath = os.path.join(topPath,'eiger')
+
+sf.collectSpotsData(spotsDir, spotsPath) 
+spotData = np.load(os.path.join(spotsDir,'spots.npz'))
 
 # %% 3. Detector and tracking parameters
 params = {}
