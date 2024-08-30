@@ -39,8 +39,8 @@ params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]0
 params['pool'] = 16
 
 # %% 4. Inspect spot tracks on ex-situ and initial scan data
-grains = [276,288,342]
-spotInds = sf.findSpots(spotData,grains=grains)[21:37]
+grains = [1,2,3,4,5,6,7,8,9,10,276,288,342]
+spotInds = sf.findSpots(spotData,grains=grains)
 # spotInds = [113,205,413,801]
 
 dome = 3
