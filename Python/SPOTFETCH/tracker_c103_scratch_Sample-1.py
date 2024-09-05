@@ -25,9 +25,9 @@ spotsPath = os.path.join(topPath,'spots')
 
 # The new spots Wiley shared are at
 spotsDir = '/nfs/chess/user/dbanco/C103_1_unloaded_gripped_layer2of4/layer_1/3A_grains/'
-spotsPath = os.path.join(topPath,'eiger')
+spotsPath = os.path.join(spotsDir,'eiger')
 
-sf.collectSpotsData(spotsDir, spotsPath) 
+#sf.collectSpotsData(spotsDir, spotsDir) 
 spotData = np.load(os.path.join(spotsDir,'spots.npz'))
 
 # %% 3. Detector and tracking parameters
@@ -43,7 +43,7 @@ params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]0
 params['pool'] = 16
 
 # %% 4. Inspect spot tracks on ex-situ and initial scan data
-grains = [1,2,3,4,5,6,7,8,9,10,276,288,342]
+grains = [44,158]
 spotInds = sf.findSpots(spotData,grains=grains)
 # spotInds = [113,205,413,801]
 
