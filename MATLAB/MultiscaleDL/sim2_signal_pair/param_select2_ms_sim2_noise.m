@@ -8,16 +8,16 @@ tradeoff_s = 1.5;
 tradeoff_of = 1;
 scaleP = [0.157,5.12,19.02,52.406,0,100];
 
-for j_hs = 2:3 %2-3
+for j_hs = 3 %2-3
     selected_lam_s_vec = zeros(NN,1);
     selected_lam_of_vec = zeros(NN,1);
     
     % close all
     topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_29\';
-    fig_num = 11;
+    fig_num = 12;
     for n = 2:NN
         inDir = [topDir,'\signal_pair_8_29_24_X0_D0_V00_sig_',num2str(n)];
-        [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP);
+        [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,11);
         selected_lam_s_vec(n) = lambda_s_sel;
     
         outDir = ['signal_pair_8_29_24_coupled',num2str(lambdaHSVals(j_hs)),'_sig_',num2str(n)];
@@ -53,8 +53,8 @@ for j_hs = 2:3 %2-3
     dataFile = sprintf("output_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
                         j_of,sigmas(n),selected_lam_s_vec(n),selected_lam_of_vec(n));
     
-    [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = sim2Error(sigmas,outDirOF,dirStartS,dirStartOF,...
-                                selected_lam_s_vec,selected_lam_of_vec,lambdaOFVals);
+    [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(sigmas,outDirOF,dirStartS,dirStartOF,...
+                                selected_lam_s_vec,selected_lam_of_vec,lambdaOFVals,y_true);
         
     %%
     figure()
@@ -73,6 +73,7 @@ for j_hs = 2:3 %2-3
 end
 %% Next copy figures associated with selected parameters to a folder
 
-% for n = 2:NN
-%     outputDir = "gaus_example_8_23_24_X0_D0_V00_sig_"+num2str(n);
-% end
+pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim2.pptx';
+titleStr = 'Sim 2 Recovery';
+createPowerpointSim(pptFile,titleStr,topDir,sigmas,dirStartS,dirStartOF,...
+    lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec,meanSNR)

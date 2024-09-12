@@ -1,4 +1,4 @@
-function [lambda_s,selInd] = param_select_lambda_s(outputDir,tradeoff,scaleP)
+function [lambda_s,selInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -47,5 +47,14 @@ criterion = tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
                 abs((l1_sort-scaleP(3))/scaleP(4));
 [~, selInd] = min(criterion);
 lambda_s = lambda_s_sort(selInd);
+
+if nargin > 3
+    figure(fig_num)
+    plot(l1_sort(1:end),err_sort(1:end),'o-')
+    ylabel('Error')
+    xlabel('l_1-norm')
+    hold on
+    plot(l1_sort(selInd),err_sort(selInd),'sr','MarkerSize',10)
+end
 
 end

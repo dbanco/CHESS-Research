@@ -13,13 +13,15 @@ from multiprocessing import Process
 
 #### Params for ti-2-tensions data ####
 # Output data path
-topPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_processing\\c103_processing\\Sample-1"
+topPath = "C:\\Users\\dpqb1\\Documents\\Data\\c103_2024"
 # topPath = "/nfs/chess//user/dbanco/c103_processing/Sample-1/"
 read_path = os.path.join(topPath,'outputs')
 
-spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
+spotsDir = "C:\\Users\\dpqb1\\Documents\\Data\\c103_processing"
+spotData = np.load(os.path.join(spotsDir,'spots.npz'))
+#spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
 
-grains = [276,288,342]
+grains = [44,158]
 spotIndsList = []
 for grain in grains:
     spotIndsList.append(sf.findSpots(spotData,grains=[grain]))
