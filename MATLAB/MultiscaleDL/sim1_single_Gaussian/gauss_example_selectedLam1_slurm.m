@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaHSVals = [0 1e-3 2e-3];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 
 % Experiment Setup
@@ -72,7 +72,7 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 tradeoff = 0.5;
 scaleP = [0.4,5.4,9.48,116];
 for i = 2:numel(sigmas)
-    for j_hs = 2:3     
+    for j_hs = 1:4     
         topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_9_12_24_coupled',num2str(lambdaHSVals(j_hs))];
         inDir = ['/cluster/home/dbanco02/Outputs/gaus_example_8_28_24_X0_D0_V00_sig_',num2str(i)];
         [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff,scaleP);
