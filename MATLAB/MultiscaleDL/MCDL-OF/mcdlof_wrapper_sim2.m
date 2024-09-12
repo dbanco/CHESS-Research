@@ -36,8 +36,8 @@ outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
 outputs.Uvel = Uvel;
 outputs.Vvel = Vvel;
-suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
-                  j_of,sigmas(i),outputs.lambda,outputs.lambda2);
+suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+                  j_s,j_of,sigmas(i),outputs.lambda,outputs.lambda2);
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures

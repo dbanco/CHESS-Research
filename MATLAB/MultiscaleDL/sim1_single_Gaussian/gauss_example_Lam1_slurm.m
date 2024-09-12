@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaHSVals = [0 1e-3 2e-3];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 
 
@@ -66,7 +66,7 @@ k = 1;
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper_sim1';
 jobDir = '/cluster/home/dbanco02/jobs/';
-for i = 2:numel(sigmas)
+for i = 1:numel(sigmas)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1

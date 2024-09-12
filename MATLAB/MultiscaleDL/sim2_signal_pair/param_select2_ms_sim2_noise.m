@@ -4,7 +4,7 @@ lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
-tradeoff_s = 1.5;
+tradeoff_s = 0.75;
 tradeoff_of = 1;
 scaleP = [0.157,5.12,19.02,52.406,0,100];
 
@@ -73,7 +73,14 @@ for j_hs = 3 %2-3
 end
 %% Next copy figures associated with selected parameters to a folder
 
-pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim2.pptx';
+% pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim2.pptx';
+% titleStr = 'Sim 2 Recovery';
+% createPowerpointSim(pptFile,titleStr,topDir,sigmas,dirStartS,dirStartOF,...
+%     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec,meanSNR)
+
+
+pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim2_indep_0.75.pptx';
 titleStr = 'Sim 2 Recovery';
-createPowerpointSim(pptFile,titleStr,topDir,sigmas,dirStartS,dirStartOF,...
-    lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec,meanSNR)
+createPowerpointSimS(pptFile,titleStr,topDir,sigmas,dirStartS,dirStartOF,...
+    selected_lam_s_vec,meanSNR)
+
