@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaHSVals = [0 1e-3 2e-3];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 
 
@@ -110,8 +110,8 @@ for i = 2:numel(sigmas)
         outputs.lambda2 = lambda2;
         outputs.Uvel = Uvel;
         outputs.Vvel = Vvel;
-        suffix = sprintf('_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
-                          j_of,sigmas(i),outputs.lambda,outputs.lambda2);
+        suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+                          j_s,j_of,sigmas(i),outputs.lambda,outputs.lambda2);
         save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
         
         % Generate figures

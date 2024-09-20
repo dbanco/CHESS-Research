@@ -107,7 +107,7 @@ def estMEANomega(track):
     omegaRange = np.zeros(len(track))
     meanOmega = 0
     for i in range(len(track)):
-        roiOmega[i] = np.sum(track[i]['roi'],axis=None)
+        roiOmega[i] = np.nansum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
         meanOmega += i*roiOmega[i]
     meanOmega = meanOmega/np.sum(roiOmega)
@@ -135,13 +135,13 @@ def estFWHMomega(track):
     meanOmega = 0
     varOmega = 0
     for i in range(len(track)):
-        roiOmega[i] = np.sum(track[i]['roi'],axis=None)
+        roiOmega[i] = np.nansum(track[i]['roi'],axis=None)
         omegaRange[i] = frameToOmega(track[i]['frm'])
         meanOmega += i*roiOmega[i]
-    meanOmega = meanOmega/np.sum(roiOmega)
+    meanOmega = meanOmega/np.nansum(roiOmega)
     
     for i in range(len(track)):
-        varOmega += roiOmega[i]*(i-meanOmega)**2/np.sum(roiOmega,None)*step**2
+        varOmega += roiOmega[i]*(i-meanOmega)**2/np.nansum(roiOmega,None)*step**2
 
     fwhmOmega = 2*np.sqrt(2*np.log(2)*varOmega)
     
@@ -233,6 +233,7 @@ def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
     for ind in spotInds:
         # 0. Load spot information
         tth = tths[ind]
+        print(tth)
         eta = -etas[ind]
 
         # 1. Load YAML data
@@ -829,22 +830,30 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     try: pool.close()
     except: print('Pool close didnt work')
 
-def compAvgParams(track):   
+def compAvgParams(track,errorThresh):   
     J = len(track) 
     avgFWHMeta = 0
     avgFWHMtth = 0
     avgEta = 0
     avgTth = 0
+    numJ = 0
     for j in range(J):
-        avgFWHMeta += track[j]['p'][3]/J*track[j]['deta']
-        avgFWHMtth += track[j]['p'][4]/J*track[j]['dtth']
-        avgEta += track[j]['eta']/J
-        avgTth += track[j]['tth']/J
-    
-    avgEta = avgEta*(180/np.pi)
-    avgTth = avgTth*(180/np.pi)
-    avgFWHMeta = avgFWHMeta*(180/np.pi)
-    avgFWHMtth = avgFWHMtth*(180/np.pi)
+        if track[j]['err'] < errorThresh:
+            avgFWHMeta += track[j]['p'][3]*track[j]['deta']
+            avgFWHMtth += track[j]['p'][4]*track[j]['dtth']
+            avgEta += track[j]['eta']
+            avgTth += track[j]['tth']
+            numJ += 1            
+    if numJ > 0:
+        avgEta = avgEta*(180/np.pi)/numJ
+        avgTth = avgTth*(180/np.pi)/numJ
+        avgFWHMeta = avgFWHMeta*(180/np.pi)/numJ
+        avgFWHMtth = avgFWHMtth*(180/np.pi)/numJ
+    else:
+        avgEta = np.nan
+        avgTth = np.nan
+        avgFWHMeta = np.nan
+        avgFWHMtth = np.nan
     return avgFWHMeta,avgFWHMtth,avgEta,avgTth
 
 def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):

@@ -1,4 +1,4 @@
-function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(sigmas,topDir,dirStartS,dirStartOF,selected_lam_s_vec,selected_lam_of_vec,lambdaOFVals,y_true)
+function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,topDir,dirStartS,selected_lam_s_vec,lambdaVals,dirStartOF,selected_lam_of_vec,lambdaOFVals)
 %UNTITLED Summary of this function goes here
 
 NN = numel(sigmas);
@@ -9,15 +9,18 @@ trueErrOF = zeros(NN,1);
 dataErrOF = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 
-if nargin < 6
+if nargin < 7
     selected_lam_of_vec = zeros(NN,1);
+    lambdaOFVals = [0,0,0];
+    dirStartOF = 'none';
 end
 
 for n = 2:NN
     spDir = [dirStartS,'_sig_',num2str(n)];
-
-    dataFileS = sprintf("output_j1_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
-                    sigmas(n),selected_lam_s_vec(n),0);
+    j_s = find(lambdaVals == selected_lam_s_vec(n));
+    j_of = 1;
+    dataFileS = sprintf("output_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
+                    j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
     
     load(fullfile(topDir,spDir,dataFileS))
     D = outputs.D;
@@ -37,7 +40,7 @@ for n = 2:NN
     trueErrS(n) = norm(y_true-Yhat);
     dataErrS(n) = norm(squeeze(y)-Yhat);
     
-    if nargin > 5
+    if nargin > 6
         hsDir = [dirStartOF,'_sig_',num2str(n)];
     
         j_of = find(lambdaOFVals == selected_lam_of_vec(n));

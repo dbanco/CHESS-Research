@@ -22,9 +22,16 @@ spotData = np.load(os.path.join(spotsDir,'spots.npz'))
 #spotData = np.load(os.path.join(topPath,'spots','spots.npz'))
 
 grains = [44,158]
+tth110 = 0.06562438
+tth200 = 0.09267698
+tth211 = 0.1136209
+tth321 = 0.1736603
+tthhkl = [tth110,tth200,tth211]
+
 spotIndsList = []
 for grain in grains:
-    spotIndsList.append(sf.findSpots(spotData,grains=[grain]))
+    # for i,tth in enumerate(tthhkl):
+    spotIndsList.append(sf.findSpots(spotData,grains=[grain],tth=tth211,dtth=0.01))
 
 titleStr = f'Grain {grains}'
 
@@ -34,7 +41,6 @@ plotter.start_gui(read_path, spotIndsList, 'Mean',titleStr,spotData,grains)
 # scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
 # trackPath = os.path.join(topPath,'outputs')
 # sf.roiTrackVisual(spotIndsList[0],spotData,dome,scanRange,trackPath,dataPath,params):
-
 
 # processes = []
 # p1 = Process(target=plotter.start_gui, args=(read_path, spotIndsList, 'Mean',titleStr,spotData,grains))

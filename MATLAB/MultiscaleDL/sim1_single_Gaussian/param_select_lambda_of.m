@@ -62,11 +62,11 @@ lambda_of = lambda_of_sort(selInd);
 
 if nargin > 3
     figure(fig_num)
-    plot(of_sort(1:end),err_sort(1:end),'o-')
+    loglog(of_sort(1:end),err_sort(1:end),'o-')
     ylabel('Error')
     xlabel('OF Obj')
     hold on
-    plot(of_sort(selInd),err_sort(selInd),'sr','MarkerSize',10)
+    loglog(of_sort(selInd),err_sort(selInd),'sr','MarkerSize',10)
 end
 
 outInd = ind(selInd);
