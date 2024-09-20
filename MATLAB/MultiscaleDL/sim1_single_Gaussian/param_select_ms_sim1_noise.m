@@ -4,7 +4,7 @@ selected_lam = zeros(NN,1);
 selected_lam_true = zeros(NN,1);
 close all
 for n = 2:NN
-    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_8_28\';
+    topDir = 'C:\Users\dpqb1\Documents\Outputs2024_9_12\';
     outDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
     folderPath = fullfile(topDir,outDir);
     
@@ -141,7 +141,7 @@ trueErr = zeros(NN,1);
 dataErr = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 noiseNorm2 = zeros(NN,1);
-outDir = "C:\Users\dpqb1\Documents\Outputs2024_8_28\";
+outDir = "C:\Users\dpqb1\Documents\Outputs2024_9_12\";
 
 for n = 2:NN
     gausDir = "gaus_example_8_28_24_X0_D0_V00_sig_"+num2str(n);
