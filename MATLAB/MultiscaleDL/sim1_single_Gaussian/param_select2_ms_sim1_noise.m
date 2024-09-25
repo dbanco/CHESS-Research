@@ -63,7 +63,7 @@ for j_hs = 2 %2-3
     plot(meanSNR(2:NN),noiseNorm(2:NN),'s-')
     plot(meanSNR(2:NN),trueErrS(2:NN),'o-')
     % plot(meanSNR(2:NN),dataErrS(2:NN),'x-')
-    plot(meanSNR(2:NN),trueErrOF(2:NN),'o-')
+%     plot(meanSNR(2:NN),trueErrOF(2:NN),'o-')
     % plot(meanSNR(2:NN),dataErrOF(2:NN),'x-')
     % plot(meanSNR(2:NN),noiseNorm2(2:NN),'x-')
     xlabel('SNR','Fontsize',14)
@@ -79,7 +79,7 @@ end
 % createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
 %     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
 
-pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_indep_0.5.pptx';
+pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_new_indep_0.5.pptx';
 titleStr = 'Sim 1 Recovery';
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals)
 

@@ -1,4 +1,4 @@
-function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num)
+function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num,criterion)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -43,11 +43,61 @@ err_sort = rel_error(ind);
 l1_sort = l1_norm(ind);
 
 % Normalized origin distance criterion
-criterion = tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
-                abs((l1_sort-scaleP(3))/scaleP(4));
-[~, selInd] = min(criterion);
-lambda_s = lambda_s_sort(selInd);
+switch criterion
+    case 'origin_dist'
+        crit= tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
+                        abs((l1_sort-scaleP(3))/scaleP(4));
+        [~, selInd] = min(crit);
+        lambda_s = lambda_s_sort(selInd);
+    case 'curvature'
+        % Curvature criterion
+        [b, a] = butter(4, 0.1, 'low');  % low-pass Butterworth filter
+        z = filtfilt(b,a,log(err_sort));
+        x = filtfilt(b,a,log(l1_sort));
+        
+        dlam = diff(lambda_s_sort);
+        dz = diff(z)./dlam;
+        dx = diff(x)./dlam;
+        ddz = diff(z,2)./dlam(1:end-1);
+        ddx = diff(x,2)./dlam(1:end-1);
+        
+        curvature = (dz(1:end-1).*ddx - dx(1:end-1).*ddz)./...
+                    (dx(1:end-1).^2 + dz(1:end-1).^2).^1.5;
+        
+        [~, selInd] = max(curvature);
+        lambda_s = lambda_s_sort(selInd);
+    case 'curvature_poly'
+        % Curvature criterion
+        z = log(err_sort);
+        x = log(l1_sort);
+        control_x = polyfilt(x,lambda_s_sort);
+        control_z = polyfilt(z,lambda_s_sort);
+        control_lam = lambda_s_sort(3:end-2);
+        xq = linspace(min(x),max(x),100);
+        zq = spline(control_x,control_z,xq);
+        zq2 = spline(x,z,xq);
+        figure
+        hold on
+        plot(x,z,'o-',control_x,control_z,'x-',xq,zq2)
+        
+%         dlam = diff(control_lam);
+%         dz = diff(zq2)./dlam;
+%         dx = diff(xq)./dlam;
+%         ddz = diff(zq2,2)./dlam(1:end-1);
+%         ddx = diff(xq,2)./dlam(1:end-1);
 
+        dz = diff(zq2);
+        dx = diff(xq);
+        ddz = diff(zq2,2);
+        ddx = diff(xq,2);
+        
+        curvature = (dz(1:end-1).*ddx - dx(1:end-1).*ddz)./...
+                    (dx(1:end-1).^2 + dz(1:end-1).^2).^1.5;
+        figure
+        plot(curvature)
+        [~, selInd] = max(curvature);
+        lambda_s = lambda_s_sort(selInd);
+end
 if nargin > 3
     figure(fig_num)
     loglog(l1_sort(1:end),err_sort(1:end),'o-')
