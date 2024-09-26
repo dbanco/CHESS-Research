@@ -4,10 +4,10 @@ lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
-tradeoff_s = 0.75;
+tradeoff_s = 0.6;
 tradeoff_of = 1;
 scaleP = [0.4,5.4,9.48,116,0,100];
-criterion = 'curvature_poly';
+criterion = 'origin_dist';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -55,12 +55,8 @@ dirStartS = 'gaus_example_8_28_24_X0_D0_V00';
 %%
 figure()
 hold on
-plot(meanSNR(2:NN),noiseNorm(2:NN),'s-')
-plot(meanSNR(2:NN),trueErrS(2:NN),'o-')
-% plot(meanSNR(2:NN),dataErrS(2:NN),'x-')
-%     plot(meanSNR(2:NN),trueErrOF(2:NN),'o-')
-% plot(meanSNR(2:NN),dataErrOF(2:NN),'x-')
-% plot(meanSNR(2:NN),noiseNorm2(2:NN),'x-')
+plot(meanSNR,noiseNorm,'s-')
+plot(meanSNR,trueErrS,'o-')
 xlabel('SNR','Fontsize',14)
 ylabel('Error','Fontsize',14)
 legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
@@ -74,7 +70,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 % createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
 %     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
 
-pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_curvature_indep.pptx';
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_dist_',num2str(tradeoff_s),'_indep.pptx'];
 titleStr = 'Sim 1 Recovery';
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals)
 
