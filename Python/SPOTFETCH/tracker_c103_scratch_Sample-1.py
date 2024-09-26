@@ -44,10 +44,13 @@ params['pool'] = 16
 
 # %% 4. Inspect spot tracks on ex-situ and initial scan data
 grains = [44,158]
-tth110 = 0.0639
-tth112 = 0.0653
-tth123 = 0.066
-spotInds = sf.findSpots(spotData,grains=grains)
+tth110 = 0.06562438
+tth200 = 0.09267698
+tth211 = 0.1136209
+tth321 = 0.1736603
+tths = [tth110, tth211]
+hklNames = ['110', '211']
+spotInds = sf.findSpots(spotData,grains=grains, tth=tths, dtth=0.012)
 # spotInds = [113,205,413,801]
 
 dome = 3

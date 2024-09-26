@@ -12,10 +12,10 @@ criterion = 'origin_dist';
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 
-topDir = 'C:\Users\dpqb1\Documents\Outputs2024_9_12\';
+topDir = 'C:\Users\dpqb1\Documents\Outputs2024_9_25\';
 fig_num = 22;
 for n = 1:NN
-    inDir = [topDir,'\gaus_example_8_28_24_X0_D0_V00_sig_',num2str(n)];
+    inDir = [topDir,'\gaus_example_9_25_24_X0_D0_V00_sig_',num2str(n)];
     [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,22,criterion);
     selected_lam_s_vec(n) = lambda_s_sel;
 
@@ -40,8 +40,8 @@ for n = 1:NN
 end
 %% Need to write a function to compute the various errors for all noise levels
 % and that maybe just takes the file name as input so that it works on both
-outDirOF = "C:\Users\dpqb1\Documents\Outputs2024_9_12\";
-dirStartS = 'gaus_example_8_28_24_X0_D0_V00';
+outDirOF = "C:\Users\dpqb1\Documents\Outputs2024_9_25\";
+dirStartS = 'gaus_example_9_25_24_X0_D0_V00';
 
 %     dataFile = sprintf("output_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
 %                         j_s_j_of,sigmas(n),selected_lam_s_vec(n),selected_lam_of_vec(n));
@@ -70,7 +70,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 % createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
 %     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
 
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_dist_',num2str(tradeoff_s),'_indep.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\recons_9_25_dicts_sim1_dist_',num2str(tradeoff_s),'_indep.pptx'];
 titleStr = 'Sim 1 Recovery';
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals)
 

@@ -64,7 +64,7 @@ def timeToFile(t,fDir):
 
 def findSpots(spotData, **kwargs):
     grains = kwargs.get('grains', None)
-    tth = kwargs.get('tth', None)
+    tths = kwargs.get('tths', None)
     dtth = kwargs.get('dtth', None)
     eta = kwargs.get('eta', None)
     deta = kwargs.get('deta', None)
@@ -84,9 +84,13 @@ def findSpots(spotData, **kwargs):
         cond2 = (etas > eta-deta) & (etas < eta+deta)
     else:
         cond2 = True
-    if tth != None:
+    if tths != None:
         tths = spotData['tths']
-        cond3 = (tths > tth-dtth) & (tths < tth+dtth)
+        cond3 = np.array(tths.shape)
+        cond3 = False
+        for tth in tths:
+            tths = spotData['tths']
+            cond3 = cond3 | (tths > tth-dtth) & (tths < tth+dtth)
     else:
         cond3 = True
     if frm != None:
