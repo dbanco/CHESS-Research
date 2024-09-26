@@ -14,7 +14,7 @@ center = (M+1)/2;
 lambda = lambdaVals(j_s);
 lambda2 = lambdaOFVals(j_of);
 opt.Smoothness = lambdaHSVals(j_hs);
-opt.rho = 50*lambda + 0.5;
+opt.rho = 1000*lambda + 0.5;
 opt.sigma = T;
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);

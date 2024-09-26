@@ -69,7 +69,7 @@ for i = 1:numel(sigmas)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1
-                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_9_25_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_9_26_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
                 figDir = [topDir,'_sig_',num2str(i)];
                 mkdir(figDir)
                 close all
