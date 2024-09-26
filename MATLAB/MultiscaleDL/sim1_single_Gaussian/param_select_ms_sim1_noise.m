@@ -4,10 +4,10 @@ lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
-tradeoff_s = 0.6;
+tradeoff_s = 0.4;
 tradeoff_of = 1;
 scaleP = [0.4,5.4,9.48,116,0,100];
-criterion = 'origin_dist';
+criterion = 'curvature_poly';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);

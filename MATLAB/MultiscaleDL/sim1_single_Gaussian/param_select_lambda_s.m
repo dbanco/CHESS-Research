@@ -75,10 +75,10 @@ switch criterion
         control_lam = lambda_s_sort(3:end-2);
         xq = linspace(min(x),max(x),100);
         zq = spline(control_x,control_z,xq);
-        zq2 = spline(x,z,xq);
+%         zq2 = spline(x,z,xq);
         figure
         hold on
-        plot(x,z,'o-',control_x,control_z,'x-',xq,zq2)
+        plot(x,z,'o-',control_x,control_z,'x-',xq,zq)
         
 %         dlam = diff(control_lam);
 %         dz = diff(zq2)./dlam;
@@ -86,9 +86,9 @@ switch criterion
 %         ddz = diff(zq2,2)./dlam(1:end-1);
 %         ddx = diff(xq,2)./dlam(1:end-1);
 
-        dz = diff(zq2);
+        dz = diff(zq);
         dx = diff(xq);
-        ddz = diff(zq2,2);
+        ddz = diff(zq,2);
         ddx = diff(xq,2);
         
         curvature = (dz(1:end-1).*ddx - dx(1:end-1).*ddz)./...

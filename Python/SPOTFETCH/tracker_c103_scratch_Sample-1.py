@@ -33,6 +33,7 @@ spotData = np.load(os.path.join(spotsDir,'spots.npz'))
 # %% 3. Detector and tracking parameters
 params = {}
 params['detector'] = 'eiger'
+params['peak_func'] = 'Gaussian'
 params['imSize'] = (5000,5000)
 params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/eiger16M_monolith_mruby_062224_FINAL.yml'
 # params['detector'] = 'dexela'
@@ -68,7 +69,8 @@ initTracksPath = os.path.join(topPath,'outputs_9_26')
 sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
 
 advance = False
-scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
+# scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
+scanRange = np.concatenate(np.arange(397,406), [407]))
 for num2 in scanRange:
     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
 
