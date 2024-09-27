@@ -1,4 +1,4 @@
-function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num,criterion)
+function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num,criterion,sigma)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -48,6 +48,10 @@ switch criterion
         crit= tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
                         abs((l1_sort-scaleP(3))/scaleP(4));
         [~, selInd] = min(crit);
+        lambda_s = lambda_s_sort(selInd);
+    case 'discrepency'
+        crit = abs(err_sort/sqrt(N*T) - sigma);
+        [~,selInd] = min(crit);
         lambda_s = lambda_s_sort(selInd);
     case 'curvature'
         % Curvature criterion
