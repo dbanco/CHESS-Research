@@ -66,11 +66,11 @@ trackPath = os.path.join(topPath,'outputs_9_27')
 
 # # %% 6. Begin Processing
 initTracksPath = os.path.join(topPath,'outputs_9_27')
-sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
+# sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
 
 advance = False
-scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
-# scanRange = np.concatenate((np.arange(397,406), [407]))
+# scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
+scanRange = np.concatenate((np.arange(388,406), [407]))
 for num2 in scanRange:
     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
 
