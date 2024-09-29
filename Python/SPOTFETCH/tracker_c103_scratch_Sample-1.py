@@ -54,9 +54,8 @@ hklNames = ['110', '211']
 spotInds = sf.findSpots(spotData,grains=grains, tth=tths, dtth=0.012)
 # spotInds = [113,205,413,801]
 
-dome = 3
 scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
-trackPath = os.path.join(topPath,'outputs_9_28')
+trackPath = os.path.join(topPath,'outputs')
 
 # frame = 17
 # sf.plotSpotWedges(spotData,exsituPath,frame,params,grains=grains)
@@ -65,14 +64,15 @@ trackPath = os.path.join(topPath,'outputs_9_28')
 # sf.plotROIs(roi_list)s
 
 # # %% 6. Begin Processing
-initTracksPath = os.path.join(topPath,'outputs_9_28')
-sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
+initTracksPath = os.path.join(topPath,'outputs')
+# sf.initExsituTracks(initTracksPath,exsituPath,spotData, spotInds, params, 364)
 
 advance = False
-scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
-# scanRange = np.concatenate((np.arange(388,406), [407]))
+# scanRange = np.concatenate((np.array([368,372,376,380]), np.arange(383,406), [407]))
+scanRange = np.concatenate((np.arange(393,406), [407]))
 for num2 in scanRange:
     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
 
 # spotInds = [113,205,413,801]
+# dome = 3
 # sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)
