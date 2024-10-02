@@ -1,4 +1,4 @@
-function mcdlof_wrapper_sim1(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir)
+function mcdlof_wrapper_sim1_rho12(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,j_rho1,j_rho2,sigmas,i,opt,K,scales,topDir)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Optical flow coupled solution
@@ -36,14 +36,12 @@ outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
 outputs.Uvel = Uvel;
 outputs.Vvel = Vvel;
-suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
-                  j_s,j_of,sigmas(i),outputs.lambda,outputs.lambda2);
+suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_rho1_%0.2e_rho2_%0.2e',...
+                  j_s,j_rho1,j_rho2,sigmas(i),outputs.lambda,outputs.lambda2,outputs.opt.rho,outputs.opt.sigma);
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures
 generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
-%         generateFiguresToy1min([figDir,'min'],outputs,suffix)
-%         generateFiguresToy1([figDir,'indep'],inde,suffix)
 
 AD = reSampleCustomArrayCenter(N,D,scales,center);
 AD = padarray(AD,[0 M-1 0],0,'post');

@@ -520,7 +520,7 @@ def spotTracker(dataPath,outPath,spotData,spotInds,params,num1,num2,advance):
                 print('.',end="")
             time.sleep(1)
             continue
-        # if read is successful...
+        # if the files exist
         if len(fnames) > 0:
             newData = True        
             

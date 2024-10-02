@@ -461,7 +461,6 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     Jlg2 = sigma*sum((D(:)-G(:)+H(:)).^2);
     % Full objective
     Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
-    
 
     % Plot dictionary progress
     if opt.plotDict

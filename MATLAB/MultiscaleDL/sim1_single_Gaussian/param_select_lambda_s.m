@@ -9,6 +9,7 @@ matFileNames = {files.name};
 
 NN = numel(matFileNames);
 rel_error = zeros(NN,1);
+true_error = zeros(NN,1);
 l1_norm = zeros(NN,1);
 lambda_s_vec = zeros(NN,1);
 for i = 1:numel(matFileNames)
@@ -32,6 +33,9 @@ for i = 1:numel(matFileNames)
     err = sum((squeeze(y)-Yhat).^2,'all');
     % Compute error
     rel_error(i) = sqrt(err);
+    % True error
+    [~,y_true,~,~,~] = gaus_example_multiscale_dl(sigma);
+    true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);
     % Get lambda parameter
@@ -39,6 +43,7 @@ for i = 1:numel(matFileNames)
 end
 
 [lambda_s_sort,ind] = sort(lambda_s_vec);
+true_sort = true_error(ind);
 err_sort = rel_error(ind);
 l1_sort = l1_norm(ind);
 
@@ -49,9 +54,12 @@ switch criterion
                         abs((l1_sort-scaleP(3))/scaleP(4));
         [~, selInd] = min(crit);
         lambda_s = lambda_s_sort(selInd);
-    case 'discrepency'
+    case 'discrepancy'
         crit = abs(err_sort/sqrt(N*T) - sigma);
         [~,selInd] = min(crit);
+        lambda_s = lambda_s_sort(selInd);
+    case 'truth_error'
+        [~,selInd] = min(true_sort);
         lambda_s = lambda_s_sort(selInd);
     case 'curvature'
         % Curvature criterion
