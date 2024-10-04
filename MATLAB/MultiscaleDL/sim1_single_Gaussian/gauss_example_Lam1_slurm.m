@@ -39,7 +39,7 @@ opt.G0 = D0;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 500;
+opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
@@ -47,8 +47,8 @@ opt.CGTolX = 1e-6;
 % Rho and sigma params
 % opt.rho = 50*lambda + 0.5;
 % opt.sigma = T;
-% opt.rho = 1e-1;%1000;
-% opt.sigma = 1e-1;%1000;
+opt.rho = 300;%1000;
+opt.sigma = 50;%1000;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;%10
 opt.AutoSigma = 1;
@@ -69,7 +69,7 @@ for i = 1:numel(sigmas)
     for j_s = 1:numel(lambdaVals)
         for j_hs = 1     
             for j_of = 1
-                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_9_26_24_X0_D0_V0',num2str(lambdaHSVals(j_hs))];
+                topDir = ['/cluster/home/dbanco02/Outputs/gaus_example_10_3_24_max',num2str(lambdaHSVals(j_hs))];
                 figDir = [topDir,'_sig_',num2str(i)];
                 mkdir(figDir)
                 close all

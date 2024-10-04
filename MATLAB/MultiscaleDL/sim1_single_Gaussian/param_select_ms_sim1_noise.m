@@ -18,7 +18,6 @@ for n = 1:NN
     inDir = [topDir,'\gaus_example_9_25_24_X0_D0_V00_sig_',num2str(n)];
     [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,22,criterion,sigmas(n)+0.01);
     selected_lam_s_vec(n) = lambda_s_sel;
-
 end
 
 %% Next plot the true recovery as a function of SNR
