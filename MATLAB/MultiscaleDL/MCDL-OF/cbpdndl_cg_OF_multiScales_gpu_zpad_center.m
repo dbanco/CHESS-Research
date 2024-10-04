@@ -1,4 +1,4 @@
-function [D, Y, Dmin,Ymin,Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
+function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -371,9 +371,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
     end
 
-    Jlg1 = rho*sum((X(:)-Y(:)+U(:)).^2);
-
-    clear X;
+    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2); ;
     
     % Update record of previous step Y
     Yprv = Y;
@@ -458,7 +456,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         Jhs = 0;
     end
     
-    Jlg2 = sigma*sum((D(:)-G(:)+H(:)).^2);
+    Jlg2 = sigma/2*sum((D(:)-G(:)+H(:)).^2) - sigma/2*sum(H(:).^2);
     % Full objective
     Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
 

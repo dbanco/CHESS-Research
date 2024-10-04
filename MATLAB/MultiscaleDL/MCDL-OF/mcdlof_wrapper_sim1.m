@@ -17,15 +17,16 @@ opt.Smoothness = lambdaHSVals(j_hs);
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
 opt.UpdateVelocity = 1;
-[D,X,Dmin,Xmin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+[D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
 
 % Save outputs
 outputs = struct();
 outputs.y = y;
 outputs.D = D;
 outputs.X = X;
+outputs.Y = Y;
 outputs.Dmin = Dmin;
-outputs.Xmin = Xmin;
+outputs.Ymin = Ymin;
 outputs.scales = scales;
 outputs.N = N;
 outputs.M = M;
@@ -48,8 +49,8 @@ generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
 AD = reSampleCustomArrayCenter(N,D,scales,center);
 AD = padarray(AD,[0 M-1 0],0,'post');
 ADf = fft2(AD);
-Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
-plotDataRecon(y,Yhat,figDir,['y_recon',suffix,'.gif'])
+Bhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
+plotDataRecon(y,Bhat,figDir,['y_recon',suffix,'.gif'])
 close all
 
 end

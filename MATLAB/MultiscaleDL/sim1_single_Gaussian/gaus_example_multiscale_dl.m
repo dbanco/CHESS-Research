@@ -19,7 +19,7 @@ width = (70-fliplr(position))/3;
 y = zeros(N,T);
 
 for t = 1:T
-    y(:,t) = gaussian_basis_wrap_1D(N,position(t),width(t),'max');
+    y(:,t) = gaussian_basis_wrap_1D(N,position(t),width(t),'2-norm');
 end
 
 yn = y + randn(N,T)*sigma;
