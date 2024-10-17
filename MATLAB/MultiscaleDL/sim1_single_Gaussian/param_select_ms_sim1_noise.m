@@ -7,17 +7,17 @@ NN = numel(sigmas);
 tradeoff_s = 0.4;
 tradeoff_of = 1;
 scaleP = [0.4,5.4,9.48,116,0,100];
-criterion = 'truth_error';
+criterion = 'discrepancy';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 
 topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_3\';
-dirStartS = 'gaus_example_10_3_24_max0';
+dirStartS = 'gaus_example_10_4_24_lamhs0';
 fig_num = 22;
 for n = 1:NN
     inDir = [topDir,'\',dirStartS,'_sig_',num2str(n)];
-    [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,22,criterion,sigmas(n)+0.01);
+    [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,22,criterion,sigmas(n));
     selected_lam_s_vec(n) = lambda_s_sel;
 end
 
@@ -65,7 +65,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 % createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
 %     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
 
-pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_10_3_truth_sim.pptx';
+pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_10_4_discrep1_sim.pptx';
 titleStr = 'Sim 1 Recovery';
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals)
 

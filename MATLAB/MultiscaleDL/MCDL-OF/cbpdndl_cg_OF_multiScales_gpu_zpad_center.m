@@ -309,52 +309,47 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     % Solve subproblem
 %     recon = sum(bsxfun(@times,AGf,Yf),3);
 %     Jdf1 = sum(vec(abs(recon-Sf).^2))
-    [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
-        opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
-    cgIters2 = cgst.pit;
-    X = ifft2(Xf, 'symmetric');
-    
-%     figure(7)
-%     showX(X)
+    if ~opt.Xfixed
+        [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
+            opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
+        cgIters2 = cgst.pit;
+        X = ifft2(Xf, 'symmetric');
 
-%     fdict = figure(8);
-%     plotDictUsage(AG,K,1,fdict);
-
-    % Data fidelity term in Fourier domain
-%     recon = sum(bsxfun(@times,AGf,Xf),3);
-%     Jdf2 = sum(vec(abs(recon-Sf).^2))
+        clear Xf AGf AGSf;
+        
+        % See pg. 21 of boyd-2010-distributed
+        if opt.XRelaxParam == 1,
+            Xr = X;
+        else
+            Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
+        end
+        
+        % Solve Y subproblem
+        Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+        if opt.NonNegCoef,
+            Y(Y < 0) = 0;
+        end
+        
+        if opt.NoBndryCross,
+            %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
+            Y((end-size(D0,1)+2):end,:,:,:) = 0;
+            %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
+            Y(:,(end-size(D0,2)+2):end,:,:) = 0;
+        end
+        Yf = fft2(Y);
+        
+        % Data fidelity term in Fourier domain
+    %     recon = sum(bsxfun(@times,AGf,Yf),3);
+    %     Jdf3 = sum(vec(abs(recon-Sf).^2))
     
-    clear Xf AGf AGSf;
-    
-    % See pg. 21 of boyd-2010-distributed
-    if opt.XRelaxParam == 1,
-        Xr = X;
+        % Update dual variable corresponding to X, Y, Z
+        U = U + Xr - Y;
+        clear DPXr Xr;
     else
-        Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
+        X = Y;
+        cgIters2 = 0;
     end
-    
-    % Solve Y subproblem
-    Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-    if opt.NonNegCoef,
-        Y(Y < 0) = 0;
-    end
-    
-    if opt.NoBndryCross,
-        %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
-        Y((end-size(D0,1)+2):end,:,:,:) = 0;
-        %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
-        Y(:,(end-size(D0,2)+2):end,:,:) = 0;
-    end
-    Yf = fft2(Y);
-    
-    % Data fidelity term in Fourier domain
-%     recon = sum(bsxfun(@times,AGf,Yf),3);
-%     Jdf3 = sum(vec(abs(recon-Sf).^2))
 
-    % Update dual variable corresponding to X, Y, Z
-    U = U + Xr - Y;
-    clear DPXr Xr;
-    
     % Compute primal and dual residuals and stopping thresholds for X update
     nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
     if opt.StdResiduals,
@@ -380,24 +375,30 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     % solve for D using the main coefficient variable X as the coefficients,
     % but it appears to be more stable to use the shrunk coefficient variable Y
     AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
-    [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                      cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
-    cgIters1 = cgst.pit;
-    Df = fft2(D);
-    
-    clear YSf;
-    D = ifft2(Df, 'symmetric');
-    if strcmp(opt.LinSolve, 'SM'), clear Df; end
-    
-    % See pg. 21 of boyd-2010-distributed
-    if opt.DRelaxParam == 1,
-        Dr = D;
+    if ~opt.Dfixed
+        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
+                          cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
+        cgIters1 = cgst.pit;
+        Df = fft2(D);
+        
+        clear YSf;
+        D = ifft2(Df, 'symmetric');
+        if strcmp(opt.LinSolve, 'SM'), clear Df; end
+        
+        % See pg. 21 of boyd-2010-distributed
+        if opt.DRelaxParam == 1,
+            Dr = D;
+        else
+            Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
+        end
+        
+        % Solve G subproblem
+        G = Pcn(Dr + H);
     else
-        Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
+        D = G;
+        Dr = G;
+        cgIters1 = 0;
     end
-    
-    % Solve G subproblem
-    G = Pcn(Dr + H);
     
     % Update alphas
     [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
@@ -751,5 +752,11 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'useGpu')
       opt.useGpu = 1;
+  end
+  if ~isfield(opt,'Xfixed')
+      opt.Xfixed = 0;
+  end
+  if ~isfield(opt,'Dfixed')
+      opt.Dfixed = 0;
   end
 return

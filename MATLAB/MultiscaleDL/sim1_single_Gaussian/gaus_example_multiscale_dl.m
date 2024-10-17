@@ -8,7 +8,7 @@ if nargin < 1
 end
 
 % Position in time
-position = 15+[linspace(20,50,20),30+20.*linspace(1,0.1,30).*cos((0:29)/3)];
+position = round(15+[linspace(20,50,20),30+20.*linspace(1,0.1,30).*cos((0:29)/3)]);
 width = (70-fliplr(position))/3;
 
 % figure(1)

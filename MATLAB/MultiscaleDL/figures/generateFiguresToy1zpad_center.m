@@ -66,6 +66,8 @@ end
 % Recovered VDF(t)
 f3 = figure;
 imagesc(squeeze(sum(sum(X,1),2)))
+ylabel('\sigma')
+xlabel('time')
 % set(findobj(gca, 'Type', 'line'), 'LineWidth', 30)
 f3.Position = [800 100 600 300];
 set(gca, 'FontSize', 20)
@@ -80,8 +82,29 @@ for k = 1:K
     figure;
     Ui = size(scales{k},2) + i - 1;
     imagesc( squeeze(sum(X(:,:,i:Ui,:),3)) )
+    ylabel('shift')
+    xlabel('time')
     i = i + size(scales{k},2);
     saveas(gcf,fullfile(topDir,['X',num2str(k),suffix,'.png']))
+end
+
+% Recovered X at times [1,21,31,40]
+f5 = figure;
+jj = 1;
+for t = [1,21,31,40]
+    subplot(2,2,jj)
+    imagesc(squeeze(X(:,:,:,t))')
+    ylabel('\sigma')
+    xlabel('shift')
+    title(['t=',num2str(t)])
+    set(gca, 'FontSize', 18)
+    colorbar()
+    jj = jj + 1;
+end
+
+f5.Position = [1 100 1200 500];
+if ~isempty(topDir)
+    saveas(f5,fullfile(topDir,['X_times',suffix,'.png']))
 end
 
 %% Remove whitespace from pngs

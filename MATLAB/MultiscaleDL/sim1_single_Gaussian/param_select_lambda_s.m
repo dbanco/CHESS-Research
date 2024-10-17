@@ -34,7 +34,7 @@ for i = 1:numel(matFileNames)
     % Compute error
     rel_error(i) = sqrt(err);
     % True error
-    [~,y_true,~,~,~] = gaus_example_multiscale_dl(sigma);
+    [~,y_true,~,~,~] = gaus_example_matched_multiscale_dl(sigma);
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);

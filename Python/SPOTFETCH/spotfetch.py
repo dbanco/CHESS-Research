@@ -614,7 +614,10 @@ def processSpot(k,t,params,outPath,fnames):
     elif params['detector'] == 'dexela':
         with h5py.File(fnames[0], 'r') as file1:
             numFrames = file1['/imageseries/images'].shape[0]
-            
+    elif params['detector'] == 'eiger_sim':
+        simData = np.load(fnames[0])
+        numFrames = simData['nframes']
+                        
     if True:#numFrames == NUMFRAMES:
         wrap = True
     else:
@@ -635,12 +638,18 @@ def processSpot(k,t,params,outPath,fnames):
         
         notLoaded = True
         while notLoaded:
-            try:
-                if params['detector'] == 'eiger':
+            if params['detector'] == 'eiger':
+                try:
                     ims[frm,:,:]
                     notLoaded = False                    
-            except:
-                ims = imageseries.open(fnames[0], format='eiger-stream-v1')
+                except:
+                        ims = imageseries.open(fnames[0], format='eiger-stream-v1')
+            elif params['detector'] == 'eiger_sim':
+                try:
+                    simData[f'{frm}_row']
+                    notLoaded = False                    
+                except:
+                        simData = np.load(fnames[0])
                 
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,prevTracks,\

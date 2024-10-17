@@ -1,4 +1,4 @@
-function [yn,y,N,M,T] = gaus_example_matched_multiscale_dl()
+function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_matched_multiscale_dl(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 50;
 N = 105; M = 55;
@@ -39,7 +39,7 @@ y = squeeze(unpad(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'),M-1,'pre'));
 
 yn = y + randn(N,T)*sigma;
 
-figure(2)
-imagesc(yn)
+% figure(2)
+% imagesc(yn)
 
 end

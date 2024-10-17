@@ -178,6 +178,8 @@ def loadPolarROI(fnames,tth,eta,frame,params):
         roi = loadDexPolarRoi(fnames,tth,eta,frame,params)
     elif params['detector'] == 'eiger':
         roi = loadEigerPolarRoi(fnames[0],tth,eta,frame,params)
+    elif params['detector'] == 'eiger_sim':
+        roi = loadEigerSimPolarRoi(fnames[0],tth,eta,frame,params)
     return roi
     
 def loadDexPolarRoi(fnames,tth,eta,frame,params):
@@ -205,6 +207,30 @@ def loadDexPolarRoi(fnames,tth,eta,frame,params):
     return roi_polar
 
 def loadEigerPolarRoi(fname,tth,eta,frame,params):
+    # 0. Load params, YAML data
+    roiSize = params['roiSize']
+    imSize = params['imSize']
+    detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
+    
+    # 1. Construct rad, eta domain
+    rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
+    
+    # 2. Construct interpolation matrix
+    Ainterp,new_center,x_cart,y_cart = getInterpParamsEiger(tth,eta,params)
+    
+    # 3. Load needed Cartesian ROI pixels
+    ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
+    roi = loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame)
+    
+    # 4. Apply interpolation matrix to Cartesian pixels get Polar values
+    roi_polar_vec = Ainterp.dot(roi.flatten())
+    
+    # 5. Reshape and output roi
+    roi_polar = np.reshape(roi_polar_vec,(len(rad_dom),len(eta_dom)))
+    
+    return roi_polar
+
+def loadEigerSimPolarRoi(fname,tth,eta,frame,params):
     # 0. Load params, YAML data
     roiSize = params['roiSize']
     imSize = params['imSize']
@@ -328,6 +354,30 @@ def loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     ims = imageseries.open(fname, format='eiger-stream-v1')
     img = ims[frame, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
     img[img>4294000000] = 0
+    return img
+
+def loadEigerSimPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
+
+    if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
+    if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
+    if y_cart[0] < ff1_pix[2]: y_cart[0] = ff1_pix[2]
+    if y_cart[1] > ff1_pix[3]: y_cart[1] = ff1_pix[3]
+    x_pan = x_cart - ff1_pix[0]
+    y_pan = y_cart - ff1_pix[2]
+    
+    simData = np.load(fname)       
+    shp = simData['shape']
+    imgFull = np.zeros((shp[0],shp[1]))
+
+    rowD = simData[f'{frame}_row']
+    colD = simData[f'{frame}_col']
+    datD = simData[f'{frame}_data']
+
+    for i in range(len(rowD)):
+        imgFull[rowD[i],colD[i]] = datD[i]
+    
+    img = imgFull[y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]]
+    
     return img
 
 def loadEigerPanelROIArray(x_cart,y_cart,ff1_pix,fname,frames):
