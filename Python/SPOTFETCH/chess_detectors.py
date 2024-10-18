@@ -76,6 +76,43 @@ def load_eiger(fnames,params,t,detectSize=(4362,4148)):
         
     bpad[ff1r1:ff1r2,ff1c1:ff1c2] = img
 
+    return bpad
+
+def load_eiger_sim(fnames,params,t,detectSize=(4362,4148)):
+    simData = np.load(fnames[0])       
+    shp = simData['shape']
+    img = np.zeros((shp[0],shp[1]))
+    
+    rowD = simData[f'{t}_row']
+    colD = simData[f'{t}_col']
+    datD = simData[f'{t}_data']
+    
+    for i in range(len(rowD)):
+        img[rowD[i],colD[i]] = datD[i]
+
+    imSize = params['imSize']
+    yamlFile = params['yamlFile']
+
+    # Pad image
+    bpad = np.zeros(imSize)
+    center = (imSize[0]/2, imSize[1]/2)
+    
+    # Shift each panel
+    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    ff1_tx = ff_trans[0]
+    ff1_ty = ff_trans[1]
+    ff1_xshift = int(round(ff1_tx/mmPerPixel))
+    ff1_yshift = int(round(ff1_ty/mmPerPixel))
+    
+    # negative sign on y shift because rows increase downwards
+    ff1r1 = int(center[0]-detectSize[0]/2-ff1_yshift)
+    ff1r2 = int(center[0]+detectSize[0]/2-ff1_yshift)
+    
+    ff1c1 = int(center[1]-detectSize[1]/2+ff1_xshift)
+    ff1c2 = int(center[1]+detectSize[1]/2+ff1_xshift)
+        
+    bpad[ff1r1:ff1r2,ff1c1:ff1c2] = img
+
     return bpad    
     
 def load_dex(fnames,params,t,t2=None,dexSize=(3888,3072)):

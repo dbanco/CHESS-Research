@@ -1,4 +1,4 @@
-function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num,criterion,sigma)
+function [lambda_s,outInd] = param_select_lambda_s(outputDir,tradeoff,scaleP,fig_num,criterion,sigma,y_true)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -33,8 +33,7 @@ for i = 1:numel(matFileNames)
     err = sum((squeeze(y)-Yhat).^2,'all');
     % Compute error
     rel_error(i) = sqrt(err);
-    % True error
-    [~,y_true,~,~,~] = gaus_example_matched_multiscale_dl(sigma);
+   
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);

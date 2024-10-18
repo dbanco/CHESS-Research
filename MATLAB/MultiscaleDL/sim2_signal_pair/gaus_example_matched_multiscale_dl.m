@@ -1,7 +1,7 @@
 function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_matched_multiscale_dl(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 50;
-N = 105; M = 55;
+N = 105; M = 105;
 
 if nargin < 1
     sigma = 0.01;
@@ -11,7 +11,7 @@ end
 position = 15+[linspace(20,50,20),30+20.*linspace(1,0.1,30).*cos((0:29)/3)];
 width = (70-fliplr(position))/3;
 
-max_width = max(width);
+max_width = 10;
 
 % Model Setup
 K = 1;
@@ -23,8 +23,9 @@ center = (M+1)/2;
 
 Dtrue = zeros(1,M,K);
 Dtrue(1,:,1) = gaussian_basis_wrap_1D(M,center,max_width,'2-norm');
-ADtrue = padarray(reSampleCustomArrayCenter(N,Dtrue,scales,center),[0,M-1,0,0],0,'post');
-ADf = fft2(ADtrue);
+ADtrue = reSampleCustomArrayCenter(N,Dtrue,scales,center);
+ADpad = padarray(ADtrue,[0 M-1 0 0],0,'post');
+ADf = fft2(ADpad);
 
 position = round(position)+center;
 width = round(width);
