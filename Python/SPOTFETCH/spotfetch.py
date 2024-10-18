@@ -207,7 +207,7 @@ def plotROIs(roi_list,num_cols = 5):
 def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
     tths = spotData['tths']
     etas = spotData['etas']     
-    ome_idxs = spotData['ome_idxs'] 
+    ome_idxs = spotData['ome_idxs']-2
     # Get spot indices at frame
     if grains == []:
         spotInds = np.where(ome_idxs == frame)[0]
@@ -226,6 +226,8 @@ def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
         b = cd.load_dex(fnames,params,detectFrame)
     elif params['detector'] == 'eiger':
         b = cd.load_eiger(fnames,params,detectFrame)
+    elif params['detector'] == 'eiger_sim':
+        b = cd.load_eiger_sim(fnames,params,detectFrame)
     
     
     fig = plt.figure()
@@ -919,6 +921,8 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 
         # Organize all tracks
         T = len(track_data)
+        if len(track_data[0]) == 0:
+            continue
         track = track_data[0]
         eta0 = track[0]['eta']
         tth0 = track[0]['tth']
