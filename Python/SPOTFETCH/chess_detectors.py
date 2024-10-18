@@ -24,6 +24,8 @@ def loadYamlData(params,tth,eta):
         return loadYamlDataDexela(yamlFile,tth,eta)
     elif params['detector'] == 'eiger':
         return loadYamlDataEiger(yamlFile)
+    elif params['detector'] == 'eiger_sim':
+        return loadYamlDataEiger(yamlFile)
 
 def loadYamlDataDexela(yamlFile,tth,eta):
     yamlData = read_yaml(yamlFile)
@@ -114,6 +116,43 @@ def load_eiger_sim(fnames,params,t,detectSize=(4362,4148)):
     bpad[ff1r1:ff1r2,ff1c1:ff1c2] = img
 
     return bpad    
+
+def load_eiger_sim(fnames,params,t,detectSize=(4362,4148)):
+    simData = np.load(fnames[0])       
+    shp = simData['shape']
+    img = np.zeros((shp[0],shp[1]))
+    
+    rowD = simData[f'{t}_row']
+    colD = simData[f'{t}_col']
+    datD = simData[f'{t}_data']
+    
+    for i in range(len(rowD)):
+        img[rowD[i],colD[i]] = datD[i]
+
+    imSize = params['imSize']
+    yamlFile = params['yamlFile']
+
+    # Pad image
+    bpad = np.zeros(imSize)
+    center = (imSize[0]/2, imSize[1]/2)
+    
+    # Shift each panel
+    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    ff1_tx = ff_trans[0]
+    ff1_ty = ff_trans[1]
+    ff1_xshift = int(round(ff1_tx/mmPerPixel))
+    ff1_yshift = int(round(ff1_ty/mmPerPixel))
+    
+    # negative sign on y shift because rows increase downwards
+    ff1r1 = int(center[0]-detectSize[0]/2-ff1_yshift)
+    ff1r2 = int(center[0]+detectSize[0]/2-ff1_yshift)
+    
+    ff1c1 = int(center[1]-detectSize[1]/2+ff1_xshift)
+    ff1c2 = int(center[1]+detectSize[1]/2+ff1_xshift)
+        
+    bpad[ff1r1:ff1r2,ff1c1:ff1c2] = img
+
+    return bpad  
     
 def load_dex(fnames,params,t,t2=None,dexSize=(3888,3072)):
     if t2 is None:
@@ -281,7 +320,7 @@ def loadEigerSimPolarRoi(fname,tth,eta,frame,params):
     
     # 3. Load needed Cartesian ROI pixels
     ff1_pix = panelPixelsEiger(ff_trans,mmPerPixel,imSize)
-    roi = loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame)
+    roi = loadEigerSimPanelROI(x_cart,y_cart,ff1_pix,fname,frame)
     
     # 4. Apply interpolation matrix to Cartesian pixels get Polar values
     roi_polar_vec = Ainterp.dot(roi.flatten())
