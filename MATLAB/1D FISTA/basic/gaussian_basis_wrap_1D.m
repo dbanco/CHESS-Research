@@ -27,7 +27,7 @@ dist = min(dist1,dist2);
 dist_sq_theta = dist.^2;    % num_theta length vector
 
 % Compute values
-b = exp(-dist_sq_theta/(2*sigma^2) )';
+b = exp(-dist_sq_theta/(sigma^2) )';
 if nargin > 3
     switch scaling
         case '2-norm'

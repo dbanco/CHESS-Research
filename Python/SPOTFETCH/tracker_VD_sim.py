@@ -11,18 +11,24 @@ import os
 
 
 #   1. Set up paths: exsitu, data, outputs
-topPath = "/nfs/chess/user/dbanco/VD_sim_processing"
-dataPath = "/nfs/chess/user/seg246/software/MechVD/VD_simulations/c103_polycrystal_sample_2/"
+# CHESS
+# topPath = "/nfs/chess/user/dbanco/VD_sim_processing"
+# dataPath = "/nfs/chess/user/seg246/software/MechVD/VD_simulations/c103_polycrystal_sample_2/"
+# exsituPath = os.path.join(dataPath,'state_0/simulation/outputs/c103_polycrystal_sample_2_state_0_layer_1_output_data.npz')
+# dataFile = os.path.join(dataPath,'state_*/simulation/outputs/c103_polycrystal_sample_2_state_*_layer_1_output_data.npz')
 
-# exsituPath = os.path.join(dataPath,f'c103-1-ungripped-1_{num1:0>4}_EIG16M_CdTe_000353.h5')
-exsituPath = os.path.join(dataPath,'state_0/simulation/outputs/c103_polycrystal_sample_2_state_0_layer_1_output_data.npz')
-dataFile = os.path.join(dataPath,'state_*/simulation/outputs/c103_polycrystal_sample_2_state_*_layer_1_output_data.npz')
-
+# LOCAL
+topPath = "C:\\Users\\dpqb1\\Documents\\Data\\VD_sim_processing"
+exsituPath = os.path.join(topPath,'state_0\\simulation\\outputs\\c103_polycrystal_sample_2_state_0_layer_1_output_data.npz')
+dataFile = os.path.join(topPath,'state_*\\simulation\\outputs\\c103_polycrystal_sample_2_state_*_layer_1_output_data.npz')
 
 # %% 2. Load in or collect spots data
 # Spots for each state file
 state = 0
-spotsDir = os.path.join(dataPath,f'state_{state}/simulation/outputs')
+# CHESS
+# spotsDir = os.path.join(dataPath,f'state_{state}','simulation','outputs')
+
+spotsDir = os.path.join(topPath,f'state_{state}','simulation','outputs')
 spotsOut = os.path.join(topPath,f'state_{state}')
     
 # sf.collectSpotsData(spotsOut, spotsDir) 
@@ -33,7 +39,8 @@ params = {}
 params['detector'] = 'eiger_sim'
 params['peak_func'] = 'Gaussian'
 params['imSize'] = (5000,5000)
-params['yamlFile'] = os.path.join(dataPath,'c103_eiger_calibration.yml')
+# params['yamlFile'] = os.path.join(dataPath,'c103_eiger_calibration.yml')
+params['yamlFile'] = os.path.join(topPath,'c103_eiger_calibration.yml')
 # params['detector'] = 'dexela'
 # params['imSize'] = (4888,7300) 
 # params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/dexelas_calibrated_ruby_0504_v01.yml'
@@ -54,7 +61,7 @@ spotInds = sf.findSpots(spotData,grains=grains)
 # spotInds = [113,205,413,801]
 
 
-sf.plotSpotWedges(spotData,exsituPath,100,params)
+# sf.plotSpotWedges(spotData,exsituPath,100,params)
 
 scanRange = np.arange(1,6)
 trackPath = os.path.join(topPath,'outputs')
@@ -69,6 +76,7 @@ initTracksPath = os.path.join(topPath,'outputs')
 #     sf.spotTracker(dataFile,topPath,spotData,spotInds,params,num1,num2,advance)
 
 # spotInds = [113,205,413,801]
-dome = 2
-scanRange = np.arange(0,6)
+dome = 3
+scanRange = np.arange(0,5)
+spotInds = [9228]
 sf.roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataFile,params)

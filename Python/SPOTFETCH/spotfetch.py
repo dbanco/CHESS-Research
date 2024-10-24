@@ -989,6 +989,7 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 else:
                     roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
                 ax.imshow(roi)
+                ax.text(1, 4, f'{roi.max():.2f}', color='white', fontsize=12, weight='bold')
                 
                 if (p1 > 0) & (p2 > 0):
                     # Plot rect
@@ -1002,6 +1003,16 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                                           linewidth=1, edgecolor='r', facecolor='none')
                     ax.add_patch(rect)
                     
+                    # Show Previous Track
+                    rad_dom, eta_dom = cd.polarDomain(detectDist, mmPerPixel,\
+                                          tthRoi, etaRoi, params['roiSize'])
+                    radRoi = detectDist*np.tan(tthRoi)/mmPerPixel
+                    
+                    y_pos = (radRoi-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
+                    x_pos = (etaRoi-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
+                    ax.plot(x_pos,y_pos,marker='x',markersize=16,color='red')
+                    
+                    
                 if i == rows-1:
                     ax.set_xlabel(f'{scan}')
                 if j == 0:
@@ -1010,7 +1021,7 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                 ax.set_xticks([])
                 ax.set_yticks([])
         plt.draw()
-        plt.savefig(f'fig_{k}.png')
-        plt.close(fig)
+        # plt.savefig(f'fig_{k}.png')
+        # plt.close(fig)
 
         
