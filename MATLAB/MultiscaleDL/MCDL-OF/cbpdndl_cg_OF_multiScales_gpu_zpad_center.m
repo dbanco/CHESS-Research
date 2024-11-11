@@ -258,7 +258,9 @@ AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
 AGf = fft2(AGpad);
 AGSf = bsxfun(@times, conj(AGf), Sfpad);
-
+AGS = ifft2(AGSf,'symmetric');
+AGS(:,1:M-1,:,:) = 0;
+AGSf = fft2(AGS);
 Yf = fft2(Y);
 
 % Initial solution
@@ -310,6 +312,8 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
 %     recon = sum(bsxfun(@times,AGf,Yf),3);
 %     Jdf1 = sum(vec(abs(recon-Sf).^2))
     if ~opt.Xfixed
+        % Xf = solvedbi_sm(AGf, rho, AGSf + rho*fft2(Y - U));
+        % cgIters2 = 1;
         [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
             opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
         cgIters2 = cgst.pit;
@@ -325,7 +329,8 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         end
         
         % Solve Y subproblem
-        Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+        % Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+        Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight);
         if opt.NonNegCoef,
             Y(Y < 0) = 0;
         end
@@ -594,6 +599,10 @@ function u = shrink(v, lambda)
     u = sign(v).*max(0, bsxfun(@minus, abs(v), lambda));
   end
 
+return
+
+function u = log_shrink(v, lambda)
+u = sign(v).*log(1+max(0, abs(v) - lambda));
 return
 
 

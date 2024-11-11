@@ -445,6 +445,7 @@ def loadEigerSimPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     shp = simData['shape']
     imgFull = np.zeros((shp[0],shp[1]))
 
+    frame = frame - 2
     rowD = simData[f'{frame}_row']
     colD = simData[f'{frame}_col']
     datD = simData[f'{frame}_data']

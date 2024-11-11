@@ -22,7 +22,7 @@ opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;
 opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
-opt.XRelaxParam = 1.8; %1.8;
+opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
@@ -32,14 +32,17 @@ opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.coefInit = 'zeros';
-opt.dictInit = 'true';
+opt.dictInit = 'flat';
+opt.maxLayers = 2;
+opt.delta = 0.02;
+opt.epsilon = 0.05;
 
 k = 1;
 scriptFileName = 'mcdlof_bash.sh';
 jobDir = '/cluster/home/dbanco02/jobs/';
-for i = [1,3]
-    for j_s = [1:7]
-        for j_hs = 1     
+for i = [1]
+    for j_s = [1]
+        for j_hs = 1  
             for j_of = 1
                 % topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_23_Dflat_Xzero\unmatched_results';
                 % figDir = [topDir,'_sig_',num2str(i)];
@@ -61,38 +64,38 @@ for i = [1,3]
                 % dataset = 'steps';
                 % mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 %                             j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir,dataset);
-
-                topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_24_Dtrue_Xzero\steps2_results';
-                figDir = [topDir,'_sig_',num2str(i)];
-                mkdir(figDir)
-                dataset = 'steps2';
+                dataset = 'steps_matched';
+                topDir = ['C:\Users\dpqb1\Documents\Outputs2024_11_10',...
+                    '_D',opt.dictInit,num2str(opt.Dfixed),...
+                    '_X',opt.coefInit,num2str(opt.Xfixed),'\',dataset,'_results'];
+                 
                 mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,...
-                                            j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir,dataset);
+                                            j_s,j_of,j_hs,sigmas,i,opt,topDir,dataset);
             end
         end
     end
 end
 
 %% Compare data
+%
+% [yn1,y_m,N,M,T,~,~] = gaus_example_matched_multiscale_dl(0);
+% [yn2,y_um,N,M,T,~,~] = gaus_example_unmatched_multiscale_dl(0);
+% figure(2)
+% subplot(3,1,1)
+% imagesc(y_m)
+% clim([0,0.4])
+% colorbar()
 % 
-[yn1,y_m,N,M,T,~,~] = gaus_example_matched_multiscale_dl(0);
-[yn2,y_um,N,M,T,~,~] = gaus_example_unmatched_multiscale_dl(0);
-figure(2)
-subplot(3,1,1)
-imagesc(y_m)
-clim([0,0.4])
-colorbar()
-
-subplot(3,1,2)
-imagesc(y_um)
-clim([0,0.4])
-colorbar()
-
-subplot(3,1,3)
-imagesc(abs(y_m -y_um))
-colorbar()
-
-figure(3)
-plot(y_um(:,10))
-hold on
-plot(y_m(:,10))
+% subplot(3,1,2)
+% imagesc(y_um)
+% clim([0,0.4])
+% colorbar()
+% 
+% subplot(3,1,3)
+% imagesc(abs(y_m -y_um))
+% colorbar()
+% 
+% figure(3)
+% plot(y_um(:,10))
+% hold on
+% plot(y_m(:,10))

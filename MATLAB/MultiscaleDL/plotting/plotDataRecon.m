@@ -13,10 +13,8 @@ for t = 1:T
     plot(recon(:,t))
     hold off
     
-    if t == 1
-        ylim([0 yMax*1.1])
+    ylim([0 yMax*1.1])
 %         pause()
-    end
     if nargin > 1
         % Capture the current frame as an image
         frame = getframe(fig);

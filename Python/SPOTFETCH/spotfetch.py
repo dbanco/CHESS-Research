@@ -98,7 +98,14 @@ def findSpots(spotData, **kwargs):
         cond4 = frms == frm
     else:
         cond4 = True
+    
+    # if cond1 & cond2 & cond3 & cond4:
+    #     grain_nums = spotData['grain_nums']
+    #     spotInds = np.ones(grain_nums.shape)
+    #     spotInds = np.where(spotInds)[0]
+    # else:
     spotInds = np.where(cond1 & cond2 & cond3 & cond4)[0]
+        
     return spotInds
 
 
@@ -168,13 +175,11 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
         tth = tths[ind]
         eta = etas[ind]
 
-        # 2. Load ROI and interpolate to polar coordinates 
+        # 2. Load polar ROI
         if detectFrame == []:
             detectFrame = frame
-        if params['detector'] == 'dexela':
-            roi_polar = cd.loadDexPolarRoi(fnames,tth,eta,detectFrame,params)
-        elif params['detector'] == 'eiger':
-            roi_polar = cd.loadEigerPolarRoi(fnames[0],tth,eta,detectFrame,params)
+            
+        roi_polar = cd.loadPolarROI([fnames],tth,eta,detectFrame,params)    
         
         roi_list.append(roi_polar)
         
@@ -239,7 +244,6 @@ def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
     for ind in spotInds:
         # 0. Load spot information
         tth = tths[ind]
-        print(tth)
         eta = -etas[ind]
 
         # 1. Load YAML data
@@ -275,53 +279,52 @@ def roiAdjacent(ind,tth,eta,frame,omFrms,timeFrms,params,dataDir):
             img = axes[i,j].imshow(roi)
             fig.colorbar(img, ax=axes[i,j])
             axes[i,j].set_title(f'$\omega={frm}$, t={t}')
-            
-    
-def evaluateROI(fnames,prevTracks,tth,eta,frm,scan,params):
-    # 0. Parameters
-    roiSize = params['roiSize']
-    
-    # 1. Load ROI
-    roi = cd.loadPolarROI(fnames,tth,eta,frm,params)
-    tth_vals, eta_vals = np.indices(roi.shape)
-    
-    # 2. Estimate peak parameters (use from previous timestep)
+
+def fitModel(eta_vals,tth_vals,roi,params):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
-            p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
-            if (p[3]==0): p[3] += 0.001
-            if (p[4]==0): p[4] += 0.001
-            
+            if params['peak_func'] == "gaussian":
+                p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
+                p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
+                if (p[3]==0): p[3] += 0.001
+                if (p[4]==0): p[4] += 0.001
+            elif params['peak_func'] == "gaussian_rot":
+                p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian_rot")
+                p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian_rot")
+                if (p[3]==0): p[3] += 0.001
+                if (p[4]==0): p[4] += 0.001
+            peakFound = True
+            # Make sure peak lies within ROI
+            roiSize = params['roiSize']
+            if (p[1] > roiSize[0]-0.5) | (p[2] > roiSize[1]-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
+                peakFound = False
+            return p, peakFound
     except:
         peakFound = False
-        return 0, peakFound
+        return 0, peakFound 
+     
+def assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params):
     
-    if (p[1] > roiSize[0]-0.5) | (p[2] > roiSize[1]-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
-        peakFound = False
-        # print('Mean exceeds ROI')
-        return 0, peakFound
-    
-    residual = fitpeak.fit_pk_obj_2d(p,eta_vals,tth_vals,roi,"gaussian")
+    residual = fitpeak.fit_pk_obj_2d(p,eta_vals,tth_vals,roi,params['peak_func'])
     rel_error = np.linalg.norm(residual)/np.linalg.norm(roi.flatten())
     
-    detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tth,eta)
-    rad_dom, eta_dom = cd.polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
+    detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tthRoi,etaRoi)
+    rad_dom, eta_dom = cd.polarDomain(detectDist,mmPerPixel,tthRoi,etaRoi,roiSize)  
     
     deta = abs(eta_dom[1] - eta_dom[0])
-    hypot = detectDist*np.cos(tth)
+    hypot = detectDist*np.cos(tthRoi)
     dtth = np.arctan(mmPerPixel/hypot)
-    
+
     etaNew = eta_dom[int(np.round(p[1]))]
     radNew = rad_dom[int(np.round(p[2]))]
     tthNew = np.arctan(radNew*mmPerPixel/detectDist)
-    
+
     newTrack = {}
     newTrack['p'] = p
     newTrack['err'] =  rel_error 
-    newTrack['etaRoi'] = eta
-    newTrack['tthRoi'] = tth  
+    newTrack['etaRoi'] = etaRoi
+    newTrack['tthRoi'] = tthRoi  
     newTrack['eta'] =  etaNew
     newTrack['tth'] =  tthNew
     newTrack['frm'] =  frm
@@ -330,6 +333,26 @@ def evaluateROI(fnames,prevTracks,tth,eta,frm,scan,params):
     newTrack['deta'] = deta
     newTrack['dtth'] = dtth
     
+    return newTrack
+    
+def evaluateROI(fnames,prevTracks,tthRoi,etaRoi,frm,scan,params):
+    # 0. Parameters
+    roiSize = params['roiSize']
+    
+    # 1. Load ROI
+    roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
+    tth_vals, eta_vals = np.indices(roi.shape)
+    
+    # 2. Estimate peak parameters (use from previous timestep)
+    p, peakFound = fitModel(eta_vals,tth_vals,roi,params)
+    
+    if peakFound == False:
+        return 0, peakFound
+   
+    # 3. Assemble potential track
+    newTrack = assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params)
+    
+    # 4. Evaluate potential track    
     peakFound = peakDetected(newTrack,prevTracks,params)
     
     # recon = pkfuncs.gaussian2d(p, eta_vals, tth_vals)
@@ -481,12 +504,15 @@ def spotTracker(dataPath,outPath,spotData,spotInds,params,num1,num2,advance):
     # i = 1
     # t = scan1
     newData = False
-    try:
-        pool = Pool(params['pool'])
-        print(f'{pool._processes} workers')
-        parallelFlag = True
-    except:
-        print('Not parallel')
+    if params['parallelFlag']:
+        try:
+            pool = Pool(params['pool'])
+            print(f'{pool._processes} workers')
+            parallelFlag = True
+        except:
+            print('Not parallel')
+            parallelFlag = False
+    else:
         parallelFlag = False
     
     while True:
@@ -596,9 +622,9 @@ def initSpot(k,etaRoi,tthRoi,frm,t,params,outPath,fnames):
     with open(outFile, 'wb') as f:
         pickle.dump(trackData, f)
     
-def processSpot(k,t,params,outPath,fnames):
+def processSpot(k,t,params,trackPath,fnames):
     print(f'{k}', end=" ")
-    outFile = os.path.join(outPath,'outputs',f'trackData_{k}.pkl')
+    outFile = os.path.join(trackPath,f'trackData_{k}.pkl')
     # Load in track so far
     with open(outFile, 'rb') as f:
         trackData = pickle.load(f)
@@ -821,14 +847,27 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
     else:
         fnames = pathToFile(exsituPath)
     
-    try:
-        
-        pool = Pool(params['pool'])
-        print(f'{pool._processes} workers, Ex-Situ Scan ({scan0})')
-        inVars = zip(spotInds,initData['etas'],initData['tths'],initData['frms'])
-        pool.starmap(partial(initSpot,t=scan0,params=params,outPath=outPath,\
-                      fnames=fnames),inVars)
-    except:
+    if params['parallelFlag']:
+        try:
+            pool = Pool(params['pool'])
+            print(f'{pool._processes} workers, Ex-Situ Scan ({scan0})')
+            inVars = zip(spotInds,initData['etas'],initData['tths'],initData['frms'])
+            pool.starmap(partial(initSpot,t=scan0,params=params,outPath=outPath,\
+                          fnames=fnames),inVars)
+        except:
+            # Scan index
+            print('Not parallelized')
+            print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
+            for s,k in enumerate(spotInds):
+                print(f'{k}', end=" ")
+                etaRoi = initData['etas'][s]
+                tthRoi = initData['tths'][s]
+                frm = initData['frms'][s]
+                initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fnames)
+                
+        try: pool.close()
+        except: print('Pool close didnt work')
+    else:
         # Scan index
         print('Not parallelized')
         print(f'Ex-Situ Scan ({scan0}), Spot:', end=" ")
@@ -839,11 +878,6 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
             frm = initData['frms'][s]
             initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fnames)
             
-            # Follow up by searching adjacent omegaa for a track
-            
-    
-    try: pool.close()
-    except: print('Pool close didnt work')
 
 def compAvgParams(track,errorThresh):   
     J = len(track) 
@@ -924,8 +958,8 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
         if len(track_data[0]) == 0:
             continue
         track = track_data[0]
-        eta0 = track[0]['eta']
-        tth0 = track[0]['tth']
+        eta0 = track[0]['etaRoi']
+        tth0 = track[0]['tthRoi']
         
         omTrack = np.zeros((rows,columns)) - 1
         scanTrack = np.zeros((rows,columns)) - 1
@@ -1010,7 +1044,13 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
                     
                     y_pos = (radRoi-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
                     x_pos = (etaRoi-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
-                    ax.plot(x_pos,y_pos,marker='x',markersize=16,color='red')
+                    ax.plot(x_pos,y_pos,marker='o',markersize=16,\
+                            fillstyle='none',color='red')
+                    
+                    rad0 = detectDist*np.tan(tth0)/mmPerPixel
+                    y_pos = (rad0-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
+                    x_pos = (eta0-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
+                    ax.plot(x_pos,y_pos,marker='x',markersize=10,color='yellow')
                     
                     
                 if i == rows-1:
@@ -1023,5 +1063,62 @@ def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
         plt.draw()
         # plt.savefig(f'fig_{k}.png')
         # plt.close(fig)
-
+        
+def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):
+    state0Data = np.load(spotFiles[0])
+    initData = {
+        'tths': state0Data['tths'],
+        'etas': state0Data['etas'],
+        'frms': state0Data['ome_idxs']
+    }
+    
+    numSpots =  len(spotInds)
+    T = len(scanRange)
+    foundInd = np.zeros((numSpots,T))
+    truthDist = np.zeros((numSpots,T))
+    changeDist = np.zeros((numSpots,T))
+    
+    foundInd[:] = np.nan
+    truthDist[:] = np.nan
+    changeDist[:] = np.nan
+    
+    spotData = []
+    for i in range(len(spotFiles)):
+        spotData.append(np.load(spotFiles[i]))
+        
+    for k_ind,k in enumerate(spotInds): #range(10):
+        print(f'Spot {k}')
+        eta0 = initData['etas'][k]
+        tth0 = initData['tths'][k]
+        frm0 = initData['frms'][k]
+        
+        # Load track data for spot
+        track_file = os.path.join(trackPath,f'trackData_{k}.pkl')
+        if os.path.exists(track_file):
+            with open(track_file, 'rb') as f:
+                track_data = pickle.load(f)
+        
+        # Metrics to compute: (Need to gather spot data)
+        #   Tracks found at steps 0-4 (binary array for each spot)
+        #   Compute distance of found spot from spot.out files
+        #   Compute distance from init spot location of spot.out file
+        
+        # 1. Identify # of omega tracks per time step
+        if len(track_data)>0:
+            for track in track_data:
+                if len(track) > 0:
+                    # 1. Count omegas at each spot/time
+                    foundInd[k_ind,track[0]['scan']] = len(track)
+                    # 2. Compute change in eta/tth over time
+                    etaChange = track[0]['eta']-track[0]['etaRoi']
+                    tthChange = track[0]['tth']-track[0]['tthRoi']
+                    changeDist[k_ind,track[0]['scan']] = np.sqrt(etaChange**2 + tthChange**2)                    
+                    # 3. Compute difference from true positions
+                    etaTruth = track[0]['eta'] - spotData[track[0]['scan']]['etas'][k_ind]
+                    tthTruth = track[0]['tth'] - spotData[track[0]['scan']]['tths'][k_ind]                  
+                    truthDist[k_ind,track[0]['scan']] = np.sqrt(etaTruth**2 + tthTruth**2)
+                    # 4. Count number of spots with tracks at initial time step                 
+                    numTracks0 = np.sum(foundInd[:,0] > 0)
+    return foundInd, numTracks0, changeDist, truthDist         
+        
         

@@ -1,4 +1,4 @@
-function mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir,dataset)
+function mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,topDir,dataset)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Optical flow coupled solution
@@ -7,7 +7,9 @@ figDir = [topDir,'_sig_',num2str(i)];
 mkdir(figDir)
 
 % Data  
-[y,~,N,M,T,Xtrue,Dtrue] = gaus_example_switch_multiscale_dl(sigmas(i),dataset);
+[y,y_true,N,M,T,Xtrue,Dtrue] = gaus_example_switch_multiscale_dl(sigmas(i),dataset);
+% opt.epsilon = norm(y(:)-y_true(:)) + 0.01*norm(y(:));
+
 y = reshape(y,[1,N,T]);
 
 % Model Setup
@@ -27,7 +29,9 @@ opt = initXD(opt,N,M,K,J,T,Xtrue,Dtrue);
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
 opt.UpdateVelocity = 1;
-[D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+% [D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+
+[D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = gcmpdl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
 
 % Save outputs
 outputs = struct();
