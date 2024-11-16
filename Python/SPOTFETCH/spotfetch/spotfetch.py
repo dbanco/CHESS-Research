@@ -1,26 +1,59 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr 12 13:22:47 2024
+spotfetch.py
 
-@author: dpqb1
+Main module for the spotfetch package: tools for X-ray diffraction data analysis 
+and spot tracking in imaging experiments.
+
+Created on: Fri Apr 12 13:22:47 2024
+Author: Daniel Banco
+Email: dpqb10@gmail.com
+Version: 0.1.0
+
+Description:
+This module serves as the main entry point for the spotfetch package, providing 
+tracking and analysis tools for X-ray diffraction data. 
+It integrates submodules for data processing, detector interfacing, data 
+labeling and visualization.
+
+License:
+MIT License
+
+Copyright (c) 2024 dpqb1
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 """
+
 import numpy as np
 import h5py
-import hdf5plugin
 import warnings
 import pickle
 import pandas as pd
 import os
 import time
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from hexrd.fitting import fitpeak
 from hexrd import imageseries
 from multiprocessing import Pool
 from functools import partial
 from pathlib import Path
 import glob
-
 import job_manager as jm
 import chess_detectors as cd
 
@@ -185,101 +218,6 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
         
     return roi_list
 
-def plotROIs(roi_list,num_cols = 5):
-    # Create subplots
-    num_images = len(roi_list)
-    num_rows = (num_images + num_cols - 1) // num_cols  # Calculate number of rows needed
-
-    fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 10))
-
-    # Plot each image in a subplot
-    for i, ax in enumerate(axes.flat):
-        if i < num_images:
-            ax.imshow(roi_list[i])
-            ax.axis('off')  # Turn off axis
-            ax.set_title(f'Spot{i+1}')  # Set title for each subplot
-            # Add colorbars
-            pcm = ax.pcolormesh(roi_list[i])
-            fig.colorbar(pcm,ax=ax)
-                    
-    # Adjust layout to prevent overlapping
-    plt.tight_layout()
-    
-    plt.show()
-    
-    return fig
-    
-def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
-    tths = spotData['tths']
-    etas = spotData['etas']     
-    ome_idxs = spotData['ome_idxs']-2
-    # Get spot indices at frame
-    if grains == []:
-        spotInds = np.where(ome_idxs == frame)[0]
-    else:
-        spotInds = findSpots(spotData,grains=grains,frm=frame)
-    
-    roiSize = params['roiSize']
-    imSize = params['imSize']
-    center = (imSize[0]//2,imSize[1]//2,)
-
-    if os.path.isfile(fnames):
-        fnames = [fnames]
-    if detectFrame == []:
-        detectFrame = frame
-    if params['detector'] == 'dexela':
-        b = cd.load_dex(fnames,params,detectFrame)
-    elif params['detector'] == 'eiger':
-        b = cd.load_eiger(fnames,params,detectFrame)
-    elif params['detector'] == 'eiger_sim':
-        b = cd.load_eiger_sim(fnames,params,detectFrame)
-    
-    
-    fig = plt.figure()
-    # b[b>100] = 100
-    plt.imshow(b)
-    plt.clim(np.median(b),np.median(b)+10)
-    plt.colorbar()
-    
-    for ind in spotInds:
-        # 0. Load spot information
-        tth = tths[ind]
-        eta = -etas[ind]
-
-        # 1. Load YAML data
-        detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tth,eta)
-        
-        # 2. Construct rad, eta domain
-        rad_dom, eta_dom = cd.polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
-   
-        rad = np.round(detectDist*np.tan(tth)/mmPerPixel)
-        
-        wedge = patches.Wedge([center[1],center[0]],rad+roiSize[0]/2,\
-                180/np.pi*eta_dom[0],180/np.pi*eta_dom[-1],\
-                linewidth=1,width=roiSize[1],fill=0,color='r')
-            
-        plt.gca().add_patch(wedge)
-        # x = rad*np.cos(eta) + center[1]
-        # y = rad*np.sin(eta) + center[0]
-        # plt.plot(x,y,color='r',marker='x')
-        
-    return fig
-
-def roiAdjacent(ind,tth,eta,frame,omFrms,timeFrms,params,dataDir):
-    
-    fig, axes = plt.subplots(len(omFrms), len(timeFrms), figsize=(len(omFrms), len(timeFrms)))
-    
-    # add enumerate HERR ND THEN coordinate subplots
-    for i,frm in enumerate(omFrms):
-        frm = wrapFrame(frm)
-        
-        for j,t in enumerate(timeFrms):
-            fnames = timeToFile(t,dataDir)
-            roi = cd.loadPolarROI(fnames,tth,eta,frm,params)
-            img = axes[i,j].imshow(roi)
-            fig.colorbar(img, ax=axes[i,j])
-            axes[i,j].set_title(f'$\omega={frm}$, t={t}')
-
 def fitModel(eta_vals,tth_vals,roi,params):
     try:
         with warnings.catch_warnings():
@@ -308,17 +246,8 @@ def assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params)
     
     residual = fitpeak.fit_pk_obj_2d(p,eta_vals,tth_vals,roi,params['peak_func'])
     rel_error = np.linalg.norm(residual)/np.linalg.norm(roi.flatten())
-    
-    detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tthRoi,etaRoi)
-    rad_dom, eta_dom = cd.polarDomain(detectDist,mmPerPixel,tthRoi,etaRoi,roiSize)  
-    
-    deta = abs(eta_dom[1] - eta_dom[0])
-    hypot = detectDist*np.cos(tthRoi)
-    dtth = np.arctan(mmPerPixel/hypot)
 
-    etaNew = eta_dom[int(np.round(p[1]))]
-    radNew = rad_dom[int(np.round(p[2]))]
-    tthNew = np.arctan(radNew*mmPerPixel/detectDist)
+    etaNew, tthNew, deta, dtth = pixToEtaTth(p[1],p[2],tthRoi,etaRoi,params)
 
     newTrack = {}
     newTrack['p'] = p
@@ -418,26 +347,6 @@ def visualTrackData(trackData):
                     meaneta[t] = trackData[t][k][0]['eta']
     return FWHMeta,meaneta
 
-def scatterOmeg(trackData):
-    T = len(trackData)
-    K = len(trackData[0])
-    
-    fig, axes = plt.subplots(K, 1, figsize=(K, 1))
-    fig.subplots_adjust(hspace=0.5) 
-    
-    for t in range(T):
-        if trackData[t] != []:
-            for k in range(K):
-                L = len(trackData[t][k])
-                if L > 0:
-                    for j in range(L):
-                        omega = frameToOmega(trackData[t][k][j]['frm'])
-                        axes[k].scatter(t,omega,marker='s',color='b')
-                        axes[k].set_title(f'spot {k}')
-                        axes[k].set_xlim((0,20))
-
-    return fig
-
 def collectSpotsData(outPath,spotsPath):
     # Get a list of file names in the directory and sort them
     all_entries = os.listdir(spotsPath)
@@ -516,8 +425,7 @@ def spotTracker(dataPath,outPath,spotData,spotInds,params,num1,num2,advance):
         parallelFlag = False
     
     while True:
-        # Try reading in file for new scan
-        
+        # Try reading in file for new scan  
         try:
             # if os.path.isfile(dataPath):
             template = dataPath.format(num2=num2)
@@ -878,7 +786,6 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
             frm = initData['frms'][s]
             initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fnames)
             
-
 def compAvgParams(track,errorThresh):   
     J = len(track) 
     avgFWHMeta = 0
@@ -905,164 +812,7 @@ def compAvgParams(track,errorThresh):
         avgFWHMtth = np.nan
     return avgFWHMeta,avgFWHMtth,avgEta,avgTth
 
-def roiTrackVisual(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
-    initData = {
-        'tths': spotData['tths'],
-        'etas': spotData['etas'],
-        'frms': spotData['ome_idxs']
-    }
-    
-    # Choose spot
-    for k in spotInds: #range(10):
-        print(f'Showing Spot {k}')
-        eta0 = initData['etas'][k]
-        tth0 = initData['tths'][k]
-        frm0 = initData['frms'][k]
-        
-        # Define Omega range
-        om0 = frm0
-        omMin = om0-dome
-        omMax = om0+dome
-        omRange = np.arange(omMin,omMax+1)
-        for i,om in enumerate(omRange):
-            omRange[i] = wrapFrame(om)
-        
-        # Define the number of rows and columns
-        rows = len(omRange)
-        columns = len(scanRange)
-        
-        # Create a figure and a set of subplots
-        fig, axes = plt.subplots(rows, columns, figsize=(20, 15))
-        
-        # Remove x and y ticks for clarity
-        for ax_row in axes:
-            for ax in ax_row:
-                ax.set_xticks([])
-                ax.set_yticks([])
-        
-        # Add common labels
-        fig.text(0.04, 0.5, r'$\omega$ frame', va='center', rotation='vertical', fontsize=24)
-        fig.text(0.5, 0.04, 'Scan #', ha='center', fontsize=24)
-        fig.text(0.5, 0.95, f'Spot {k}', ha='center', fontsize=32)
-        
-        # Path to the track data file
-        track_file = os.path.join(trackPath,f'trackData_{k}.pkl')
-        
-        # Initial plot setup
-        if os.path.exists(track_file):
-            with open(track_file, 'rb') as f:
-                track_data = pickle.load(f)
-                
-        # Organize all tracks
-        T = len(track_data)
-        if len(track_data[0]) == 0:
-            continue
-        track = track_data[0]
-        eta0 = track[0]['etaRoi']
-        tth0 = track[0]['tthRoi']
-        
-        omTrack = np.zeros((rows,columns)) - 1
-        scanTrack = np.zeros((rows,columns)) - 1
-        etaRoiTrack = np.zeros((rows,columns)) + eta0
-        tthRoiTrack = np.zeros((rows,columns)) + tth0
-        etaTrack = np.zeros((rows,columns)) + eta0
-        tthTrack = np.zeros((rows,columns)) + tth0
-        p1Track = np.zeros((rows,columns))
-        p2Track = np.zeros((rows,columns))
-        
-        for t in range(T):
-            track = track_data[t]
-            if len(track) > 0:
-                for j in range(len(track)):
-                    scan = track[j]['scan']
-                    frm = track[j]['frm']
-                    
-                    if (frm in omRange) & (scan in scanRange):
-                        ind1 = int(np.where(scanRange == scan)[0][0])
-                        ind2 = int(np.where(omRange == frm)[0][0])
-                    
-                        eta = track[j]['eta']
-                        tth = track[j]['tth']
-                        etaRoi = track[j]['etaRoi']
-                        tthRoi = track[j]['tthRoi']
-                        p = track[j]['p']
-                        
-                        scanTrack[ind2,ind1] = scan
-                        omTrack[ind2,ind1] = frm
-                        etaTrack[ind2,ind1] = eta
-                        tthTrack[ind2,ind1] = tth
-                        etaRoiTrack[ind2,ind1] = etaRoi
-                        tthRoiTrack[ind2,ind1] = tthRoi
-                        p1Track[ind2,ind1] = p[1]
-                        p2Track[ind2,ind1] = p[2]
-                    
-        for j in range(columns):
-            if os.path.isdir(dataPath):
-                fnames = timeToFile(scanRange[j],dataPath)
-                isFile = False
-            else:
-                fnames = dataPath
-                isFile = True
-                
-            for i in range(rows): 
-                ax = axes[i, j]
-                ax.clear()
-    
-                etaRoi = etaRoiTrack[i,j]
-                tthRoi = tthRoiTrack[i,j]
-                frm = omRange[i]
-                scan = scanRange[j]
-                p1 = p1Track[i,j]
-                p2 = p2Track[i,j]
-                
-                # Show roi
-                if isFile:
-                    template = dataPath.format(num2=scan)
-                    fnames = glob.glob(template)
-                    roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
-                else:
-                    roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
-                ax.imshow(roi)
-                ax.text(1, 4, f'{roi.max():.2f}', color='white', fontsize=12, weight='bold')
-                
-                if (p1 > 0) & (p2 > 0):
-                    # Plot rect
-                    eta = etaTrack[i,j]
-                    tth = tthTrack[i,j]
-                    detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tth,eta)
-                    boxSize = 10
-                    start_col = round(p1 - boxSize//2)
-                    start_row = round(p2 - boxSize//2)
-                    rect = plt.Rectangle((start_col, start_row), boxSize, boxSize,
-                                          linewidth=1, edgecolor='r', facecolor='none')
-                    ax.add_patch(rect)
-                    
-                    # Show Previous Track
-                    rad_dom, eta_dom = cd.polarDomain(detectDist, mmPerPixel,\
-                                          tthRoi, etaRoi, params['roiSize'])
-                    radRoi = detectDist*np.tan(tthRoi)/mmPerPixel
-                    
-                    y_pos = (radRoi-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
-                    x_pos = (etaRoi-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
-                    ax.plot(x_pos,y_pos,marker='o',markersize=16,\
-                            fillstyle='none',color='red')
-                    
-                    rad0 = detectDist*np.tan(tth0)/mmPerPixel
-                    y_pos = (rad0-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
-                    x_pos = (eta0-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
-                    ax.plot(x_pos,y_pos,marker='x',markersize=10,color='yellow')
-                    
-                    
-                if i == rows-1:
-                    ax.set_xlabel(f'{scan}')
-                if j == 0:
-                    ax.set_ylabel(f'{frm}')
-                    
-                ax.set_xticks([])
-                ax.set_yticks([])
-        plt.draw()
-        # plt.savefig(f'fig_{k}.png')
-        # plt.close(fig)
+
         
 def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):
     state0Data = np.load(spotFiles[0])
@@ -1104,7 +854,7 @@ def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):
         #   Compute distance from init spot location of spot.out file
         
         # 1. Identify # of omega tracks per time step
-        if len(track_data)>0:
+        if len(track_data) > 0:
             for track in track_data:
                 if len(track) > 0:
                     # 1. Count omegas at each spot/time
@@ -1120,5 +870,141 @@ def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):
                     # 4. Count number of spots with tracks at initial time step                 
                     numTracks0 = np.sum(foundInd[:,0] > 0)
     return foundInd, numTracks0, changeDist, truthDist         
+       
+def loadROI(dataPath,scan,frm,etaRoi,tthRoi,params):
+    if os.path.isdir(dataPath):
+        fnames = timeToFile(scan,dataPath)
+        isFile = False
+    else:
+        fnames = dataPath
+        isFile = True
+        if params['detector'] == 'eiger_sim':
+            fnames = fnames.replace('*','{scan}').format(scan=scan)
+            roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
+            return roi
         
+    # Show roi
+    if isFile:
+        template = dataPath.format(num2=scan)
+        fnames = glob.glob(template)
+        roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
+    else:
+        roi = cd.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)        
+    return roi
+
+def showROI(ax,dataPath,scan,frm,tthRoi,etaRoi,params):
+    
+    roi = loadROI(dataPath,scan,frm,etaRoi,tthRoi,params)
         
+    detectDist, mmPerPixel, ff_trans, ff_tilt = cd.loadYamlData(params,tthRoi,etaRoi)
+    rad_dom, eta_dom = cd.polarDomain(detectDist, mmPerPixel,\
+                          tthRoi, etaRoi, params['roiSize'])
+    tth_dom = np.arctan(rad_dom*mmPerPixel/detectDist)
+    
+    ax.imshow(roi)
+    plt.xticks([0,39], [f'{eta_dom[0]:.4g}',f'{eta_dom[-1]:.4g}'])
+    plt.yticks([0,39], [f'{tth_dom[0]:.4g}',f'{tth_dom[-1]:.4g}'])
+  
+    ax.text(1, 2, f'max: {roi.max():.2f}', color='white', fontsize=12, weight='bold')
+    # ax.text(1, 4, f'scan: {scan}', color='white', fontsize=12, weight='bold')
+    # ax.text(1, 6, f'frame: {frm}', color='white', fontsize=12, weight='bold')
+    ax.text(1, 4, f'eta: {etaRoi:.4f}', color='white', fontsize=12, weight='bold')
+    ax.text(1, 6, f'tth: {tthRoi:.4f}', color='white', fontsize=12, weight='bold')
+
+def showInitial(ax,etaRoi,tthRoi,eta0,tth0,params):
+    # Hexrd location
+    [y_pos, x_pos] = etaTthToPix(eta0,tth0,etaRoi,tthRoi,params)
+    if (y_pos >= 0) and (y_pos < params['roiSize'][0]) and\
+       (x_pos >= 0) and (x_pos < params['roiSize'][1]): 
+        
+        ax.plot(x_pos,y_pos,marker='s',markersize=10,\
+                fillstyle='none',color='white')
+
+def showTrack(ax,track,etaRoi,tthRoi,eta0,tth0,params):
+    eta = track['eta']
+    tth = track['tth']
+    etaPrev = track['etaRoi']
+    tthPrev = track['tthRoi']
+    # Current track
+    [y_pos, x_pos] = etaTthToPix(eta,tth,etaRoi,tthRoi,params)
+    if (y_pos >= 0) and (y_pos < params['roiSize'][0]) and\
+       (x_pos >= 0) and (x_pos < params['roiSize'][1]):
+        ax.plot(x_pos,y_pos,marker='s',markersize=8,\
+                fillstyle='none',color='red')
+    ax.plot(x_pos,y_pos,marker='x',markersize=8,color='red')
+    # Previous track
+    [y_pos, x_pos] = etaTthToPix(etaPrev,tthPrev,etaRoi,tthRoi,params)
+    if (y_pos >= 0) and (y_pos < params['roiSize'][0]) and\
+       (x_pos >= 0) and (x_pos < params['roiSize'][1]):
+        ax.plot(x_pos,y_pos,marker='s',markersize=10,\
+                fillstyle='none',color='yellow')
+
+
+def showTruth(ax,truth,etaRoi,tthRoi,params):
+    eta1 = truth['eta1']
+    tth1 = truth['tth1']
+    eta2 = truth['eta2']
+    tth2 = truth['tth2']
+    [y1, x1] = etaTthToPix(eta1,tth1,etaRoi,tthRoi,params)
+    [y2, x2] = etaTthToPix(eta2,tth2,etaRoi,tthRoi,params)
+    
+    rect = plt.Rectangle((x1, y1), x2-x1, y2-y1,
+                          linewidth=1, edgecolor='g', facecolor='none')
+    ax.add_patch(rect)
+    
+def etaTthToPix(eta,tth,etaRoi,tthRoi,params):
+    roiSize = params['roiSize']
+    detectDist, mmPerPixel, ff_trans, ff_tilt = cd.loadYamlData(params,tthRoi,etaRoi)
+    rad_dom, eta_dom = cd.polarDomain(detectDist, mmPerPixel,\
+                          tthRoi, etaRoi, roiSize)
+        
+    rad = np.tan(tth)*detectDist/mmPerPixel
+    
+    row_pos = (rad-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*(roiSize[0]-1)
+    col_pos = (eta-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*(roiSize[1]-1)
+    
+    return row_pos, col_pos
+
+def pixToEtaTth(p1,p2,tthRoi,etaRoi,params):
+    roiSize = params['roiSize']
+    detectDist, mmPerPixel, ff_trans = cd.loadYamlData(params,tthRoi,etaRoi)
+    rad_dom, eta_dom = cd.polarDomain(detectDist,mmPerPixel,tthRoi,etaRoi,roiSize)  
+    
+    deta = abs(eta_dom[1] - eta_dom[0])
+    hypot = detectDist*np.cos(tthRoi)
+    dtth = np.arctan(mmPerPixel/hypot)
+    
+    i1 = int(np.floor(p1))
+    j1 = int(np.floor(p2))
+    
+    etaNew = eta_dom[i1] + deta*np.mod(p1,1)
+    radNew = rad_dom[j1] + np.mod(p2,1)
+    tthNew = np.arctan(radNew*mmPerPixel/detectDist)
+    
+    return etaNew, tthNew, deta, dtth
+
+def checkTrack(track_data,scan_ind,scan,frm):
+    trackFound = False
+    om_ind = 0
+    if len(track_data) > 0:
+        for om_ind, omTrack in enumerate(track_data[scan_ind]):
+            cond1 = omTrack['scan'] == scan
+            cond2 = omTrack['frm'] == frm
+            if cond1 and cond2:
+                trackFound = True
+                break
+    return trackFound, om_ind
+
+def checkTruth(truth_data,scan_ind,scan,frm):
+    truthFound = False
+    om_ind = 0
+    if len(truth_data[scan_ind]) > 0:
+        for om_ind, omTruth in enumerate(truth_data[scan_ind]):
+            if len(omTruth) > 0:
+                cond1 = omTruth['scan'] == scan
+                cond2 = omTruth['frm'] == frm
+                if cond1 and cond2:
+                    truthFound = True
+                    break
+    return truthFound, om_ind
+

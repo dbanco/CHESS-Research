@@ -29,9 +29,8 @@ opt = initXD(opt,N,M,K,J,T,Xtrue,Dtrue);
 
 [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt.Y0,K,[],[],opt.Smoothness/lambda2,opt.HSiters);
 opt.UpdateVelocity = 1;
-% [D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
-
-[D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = gcmpdl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+[D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
+% [D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = gcmpdl_cg_OF_multiScales_gpu_zpad_center(opt.G0, y, lambda,lambda2, opt, scales,Uvel,Vvel);
 
 % Save outputs
 outputs = struct();

@@ -17,6 +17,10 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_steps_matched_multiscale_dl(sigma);
     case 'steps_unmatched'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_steps_unmatched_multiscale_dl(sigma);
+    case 'peak_matched'
+        [yn,y,N,M,T,Xtrue,Dtrue] = peak_example_steps_matched_multiscale_dl(sigma);
+    case 'peak_matched2'
+        [yn,y,N,M,T,Xtrue,Dtrue] = peak_example_steps_matched2_multiscale_dl(sigma);
     otherwise
         error('Invalid dataset name')
 end

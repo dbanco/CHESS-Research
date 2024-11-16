@@ -329,8 +329,8 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         end
         
         % Solve Y subproblem
-        % Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-        Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+        Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+        % Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight);
         if opt.NonNegCoef,
             Y(Y < 0) = 0;
         end
@@ -605,6 +605,10 @@ function u = log_shrink(v, lambda)
 u = sign(v).*log(1+max(0, abs(v) - lambda));
 return
 
+function u = atan_shrink(v, lambda)
+a = 0.2;
+u = 2/(a*sqrt(3))*(atan((1+2*a*(abs(v)-lambda))/sqrt(3))-pi/6);
+return
 
 function u = zpad(v, sz)
 
@@ -612,7 +616,6 @@ function u = zpad(v, sz)
   u(1:size(v,1), 1:size(v,2),:,:) = v;
 
 return
-
 
 function u = bcrop(v, sz)
 

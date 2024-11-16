@@ -41,7 +41,7 @@ k = 1;
 scriptFileName = 'mcdlof_bash.sh';
 jobDir = '/cluster/home/dbanco02/jobs/';
 for i = [1]
-    for j_s = [1]
+    for j_s = [1,5,10,100]
         for j_hs = 1  
             for j_of = 1
                 % topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_23_Dflat_Xzero\unmatched_results';
@@ -65,7 +65,7 @@ for i = [1]
                 % mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 %                             j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir,dataset);
                 dataset = 'steps_matched';
-                topDir = ['C:\Users\dpqb1\Documents\Outputs2024_11_10',...
+                topDir = ['C:\Users\dpqb1\Documents\Outputs2024_11_14',...
                     '_D',opt.dictInit,num2str(opt.Dfixed),...
                     '_X',opt.coefInit,num2str(opt.Xfixed),'\',dataset,'_results'];
                  

@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jun 22 10:14:50 2024
+spotfetch.detectors
 
-@author: dbanco
+Models and tools for working with X-ray detectors and configurations.
+
+Created on: Fri Nov 15 23:00:28 2024
+Author: Daniel Banco
 """
-
 import numpy as np
 import scipy as sp
 import yaml
 import h5py
-import hdf5plugin
 from hexrd import imageseries
+from hexrd import transforms
 
 def read_yaml(file_path):
     with open(file_path, 'r') as file:
@@ -31,7 +33,10 @@ def loadYamlDataDexela(yamlFile,tth,eta):
     yamlData = read_yaml(yamlFile)
     ff1_trans = yamlData['detectors']['ff1']['transform']['translation']
     ff2_trans = yamlData['detectors']['ff2']['transform']['translation']
+    ff1_tilt = yamlData['detectors']['ff1']['transform']['tilt']
+    ff2_tilt = yamlData['detectors']['ff2']['transform']['tilt']
     ff_trans = [ff1_trans[0],ff1_trans[1],ff2_trans[0],ff2_trans[1]]
+    ff_tilt = [ff1_tilt,ff2_tilt]
     if abs(eta)>(np.pi/2):
         detectDist = -ff2_trans[2]
         mmPerPixel = yamlData['detectors']['ff2']['pixels']['size'][0]
@@ -39,15 +44,16 @@ def loadYamlDataDexela(yamlFile,tth,eta):
         detectDist = -ff1_trans[2] 
         mmPerPixel = yamlData['detectors']['ff1']['pixels']['size'][0]
     
-    return detectDist, mmPerPixel,ff_trans
+    return detectDist, mmPerPixel, ff_trans, ff_tilt
 
 def loadYamlDataEiger(yamlFile):
     yamlData = read_yaml(yamlFile)
     ff_trans = yamlData['detectors']['eiger']['transform']['translation']
+    ff_tilt = yamlData['detectors']['eiger']['transform']['tilt']
     detectDist = -ff_trans[2]
     mmPerPixel = yamlData['detectors']['eiger']['pixels']['size'][0]
 
-    return detectDist, mmPerPixel, ff_trans
+    return detectDist, mmPerPixel, ff_trans, ff_tilt
 
 def load_eiger(fnames,params,t,detectSize=(4362,4148)):
     ims = imageseries.open(fnames[0], format='eiger-stream-v1')
@@ -63,7 +69,7 @@ def load_eiger(fnames,params,t,detectSize=(4362,4148)):
     center = (imSize[0]/2, imSize[1]/2)
     
     # Shift each panel
-    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataEiger(yamlFile)
     ff1_tx = ff_trans[0]
     ff1_ty = ff_trans[1]
     ff1_xshift = int(round(ff1_tx/mmPerPixel))
@@ -100,7 +106,7 @@ def load_eiger_sim(fnames,params,t,detectSize=(4362,4148)):
     center = (imSize[0]/2, imSize[1]/2)
     
     # Shift each panel
-    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataEiger(yamlFile)
     ff1_tx = ff_trans[0]
     ff1_ty = ff_trans[1]
     ff1_xshift = int(round(ff1_tx/mmPerPixel))
@@ -137,7 +143,7 @@ def load_eiger_sim(fnames,params,t,detectSize=(4362,4148)):
     center = (imSize[0]/2, imSize[1]/2)
     
     # Shift each panel
-    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataEiger(yamlFile)
     ff1_tx = ff_trans[0]
     ff1_ty = ff_trans[1]
     ff1_xshift = int(round(ff1_tx/mmPerPixel))
@@ -216,7 +222,7 @@ def getInterpParamsDexela(tth,eta,params):
     imSize = params['imSize']
     
     center = (imSize[0]/2,imSize[1]/2)
-    detectDist, mmPerPixel, ff_trans = loadYamlDataDexela(yamlFile,tth,eta)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataDexela(yamlFile,tth,eta)
     
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
     x_cart, y_cart = fetchCartesian(rad_dom,eta_dom,center)
@@ -225,7 +231,7 @@ def getInterpParamsDexela(tth,eta,params):
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
     roiShape = getROIshapeDex(x_cart, y_cart, ff1_pix, ff2_pix, center)
     
-    Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center)
+    Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center,detectDist,ff_tilt)
     
     return Ainterp, new_center, x_cart, y_cart
 
@@ -235,7 +241,7 @@ def getInterpParamsEiger(tth,eta,params):
     imSize = params['imSize']
     
     center = (imSize[0]/2,imSize[1]/2)
-    detectDist, mmPerPixel, ff_trans = loadYamlDataEiger(yamlFile)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataEiger(yamlFile)
     
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
     x_cart, y_cart = fetchCartesian(rad_dom,eta_dom,center)
@@ -244,7 +250,7 @@ def getInterpParamsEiger(tth,eta,params):
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
     roiShape = getROIshapeEiger(x_cart, y_cart, ff_pix)
     
-    Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center)
+    Ainterp = bilinearInterpMatrix(roiShape,rad_dom,eta_dom,new_center,detectDist,ff_tilt)
     
     return Ainterp, new_center, x_cart, y_cart
 
@@ -255,14 +261,14 @@ def loadPolarROI(fnames,tth,eta,frame,params):
     elif params['detector'] == 'eiger':
         roi = loadEigerPolarRoi(fnames[0],tth,eta,frame,params)
     elif params['detector'] == 'eiger_sim':
-        roi = loadEigerSimPolarRoi(fnames[0],tth,eta,frame,params)
+        roi = loadEigerSimPolarRoi(fnames,tth,eta,frame,params)
     return roi
     
 def loadDexPolarRoi(fnames,tth,eta,frame,params):
     # 0. Load params, YAML data
     yamlFile = params['yamlFile']
     roiSize = params['roiSize']
-    detectDist, mmPerPixel, ff_trans = loadYamlDataDexela(yamlFile,tth,eta)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlDataDexela(yamlFile,tth,eta)
     
     # 1. Construct rad, eta domain
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
@@ -286,7 +292,7 @@ def loadEigerPolarRoi(fname,tth,eta,frame,params):
     # 0. Load params, YAML data
     roiSize = params['roiSize']
     imSize = params['imSize']
-    detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlData(params,tth,eta)
     
     # 1. Construct rad, eta domain
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
@@ -310,7 +316,7 @@ def loadEigerSimPolarRoi(fname,tth,eta,frame,params):
     # 0. Load params, YAML data
     roiSize = params['roiSize']
     imSize = params['imSize']
-    detectDist, mmPerPixel, ff_trans = loadYamlData(params,tth,eta)
+    detectDist, mmPerPixel, ff_trans, ff_tilt = loadYamlData(params,tth,eta)
     
     # 1. Construct rad, eta domain
     rad_dom, eta_dom = polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
@@ -348,7 +354,6 @@ def loadEigerPolarRoiArray(fname,tth,eta,frames,params):
     roi_polar_array = np.zeros((frames[1]-frames[0],len(rad_dom),len(eta_dom)))
     # 4. Apply interpolation matrix to Cartesian pixels get Polar values
     for i in range(roiArray.shape[0]):
-        print(i)
         roi_polar_vec = Ainterp.dot(roiArray[i,:,:].flatten())
         roi_polar = np.reshape(roi_polar_vec,(len(rad_dom),len(eta_dom)))
         roi_polar_array[i,:,:] = roi_polar
@@ -433,7 +438,6 @@ def loadEigerPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     return img
 
 def loadEigerSimPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
-
     if x_cart[0] < ff1_pix[0]: x_cart[0] = ff1_pix[0]
     if x_cart[1] > ff1_pix[1]: x_cart[1] = ff1_pix[1]
     if y_cart[0] < ff1_pix[2]: y_cart[0] = ff1_pix[2]
@@ -453,7 +457,7 @@ def loadEigerSimPanelROI(x_cart,y_cart,ff1_pix,fname,frame):
     for i in range(len(rowD)):
         imgFull[rowD[i],colD[i]] = datD[i]
     
-    img = imgFull[y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]]
+    img = imgFull[y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
     
     return img
 
@@ -469,7 +473,6 @@ def loadEigerPanelROIArray(x_cart,y_cart,ff1_pix,fname,frames):
     ims = imageseries.open(fname, format='eiger-stream-v1')
     imgArray = np.zeros((frames[1]-frames[0],y_pan[1]-y_pan[0],x_pan[1]-x_pan[0]))
     for i in np.arange(frames[0],frames[1]):
-        print(i)
         imgArray[i-frames[0],:,:] = ims[i, y_pan[0]:y_pan[1],x_pan[0]:x_pan[1]].copy()
     imgArray[imgArray>4294000000] = 0
     
@@ -516,13 +519,19 @@ def getROIshapeEiger(x_cart,y_cart,ff1_pix,eigShape=(4362,4148)):
 
     return (y_pan[1]-y_pan[0],x_pan[1]-x_pan[0])
 
-def bilinearInterpMatrix(roiShape,rad_dom,eta_dom,center):
+def bilinearInterpMatrix(roiShape,rad_dom,eta_dom,center,detectDist,tilt):
     Ainterp = np.zeros((len(rad_dom)*len(eta_dom),roiShape[0]*roiShape[1]))
     k = 0
     for r in rad_dom:
         for eta in eta_dom:
-            x = r*np.cos(eta) + center[1]
-            y = -r*np.sin(eta) + center[0]
+            x = r*np.cos(eta)
+            y = -r*np.sin(eta)
+            # NEED TO APPLY SEPARATE TILTS FOR NON MONOLITHIC DEXELA DETECTOR
+            [x,y] = applyTilt(x,y,tilt,detectDist)
+            
+            x = x + center[1]
+            y = y + center[0]
+            
             x1 = np.floor( x );
             x2 = np.ceil(  x );
             y1 = np.floor( y );
@@ -614,3 +623,16 @@ def fetchCartesian(rad_dom,eta_dom,center):
     y_max = int(np.ceil( max(y_max1,y_max2)))
     
     return np.array([x_min,x_max+1]),np.array([y_min,y_max+1])
+
+def applyTilt(x,y,tilt,detectDist):
+    z = detectDist
+    
+    R = transforms.xf.makeDetectorRotMat(tilt)
+    
+    xyz2 = np.array([[x],[y],[z]])
+    
+    xyz = np.matmul(R,xyz2)
+
+    return xyz[0], xyz[1]
+    
+    

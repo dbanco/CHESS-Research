@@ -21,17 +21,18 @@ spotData = np.load(spotsFile)
 # Detector and tracking parameters
 params = {}
 params['detector'] = 'eiger'
-params['peak_func'] = 'Gaussian'
+params['peak_func'] = "gaussian"
 params['imSize'] = (5000,5000)
-params['yamlFile'] = '/nfs/chess/user/dbanco/c103_processing/eiger16M_monolith_mruby_062224_FINAL.yml'
+params['yamlFile'] = os.path.join(topPath,"eiger16M_monolith_mruby_062224_FINAL.yml")
 params['roiSize'] = [40,40]
-params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]0
+params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]
 params['pool'] = 16
+params['parallelFlag'] = False
 
-# Inspect spot tracks on ex-situ and initial scan data
-fullscanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,408)))
-trackPath = os.path.join(topPath,'outputs')
+fullscanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406),[407]))
+trackPath = os.path.join(topPath,'outputs_test')
 
-spotInds = [953]
-dome = 3
-sf.roiTrackVisual(spotInds,spotData,dome,fullscanRange,trackPath,dataFile,params)
+spotInd = 0
+dome = 2
+# sf.roiTrackVisual(spotInds,spotData,dome,fullscanRange,trackPath,dataFile,params)
+sf.roiTrackVisual(spotInd,spotData,dome,fullscanRange,dataFile,trackPath,trackPath,params)

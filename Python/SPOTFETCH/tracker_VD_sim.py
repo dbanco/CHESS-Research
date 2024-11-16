@@ -71,7 +71,7 @@ spotInds = sf.findSpots(spotData,grains=grains)
 testInd = spotInds
 
 trackPath = os.path.join(topPath,'outputs_1')
-os.mkdir(trackPath)
+# os.mkdir(trackPath)
 
 
 # %% Inspect spots
@@ -79,18 +79,17 @@ os.mkdir(trackPath)
 # roi_list = sf.loadSpotsAtFrame(spotData,exsituPath,2,params)
 # sf.plotROIs(roi_list,5)
 
-
 # %% 6.Tracking
-sf.initExsituTracks(trackPath,exsituPath,spotData, testInd, params, 0)
-advance = False
-num1 = 1
-scanRange = np.arange(1,5)
-for scan in scanRange:
-    sf.spotTracker(dataFile,trackPath,spotData,testInd,params,num1,scan,advance)
+# sf.initExsituTracks(trackPath,exsituPath,spotData, testInd, params, 0)
+# advance = False
+# num1 = 1
+# scanRange = np.arange(1,5)
+# for scan in scanRange:
+#     sf.spotTracker(dataFile,trackPath,spotData,testInd,params,num1,scan,advance)
 
 # 7. True spot locations for all states
 # spotFiles = []
-# fullscanRange = np.arange(0,5)
+fullscanRange = np.arange(0,5)
 # for state in fullscanRange:
 #     spotsOut = os.path.join(topPath,f'state_{state}')
 #     spotFiles.append(os.path.join(spotsOut,'spots.npz'))
@@ -107,3 +106,4 @@ for scan in scanRange:
 # 9. Show tracks
 # dome = 3
 # sf.roiTrackVisual(testInd[6:10],spotData,dome,fullscanRange,trackPath,dataFile,params)
+sf.createTruth(testInd[6:8],spotData,fullscanRange,trackPath,dataFile,params)
