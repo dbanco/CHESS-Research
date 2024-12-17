@@ -15,7 +15,7 @@ import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import RectangleSelector
 from tkinter import font
-import detectors as dt
+import spotfetch as sf
 
 class truthLabeler:
     def __init__(self,root,spotInd,scan_ind,spotData,scanRange,\
@@ -32,8 +32,12 @@ class truthLabeler:
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.X, expand=True)
         
-        self.eta0 = spotData['etas'][spotInd]
-        self.tth0 = spotData['tths'][spotInd]
+        x = spotData['Xm'][spotInd]
+        y = spotData['Ym'][spotInd]
+        eta, tth = sf.xyToEtaTthRecenter(x,y,params)
+        
+        self.eta0 = eta
+        self.tth0 = tth
         self.frm0 = spotData['ome_idxs'][spotInd] 
         self.frm = spotData['ome_idxs'][spotInd]  
         self.etaRoi = self.eta0
@@ -185,14 +189,14 @@ class truthLabeler:
         
     def inc_etaRoi(self):
         roiSize = self.params['roiSize']
-        detectDist, mmPerPixel, ff_trans, ff_tilt = dt.loadYamlData(self.params,self.tthRoi,self.etaRoi)
-        rad_dom, eta_dom = dt.polarDomain(detectDist,mmPerPixel,self.tthRoi,self.etaRoi,roiSize)
+        detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(self.params,self.tthRoi,self.etaRoi)
+        rad_dom, eta_dom = sf.polarDomain(detectDist,mmPerPixel,self.tthRoi,self.etaRoi,roiSize)
         self.etaRoi = eta_dom[-1]
         self.updatePlot()
     def dec_etaRoi(self):
         roiSize = self.params['roiSize']
-        detectDist, mmPerPixel, ff_trans, ff_tilt = dt.loadYamlData(self.params,self.tthRoi,self.etaRoi)
-        rad_dom, eta_dom = dt.polarDomain(detectDist,mmPerPixel,self.tthRoi,self.etaRoi,roiSize)
+        detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(self.params,self.tthRoi,self.etaRoi)
+        rad_dom, eta_dom = sf.polarDomain(detectDist,mmPerPixel,self.tthRoi,self.etaRoi,roiSize)
         self.etaRoi = eta_dom[0]
         self.updatePlot()
     def reset_etaRoi(self):
@@ -215,32 +219,32 @@ class truthLabeler:
         self.scan = self.scanRange[self.scan_ind]
         self.updatePlot()
     def inc_frame(self):
-        self.frm = wrapFrame(self.frm + 1)
+        self.frm = sf.wrapFrame(self.frm + 1)
         self.updatePlot()
     def dec_frame(self):
-        self.frm = wrapFrame(self.frm - 1)
+        self.frm = sf.wrapFrame(self.frm - 1)
         self.updatePlot()
     
     def updatePlot(self):
         self.ax.cla()
         
         # 1 Show ROI
-        showROI(self.ax,self.dataPath, self.scan, self.frm,\
+        sf.showROI(self.ax,self.dataPath, self.scan, self.frm,\
                 self.tthRoi, self.etaRoi, self.params)
-        showInitial(self.ax,self.etaRoi,self.tthRoi,self.eta0,self.tth0,self.params)
+        sf.showInitial(self.ax,self.etaRoi,self.tthRoi,self.eta0,self.tth0,self.params)
         # 2 Show the track and truth if there is one
-        [self.trackFound, self.om_ind1] = checkTrack(self.track_data,self.scan_ind,\
+        [self.trackFound, self.om_ind1] = sf.checkTrack(self.track_data,self.scan_ind,\
                                            self.scan,self.frm)
-        [self.truthFound, self.om_ind2] = checkTruth(self.truth_data,self.scan_ind,\
+        [self.truthFound, self.om_ind2] = sf.checkTruth(self.truth_data,self.scan_ind,\
                                            self.scan,self.frm)      
         if self.trackFound:
             track = self.track_data[self.scan_ind][self.om_ind1].copy()
-            showTrack(self.ax,track,self.etaRoi,self.tthRoi,\
+            sf.showTrack(self.ax,track,self.etaRoi,self.tthRoi,\
                       self.eta0,self.tth0,self.params)
         if self.truthFound:
             print(f'Truth found: scan={self.scan},frm={self.frm}')
             self.truth = self.truth_data[self.scan_ind][self.om_ind2].copy()
-            showTruth(self.ax,self.truth,self.etaRoi,self.tthRoi,self.params)
+            sf.showTruth(self.ax,self.truth,self.etaRoi,self.tthRoi,self.params)
             self.select_truth()
         
         if hasattr(self,'truth'):
@@ -262,8 +266,8 @@ class truthLabeler:
         x2, y2 = erelease.xdata, erelease.ydata
 
         # Convert box to eta/tth values
-        eta1,tth1,deta,dtth = pixToEtaTth(x1,y1,self.tthRoi,self.etaRoi,self.params)
-        eta2,tth2,deta,dtth = pixToEtaTth(x2,y2,self.tthRoi,self.etaRoi,self.params)
+        eta1,tth1,deta,dtth = sf.pixToEtaTth(x1,y1,self.tthRoi,self.etaRoi,self.params)
+        eta2,tth2,deta,dtth = sf.pixToEtaTth(x2,y2,self.tthRoi,self.etaRoi,self.params)
         self.box_coords_label.config(text=f"Box: ({eta1:.4f}, {tth1:.4f}) - ({eta2:.4f}, {tth2:.4f})")
         self.truth = initTruth(eta1,eta2,tth1,tth2,self.scan,self.frm)
 
@@ -272,8 +276,8 @@ class truthLabeler:
         eta2 = self.truth['eta2']
         tth1 = self.truth['tth1']
         tth2 = self.truth['tth2']
-        x1,y1 = etaTthToPix(eta1,tth1,self.etaRoi,self.tthRoi,self.params)
-        x2,y2 = etaTthToPix(eta2,tth2,self.etaRoi,self.tthRoi,self.params)
+        x1,y1 = sf.etaTthToPix(eta1,tth1,self.etaRoi,self.tthRoi,self.params)
+        x2,y2 = sf.etaTthToPix(eta2,tth2,self.etaRoi,self.tthRoi,self.params)
         self.box_coords_label.config(text=f"Box: ({eta1:.4f}, {tth1:.4f}) - ({eta2:.4f}, {tth2:.4f})")
         self.rect_selector.extents = (y1, y2, x1, x2)
 
@@ -300,7 +304,7 @@ class truthLabeler:
         print('Preloading Eiger data')
         for scan in self.scanRange:
             print(f'Loading scan {scan}')
-            loadROI(self.dataPath,scan,self.frm,self.etaRoi,self.tthRoi,self.params)
+            sf.loadROI(self.dataPath,scan,self.frm,self.etaRoi,self.tthRoi,self.params)
 
 def enterEtaTth(eta,tth):
     etaStr = input('Enter true Eta: ')

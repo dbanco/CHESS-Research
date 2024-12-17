@@ -116,21 +116,8 @@ for i = 1:length(files)
     % Get the file name and path
     fileName = files(i).name;
     filePath = fullfile(topDir, fileName);
-    
-    % Read the image file
-    img = imread(filePath);
-    
-    % Convert to grayscale and invert colors
-    gray = 255 * (rgb2gray(img) < 128);
-    
-    % Find non-zero pixels (image content)
-    [row,col] = find(gray);
 
-    % Crop the image using the bounding box
-    cropped = img( min(row):max(row), min(col):max(col),:);
-    
-    % Save the cropped image overwriting
-    imwrite(cropped, filePath);
+    removeWhiteSpace(filePath)
 end
 
 

@@ -28,26 +28,38 @@ params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]
 params['pool'] = 16
 params['parallelFlag'] = False
 
-grains = [15,158]
-spotInds = sf.findSpots(spotData,grains=grains)
-spotInds = [113,205,413,954]
-spotInds = [113]
-
+# ttPath = os.path.join(topPath,'outputs_11_20')
 ttPath = os.path.join(topPath,'outputs_test')
-# os.mkdir(ttPath)
+if not os.path.exists(ttPath):
+    os.mkdir(ttPath)
 scanRange = np.concatenate((np.array([364,368,372,376,380]), np.arange(383,406), [407]))
-# sf.createTruth(state_file,spotInds[0:2],spotData,scanRange,ttPath,ttPath,dataFile,params)
 
+grains = [44,158]
+spotInds = sf.findSpots(spotData,grains=grains)
 
-spotInd = 3
+spotInd = 35
 scan0 = 0
-print(spotData['etas'][spotInd])
+
+grain_id = spotData['id_nums'][spotInd]
+spot35 = np.where(spotData['id_nums'] == grain_id)[0]
+
 # %% ROI Visualizer
-# dome = 3
-# num_cols = 8
-# sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,params)
+spotInd = spot35[2]
+dome = 3
+num_cols = 3
+scanRange = np.array([364,368,372])
+sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,params)
 # sf.roiTrackVisual2([spotInd],spotData,dome,scanRange,ttPath,dataFile,params)
+
+# %% Make track image files
+spotInds = [0,1]
+output_path = os.path.join(topPath,'imageFigs_c103')
+dome = 3
+num_cols = 8
+sf.makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,[],params)
+
+
 # %% Create Truth
 root = tk.Tk()
-app = sf.truthGUI(root,spotInd,scan0,spotData,scanRange,ttPath,ttPath,dataFile,params)
+app = sf.truthLabeler(root,spotInd,scan0,spotData,scanRange,ttPath,ttPath,dataFile,params)
 root.mainloop()

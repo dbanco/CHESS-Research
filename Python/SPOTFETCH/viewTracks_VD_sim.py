@@ -8,11 +8,7 @@ Created on Thu Jun  6 15:02:29 2024
 import numpy as np
 import spotfetch as sf
 import os
-import tkinter as tk
-import matplotlib.pyplot as plt
-from pptx import Presentation
-from pptx.util import Inches
-from docx import Document
+import pickle
 
 #   1. Set up paths: exsitu, data, outputs
 # CHESS
@@ -22,7 +18,8 @@ from docx import Document
 # dataFile = os.path.join(dataPath,'state_*/simulation/outputs/c103_polycrystal_sample_2_state_*_layer_1_output_data.npz')
 
 # LOCAL
-topPath = r"C:\Users\dpqb1\Documents\Data\VD_sim_processing"
+# topPath = r"C:\Users\dpqb1\Documents\Data\VD_sim_processing"
+topPath = r"E:\VD_sim_processing"
 exsituPath = os.path.join(topPath,r"state_0\simulation\outputs\c103_polycrystal_sample_2_state_0_layer_1_output_data.npz")
 dataFile = os.path.join(topPath,r"state_*\simulation\outputs\c103_polycrystal_sample_2_state_*_layer_1_output_data.npz")
 
@@ -60,20 +57,41 @@ for state in scanRange:
     spotsDir = os.path.join(topPath,f'state_{state}')
     spotsFiles.append(os.path.join(spotsDir,"spots.npz"))
 
-output_path = os.path.join(topPath,'imageFigs')
-spotInds = np.arange(40)
+# %% Analyze track data
+spotInds = np.arange(2000)
+resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)
+
+# # Serialize and save the data
+filename = os.path.join(topPath,"results_2000.pkl")
+with open(filename, "wb") as file:  # Open file in binary write mode
+    pickle.dump(resultsData, file)
+
+# with open(filename, "rb") as file:  # Open file in binary write mode
+#     resultsData = pickle.load(file)
+
+# %% Sort by truthDist
+sumTruthDist = np.nansum(resultsData['truthDist'],1)
+spotIndsSort = np.argsort(sumTruthDist)[::-1]
+sortTruthDist = sumTruthDist[spotIndsSort]
 
 # %% Make track image files
+output_path = os.path.join(topPath,'imageFigs')
 dome = 3
 num_cols = 5
-sf.makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params)
+sf.makeTrackImages(dome,num_cols,output_path,spotIndsSort[:20],spotData,scanRange,dataFile,ttPath,spotsFiles,params)
 
 # %% Make image/Data table slides
 # Reorder these so worst tracks are first
 ppt_file = os.path.join(output_path, "track_slides.pptx")
-sf.makeTrackSlides(ppt_file,output_path,spotInds,spotsFiles,scanRange,ttPath,params)  
+sf.makeTrackSlides(ppt_file,output_path,spotIndsSort[:20],resultsData)
 
-# # %% Create Truth
-# root = tk.Tk()
-# app = sf.truthLabeler(root,spotInd,scan0,spotData,scanRange,ttPath,ttPath,dataFile,params)
-# root.mainloop()
+# %% Compute fraction crect detections
+total = len(resultsData['truthDist'].ravel())
+correctDetects = np.sum(resultsData['truthDist'] < 2e-3)
+nanDetects = np.sum(resultsData['truthDist'] == np.nan)
+
+# %% Check continuity of spot truth
+# spotIndArray = sf.gatherSimTruth(spotsFiles)
+
+
+

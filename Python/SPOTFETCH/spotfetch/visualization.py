@@ -16,7 +16,8 @@ import matplotlib.patches as patches
 import glob
 import spotfetch as sf
 import spotfetch.detectors as dt
-
+from pptx import Presentation
+from pptx.util import Inches
 
 def roiAdjacent(ind,tth,eta,frame,omFrms,timeFrms,params,dataDir):
     
@@ -57,46 +58,52 @@ def plotROIs(roi_list,num_cols = 5):
     
     return fig
 
-def plotSpotWedges(spotData,fnames,frame,params,grains=[],detectFrame=[]):
+def plotSpotWedges(spotData,fnames,frame_i,params,grains=[],detectFrame=[]):
     tths = spotData['tths']
     etas = spotData['etas']     
-    ome_idxs = spotData['ome_idxs']-2
+    frms = spotData['ome_idxs']
+    frms_i = frms - 2 
+    
     # Get spot indices at frame
     if grains == []:
-        spotInds = np.where(ome_idxs == frame)[0]
+        spotInds = np.where(frms_i == frame_i)[0]
     else:
-        spotInds = sf.findSpots(spotData,grains=grains,frm=frame)
+        spotInds = sf.findSpots(spotData,grains=grains,frm=frame_i+2)
     
     roiSize = params['roiSize']
     imSize = params['imSize']
     center = (imSize[0]//2,imSize[1]//2,)
-
-    if os.path.isfile(fnames):
-        fnames = [fnames]
-    if detectFrame == []:
-        detectFrame = frame
-    if params['detector'] == 'dexela':
-        b = dt.load_dex(fnames,params,detectFrame)
-    elif params['detector'] == 'eiger':
-        b = dt.load_eiger(fnames,params,detectFrame)
-    elif params['detector'] == 'eiger_sim':
-        b = dt.load_eiger_sim(fnames,params,detectFrame)
-    
+        
+    b = sf.loadImg(fnames,params,frame_i)
     
     fig = plt.figure()
     # b[b>100] = 100
     plt.imshow(b)
-    plt.clim(np.median(b),np.median(b)+10)
+    plt.clim(np.median(b),np.median(b)+20)
     plt.colorbar()
     
     for ind in spotInds:
         # 0. Load spot information
         tth = tths[ind]
-        eta = -etas[ind]
-
+        eta = etas[ind]
+        print(eta)
+        print(tth)
         # 1. Load YAML data
-        detectDist, mmPerPixel, ff_trans = dt.loadYamlData(params,tth,eta)
+        detectDist, mmPerPixel, ff_trans, ff_tilt = dt.loadYamlData(params,tth,eta)
         
+        r = detectDist*np.tan(tth)/mmPerPixel
+        x = -r*np.cos(eta)
+        y = r*np.sin(eta)
+
+        [x,y] = sf.applyTilt(x,y,ff_tilt,detectDist)
+
+        eta = np.arctan2(y,x)
+        
+        r = np.sqrt(x**2 + y**2)
+        tth = np.arctan(r*mmPerPixel/detectDist)
+        print(eta)
+        print(tth)
+
         # 2. Construct rad, eta domain
         rad_dom, eta_dom = dt.polarDomain(detectDist, mmPerPixel, tth, eta, roiSize)
    
@@ -133,7 +140,7 @@ def scatterOmeg(trackData):
 
     return fig
 
-def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,truthPath,params):
+def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,truthPath,spotFiles,params):
 
     T = len(scanRange)
     N_ome = 2*dome+1
@@ -173,7 +180,8 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
     track_file = os.path.join(trackPath,f'trackData_{spotInd}.pkl')
     if os.path.exists(track_file):
         with open(track_file, 'rb') as f:
-            track_data = pickle.load(f)
+            outData = pickle.load(f)
+            track_data = outData['trackData']
             print('Track loaded')
     else:
         track_data = []
@@ -189,13 +197,23 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
         T = len(scanRange)
         truth_data = []
         truthFound = False
+        
+    # Load sim truth
+    spotDataList = []
+    for i in range(len(spotFiles)):
+        if os.path.exists(spotFiles[i]):
+            spotDataList.append(np.load(spotFiles[i]))
     
-    eta0 = spotData['etas'][spotInd]
-    tth0 = spotData['tths'][spotInd]
+    x = spotData['Xm'][spotInd]
+    y = spotData['Ym'][spotInd]
+    eta0, tth0 = sf.xyToEtaTthRecenter(x,y,params)
     frm0 = spotData['ome_idxs'][spotInd]
+    print(spotData['omes'][spotInd])
+    
     etaRoi = eta0
     tthRoi = tth0
     frmRange = np.arange(frm0-dome,frm0+dome+1)
+    spot_id = sf.getSpotID(spotData,spotInd)
     
     for scan_ind in range(T):
         for om_ind in range(N_ome):
@@ -204,17 +222,33 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
             ax = axes_list[i][om_ind,j]
             scan = scanRange[scan_ind]
             frm = sf.wrapFrame(frmRange[om_ind])
+            
             print(f'Scan {scan}, Frame {frm}')
+            if (scan == 2) & (frm == 139):
+                print('img missing')
             # 1. Show ROI
-            sf.showROI(ax,dataPath, scan, frm,\
-                    tthRoi, etaRoi, params)
-            sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
-            # 2. Show the track and truth if exist
+            sf.showROI(ax,dataPath, scan, frm, tthRoi, etaRoi, params)
+            # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
+            
+            # 2. Show the track, truth, sim_truth if they exist
             if len(track_data) > 0:
                 [trackFound, om_ind1] = sf.checkTrack(track_data,scan_ind,scan,frm)
             if len(truth_data) > 0:
-                [truthFound, om_ind2] = sf.checkTruth(truth_data,scan_ind,scan,frm)      
-            
+                [truthFound, om_ind2] = sf.checkTruth(truth_data,scan_ind,scan,frm)  
+            if len(spotDataList) > 0:
+                m_ind = sf.matchSpotID(spotDataList[scan_ind],spot_id,spotInd)
+                if not np.isnan(m_ind):
+                    if frm == spotDataList[scan_ind]['ome_idxs'][m_ind]:
+                        # Plot the sim truth
+                        x = spotDataList[scan_ind]['Xm'][m_ind]
+                        y = spotDataList[scan_ind]['Ym'][m_ind]
+                        etaTrue, tthTrue = sf.xyToEtaTthRecenter(x,y,params)
+                        [y1, x1] = sf.etaTthToPix(etaTrue,tthTrue,etaRoi,tthRoi,params)
+                        if (y1 >= 0) and (y1 < params['roiSize'][0]) and\
+                           (x1 >= 0) and (x1 < params['roiSize'][1]):
+                            ax.plot(x1,y1,marker='o',fillstyle='none',markersize=16,color='cyan')
+                            ax.plot(x1,y1,marker='s',fillstyle='none',markersize=36,color='cyan')
+                    
             # Add tracks and truth if available
             if trackFound:
                 track = track_data[scan_ind][om_ind1].copy()
@@ -230,162 +264,97 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
             if scan_ind == 0:
                 ax.set_ylabel(f'{frm}')
 
+def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
+    os.makedirs(output_path, exist_ok=True)
+        
+    if num_cols < len(scanRange):
+        for spotInd in spotInds:
+            for i in range(int(np.ceil(len(scanRange)/num_cols))):
+                sRange = scanRange[num_cols*i:num_cols*(i+1)]
+                sf.roiTrackVisual(spotInd,spotData,dome,num_cols,sRange,dataFile,ttPath,ttPath,spotsFiles,params)
+                # Save the current figure
+                figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
+                plt.savefig(figure_file)
+                plt.close()
+    else:
+        for spotInd in spotInds:
+            sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
 
-def roiTrackVisual2(spotInds,spotData,dome,scanRange,trackPath,dataPath,params):
-    initData = {
-        'tths': spotData['tths'],
-        'etas': spotData['etas'],
-        'frms': spotData['ome_idxs']
-    }
-    
-    # Choose spot
-    for k in spotInds: #range(10):
-        print(f'Showing Spot {k}')
-        eta0 = initData['etas'][k]
-        tth0 = initData['tths'][k]
-        frm0 = initData['frms'][k]
+            # Save the current figure
+            figure_file = os.path.join(output_path, f"fig_{spotInd}.png")
+            plt.savefig(figure_file)
+            plt.close()
+
+def makeTrackSlides(ppt_file,output_path,spotInds,resultsData,spotData):
+    ppt = Presentation()
+    for si,spotInd in enumerate(spotInds):
         
-        # Define Omega range
-        om0 = frm0
-        omMin = om0-dome
-        omMax = om0+dome
-        omRange = np.arange(omMin,omMax+1)
-        for i,om in enumerate(omRange):
-            omRange[i] = sf.wrapFrame(om)
+        os.makedirs(output_path, exist_ok=True)
+        # Save the current figure
+        figure_file = os.path.join(output_path, f"fig_{spotInd}.png")
         
-        # Define the number of rows and columns
-        rows = len(omRange)
-        columns = len(scanRange)
+        # Slide 1 with track figure
+        slide = ppt.slides.add_slide(ppt.slide_layouts[6])  # Blank slide layout
+        slide.shapes.add_picture(figure_file, Inches(0), Inches(0), Inches(10), Inches(8))
         
-        # Create a figure and a set of subplots
-        fig, axes = plt.subplots(rows, columns, figsize=(20, 15))
         
-        # Remove x and y ticks for clarity
-        for ax_row in axes:
-            for ax in ax_row:
-                ax.set_xticks([])
-                ax.set_yticks([])
+        # Slide 2 with track, data info 
+        grNum = spotData['grain_nums'][spotInd]
+        eta = spotData['etas'][spotInd]
+        tth = spotData['tths'][spotInd]
+        ome = spotData['omes'][spotInd]
+        H = spotData['H'][spotInd]
+        K = spotData['K'][spotInd]
+        L = spotData['L'][spotInd]
         
-        # Add common labels
-        fig.text(0.04, 0.5, r'$\omega$ frame', va='center', rotation='vertical', fontsize=24)
-        fig.text(0.5, 0.04, 'Scan #', ha='center', fontsize=24)
-        fig.text(0.5, 0.95, f'Spot {k}', ha='center', fontsize=32)
+        labels = ["truthDist", "changeDist", "omegaCount", "trackTimes"]
+        table_vals = []
+        for i in range(4):
+            table_vals.append([])
+            for t in range(5):
+                table_vals[i].append(resultsData[labels[i]][si][t])
+            
+        slide2 = ppt.slides.add_slide(ppt.slide_layouts[6])  # Blank slide
         
-        # Path to the track data file
-        track_file = os.path.join(trackPath,f'trackData_{k}.pkl')
+        rows, cols = 2, 5  # Rows: labels + header, Columns: 6 (labels + 5 time steps)
+        x, y, cx, cy = Inches(1), Inches(1), Inches(8), Inches(1)  # Table position and size
+        table = slide2.shapes.add_table(rows, cols, x, y, cx, cy).table
+        table.cell(0,0).text = "grain"
+        table.cell(0,1).text = "HKL"
+        table.cell(0,2).text = "eta"
+        table.cell(0,3).text = "tth"
+        table.cell(0,4).text = "ome"
+        table.cell(1,0).text = f"{grNum:.0f}"
+        table.cell(1,1).text = f"{H:1.0f} {K:1.0f} {L:1.0f}"
+        table.cell(1,2).text = f"{eta:1.4f}"
+        table.cell(1,3).text = f"{tth:1.4f}"
+        table.cell(1,4).text = f"{ome:1.4f}"
         
-        # Initial plot setup
-        if os.path.exists(track_file):
-            with open(track_file, 'rb') as f:
-                track_data = pickle.load(f)
-                
-        # Organize all tracks
-        T = len(track_data)
-        if len(track_data[0]) == 0:
-            continue
-        track = track_data[0]
-        eta0 = track[0]['etaRoi']
-        tth0 = track[0]['tthRoi']
+        rows, cols = len(labels) + 1, 6  # Rows: labels + header, Columns: 6 (labels + 5 time steps)
+        x, y, cx, cy = Inches(1), Inches(3), Inches(8), Inches(4)  # Table position and size
+        table = slide2.shapes.add_table(rows, cols, x, y, cx, cy).table
         
-        omTrack = np.zeros((rows,columns)) - 1
-        scanTrack = np.zeros((rows,columns)) - 1
-        etaRoiTrack = np.zeros((rows,columns)) + eta0
-        tthRoiTrack = np.zeros((rows,columns)) + tth0
-        etaTrack = np.zeros((rows,columns)) + eta0
-        tthTrack = np.zeros((rows,columns)) + tth0
-        p1Track = np.zeros((rows,columns))
-        p2Track = np.zeros((rows,columns))
+        # Populate header row
+        for col in range(1, cols):
+            table.cell(0, col).text = f"state {col - 1}"
         
-        for t in range(T):
-            track = track_data[t]
-            if len(track) > 0:
-                for j in range(len(track)):
-                    scan = track[j]['scan']
-                    frm = track[j]['frm']
-                    
-                    if (frm in omRange) & (scan in scanRange):
-                        ind1 = int(np.where(scanRange == scan)[0][0])
-                        ind2 = int(np.where(omRange == frm)[0][0])
-                    
-                        eta = track[j]['eta']
-                        tth = track[j]['tth']
-                        etaRoi = track[j]['etaRoi']
-                        tthRoi = track[j]['tthRoi']
-                        p = track[j]['p']
-                        
-                        scanTrack[ind2,ind1] = scan
-                        omTrack[ind2,ind1] = frm
-                        etaTrack[ind2,ind1] = eta
-                        tthTrack[ind2,ind1] = tth
-                        etaRoiTrack[ind2,ind1] = etaRoi
-                        tthRoiTrack[ind2,ind1] = tthRoi
-                        p1Track[ind2,ind1] = p[1]
-                        p2Track[ind2,ind1] = p[2]
-                    
-        for j in range(columns):
-            if os.path.isdir(dataPath):
-                fnames = sf.timeToFile(scanRange[j],dataPath)
-                isFile = False
-            else:
-                fnames = dataPath
-                isFile = True
-                
-            for i in range(rows): 
-                ax = axes[i, j]
-                ax.clear()
-    
-                etaRoi = etaRoiTrack[i,j]
-                tthRoi = tthRoiTrack[i,j]
-                frm = omRange[i]
-                scan = scanRange[j]
-                p1 = p1Track[i,j]
-                p2 = p2Track[i,j]
-                
-                # Show roi
-                if isFile:
-                    template = dataPath.format(num2=scan)
-                    fnames = glob.glob(template)
-                    roi = dt.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
-                else:
-                    roi = dt.loadPolarROI(fnames,tthRoi,etaRoi,frm,params)
-                ax.imshow(roi)
-                ax.text(1, 4, f'{roi.max():.2f}', color='white', fontsize=12, weight='bold')
-                
-                if (p1 > 0) & (p2 > 0):
-                    # Plot rect
-                    eta = etaTrack[i,j]
-                    tth = tthTrack[i,j]
-                    detectDist, mmPerPixel, ff_trans = dt.loadYamlData(params,tth,eta)
-                    boxSize = 10
-                    start_col = round(p1 - boxSize//2)
-                    start_row = round(p2 - boxSize//2)
-                    rect = plt.Rectangle((start_col, start_row), boxSize, boxSize,
-                                          linewidth=1, edgecolor='r', facecolor='none')
-                    ax.add_patch(rect)
-                    
-                    # Show Previous Track
-                    rad_dom, eta_dom = dt.polarDomain(detectDist, mmPerPixel,\
-                                          tthRoi, etaRoi, params['roiSize'])
-                    radRoi = detectDist*np.tan(tthRoi)/mmPerPixel
-                    
-                    y_pos = (radRoi-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
-                    x_pos = (etaRoi-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
-                    ax.plot(x_pos,y_pos,marker='o',markersize=16,\
-                            fillstyle='none',color='red')
-                    
-                    rad0 = detectDist*np.tan(tth0)/mmPerPixel
-                    y_pos = (rad0-rad_dom[0])/(rad_dom[-1]-rad_dom[0])*39
-                    x_pos = (eta0-eta_dom[0])/(eta_dom[-1]-eta_dom[0])*39
-                    ax.plot(x_pos,y_pos,marker='x',markersize=10,color='yellow')
-                    
-                    
-                if i == rows-1:
-                    ax.set_xlabel(f'{scan}')
-                if j == 0:
-                    ax.set_ylabel(f'{frm}')
-                    
-                ax.set_xticks([])
-                ax.set_yticks([])
-        plt.draw()
-        # plt.savefig(f'fig_{k}.png')
-        # plt.close(fig)
+        # Populate the data rows
+        for row_idx, label in enumerate(labels, start=1):
+            table.cell(row_idx, 0).text = label
+            for col_idx, value in enumerate(table_vals[row_idx - 1], start=1):
+                table.cell(row_idx, col_idx).text = format_row(row_idx,value)
+        
+    ppt.save(ppt_file)
+    print(f"Figure added to PowerPoint: {ppt_file}")
+
+def format_row(row_idx, value):
+    if row_idx == 1:  # Row 1: Scientific Notation
+        return f"{value:.2e}"
+    elif row_idx == 2:  # Row 2: Sci
+        return f"{value:.2e}"
+    elif row_idx == 3:  # Row 3: Integer
+        return f"{value:1.0f}"
+    elif row_idx == 4:  # Row 4: Scientific notation
+        return f"{value:.2f}"
+    else:  # Default
+        return str(value)

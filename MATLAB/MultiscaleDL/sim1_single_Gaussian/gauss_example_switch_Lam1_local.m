@@ -31,17 +31,37 @@ opt.HSiters = 100;
 opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
+opt.Penalty = 'l1-norm';
+% opt.Penalty = 'log';
 opt.coefInit = 'zeros';
 opt.dictInit = 'flat';
-opt.maxLayers = 2;
-opt.delta = 0.02;
-opt.epsilon = 0.05;
 
+opt.a = 1;
+
+penalties = {'l1-norm','log'};
+xinits = {'zeros','true'};
+dinits = {'flat','true'};
+dfixes = {0,1};
+
+count = 0;
+total = 0;
+
+for s1 = 1
+    for s2 = 1:2
+        for s3 = 1
+            for s4 = 1
+
+
+opt.Dfixed = dfixes{s1};
+opt.Penalty = penalties{s2};
+opt.coefInit = xinits{s3};
+opt.dictInit = dinits{s4};
+if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
+    continue
+end
 k = 1;
-scriptFileName = 'mcdlof_bash.sh';
-jobDir = '/cluster/home/dbanco02/jobs/';
-for i = [1]
-    for j_s = [1,5,10,100]
+for sig_i = 1:11
+    for j_s = [1:10,16:5:106]
         for j_hs = 1  
             for j_of = 1
                 % topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_23_Dflat_Xzero\unmatched_results';
@@ -65,17 +85,28 @@ for i = [1]
                 % mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 %                             j_s,j_of,j_hs,sigmas,i,opt,K,scales,topDir,dataset);
                 dataset = 'steps_matched';
-                topDir = ['C:\Users\dpqb1\Documents\Outputs2024_11_14',...
+                topDir = ['E:\Outputs2024_12_3',...
                     '_D',opt.dictInit,num2str(opt.Dfixed),...
-                    '_X',opt.coefInit,num2str(opt.Xfixed),'\',dataset,'_results'];
-                 
+                    '_X',opt.coefInit,num2str(opt.Xfixed),'\',...
+                    dataset,'_',opt.Penalty,'_results'];
+                
+                imageFile = dir(fullfile([topDir,'_sig_',num2str(sig_i)],...
+                                         ['vdf_j', num2str(j_s), '_*.png']));
+                total = total + 1
+                if numel(imageFile) == 1
+                    continue
+                end
+                count = count + 1
                 mcdlof_wrapper_sim1_switch(lambdaVals,lambdaOFVals,lambdaHSVals,...
-                                            j_s,j_of,j_hs,sigmas,i,opt,topDir,dataset);
+                                            j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset);
             end
         end
     end
 end
-
+            end
+        end
+    end
+end
 %% Compare data
 %
 % [yn1,y_m,N,M,T,~,~] = gaus_example_matched_multiscale_dl(0);

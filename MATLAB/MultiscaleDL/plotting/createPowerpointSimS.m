@@ -1,4 +1,4 @@
-function createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals)
+function createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,8 +13,13 @@ slide1 = add(ppt_sim1, 'Title Slide');
 titleText = Paragraph(titleStr);
 replace(slide1, 'Title', titleText);
 
-NN = numel(sigmas);
+% Add slide showing L-curves and selected parameters
+slide2 = add(ppt_sim1, 'Title and Content');
+replace(slide2, 'Title', [criterion,' selection']);
+img = Picture(LcurveFile);
+replace(slide2, 'Content', img);
 
+NN = numel(sigmas);
 for n = 1:NN
     spDir = [dirStartS,'_sig_',num2str(n)];
 
@@ -34,32 +39,32 @@ for n = 1:NN
 
     % Dictionaries
     slide2 = add(ppt_sim1, 'Title and Content');
-    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),0));
+    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2f, Lam_of=%0.2f',...
+        n,meanSNR(n),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,dictPngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
 
     % VDFs
     slide2 = add(ppt_sim1, 'Title and Content');
-    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),0));
+    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2f, Lam_of=%0.2f',...
+        n,meanSNR(n),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,vdfPngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
 
     % X1
     slide2 = add(ppt_sim1, 'Title and Content');
-    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),0));
+    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2 Lam_of=%0.2f',...
+        n,meanSNR(n),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,x1PngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
 
     % Recon
     slide2 = add(ppt_sim1, 'Title and Content');
-    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),0));
+    replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_s=%0.2, Lam_of=%0.2f',...
+        n,meanSNR(n),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,reconGifS);  % Specify the image file you want to insert
     try
         img = Picture(imagePath);

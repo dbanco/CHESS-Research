@@ -92,7 +92,7 @@ function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_mu
 % the library.
 
 
-if nargin < 4,
+if nargin < 4
   opt = [];
 end
 checkopt(opt, defaultopts([]));
@@ -103,18 +103,18 @@ hstr = ['Itn   Fnc       DFid      l1        OF        HS        XYU       DGH  
         'r(X)      s(X)      r(D)      s(D) '];
 sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
 nsep = 84;
-if opt.AutoRho,
+if opt.AutoRho
   hstr = [hstr '     rho'];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
-if opt.AutoSigma,
+if opt.AutoSigma
   hstr = [hstr '     sigma  '];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
 sfms = [sfms,'\n'];
-if opt.Verbose && opt.MaxMainIter > 0,
+if opt.Verbose && opt.MaxMainIter > 0
   disp(hstr);
   disp(char('-' * ones(1,nsep)));
 end
@@ -128,9 +128,9 @@ end
 % is only 3d.
 switch numel(size(S))
     case 4
-        [N1,N2,~,T] = size(S);
+        [~,N2,~,T] = size(S);
     case 3
-        [N1,N2,T] = size(S);
+        [~,N2,T] = size(S);
     otherwise
         error('Check size of S')
 end
@@ -172,9 +172,9 @@ PzpT = @(x) bcrop(x, dsz);
 Pnonneg = @(x) makeNonneg(x);
  
 % Projection of dictionary filters onto constraint set
-if opt.ZeroMean,
+if opt.ZeroMean
   Pcn = @(x) Pnrm(Pzp(Pzmn(PzpT(x))));
-elseif opt.NonnegativeDict,
+elseif opt.NonnegativeDict
   Pcn = @(x) removeNan(Pnrm(Pzp(PzpT(Pnonneg(x)))));
 else
   Pcn = @(x) Pnrm(Pzp(PzpT(x)));
@@ -192,17 +192,17 @@ Sfpad = fft2(Spad);
 
 % Set up algorithm parameters and initialise variables
 rho = opt.rho;
-if isempty(rho), rho = 50*lambda+1; end;
-if opt.AutoRho,
-  asgr = opt.RhoRsdlRatio;
-  asgm = opt.RhoScaling;
-end
+if isempty(rho), rho = 50*lambda+1; end
+% if opt.AutoRho
+%   asgr = opt.RhoRsdlRatio;
+%   asgm = opt.RhoScaling;
+% end
 sigma = opt.sigma;
-if isempty(sigma), sigma = size(S,3); end;
-if opt.AutoSigma,
-  asdr = opt.SigmaRsdlRatio;
-  asdm = opt.SigmaScaling;
-end
+if isempty(sigma), sigma = size(S,3); end
+% if opt.AutoSigma
+%   asdr = opt.SigmaRsdlRatio;
+%   asdm = opt.SigmaScaling;
+% end
 optinf = struct('itstat', [], 'opt', opt);
 rx = Inf;
 sx = Inf;
@@ -214,14 +214,14 @@ eprid = 0;
 eduad = 0;
 
 % Initialise main working variables
-if isempty(opt.Y0),
+if isempty(opt.Y0)
   Y = zeros(xsz, class(S));
 else
   Y = opt.Y0;
 end
 Yprv = Y;
-if isempty(opt.U0),
-  if isempty(opt.Y0),
+if isempty(opt.U0)
+  if isempty(opt.Y0)
     U = zeros(xsz, class(S));
   else
     U = (lambda/rho)*sign(Y);
@@ -230,13 +230,13 @@ else
   U = opt.U0;
 end
 
-if isempty(opt.G0),
+if isempty(opt.G0)
   G = Pzp(D);
 else
   G = opt.G0;
 end
 Gprv = G;
-if isempty(opt.H0),
+if isempty(opt.H0)
 %   if isempty(opt.G0),
     H = zeros(size(G), class(S));
 %   else
@@ -248,7 +248,7 @@ end
 
 if opt.plotDict
     fdict = figure;
-    frecon = figure;
+    % frecon = figure;
     freconA = figure;
     xFig = figure;
 end
@@ -269,7 +269,12 @@ tk = toc(tstart);
 Jcn = norm(vec(Pcn(D) - D));
 recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
 Jdf = sum(vec(abs(recon-S).^2))/2;
-Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+switch opt.Penalty
+    case 'l1-norm'
+        Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+    case 'log'
+        Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
+end
 Jlg1 = rho*sum((U(:)).^2);
 Jlg2 = sigma*sum((H(:)).^2);
 if lambda2 > 0
@@ -289,12 +294,12 @@ minCount = 0;
 
 optinf.itstat = [optinf.itstat;...
        [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
-  if opt.Verbose,
+  if opt.Verbose
     dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
-    if opt.AutoRho,
+    if opt.AutoRho
       dvc = [dvc rho];
     end
-    if opt.AutoSigma,
+    if opt.AutoSigma
       dvc = [dvc sigma];
     end
     fprintf(sfms, dvc);
@@ -302,7 +307,7 @@ optinf.itstat = [optinf.itstat;...
 
 % Main loop
 k = 1;
-while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
+while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Solve X subproblem. It would be simpler and more efficient (since the
     % DFT is already available) to solve for X using the main dictionary
     % variable D as the dictionary, but this appears to be unstable. Instead,
@@ -322,20 +327,24 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         clear Xf AGf AGSf;
         
         % See pg. 21 of boyd-2010-distributed
-        if opt.XRelaxParam == 1,
+        if opt.XRelaxParam == 1
             Xr = X;
         else
             Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
         end
         
         % Solve Y subproblem
-        Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-        % Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-        if opt.NonNegCoef,
+        switch opt.Penalty
+            case 'l1-norm'
+                Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+            case 'log'
+                Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight,opt.a);
+        end
+        if opt.NonNegCoef
             Y(Y < 0) = 0;
         end
         
-        if opt.NoBndryCross,
+        if opt.NoBndryCross
             %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
             Y((end-size(D0,1)+2):end,:,:,:) = 0;
             %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
@@ -357,7 +366,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
 
     % Compute primal and dual residuals and stopping thresholds for X update
     nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
-    if opt.StdResiduals,
+    if opt.StdResiduals
         % See pp. 19-20 of boyd-2010-distributed
         rx = norm(vec(X - Y));
         sx = norm(vec(rho*(Yprv - Y)));
@@ -371,7 +380,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
     end
 
-    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2); ;
+    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2);
     
     % Update record of previous step Y
     Yprv = Y;
@@ -391,7 +400,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
         if strcmp(opt.LinSolve, 'SM'), clear Df; end
         
         % See pg. 21 of boyd-2010-distributed
-        if opt.DRelaxParam == 1,
+        if opt.DRelaxParam == 1
             Dr = D;
         else
             Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
@@ -417,7 +426,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     
     % Compute primal and dual residuals and stopping thresholds for D update
     nD = norm(D(:)); nG = norm(G(:)); nH = norm(H(:));
-    if opt.StdResiduals,
+    if opt.StdResiduals
         % See pp. 19-20 of boyd-2010-distributed
         rd = norm(vec(D - G));
         sd = norm(vec(sigma*(Gprv - G)));
@@ -432,7 +441,7 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     end
     
     % Apply CG auto tolerance policy if enabled
-    if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt,
+    if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt
         cgt = rd/opt.CGTolFactor;
     end
 
@@ -452,8 +461,13 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     Jdf = sum(vec(abs(recon-S).^2))/2;
     
     % Sparsity term
-    Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-    
+    switch opt.Penalty
+        case 'l1-norm'
+            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+        case 'log'
+            Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
+    end
+
     % Optical flow terms
     if lambda2 > 0
         [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
@@ -509,12 +523,18 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     optinf.itstat = [optinf.itstat;...
     [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
     if opt.Verbose
-        dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, cgIters1,cgIters2, rx, sx, rd, sd];
-        if opt.AutoRho
-            dvc = [dvc rho];
-        end
-        if opt.AutoSigma
-            dvc = [dvc sigma];
+        if opt.AutoRho && opt.AutoSigma
+            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, rho, sigma];
+        elseif opt.AutoSigma
+            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, sigma];
+        elseif opt.AutoRho
+            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, rho];
+        else
+            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd];
         end
         fprintf(sfms, dvc);
     end
@@ -536,9 +556,9 @@ while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
       U = U/rsf;
     end
   end
-  if opt.AutoSigma,
-    if k ~= 1 && mod(k, opt.AutoSigmaPeriod) == 0,
-      if opt.AutoSigmaScaling,
+  if opt.AutoSigma
+    if k ~= 1 && mod(k, opt.AutoSigmaPeriod) == 0
+      if opt.AutoSigmaScaling
         sigmlt = sqrt(rd/sd);
         if sigmlt < 1, sigmlt = 1/sigmlt; end
         if sigmlt > opt.SigmaScaling, sigmlt = opt.SigmaScaling; end
@@ -571,9 +591,9 @@ optinf.lambda = lambda;
 optinf.rho = rho;
 optinf.sigma = sigma;
 optinf.cgt = cgt;
-if exist('cgst'), optinf.cgst = cgst; end
+if exist('cgst','var'), optinf.cgst = cgst; end
 
-if opt.Verbose && opt.MaxMainIter > 0,
+if opt.Verbose && opt.MaxMainIter > 0
   disp(char('-' * ones(1,nsep)));
 end
 
@@ -583,17 +603,14 @@ end
 
 return
 
-
 function u = vec(v)
 
   u = v(:);
 
 return
 
-
 function u = shrink(v, lambda)
-
-  if isscalar(lambda),
+  if isscalar(lambda)
     u = sign(v).*max(0, abs(v) - lambda);
   else
     u = sign(v).*max(0, bsxfun(@minus, abs(v), lambda));
@@ -601,26 +618,28 @@ function u = shrink(v, lambda)
 
 return
 
-function u = log_shrink(v, lambda)
-u = sign(v).*log(1+max(0, abs(v) - lambda));
+function u = log_shrink(v, lambda, a)
+    low_v = v < lambda;
+    y1 = abs(v)/2 - 1/(2*a);
+    y2 = abs(v)/2 + 1/(2*a);
+    u = sign(v).*(y1 + sqrt( y2.^2 - lambda/a));
+    u(low_v) = 0;
 return
 
-function u = atan_shrink(v, lambda)
-a = 0.2;
-u = 2/(a*sqrt(3))*(atan((1+2*a*(abs(v)-lambda))/sqrt(3))-pi/6);
-return
+% function u = atan_shrink(v, lambda)
+% a = 0.2;
+% u = 2/(a*sqrt(3))*(atan((1+2*a*(abs(v)-lambda))/sqrt(3))-pi/6);
+% return
 
-function u = zpad(v, sz)
-
-  u = zeros(sz(1), sz(2), size(v,3), size(v,4), class(v));
-  u(1:size(v,1), 1:size(v,2),:,:) = v;
-
-return
+% function u = zpad(v, sz)
+%   u = zeros(sz(1), sz(2), size(v,3), size(v,4), class(v));
+%   u(1:size(v,1), 1:size(v,2),:,:) = v;
+% return
 
 function u = bcrop(v, sz)
 
-  if numel(sz) <= 2,
-    if numel(sz) == 1
+  if numel(sz) <= 2
+    if isscalar(sz)
       cs = [sz sz];
     else
       cs = sz;
@@ -629,7 +648,7 @@ function u = bcrop(v, sz)
   else
     cs = max(sz,[],2);
     u = zeros(cs(1), cs(2), size(v,3), class(v));
-    for k = 1:size(v,3),
+    for k = 1:size(v,3)
       u(1:sz(1,k), 1:sz(2,k), k) = v(1:sz(1,k), 1:sz(2,k), k);
     end
   end
@@ -647,119 +666,118 @@ function y = removeNan(x)
 return
 
 function opt = defaultopts(opt)
-
-  if ~isfield(opt,'Verbose'),
+  if ~isfield(opt,'Verbose')
     opt.Verbose = 0;
   end
-  if ~isfield(opt,'MaxMainIter'),
+  if ~isfield(opt,'MaxMainIter')
     opt.MaxMainIter = 1000;
   end
-  if ~isfield(opt,'AbsStopTol'),
+  if ~isfield(opt,'AbsStopTol')
     opt.AbsStopTol = 1e-5;
   end
-  if ~isfield(opt,'RelStopTol'),
+  if ~isfield(opt,'RelStopTol')
     opt.RelStopTol = 1e-3;
   end
-  if ~isfield(opt,'L1Weight'),
+  if ~isfield(opt,'L1Weight')
     opt.L1Weight = 1;
   end
-  if ~isfield(opt,'Y0'),
+  if ~isfield(opt,'Y0')
     opt.Y0 = [];
   end
-  if ~isfield(opt,'U0'),
+  if ~isfield(opt,'U0')
     opt.U0 = [];
   end
-  if ~isfield(opt,'Z0'),
+  if ~isfield(opt,'Z0')
     opt.Z0 = [];
   end
-  if ~isfield(opt,'V0'),
+  if ~isfield(opt,'V0')
     opt.V0 = [];
   end
-  if ~isfield(opt,'G0'),
+  if ~isfield(opt,'G0')
     opt.G0 = [];
   end
-  if ~isfield(opt,'H0'),
+  if ~isfield(opt,'H0')
     opt.H0 = [];
   end
-  if ~isfield(opt,'rho'),
+  if ~isfield(opt,'rho')
     opt.rho = [];
   end
-  if ~isfield(opt,'AutoRho'),
+  if ~isfield(opt,'AutoRho')
     opt.AutoRho = 0;
   end
-  if ~isfield(opt,'AutoRhoPeriod'),
+  if ~isfield(opt,'AutoRhoPeriod')
     opt.AutoRhoPeriod = 10;
   end
-  if ~isfield(opt,'RhoRsdlRatio'),
+  if ~isfield(opt,'RhoRsdlRatio')
     opt.RhoRsdlRatio = 10;
   end
-  if ~isfield(opt,'RhoScaling'),
+  if ~isfield(opt,'RhoScaling')
     opt.RhoScaling = 2;
   end
-  if ~isfield(opt,'AutoRhoScaling'),
+  if ~isfield(opt,'AutoRhoScaling')
     opt.AutoRhoScaling = 0;
   end
-  if ~isfield(opt,'sigma'),
+  if ~isfield(opt,'sigma')
     opt.sigma = [];
   end
-  if ~isfield(opt,'AutoSigma'),
+  if ~isfield(opt,'AutoSigma')
     opt.AutoSigma = 0;
   end
-  if ~isfield(opt,'AutoSigmaPeriod'),
+  if ~isfield(opt,'AutoSigmaPeriod')
     opt.AutoSigmaPeriod = 10;
   end
-  if ~isfield(opt,'SigmaRsdlRatio'),
+  if ~isfield(opt,'SigmaRsdlRatio')
     opt.SigmaRsdlRatio = 10;
   end
-  if ~isfield(opt,'SigmaScaling'),
+  if ~isfield(opt,'SigmaScaling')
     opt.SigmaScaling = 2;
   end
-  if ~isfield(opt,'AutoSigmaScaling'),
+  if ~isfield(opt,'AutoSigmaScaling')
     opt.AutoSigmaScaling = 0;
   end
-  if ~isfield(opt,'StdResiduals'),
+  if ~isfield(opt,'StdResiduals')
     opt.StdResiduals = 0;
   end
-  if ~isfield(opt,'XRelaxParam'),
+  if ~isfield(opt,'XRelaxParam')
     opt.XRelaxParam = 1;
   end
-  if ~isfield(opt,'DRelaxParam'),
+  if ~isfield(opt,'DRelaxParam')
     opt.DRelaxParam = 1;
   end
-  if ~isfield(opt,'LinSolve'),
+  if ~isfield(opt,'LinSolve')
     opt.LinSolve = 'SM';
   end
-  if ~isfield(opt,'MaxCGIter'),
+  if ~isfield(opt,'MaxCGIter')
     opt.MaxCGIter = 1000;
   end
-  if ~isfield(opt,'CGTol'),
+  if ~isfield(opt,'CGTol')
     opt.CGTol = 1e-3;
   end
-  if ~isfield(opt,'CGTolX'),
+  if ~isfield(opt,'CGTolX')
     opt.CGTolX = 1e-3;
   end
-  if ~isfield(opt,'CGTolAuto'),
+  if ~isfield(opt,'CGTolAuto')
     opt.CGTolAuto = 0;
   end
-  if ~isfield(opt,'CGTolAutoFactor'),
+  if ~isfield(opt,'CGTolAutoFactor')
     opt.CGTolFactor = 50;
   end
-  if ~isfield(opt,'NoBndryCross'),
+  if ~isfield(opt,'NoBndryCross')
     opt.NoBndryCross = 0;
   end
-  if ~isfield(opt,'DictFilterSizes'),
+  if ~isfield(opt,'DictFilterSizes')
     opt.DictFilterSizes = [];
   end
-  if ~isfield(opt,'NonNegCoef'),
+  if ~isfield(opt,'NonNegCoef')
     opt.NonNegCoef = 0;
   end
-  if ~isfield(opt,'ZeroMean'),
+  if ~isfield(opt,'ZeroMean')
     opt.ZeroMean = 0;
   end
-  if ~isfield(opt,'NonnegativeDict'),
+  if ~isfield(opt,'NonnegativeDict')
     opt.NonnegativeDict = 0;
   end
-  if ~isfield(opt,'plotDict'),
+  if ~isfield(opt,'plotDict')
     opt.plotDict = 0;
   end
   if ~isfield(opt,'useGpu')
@@ -770,5 +788,8 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'Dfixed')
       opt.Dfixed = 0;
+  end
+  if ~isfield(opt,'Penalty')
+      opt.Penalty = 'l1-norm';
   end
 return
