@@ -64,7 +64,7 @@ if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
     continue
 end
 for sig_i = 2:9
-    j_s_select = ind(lambdaVals == selected_lam_s_vec(sig_i));
+    j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
     for j_s = j_s_select
         for j_hs = 1  
             for j_of = 1
