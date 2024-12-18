@@ -8,8 +8,8 @@ tradeoff_s = 0.4;
 tradeoff_of = 1;
 scaleP = [0.4,5.4,9.48,116,0,100];
 
-% criterion = 'discrepancy';
-criterion = 'truth_error';
+criterion = 'discrepancy';
+% criterion = 'truth_error';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
