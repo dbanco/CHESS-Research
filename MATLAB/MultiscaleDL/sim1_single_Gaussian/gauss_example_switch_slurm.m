@@ -43,7 +43,7 @@ xinits = {'zeros','true'};
 dinits = {'flat','true'};
 dfixes = {0,1};
 
-load('sim1_selected_lam_s.mat')
+load('/cluster/home/dbanco02/CHESS-Research/MATLAB/MultiscaleDL/sim1_single_Gaussian/sim1_selected_lam_s.mat')
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper_sim1_switch';
