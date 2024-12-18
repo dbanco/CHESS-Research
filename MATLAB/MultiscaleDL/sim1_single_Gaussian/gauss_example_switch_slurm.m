@@ -35,7 +35,6 @@ opt.Penalty = 'l1-norm';
 % opt.Penalty = 'log';
 opt.coefInit = 'zeros';
 opt.dictInit = 'flat';
-
 opt.a = 1;
 
 penalties = {'l1-norm','log'};
@@ -50,9 +49,9 @@ funcName = 'mcdlof_wrapper_sim1_switch';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-for r_ind = 1:10
+for r_ind = 1
 for s1 = 1
-    for s2 = 1:2
+    for s2 = 2
         for s3 = 1
             for s4 = 1
 
@@ -63,13 +62,13 @@ opt.dictInit = dinits{s4};
 if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
     continue
 end
-for sig_i = 2:9
+for sig_i = 3
     j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
     for j_s = j_s_select
-        for j_hs = 1  
-            for j_of = 1
+        for j_hs = 2:4  
+            for j_of = 1:56
                 dataset = 'steps_matched';
-                topDir = ['/cluster/home/dbanco02/Outputs_trial',num2str(r_ind),...
+                topDir = ['/cluster/home/dbanco02/Outputs_lam_of',num2str(r_ind),...
                     '_D',opt.dictInit,num2str(opt.Dfixed),...
                     '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
                     dataset,'_',opt.Penalty,'_results'];
