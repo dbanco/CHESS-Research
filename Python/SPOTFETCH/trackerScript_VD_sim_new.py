@@ -24,7 +24,7 @@ params['detector'] = 'eiger_sim'
 params['peak_func'] = "gaussian_rot"
 params['imSize'] = (5000,5000)
 params['yamlFile'] = os.path.join(topPath,'c103_eiger_calibration.yml') #mruby_0401_eiger_calibration
-params['roiSize'] = [20,30]
+params['roiSize'] = [30,30]
 params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]
 params['pool'] = 16
 params['parallelFlag'] = False
@@ -32,7 +32,7 @@ params['benchmarkFlag'] = True
 
 spotInd = 0
 
-ttPath = os.path.join(topPath,'outputs_12_13_rot')
+ttPath = os.path.join(topPath,'outputs_12_18_rot')
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
 
@@ -40,12 +40,14 @@ dataFileSequence = []
 for t in scanRange:
     dataFileSequence.append(dataFile.format(t=t)) 
 
-spotInds = np.arange(100)
-for spotInd in nanInds:
-    initSpotData = np.load(spotsFiles[0])
-    sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
+# # Run tracking
+# spotInds = np.arange(10957,200000)
+# for spotInd in spotInds:
+#     initSpotData = np.load(spotsFiles[0])
+#     sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
 
-# Update this function so it's consistent with trackSpot maybe?
-# print('Processing Results')
-# resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)
-# correctDetects = resultsData['truthDist'] < 5
+# Process tracking results
+print('Processing Results')
+spotInds = np.arange(10957)
+resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)
+correctDetects = resultsData['truthDist'] < 5

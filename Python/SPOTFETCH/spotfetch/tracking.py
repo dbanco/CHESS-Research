@@ -542,6 +542,7 @@ def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):
 def trackingResultsSim(spotInds,spotFiles,scanRange,trackPath,params):  
     numSpots =  len(spotInds)
     T = len(scanRange)
+    
     spotAtTrueFrm = np.zeros((numSpots,T))
     omegaCount = np.zeros((numSpots,T))
     truthDist = np.zeros((numSpots,T))
@@ -552,6 +553,7 @@ def trackingResultsSim(spotInds,spotFiles,scanRange,trackPath,params):
     omegaCount[:] = np.nan
     truthDist[:] = np.nan
     changeDist[:] = np.nan
+    trackTimes[:] = np.nan
     
     spotData = []
     for i in range(len(spotFiles)):
@@ -564,6 +566,18 @@ def trackingResultsSim(spotInds,spotFiles,scanRange,trackPath,params):
         eta0, tth0 = sf.xyToEtaTthRecenter(x,y,params)
         spot_id = sf.getSpotID(spotData[0],k)
                 
+        # Skip if truth is lost at some point            
+        spot_id = sf.getSpotID(spotData[0],k)
+        for t in range(1,5):        
+            m_ind = sf.matchSpotID(spotData[t],spot_id,k)
+            if np.isnan(m_ind):
+                skipSpot = True
+                break
+            else:
+                skipSpot = False     
+        if skipSpot:
+            continue
+        
         # Load track data for spot
         track_file = os.path.join(trackPath,f'trackData_{k}.pkl')
         if os.path.exists(track_file):
