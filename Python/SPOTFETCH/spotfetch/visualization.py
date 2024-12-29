@@ -204,6 +204,7 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
         if os.path.exists(spotFiles[i]):
             spotDataList.append(np.load(spotFiles[i]))
     
+    # Get initial spot location
     x = spotData['Xm'][spotInd]
     y = spotData['Ym'][spotInd]
     eta0, tth0 = sf.xyToEtaTthRecenter(x,y,params)
@@ -224,8 +225,6 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
             frm = sf.wrapFrame(frmRange[om_ind])
             
             print(f'Scan {scan}, Frame {frm}')
-            if (scan == 2) & (frm == 139):
-                print('img missing')
             # 1. Show ROI
             sf.showROI(ax,dataPath, scan, frm, tthRoi, etaRoi, params)
             # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
@@ -263,28 +262,18 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
                 ax.set_xlabel(f'{scan}')
             if scan_ind == 0:
                 ax.set_ylabel(f'{frm}')
+    return fig_list
 
 def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
     os.makedirs(output_path, exist_ok=True)
         
-    if num_cols < len(scanRange):
-        for spotInd in spotInds:
-            for i in range(int(np.ceil(len(scanRange)/num_cols))):
-                sRange = scanRange[num_cols*i:num_cols*(i+1)]
-                sf.roiTrackVisual(spotInd,spotData,dome,num_cols,sRange,dataFile,ttPath,ttPath,spotsFiles,params)
-                # Save the current figure
-                figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
-                plt.savefig(figure_file)
-                plt.close()
-    else:
-        for spotInd in spotInds:
-            sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
+    for spotInd in spotInds:
+        fig_list = sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
 
-            # Save the current figure
-            figure_file = os.path.join(output_path, f"fig_{spotInd}.png")
-            plt.savefig(figure_file)
-            plt.close()
-
+        for i, fig in enumerate(fig_list):
+            figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
+            fig.savefig(figure_file)          
+            
 def makeTrackSlides(ppt_file,output_path,spotInds,resultsData,spotData):
     ppt = Presentation()
     for si,spotInd in enumerate(spotInds):

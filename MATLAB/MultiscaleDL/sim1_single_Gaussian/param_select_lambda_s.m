@@ -33,7 +33,6 @@ for i = 1:numel(matFileNames)
     err = sum((squeeze(y)-Yhat).^2,'all');
     % Compute error
     rel_error(i) = sqrt(err);
-   
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);

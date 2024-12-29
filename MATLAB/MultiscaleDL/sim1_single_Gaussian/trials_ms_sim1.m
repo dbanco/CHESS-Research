@@ -1,37 +1,24 @@
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
+
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
-
-tradeoff_s = 0.4;
-tradeoff_of = 1;
-scaleP = [0.4,5.4,9.48,116,0,100];
-
-criterion = 'discrepancy';
-% criterion = 'truth_error';
-
-selected_lam_s_vec = zeros(NN,1);
-selected_lam_of_vec = zeros(NN,1);
-
-% topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_10_Dtrue_Xtrue';
-% topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_31_Dtrue1_Xzeros0';
-% dirStartS = 'steps_matched_results';
-fig_num = 22;
 
 dataset = 'steps_matched';
 penalty = 'log';
 testType = 'Dflat0_Xzeros0';
 topDir = 'E:\Outputs_sim1_trials\';
 
-obj_array = zeros(NN,10);
-true_error = zeros(NN,10);
-data_error = zeros(NN,10);
-l1_norm = zeros(NN,10);
-l0_norm = zeros(NN,10);
-log_penalty = zeros(NN,10);
+num_trials = 6;
+obj_array = zeros(NN,num_trials);
+true_error = zeros(NN,num_trials);
+data_error = zeros(NN,num_trials);
+l1_norm = zeros(NN,num_trials);
+l0_norm = zeros(NN,num_trials);
+log_penalty = zeros(NN,num_trials);
 
-for r = 1:10
+for r = 1:num_trials
     for nn = 2:9
         [~,y_true,~,~,~] = gaus_example_switch_multiscale_dl(sigmas(nn),dataset);
         % File
@@ -52,4 +39,8 @@ for r = 1:10
         log_penalty(nn,r) = Jlog;
     end
 end
+
+% True and Data Error Averaged
+figure(1)
+
 
