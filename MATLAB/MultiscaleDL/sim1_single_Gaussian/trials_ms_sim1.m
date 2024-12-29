@@ -10,7 +10,7 @@ penalty = 'log';
 testType = 'Dflat0_Xzeros0';
 topDir = 'E:\Outputs_sim1_trials\';
 
-num_trials = 6;
+num_trials = 20;
 obj_array = zeros(NN,num_trials);
 true_error = zeros(NN,num_trials);
 data_error = zeros(NN,num_trials);
