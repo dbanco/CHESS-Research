@@ -8,7 +8,7 @@ import numpy as np
 import spotfetch as sf
 import os
 
-topPath = r"C:\Users\dpqb1\Documents\Data\c103_processing"
+topPath = r"E:\Data\c103_processing"
 dataDir = r"E:\Data\c103"
 
 dataFile = os.path.join(dataDir,"c103-1-ff-1_*_EIG16M_CdTe_{num2:0>6}.h5")
@@ -34,22 +34,23 @@ params['pool'] = 16
 params['parallelFlag'] = False
 params['benchmarkFlag'] = True
 
-grains = [44,158]
+grains = [44] # 158
 spotInds = sf.findSpots(spotData,grains=grains)
 # spotInds = np.arange(113)
-spotInd = 0
 
-ttPath = os.path.join(topPath,'outputs_12_13')
+ttPath = os.path.join(topPath,'outputs_12_19-grain_44')
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
 
 dataFileSequence = sf.getDataFileSequence(dataFile,scanRange)   
-sf.trackSpot(spotInd,spotData,dataFileSequence,ttPath,params)
+
+for spotInd in spotInds:
+    print(f'Spot {spotInd}')
+    sf.trackSpot(spotInd,spotData,dataFileSequence,ttPath,params)
 
 # %%
-spotInds = [0,1]
-output_path = os.path.join(topPath,'imageFigs_c103')
-dome = 3
-num_cols = 8
-sf.makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,[],params)
+output_path = os.path.join(topPath,'imageFigs_c103_grain_44')
+dome = 4
+num_cols = 10
+sf.makeTrackImages(dome,num_cols,output_path,spotInds[:100],spotData,scanRange,dataFile,ttPath,[],params)
 

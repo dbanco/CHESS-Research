@@ -49,7 +49,7 @@ funcName = 'mcdlof_wrapper_sim1_switch';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-for r_ind = 7:20
+for r_ind = 7
 for s1 = 1
     for s2 = 2
         for s3 = 1

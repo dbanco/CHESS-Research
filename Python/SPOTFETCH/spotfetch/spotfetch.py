@@ -554,7 +554,7 @@ def checkTrack(track_data,scan_ind,scan,frm):
     om_ind = 0
     if len(track_data) > scan_ind:
         for om_ind, omTrack in enumerate(track_data[scan_ind]):
-            cond1 = omTrack['scan'] == scan
+            cond1 = omTrack['scan'] == scan_ind
             cond2 = omTrack['frm'] == frm
             if cond1 and cond2:
                 trackFound = True
