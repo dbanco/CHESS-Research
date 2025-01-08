@@ -44,13 +44,16 @@ if not os.path.exists(ttPath):
 
 dataFileSequence = sf.getDataFileSequence(dataFile,scanRange)   
 
-for spotInd in spotInds:
-    print(f'Spot {spotInd}')
-    sf.trackSpot(spotInd,spotData,dataFileSequence,ttPath,params)
+# for spotInd in spotInds:
+#     print(f'Spot {spotInd}')
+#     sf.trackSpot(spotInd,spotData,dataFileSequence,ttPath,params)
 
 # %%
 output_path = os.path.join(topPath,'imageFigs_c103_grain_44')
 dome = 4
 num_cols = 10
-sf.makeTrackImages(dome,num_cols,output_path,spotInds[:100],spotData,scanRange,dataFile,ttPath,[],params)
+# sf.makeTrackImages(dome,num_cols,output_path,spotInds[:100],spotData,scanRange,dataFile,ttPath,[],params)
 
+output_roi_path = os.path.join(topPath,'roiTensors_grain_44')
+dome = 3
+sf.saveROItensors(dome,output_roi_path,spotInds[100:200],spotData,scanRange,dataFile,ttPath,[],params)

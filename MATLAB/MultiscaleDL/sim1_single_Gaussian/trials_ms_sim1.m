@@ -18,7 +18,7 @@ l1_norm = zeros(NN,num_trials);
 l0_norm = zeros(NN,num_trials);
 log_penalty = zeros(NN,num_trials);
 
-for r = 1:num_trials
+for r = [1:6,8:num_trials]
     for nn = 2:9
         [~,y_true,~,~,~] = gaus_example_switch_multiscale_dl(sigmas(nn),dataset);
         % File
@@ -42,5 +42,7 @@ end
 
 % True and Data Error Averaged
 figure(1)
+
+plot(mean(true_error,2))
 
 

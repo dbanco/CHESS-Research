@@ -264,8 +264,80 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
                 ax.set_ylabel(f'{frm}')
     return fig_list
 
-def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
+def roiTensor(spotInd,spotData,dome,scanRange,dataPath,trackPath,truthPath,spotFiles,params):
+
+    T = len(scanRange)
+    M_ome = 2*dome+1
+    
+    # Load track data
+    track_file = os.path.join(trackPath,f'trackData_{spotInd}.pkl')
+    if os.path.exists(track_file):
+        with open(track_file, 'rb') as f:
+            outData = pickle.load(f)
+            track_data = outData['trackData']
+            print('Track loaded')
+    else:
+        track_data = []
+        trackFound = False
+        
+    # Load truth data 
+    truth_file = os.path.join(trackPath,f'truthData_{spotInd}.pkl')
+    if os.path.exists(truth_file):
+        with open(truth_file, 'rb') as f:
+            truth_data = pickle.load(f)
+            print('Truth loaded')
+    else:   
+        T = len(scanRange)
+        truth_data = []
+        truthFound = False
+        
+    # Load sim truth
+    spotDataList = []
+    for i in range(len(spotFiles)):
+        if os.path.exists(spotFiles[i]):
+            spotDataList.append(np.load(spotFiles[i]))
+    
+    # Get initial spot location
+    x = spotData['Xm'][spotInd]
+    y = spotData['Ym'][spotInd]
+    eta0, tth0 = sf.xyToEtaTthRecenter(x,y,params)
+    frm0 = spotData['ome_idxs'][spotInd]
+    print(spotData['omes'][spotInd])
+    
+    etaRoi = eta0
+    tthRoi = tth0
+    frmRange = np.arange(frm0-dome,frm0+dome+1)
+
+    M_tth = params['roiSize'][0]
+    M_eta = params['roiSize'][1]
+    roiTensor = np.zeros((M_tth,M_eta,M_ome,T))
+    
+    for scan_ind in range(T):
+        for om_ind in range(M_ome):
+            scan = scanRange[scan_ind]
+            frm = sf.wrapFrame(frmRange[om_ind])
+            
+            print(f'Scan {scan}, Frame {frm}')
+            # 1. Load ROI
+            roi = sf.loadROI(dataPath,scan,frm,etaRoi,tthRoi,params)
+            roiTensor[:,:,om_ind,scan_ind] = roi
+            
+    return roiTensor
+
+def saveROItensors(dome,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
     os.makedirs(output_path, exist_ok=True)
+
+    for spotInd in spotInds:
+        print(f'Spot {spotInd}')
+        outFile = os.path.join(output_path,f'roiTensor_{spotInd}.pkl')
+        roiTensor_k = sf.roiTensor(spotInd,spotData,dome,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
+
+        with open(outFile, 'wb') as f:
+            pickle.dump(roiTensor_k,f)
+        
+            
+def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
+    os.makedirs(output_path, exist_ok=True) 
         
     for spotInd in spotInds:
         fig_list = sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
