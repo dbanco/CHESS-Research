@@ -89,12 +89,6 @@ switch criterion
         figure
         hold on
         plot(x,z,'o-',control_x,control_z,'x-',xq,zq)
-        
-%         dlam = diff(control_lam);
-%         dz = diff(zq2)./dlam;
-%         dx = diff(xq)./dlam;
-%         ddz = diff(zq2,2)./dlam(1:end-1);
-%         ddx = diff(xq,2)./dlam(1:end-1);
 
         dz = diff(zq);
         dx = diff(xq);
