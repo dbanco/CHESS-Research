@@ -62,10 +62,10 @@ opt.dictInit = dinits{s4};
 if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
     continue
 end
-for sig_i = 3
+for sig_i = [2,4:9]
     j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
     for j_s = j_s_select
-        for j_hs = [2,3,5]  
+        for j_hs = [3]  
             for j_of = 1:56
                 dataset = 'steps_matched';
                 topDir = ['/cluster/home/dbanco02/Outputs_lam_of',num2str(j_hs),...

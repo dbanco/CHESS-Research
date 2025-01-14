@@ -1,4 +1,4 @@
-function [lambda_of,outInd] = param_select_lambda_of(outputDir,tradeoff,scaleP,fig_num)
+function [lambda_of,outInd] = param_select_lambda_of(outputDir,tradeoff,scaleP,fig_num,criterion,sigma,y_true)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,6 +9,7 @@ matFileNames = {files.name};
 
 NN = numel(matFileNames);
 rel_error = zeros(NN,1);
+true_error = zeros(NN,1);
 l1_norm = zeros(NN,1);
 of_obj = zeros(NN,1);
 hs_obj = zeros(NN,1);
@@ -35,6 +36,7 @@ for i = 1:numel(matFileNames)
     err = sum((squeeze(y)-Yhat).^2,'all');
     % Compute error
     rel_error(i) = sqrt(err);
+    true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);
     % Compute OF objective
@@ -50,15 +52,68 @@ for i = 1:numel(matFileNames)
 end
 
 [lambda_of_sort,ind] = sort(lambda_of_vec);
+true_sort = true_error(ind);
 err_sort = rel_error(ind);
 l1_sort = l1_norm(ind);
 of_sort = of_obj(ind);
 
 % Normalized origin distance criterion
-criterion = tradeoff*(abs((err_sort-scaleP(1))/scaleP(2))+abs((l1_sort-scaleP(3))/scaleP(4))) +...
-                abs((of_sort-scaleP(5))/scaleP(6));
-[~, selInd] = min(criterion);
-lambda_of = lambda_of_sort(selInd);
+switch criterion
+    case 'origin_dist'
+        crit= tradeoff*abs((err_sort-scaleP(1))/scaleP(2)) +...
+                        abs((of_sort-scaleP(3))/scaleP(4));
+        [~, selInd] = min(crit);
+        lambda_of = lambda_of_sort(selInd);
+    case 'discrepancy'
+        crit = abs(err_sort/sqrt(N*T) - sigma);
+        [~,selInd] = min(crit);
+        lambda_of = lambda_of_sort(selInd);
+    case 'truth_error'
+        [~,selInd] = min(true_sort);
+        lambda_of = lambda_of_sort(selInd);
+    case 'curvature'
+        % Curvature criterion
+        [b, a] = butter(4, 0.1, 'low');  % low-pass Butterworth filter
+        z = filtfilt(b,a,log(err_sort));
+        x = filtfilt(b,a,log(of_sort));
+        
+        dlam = diff(lambda_s_sort);
+        dz = diff(z)./dlam;
+        dx = diff(x)./dlam;
+        ddz = diff(z,2)./dlam(1:end-1);
+        ddx = diff(x,2)./dlam(1:end-1);
+        
+        curvature = (dz(1:end-1).*ddx - dx(1:end-1).*ddz)./...
+                    (dx(1:end-1).^2 + dz(1:end-1).^2).^1.5;
+        
+        [~, selInd] = max(curvature);
+        lambda_of = lambda_of_sort(selInd);
+    case 'curvature_poly'
+        % Curvature criterion
+        z = log(err_sort);
+        x = log(of_sort);
+        control_x = polyfilt(x,lambda_of_sort);
+        control_z = polyfilt(z,lambda_of_sort);
+        control_lam = lambda_of_sort(3:end-2);
+        xq = linspace(min(x),max(x),100);
+        zq = spline(control_x,control_z,xq);
+%         zq2 = spline(x,z,xq);
+        figure
+        hold on
+        plot(x,z,'o-',control_x,control_z,'x-',xq,zq)
+        
+        dz = diff(zq);
+        dx = diff(xq);
+        ddz = diff(zq,2);
+        ddx = diff(xq,2);
+        
+        curvature = (dz(1:end-1).*ddx - dx(1:end-1).*ddz)./...
+                    (dx(1:end-1).^2 + dz(1:end-1).^2).^1.5;
+        figure
+        plot(curvature)
+        [~, selInd] = max(curvature);
+        lambda_of = lambda_of_sort(selInd);
+end
 
 if nargin > 3
     figure(fig_num)

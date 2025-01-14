@@ -3,7 +3,7 @@ lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 
 sigmas = 0:0.01:0.1;
-NN = numel(sigmas);
+NN = numel(sigmas)-1;
 
 dataset = 'steps_matched';
 penalty = 'log';
@@ -18,7 +18,7 @@ l1_norm = zeros(NN,num_trials);
 l0_norm = zeros(NN,num_trials);
 log_penalty = zeros(NN,num_trials);
 
-for r = 1:num_trials
+for r = [1:6,8:num_trials]
     for nn = 2:9
         [~,y_true,~,~,~] = gaus_example_switch_multiscale_dl(sigmas(nn),dataset);
         % File
@@ -40,7 +40,41 @@ for r = 1:num_trials
     end
 end
 
-% True and Data Error Averaged
-figure(1)
+ %% Next plot the true recovery as a function of SNR
+sigmas = 0:0.01:0.1;
+meanSNR = zeros(numel(sigmas),1);
+noiseError = zeros(numel(sigmas),1);
+for n = 1:NN
+    [y,y_true,N,M,T] = gaus_example_switch_multiscale_dl(sigmas(n),dataset);
+    
+    SNR = zeros(T,1);
+    nPwr = zeros(T,1);
+    sigPwr = zeros(T,1);
+    for t = 1:T
+        SNR(t) = norm(y_true(:,t))/norm(y(:,t)-y_true(:,t));
+        nPwr(t) = norm(y(:,t)-y_true(:,t));
+        sigPwr(t) = norm(y_true(:,t));
+    end
+    
+    noiseError(n) = 0.5*norm(y(:)-y_true(:)).^2; 
+    meanSNR(n) = mean(SNR);
+end
 
+%% True and Data Error Averaged
+figure(1)
+hold on
+x = meanSNR(2:9);
+y1 = noiseError(2:9);
+mu = mean(true_error(2:9,:),2);
+sig = std(true_error(2:9,:)');
+
+blue = [0 0.4470 0.7410];
+errorbar(x,mu,sig,'Color',blue)
+plot(x,mu,'o','Color',blue,'MarkerFaceColor',blue,'MarkerSize',4)
+plot(x,y1,'-o','MarkerSize',4)
+
+ylabel('$\frac{1}{2}||{\bf f} - \hat{\bf f} ||_2$','interpreter','latex',...
+    'FontSize',16)
+xlabel('SNR','FontSize',16)
+legend('Noise Error','MCDL')
 

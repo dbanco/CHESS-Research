@@ -20,6 +20,9 @@ from pathlib import Path
 import glob
 import job_manager as jm
 import spotfetch as sf
+from scipy.ndimage import gaussian_filter
+from skimage.feature import hessian_matrix
+from scipy.ndimage import label
 
 FRAME1 = 2
 NUMFRAMES = 1440
@@ -654,6 +657,64 @@ def trackSpot(spotInd,spotData,dataFileSequence,trackPath,params):
         else:
             processSpot(spotInd,t_ind,fnames,trackFile,params)
             
+def DoG(f,sigma,dsigma,gamma=2):
+    g1 = gaussian_filter(f,sigma=sigma)
+    g2 = gaussian_filter(f,sigma=sigma+dsigma)
+    
+    return (g2 - g1)/(sigma*dsigma) 
+            
+def detectBlobDoG(x):
+    # 1. Compute normalized DoG apporximation of LoG
+    dog_norm = DoG(x,sigma=2,dsigma=1.5)
+
+    # 2. Pre-segmentation
+    hess_mat = hessian_matrix(dog_norm)
+    D1 = np.zeros(hess_mat[0].shape)
+    D2 = np.zeros(hess_mat[0].shape)
+    D3 = np.zeros(hess_mat[0].shape)
+    for i1 in range(hess_mat[0].shape[0]):
+        for i2 in range(hess_mat[0].shape[1]):
+            for i3 in range(hess_mat[0].shape[2]):
+                h_mat = np.array([[hess_mat[0][i1,i2,i3],hess_mat[1][i1,i2,i3],hess_mat[2][i1,i2,i3]],
+                                  [hess_mat[1][i1,i2,i3],hess_mat[3][i1,i2,i3],hess_mat[4][i1,i2,i3]],
+                                  [hess_mat[2][i1,i2,i3],hess_mat[4][i1,i2,i3],hess_mat[5][i1,i2,i3]]])
+                D1[i1,i2,i3] = h_mat[0,0]
+                D2[i1,i2,i3] = np.linalg.det(h_mat[:2,:2])
+                D3[i1,i2,i3] = np.linalg.det(h_mat)
+
+    negDefIndicator = (D1 > 0) & (D2 > 0) & (D3 > 0)
+    blobs, num_blobs = label(negDefIndicator)
+    return blobs, num_blobs, hess_mat
+
+def blobFeaturesDoG(x,blobs,num_blobs,hess_mat):
+    hess_T = []
+    eigs_T = []
+    RT_T = []
+    ST_T = []
+    AT_T = []
+    for i in range(1,num_blobs+1):
+        hess_i = []
+        for component in hess_mat:
+            hess_i.append(np.sum(component[blobs == i]))
+        hess_T.append(hess_i)
+        h_mat = np.array([[hess_i[0],hess_i[1],hess_i[2]],
+                          [hess_i[1],hess_i[3],hess_i[4]],
+                          [hess_i[2],hess_i[4],hess_i[5]]])
+        eigs_i = np.linalg.eig(h_mat)
+        eigs_T.append(eigs_i[0])
+        
+        # Blobness feature
+        RT = 3*np.abs(eigs_i[0][0]*eigs_i[0][1]*eigs_i[0][2])**(2/3)/(np.abs(eigs_i[0][0]*eigs_i[0][1]) +
+              np.abs(eigs_i[0][0]*eigs_i[0][2]) +
+              np.abs(eigs_i[0][2]*eigs_i[0][1]))
+        # Flatness feature
+        ST = np.sqrt(eigs_i[0][0]**2 + eigs_i[0][1]**2 + eigs_i[0][2]**2)
+        # Average intensity feature
+        AT = np.mean(x[blobs == i])
+        RT_T.append(RT)
+        ST_T.append(ST)
+        AT_T.append(AT)
+    return RT_T,ST_T,AT_T
         
 def gatherSimTruth(spotFiles,spotInds):
     spotDataList = []
