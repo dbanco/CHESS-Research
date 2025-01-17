@@ -43,6 +43,7 @@ dinits = {'flat','true'};
 dfixes = {0,1};
 
 load('/cluster/home/dbanco02/CHESS-Research/MATLAB/MultiscaleDL/sim1_single_Gaussian/sim1_selected_lam_s.mat')
+load('/cluster/home/dbanco02/CHESS-Research/MATLAB/MultiscaleDL/sim1_single_Gaussian/sim1_selected_lam_of.mat')
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'mcdlof_wrapper_sim1_switch';
@@ -64,10 +65,10 @@ if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
 end
 for sig_i = 2:9
     j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
-    J_of_select = find(lambdaOFVals == selected_lam_of_vec(sig_i));
+    j_of_select = find(lambdaOFVals == selected_lam_of_vec(sig_i));
     for j_s = j_s_select
-        for j_hs = 1
-            for j_of = 1
+        for j_hs = 3
+            for j_of = j_of_select
                 dataset = 'steps_matched';
                 topDir = ['/cluster/home/dbanco02/Outputs',num2str(r_ind),...
                     '_D',opt.dictInit,num2str(opt.Dfixed),...
