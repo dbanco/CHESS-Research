@@ -39,20 +39,20 @@ end
 
 Xf = fft2(Xtrue);
 
-% figure(1)
-sigma_true = zeros(J,1);
-for j = 1:J
-    mdl = fittype('gauss1');
-    f = fit((1:N)',ADtrue(1,:,j)',mdl);
-    sigma_true(j) = f.c1;
-    ADtrue(1,:,j) = f(1:N)/norm(f(1:N));
-    % subplot(2,J/2,j)
-    % plot(f,(1:N)',ADtrue(1,:,j))
-    % if j ~= J
-    %     lgd = findobj('type', 'legend');
-    %     delete(lgd)
-    % end
-end
+% % figure(1)
+% sigma_true = zeros(J,1);
+% for j = 1:J
+%     mdl = fittype('gauss1');
+%     f = fit((1:N)',ADtrue(1,:,j)',mdl);
+%     sigma_true(j) = f.c1;
+%     ADtrue(1,:,j) = f(1:N)/norm(f(1:N));
+%     % subplot(2,J/2,j)
+%     % plot(f,(1:N)',ADtrue(1,:,j))
+%     % if j ~= J
+%     %     lgd = findobj('type', 'legend');
+%     %     delete(lgd)
+%     % end
+% end
 
 y = squeeze(unpad(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'),M-1,'pre'));
 
