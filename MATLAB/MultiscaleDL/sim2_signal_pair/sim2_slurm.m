@@ -31,26 +31,29 @@ opt.HSiters = 100;
 opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
-opt.Penalty = 'l1-norm';
-% opt.Penalty = 'log';
+% opt.Penalty = 'l1-norm';
+opt.Penalty = 'log';
 opt.coefInit = 'zeros';
 opt.dictInit = 'flat';
 opt.a = 1;
+
+% Multiscale dictionary setup
+K = 2;
+scales = cell(K,1);
+scales{1} = genRationals([0;1],[1;1],16,8, 1/8);
+scales{2} = genRationals([0;1],[1;1],16,8, 1/8);
 
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'flat','true'};
 dfixes = {0,1};
 
-load('/cluster/home/dbanco02/CHESS-Research/MATLAB/MultiscaleDL/sim1_single_Gaussian/sim1_selected_lam_s.mat')
-load('/cluster/home/dbanco02/CHESS-Research/MATLAB/MultiscaleDL/sim1_single_Gaussian/sim1_selected_lam_of.mat')
-
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'mcdlof_wrapper_sim1_switch';
+funcName = 'sim_mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-for r_ind = 1:25
+for r_ind = 1
 for s1 = 1
     for s2 = 2
         for s3 = 1
@@ -64,19 +67,18 @@ if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
     continue
 end
 for sig_i = 2:9
-    j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
-    j_of_select = find(lambdaOFVals == selected_lam_of_vec(sig_i));
-    for j_s = j_s_select
-        for j_hs = 3
-            for j_of = j_of_select
+    % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
+    for j_s = 1:106
+        for j_hs = 1%[2,3,4,5]  
+            for j_of = 1%1:56
                 dataset = 'steps_matched';
-                topDir = ['/cluster/home/dbanco02/Outputs',num2str(r_ind),...
+                topDir = ['/cluster/home/dbanco02/Outputs_sim2_lam_s',num2str(j_hs),...
                     '_D',opt.dictInit,num2str(opt.Dfixed),...
                     '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
                     dataset,'_',opt.Penalty,'_results'];
                 
                 varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                        j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset};
+                        j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
                 k = k + 1;
             end
