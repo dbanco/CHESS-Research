@@ -54,15 +54,16 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 for r_ind = 1
-for s1 = 1
-    for s2 = 2
+for s1 = 2
+    for s2 = 1
         for s3 = 1
             for s4 = 1
 
-opt.Dfixed = dfixes{s1};
-opt.Penalty = penalties{s2};
-opt.coefInit = xinits{s3};
-opt.dictInit = dinits{s4};
+opt.Penalty = penalties{s1};
+opt.coefInit = xinits{s2};
+opt.dictInit = dinits{s3};
+opt.Dfixed = dfixes{s4};
+
 if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
     continue
 end
@@ -92,26 +93,3 @@ end
 end
 
 slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
-%% Compare data
-%
-% [yn1,y_m,N,M,T,~,~] = gaus_example_matched_multiscale_dl(0);
-% [yn2,y_um,N,M,T,~,~] = gaus_example_unmatched_multiscale_dl(0);
-% figure(2)
-% subplot(3,1,1)
-% imagesc(y_m)
-% clim([0,0.4])
-% colorbar()
-% 
-% subplot(3,1,2)
-% imagesc(y_um)
-% clim([0,0.4])
-% colorbar()
-% 
-% subplot(3,1,3)
-% imagesc(abs(y_m -y_um))
-% colorbar()
-% 
-% figure(3)
-% plot(y_um(:,10))
-% hold on
-% plot(y_m(:,10))
