@@ -78,7 +78,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 % createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
 %     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
 
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\recons_12_12_',criterion,'_',testType,'_',dirStartS,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\recons_1_17_',criterion,'_',testType,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 1 Recovery, ',testType,', ',dirStartS];
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion)
 
