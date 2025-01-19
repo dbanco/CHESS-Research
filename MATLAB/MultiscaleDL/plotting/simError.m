@@ -15,7 +15,7 @@ if nargin < 7
     dirStartOF = 'none';
 end
 
-for n = [1,3]%1:NN
+for n = 2:9%1:NN
     spDir = [dirStartS,'_sig_',num2str(n)];
     j_s = find(lambdaVals == selected_lam_s_vec(n));
     j_of = 1;
