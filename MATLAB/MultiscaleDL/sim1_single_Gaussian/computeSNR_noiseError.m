@@ -6,7 +6,7 @@ NN = numel(sigmas)-1;
 meanSNR = zeros(numel(sigmas),1);
 noiseError = zeros(numel(sigmas),1);
 for n = 1:NN
-    [y,y_true,N,M,T] = gaus_example_switch_multiscale_dl(sigmas(n),dataset);
+    [y,y_true,N,M,T] = sim_switch_multiscale_dl(sigmas(n),dataset);
     
     SNR = zeros(T,1);
     nPwr = zeros(T,1);

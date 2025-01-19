@@ -34,7 +34,7 @@ opt.Dfixed = 0;
 % opt.Penalty = 'l1-norm';
 opt.Penalty = 'log';
 opt.coefInit = 'zeros';
-opt.dictInit = 'flat';
+opt.dictInit = 'rand';
 opt.a = 1;
 
 % Multiscale dictionary setup
@@ -45,7 +45,7 @@ scales{2} = genRationals([0;1],[1;1],16,8, 1/8);
 
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'flat','true'};
+dinits = {'rand','flat','true'};
 dfixes = {0,1};
 
 scriptFileName = 'mcdlof_bash.sh';
