@@ -21,10 +21,10 @@ fig_num = 22;
 
 dataset = 'sim2_gaussian_tooth_matched';
 testType = 'Drand0_Xzeros0';
-topDir = ['E:\Outputs_sim2_lam_s1_',testType];
+topDir = ['E:\Outputs_sim2_lam_all2_',testType];
 dirStartS = 'sim2_gaussian_tooth_matched_log_results';
 
-for n = 2:9
+for n = 2:4
     inDir = [topDir,'\',dirStartS,'_sig_',num2str(n)];
      % True error
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);

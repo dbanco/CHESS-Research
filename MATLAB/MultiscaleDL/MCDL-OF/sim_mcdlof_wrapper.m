@@ -45,10 +45,11 @@ outputs.J = J;
 outputs.opt = opt;
 outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
+outputs.lambda3 = opt.Smoothness;
 outputs.Uvel = Uvel;
 outputs.Vvel = Vvel;
-suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
-                  j_s,j_of,sigmas(i),outputs.lambda,outputs.lambda2);
+suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e,',...
+                  j_s,j_of,j_hs,sigmas(i),outputs.lambda,outputs.lambda2,outputs.lambda3);
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures
