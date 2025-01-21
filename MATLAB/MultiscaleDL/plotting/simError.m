@@ -1,4 +1,4 @@
-function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,topDir,dirStartS,selected_lam_s_vec,lambdaVals,dirStartOF,selected_lam_of_vec,lambdaOFVals)
+function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_s_vec,lambdaVals,dirStartOF,selected_lam_of_vec,lambdaOFVals)
 %UNTITLED Summary of this function goes here
 
 NN = numel(sigmas);
@@ -9,13 +9,13 @@ trueErrOF = zeros(NN,1);
 dataErrOF = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 
-if nargin < 7
+if nargin < 8
     selected_lam_of_vec = zeros(NN,1);
     lambdaOFVals = [0,0,0];
     dirStartOF = 'none';
 end
 
-for n = 2:4%1:NN
+for n = sig_ind
     spDir = [dirStartS,'_sig_',num2str(n)];
     j_s = find(lambdaVals == selected_lam_s_vec(n));
     j_of = 1;
@@ -40,7 +40,7 @@ for n = 2:4%1:NN
     trueErrS(n) = norm(y_true-Yhat);
     dataErrS(n) = norm(squeeze(y)-Yhat);
     
-    if nargin > 6
+    if nargin > 7
         hsDir = [dirStartOF,'_sig_',num2str(n)];
     
         j_of = find(lambdaOFVals == selected_lam_of_vec(n));

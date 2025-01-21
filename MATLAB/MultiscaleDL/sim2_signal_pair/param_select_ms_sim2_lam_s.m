@@ -8,8 +8,8 @@ tradeoff_s = 0.4;
 tradeoff_of = 1;
 scaleP = [0.4,5.4,9.48,116,0,100];
 
-criterion = 'discrepancy';
-% criterion = 'truth_error';
+% criterion = 'discrepancy';
+criterion = 'truth_error';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -24,6 +24,7 @@ testType = 'Drand0_Xzeros0';
 topDir = ['E:\Outputs_sim2_lam_all2_',testType];
 dirStartS = 'sim2_gaussian_tooth_matched_log_results';
 
+sig_ind = 2:4;
 for n = 2:4
     inDir = [topDir,'\',dirStartS,'_sig_',num2str(n)];
      % True error
@@ -38,13 +39,11 @@ saveas(gcf, LcurveFile);
 removeWhiteSpace(LcurveFile)
 
 %% Compute meanSNR
-[meanSNR,noiseError] = computeSNR_noiseError(dataset);
+[meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors
-[noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,topDir,dirStartS,selected_lam_s_vec,lambdaVals);
+[noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_s_vec,lambdaVals);
 
-  
-%%
 figure()
 hold on
 plot(meanSNR,noiseNorm,'s-')
@@ -57,12 +56,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-% pptFile = 'C:\Users\dpqb1\Documents\MCDL Paper\recons_dicts_sim1_hs_2.pptx';
-% titleStr = 'Sim 1 Recovery';
-% createPowerpointSim(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,lambdaVals,dirStartOF,...
-%     lambdaOFVals,lambdaHSVals,selected_lam_of_vec,selected_lam_s_vec)
-
 pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s',criterion,'_',testType,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 2 Recovery, ',testType,', ',dirStartS];
-createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion)
+createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
 
