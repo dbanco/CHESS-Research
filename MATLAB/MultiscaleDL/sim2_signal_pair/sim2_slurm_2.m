@@ -1,8 +1,9 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
+
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -83,8 +84,8 @@ for s4 = 1
     for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
         for j_s = ind1
-            for j_hs = ind2
-                for j_of = ind3
+            for j_of = ind2
+                for j_hs = ind3
                     varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                             j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
                     save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')

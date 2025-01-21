@@ -1,4 +1,4 @@
-function createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion)
+function createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,7 +20,7 @@ img = Picture(LcurveFile);
 replace(slide2, 'Content', img);
 
 NN = numel(sigmas);
-for n = 2:4
+for n = sig_ind
     spDir = [dirStartS,'_sig_',num2str(n)];
 
     j_s = find(lambdaVals == selected_lam_s_vec(n));
