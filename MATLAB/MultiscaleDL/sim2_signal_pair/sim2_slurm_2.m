@@ -53,42 +53,39 @@ funcName = 'sim_mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-for r_ind = 1
+sig_ind = 2:4;
+ind1 = 1:10;
+ind2 = 1:10:56;
+ind3 = [2,3,4,5];
+dataset = 'sim2_gaussian_tooth_matched';
+
+for trials = 1
 for s1 = 2
-    for s2 = 1
-        for s3 = 1
-            for s4 = 1
+for s2 = 1
+for s3 = 1
+for s4 = 1
 
-opt.Penalty = penalties{s1};
-opt.coefInit = xinits{s2};
-opt.dictInit = dinits{s3};
-opt.Dfixed = dfixes{s4};
-
-if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
-    continue
-end
-for sig_i = 2:4
-    % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
-    for j_s = 1:10
-        for j_hs = [2,3,4,5]  
-            for j_of = 1:10:56
-                dataset = 'sim2_gaussian_tooth_matched';
-                topDir = ['/cluster/home/dbanco02/Outputs_sim2_lam_all',num2str(j_hs),...
-                    '_D',opt.dictInit,num2str(opt.Dfixed),...
-                    '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
-                    dataset,'_',opt.Penalty,'_results'];
-                
-                varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                        j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
-                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-                k = k + 1;
-            end
-        end
+    opt.Penalty = penalties{s1};
+    opt.coefInit = xinits{s2};
+    opt.dictInit = dinits{s3};
+    opt.Dfixed = dfixes{s4};
+    
+    if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
+        continue
     end
+    
+    
+    topDir = ['/cluster/home/dbanco02/Outputs_sim2_lam_all',...
+        '_D',opt.dictInit,num2str(opt.Dfixed),...
+        '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
+        dataset,'_',opt.Penalty,'_results'];
+    
+    varin = setupVarinMCDLOF(opt,topDir,dataset,K,scales,sig_ind,ind1,ind2,ind3);
+    save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+    k = k + 1;
 end
-            end
-        end
-    end
+end
+end
 end
 end
 
