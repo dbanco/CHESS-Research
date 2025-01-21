@@ -58,7 +58,8 @@ sig_ind = 2:4;
 ind1 = 1:10;
 ind2 = 1:10:56;
 ind3 = [2,3,4,5];
-dataset = 'sim2_gaussian_tooth_matched';
+% dataset = 'sim2_gaussian_tooth_matched';
+dataset = 'sim2_tooth_backtooth_matched';
 
 for trials = 1
 for s1 = 2
