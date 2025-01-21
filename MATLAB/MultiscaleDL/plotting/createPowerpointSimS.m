@@ -20,7 +20,7 @@ img = Picture(LcurveFile);
 replace(slide2, 'Content', img);
 
 NN = numel(sigmas);
-for n = 2:9
+for n = 2:4
     spDir = [dirStartS,'_sig_',num2str(n)];
 
     j_s = find(lambdaVals == selected_lam_s_vec(n));
