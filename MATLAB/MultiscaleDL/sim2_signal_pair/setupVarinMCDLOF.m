@@ -8,9 +8,7 @@ for sig_i = sig_ind
         for j_hs = ind2
             for j_of = ind3
                 varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                        j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
-                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-                k = k + 1;
+                        j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};s
             end
         end
     end
