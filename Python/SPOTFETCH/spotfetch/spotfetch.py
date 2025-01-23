@@ -355,12 +355,16 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
         
     return roi_list
 
-def fitModel(eta_vals,tth_vals,roi,params):
+def fitModel(roi,params,tth,eta):
     try:
+        tth_vals, eta_vals = np.indices(roi.shape)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
+            ptth,peta = etaTthToPix(eta,tth,eta,tth,params)
             if params['peak_func'] == "gaussian":
                 p0 = fitpeak.estimate_pk_parms_2d(eta_vals,tth_vals,roi,"gaussian")
+                p0[1] = ptth
+                p0[2] = peta
                 p = fitpeak.fit_pk_parms_2d(p0,eta_vals,tth_vals,roi,"gaussian")
                 if (p[3]==0): p[3] += 0.001
                 if (p[4]==0): p[4] += 0.001
@@ -370,14 +374,16 @@ def fitModel(eta_vals,tth_vals,roi,params):
                 if (p[3]==0): p[3] += 0.001
                 if (p[4]==0): p[4] += 0.001
             peakFound = True
+            residual = fitpeak.fit_pk_obj_2d(p,eta_vals,tth_vals,roi,params['peak_func'])
             # Make sure peak lies within ROI
             roiSize = params['roiSize']
             if (p[1] > roiSize[0]-0.5) | (p[2] > roiSize[1]-0.5) | (p[1] < -0.5) | (p[2] < -0.5):
                 peakFound = False
-            return p, peakFound
+            return p, peakFound, residual
     except:
         peakFound = False
-        return 0, peakFound 
+        residual = False
+        return 0, peakFound, residual
      
 def visualTrackData(trackData):
     T = len(trackData)

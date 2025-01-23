@@ -2,7 +2,7 @@ function [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 sigmas = 0:0.01:0.1;
-NN = numel(sigmas)-1;
+NN = numel(sigmas);
 meanSNR = zeros(numel(sigmas),1);
 noiseError = zeros(numel(sigmas),1);
 for n = sig_ind
@@ -20,5 +20,8 @@ for n = sig_ind
     noiseError(n) = 0.5*norm(y(:)-y_true(:)).^2; 
     meanSNR(n) = mean(SNR);
 end
+
+meanSNR = meanSNR(sig_ind);
+noiseError = noiseError(sig_ind);
 
 end

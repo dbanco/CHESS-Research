@@ -25,14 +25,14 @@ params['peak_func'] = "gaussian_rot"
 params['imSize'] = (5000,5000)
 params['yamlFile'] = os.path.join(topPath,'c103_eiger_calibration.yml') #mruby_0401_eiger_calibration
 params['roiSize'] = [30,30]
-params['gamma'] = [4,5,9,6] #[eta,tth,fwhm_eta,fwhm_tth]
+params['gamma'] = [4,5,9,6,1,1] #[eta,tth,fwhm_eta,fwhm_tth,eta,tth] last two for comparing across omega
 params['pool'] = 16
 params['parallelFlag'] = False
 params['benchmarkFlag'] = True
 
 spotInd = 0
 
-ttPath = os.path.join(topPath,'outputs_12_18_rot')
+ttPath = os.path.join(topPath,'outputs_1_22_25_rot')
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
 
@@ -44,10 +44,10 @@ for t in scanRange:
 # spotInds = np.arange(10957,200000)
 # for spotInd in spotInds:
 #     initSpotData = np.load(spotsFiles[0])
-#     sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
+    # sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
 
 # Process tracking results
 print('Processing Results')
-spotInds = np.arange(10957)
+spotInds = np.arange(5)
 resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)
 correctDetects = resultsData['truthDist'] < 5

@@ -118,47 +118,31 @@ def wrapOmegaCheck(fnames,params):
         wrap = False
         
     return wrap
-
-# def testLoadFile(frm,params):
-#     notLoaded = True
-#     while notLoaded:
-#         if params['detector'] == 'eiger':
-#             try:
-#                 ims[frm,:,:]
-#                 notLoaded = False                    
-#             except:
-#                     ims = imageseries.open(fnames[0], format='eiger-stream-v1')
-#         elif params['detector'] == 'eiger_sim':
-#             try:
-#                 simData[f'{frm}_row']
-#                 notLoaded = False                    
-#             except:
-#                     simData = np.load(fnames[0])
    
 def searchDown(peakFound,frm1,wrap,fnames,compareTrack,tth,eta,scan,params,trackData,T):
     while peakFound:
         # Increment Omega frame
         frm1 = stepOmegaFrame(frm1,-1,wrap)
-        if frm1 < 0: break
+        if frm1 < FRAME1: break
 
         # Load ROI and fit peak
-        newTrack, peakFound = evaluateROI(fnames,compareTrack,tth,eta,frm1,scan,params)
+        newTrack, peakFound = evaluateROI(fnames,compareTrack,tth,eta,frm1,scan,params,omegaCompare=True)
         # Add to list if peakFound
         if peakFound: 
             # print(f'Found more at {frm1}')
             trackData[T-1].insert(0,newTrack)
             if len(trackData[T-1]) > 10:
                 break
-    return trackData, peakFound
+    return trackData
 
-def searchUp(peakFound,frm2,wrap,fnames,compareTrack,tth,eta,scan,params,trackData,T):
+def searchUp(peakFound,frm2,wrap,fnames,compareTrack,tth,eta,scan,params,trackData,T,omegaCompare=True):
     while peakFound:
         # Increment Omega frame
         frm2 = stepOmegaFrame(frm2,1,wrap)
-        if frm2 > NUMFRAMES-1: break
+        if frm2 > FRAME1+NUMFRAMES-1: break
     
         # Load ROI and fit peak
-        newTrack, peakFound = evaluateROI(fnames,compareTrack,tth,eta,frm2,scan,params)
+        newTrack, peakFound = evaluateROI(fnames,compareTrack,tth,eta,frm2,scan,params,omegaCompare)
         
         # Add to list if peakFound
         if peakFound: 
@@ -166,7 +150,7 @@ def searchUp(peakFound,frm2,wrap,fnames,compareTrack,tth,eta,scan,params,trackDa
             trackData[T-1].append(newTrack)
             if len(trackData[T-1]) > 10:
                 break
-    return trackData, peakFound
+    return trackData
 
 def initSpot(spotInd,eta,tth,frm,fnames,trackFile,params):
     if params['benchmarkFlag']:
@@ -177,7 +161,7 @@ def initSpot(spotInd,eta,tth,frm,fnames,trackFile,params):
     prevTracks = [] 
     
     newTrack, peakFound = evaluateROI(fnames,prevTracks,tth,eta,frm,0,params)
-    
+
     if peakFound:
         outData['trackData'].append([newTrack])
         
@@ -185,13 +169,14 @@ def initSpot(spotInd,eta,tth,frm,fnames,trackFile,params):
         wrap = wrapOmegaCheck(fnames,params)
         
         # Search down
-        outData['trackData'], peakFound = searchDown(peakFound,frm,wrap,fnames,[newTrack],
-                                          tth,eta,0,params,outData['trackData'],0)
+        outData['trackData'] = searchDown(peakFound,frm,wrap,fnames,[newTrack],
+                                          tth,eta,0,params,outData['trackData'],1)
         # Search up
-        outData['trackData'], peakFound = searchUp(peakFound,frm,wrap,fnames,[newTrack],
-                                        tth,eta,0,params,outData['trackData'],0)
-        end_time = time.time()
-        outData['trackTimes'].append(end_time-start_time)
+        outData['trackData'] = searchUp(peakFound,frm,wrap,fnames,[newTrack],
+                                        tth,eta,0,params,outData['trackData'],1)
+        if params['benchmarkFlag']:
+            end_time = time.time()
+            outData['trackTimes'].append(end_time-start_time)
 
     with open(trackFile, 'wb') as f:
         pickle.dump(outData,f)
@@ -223,6 +208,7 @@ def processSpot(spotInd,t_ind,fnames,trackFile,params):
         
     # Initial Search: through all current omega tracks, then check up and down for\
     # tracks (not sure exactly when search through omega will be considered done)    
+    peakFound = False
     for track in prevTracks:
         eta = track['eta']
         tth = track['tth']
@@ -234,6 +220,7 @@ def processSpot(spotInd,t_ind,fnames,trackFile,params):
         # Load ROI and fit peak
         newTrack, peakFound = evaluateROI(fnames,prevTracks,\
                             tth,eta,int(frm),t_ind,params)
+            
         # Add to list if peakFound
         if peakFound: 
             # print(f'Peak found at frame {frm}')
@@ -242,38 +229,31 @@ def processSpot(spotInd,t_ind,fnames,trackFile,params):
             frm2 = outData['trackData'][T-1][-1]['frm']       
     
     # Conduct Expanded Search if no peaks were found
-    if len(outData['trackData'][T-1]) == 0 & len(prevTracks) > 0:
+    if (not peakFound) & len(prevTracks) > 0:
         frm1 = prevTracks[0]['frm']
         frm2 = prevTracks[-1]['frm']
         expandRange = list(range(frm1-3,frm1)) + list(range(frm2+1,frm2+4))
-        for frm in expandRange:
+        for frm_i in expandRange:
             if wrap:
-                frm = int(sf.wrapFrame(frm))
+                frm_i = int(sf.wrapFrame(frm_i))
             else:
                 if frm < 0 | frm > NUMFRAMES-1: break
             newTrack, peakFound = evaluateROI(fnames,prevTracks,\
-                                tth,eta,frm,t_ind,params)
+                                tth,eta,frm_i,t_ind,params)
             if peakFound: 
                 # print(f'Peak found at frame {frm}')
                 outData['trackData'][T-1].append(newTrack)
                 frm1 = outData['trackData'][T-1][0]['frm']
                 frm2 = outData['trackData'][T-1][-1]['frm']
                 break
-    else:
-        peakFound = False
     
     # Incremental Search if we have a peak found
-    # Search down
-    if len(outData['trackData'][T-1]) > 0: 
-        peakFound = True
+    # Search down and up
+    if peakFound: 
         compareTrack = outData['trackData'][T-1]
-        outData['trackData'], peakFound = searchDown(peakFound,frm1,wrap,fnames,compareTrack,
+        outData['trackData'] = searchDown(peakFound,frm1,wrap,fnames,compareTrack,
                                           tth,eta,t_ind,params,outData['trackData'],T)
-
-    # Search up
-    if len(outData['trackData'][T-1]) > 0: 
-        peakFound = True
-        outData['trackData'], peakFound = searchUp(peakFound,frm2,wrap,fnames,compareTrack,
+        outData['trackData'] = searchUp(peakFound,frm2,wrap,fnames,compareTrack,
                                         tth,eta,t_ind,params,outData['trackData'],T)
 
     if params['benchmarkFlag']:
@@ -406,11 +386,9 @@ def initExsituTracks(outPath,exsituPath,spotData,spotInds,params,scan0):
             frm = initData['frms'][s]
             initSpot(k,etaRoi,tthRoi,frm,scan0,params,outPath,fnames)
 
-def assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params):
+def assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,residual,roi,params):
     
-    residual = fitpeak.fit_pk_obj_2d(p,eta_vals,tth_vals,roi,params['peak_func'])
     rel_error = np.linalg.norm(residual)/np.linalg.norm(roi.flatten())
-
     etaNew, tthNew, deta, dtth = sf.pixToEtaTth(p[1],p[2],tthRoi,etaRoi,params)
 
     newTrack = {}
@@ -428,44 +406,31 @@ def assembleTrack(tthRoi,etaRoi,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params)
     
     return newTrack
     
-def evaluateROI(fnames,prevTracks,tth,eta,frm,scan,params):
+def evaluateROI(fnames,prevTracks,tth,eta,frm,scan,params,omegaCompare=False):
     # 0. Parameters
     roiSize = params['roiSize']
     
     # 1. Load ROI
     roi = sf.loadPolarROI(fnames,tth,eta,frm,params)
-    tth_vals, eta_vals = np.indices(roi.shape)
     
     # 2. Estimate peak parameters (use from previous timestep)
-    p, peakFound = sf.fitModel(eta_vals,tth_vals,roi,params)
+    p, peakFound, residual = sf.fitModel(roi,params,tth,eta)
     
     if peakFound == False:
         return 0, peakFound
    
     # 3. Assemble potential track
-    newTrack = assembleTrack(tth,eta,frm,scan,roiSize,p,tth_vals,eta_vals,roi,params)
+    newTrack = assembleTrack(tth,eta,frm,scan,roiSize,p,residual,roi,params)
     
     # 4. Evaluate potential track    
-    peakFound = peakDetected(newTrack,prevTracks,params)
+    peakFound = peakDetected(newTrack,prevTracks,params,omegaCompare)
     
     return newTrack, peakFound
 
-def peakDetected(newTrack,prevTracks,params):
-    roiSize = params['roiSize']
+def peakDetected(newTrack,prevTracks,params,omegaCompare=False):
     p = newTrack['p']
     eta = newTrack['eta']
     tth = newTrack['tth']
-    gamma = params['gamma']
-    detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(params,tth,eta)
-    rad_dom, eta_dom = sf.polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
-    deta = eta_dom[1]-eta_dom[0]
-    dtth = hypot = detectDist*np.cos(tth)
-    dtth = np.arctan(mmPerPixel/hypot)
-    
-    if (p[1] > roiSize[0]) | (p[2] > roiSize[1]):
-        peakFound = False
-        # print('Mean exceeds ROI')
-        return peakFound
     
     if len(prevTracks) == 0:
         peakFound = True
@@ -473,22 +438,49 @@ def peakDetected(newTrack,prevTracks,params):
     
     for pTrack in prevTracks:
         
-        # Prev track
-        pPrev = pTrack['p']
-        etaPrev = pTrack['eta']
-        tthPrev = pTrack['tth']
-        # New track criterion
-        crit1 = (abs(eta-etaPrev)/deta < gamma[0]) & (abs(tth-tthPrev)/dtth < gamma[1])
-        crit2 = (abs(p[3] - pPrev[3]) < gamma[2]) & (abs(p[4] - pPrev[4]) < gamma[3])
-        if crit1 & crit2:
+        criterion = matchCriterion(eta,tth,p,pTrack,params,omegaCompare)
+        
+        if criterion:
             peakFound = True
             return peakFound
         else:
             peakFound = False
-            # print('Track differs from previous')
-            # print(f'shiftDist={shiftDist}, sizeDiff={sizeDiff}')
             
     return peakFound
+
+def matchCriterion(eta,tth,p,pTrack,params,omegaCompare=False):
+    roiSize = params['roiSize']
+    detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(params,tth,eta)
+    rad_dom, eta_dom = sf.polarDomain(detectDist,mmPerPixel,tth,eta,roiSize)  
+    deta = eta_dom[1]-eta_dom[0]
+    dtth = hypot = detectDist*np.cos(tth)
+    dtth = np.arctan(mmPerPixel/hypot)
+    # Prev track
+    pPrev = pTrack['p']
+    etaPrev = pTrack['eta']
+    tthPrev = pTrack['tth']
+    
+    # New track criterion
+    gamma = params['gamma']
+    if omegaCompare:
+        etaThresh = gamma[4]
+        tthThresh = gamma[5]
+    else:
+        etaThresh = gamma[0]
+        tthThresh = gamma[1]
+    if params['peak_func'] == 'gaussian':
+        crit1 = (abs(eta-etaPrev)/deta < etaThresh) & (abs(tth-tthPrev)/dtth < tthThresh)
+        crit2 = (abs(p[3] - pPrev[3]) < gamma[2]) & (abs(p[4] - pPrev[4]) < gamma[3])
+        return crit1 & crit2
+    elif params['peak_func'] == 'gaussian_rot':
+        crit1 = (abs(eta-etaPrev)/deta < etaThresh) & (abs(tth-tthPrev)/dtth < tthThresh)
+        maxP = max(p[3],p[4])
+        minP = min(p[3],p[4])
+        maxPprev = max(pPrev[3],pPrev[4])
+        minPprev = min(pPrev[3],pPrev[4])
+        crit2 = (abs(minP - minPprev) < gamma[2]) & (abs(maxP - maxPprev) < gamma[3])
+        return crit1 & crit2
+    
 
 def trackingResults(spotInds,spotFiles,scanRange,trackPath,dataPath,params):   
     numSpots =  len(spotInds)
