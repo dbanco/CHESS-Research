@@ -64,9 +64,8 @@ dataset = 'sim2_tooth_backtooth_matched';
 for trials = 1
 for s1 = 2
 for s2 = 1
-for s3 = 1
+for s3 = 2
 for s4 = 1
-
     opt.Penalty = penalties{s1};
     opt.coefInit = xinits{s2};
     opt.dictInit = dinits{s3};
@@ -75,7 +74,6 @@ for s4 = 1
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
     end
-    
     
     topDir = ['/cluster/home/dbanco02/Outputs_sim2_lam_all',...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
