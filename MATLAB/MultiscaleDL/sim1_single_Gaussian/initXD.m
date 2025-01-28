@@ -19,12 +19,13 @@ end
 
 % Init Dictionary
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
- 
 switch opt.dictInit
     case 'flat'
         D0 = zeros(1,M,K);
         for k = 1:K
-            D0(1,:,k) = 1;
+            i1 = round(M*(0.5 - 0.5*k/K) + 1);
+            i2 = round(M*(0.5 + 0.5*k/K));
+            D0(1,i1:i2,k) = k;
             D0(1,:,k) = Pnrm(D0(1,:,k));
         end
     case 'zeros'
