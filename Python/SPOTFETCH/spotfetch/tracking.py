@@ -2,10 +2,12 @@
 """
 spotfetch.tracking
 
-Tools for visualizing X-ray diffraction data and results.
+Tools for tracking X-ray diffraction data and results.
 
 Created on: Fri Nov 15 23:00:28 2024
 Author: Daniel Banco
+Email: dpqb10@gmail.com
+Version: 0.1.0
 """
 import numpy as np
 import h5py
@@ -20,9 +22,6 @@ from pathlib import Path
 import glob
 import job_manager as jm
 import spotfetch as sf
-from scipy.ndimage import gaussian_filter
-from skimage.feature import hessian_matrix
-from scipy.ndimage import label
 
 FRAME1 = 2
 NUMFRAMES = 1440

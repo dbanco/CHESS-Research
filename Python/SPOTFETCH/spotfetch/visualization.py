@@ -122,39 +122,39 @@ def plotSpotWedges(spotData,fnames,frame_i,params,grains=[],detectFrame=[]):
 
 def scatterOmeg(trackData):
     """
-Visualizes omega values from track data in scatter plots.
-
-This function generates a series of scatter plots where each subplot corresponds 
-to a specific spot (indexed by `k`) and visualizes the omega values extracted 
-from frame data for each time step `t` in `trackData`.
-
-Parameters:
------------
-trackData : list of lists of lists of dict
-    A nested list where:
-    - Outer list represents time steps (`t`).
-    - Each element is a list containing `K` sublists, each corresponding to a spot.
-    - Each sublist contains dictionaries with a `'frm'` key, 
-      which is used to calculate the omega value.
-
-Returns:
---------
-matplotlib.figure.Figure
-    A matplotlib Figure object containing the scatter plots.
-
-Notes:
-------
-- The function assumes that `sf.frameToOmega` is defined and converts frame 
-  information to omega values.
-- Only non-empty sublists are processed.
-- The x-axis represents the time step (`t`), and the y-axis represents the omega value.
-- The figure contains one subplot per spot, with a maximum x-axis limit of 20.
-
-Example:
---------
->>> fig = scatterOmeg(trackData)
->>> fig.show()
-"""
+    Visualizes omega values from track data in scatter plots.
+    
+    This function generates a series of scatter plots where each subplot corresponds 
+    to a specific spot (indexed by `k`) and visualizes the omega values extracted 
+    from frame data for each time step `t` in `trackData`.
+    
+    Parameters:
+    -----------
+    trackData : list of lists of lists of dict
+        A nested list where:
+        - Outer list represents time steps (`t`).
+        - Each element is a list containing `K` sublists, each corresponding to a spot.
+        - Each sublist contains dictionaries with a `'frm'` key, 
+          which is used to calculate the omega value.
+    
+    Returns:
+    --------
+    matplotlib.figure.Figure
+        A matplotlib Figure object containing the scatter plots.
+    
+    Notes:
+    ------
+    - The function assumes that `sf.frameToOmega` is defined and converts frame 
+      information to omega values.
+    - Only non-empty sublists are processed.
+    - The x-axis represents the time step (`t`), and the y-axis represents the omega value.
+    - The figure contains one subplot per spot, with a maximum x-axis limit of 20.
+    
+    Example:
+    --------
+    >>> fig = scatterOmeg(trackData)
+    >>> fig.show()
+    """
     T = len(trackData)
     K = len(trackData[0])
     
@@ -588,6 +588,33 @@ def format_row(row_idx, value):
         return f"{value:.2f}"
     else:  # Default
         return str(value)
+    
+def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
+    tths = spot_data['tths']
+    etas = spot_data['etas']     
+    ome_idxs = spot_data['ome_idxs'] 
+    
+    # Get spot indices at frame
+    spotInds = np.where(ome_idxs == frame)[0]
+    
+    # Init ROIs list so they can be different sizes
+    roi_list = []
+    
+    for i, ind in enumerate(spotInds):
+       
+        # 1. Load spot information
+        tth = tths[ind]
+        eta = etas[ind]
+
+        # 2. Load polar ROI
+        if detectFrame == []:
+            detectFrame = frame
+            
+        roi_polar = loadPolarROI([fnames],tth,eta,detectFrame,params)    
+        
+        roi_list.append(roi_polar)
+        
+    return roi_list
     
 def showROI(ax,dataPath,scan,frm,tthRoi,etaRoi,params):
     
