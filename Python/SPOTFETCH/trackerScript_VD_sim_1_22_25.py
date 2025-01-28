@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 12 08:53:32 2024
+Runs 2D Gaussian tracking on VD simulated data
 
-@author: dpqb1
+Created on Tue Nov 12 08:53:32 2024
+Author: Daniel Banco
+Email: dpqb10@gmail.com
 """
 import numpy as np
 import spotfetch as sf

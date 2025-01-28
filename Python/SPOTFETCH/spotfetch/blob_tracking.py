@@ -3,7 +3,7 @@
 spotfetch.blob_tracking
 
 Description:
-Tools for tracking spots using 3D blobs in X-ray diffraction data
+Module for tracking x-ray diffraction spots using 3D blobs in 3D
 
 Functions:
 trackSpotBlob

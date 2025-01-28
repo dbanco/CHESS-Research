@@ -2,7 +2,8 @@
 """
 spotfetch.tracking
 
-Tools for tracking X-ray diffraction data and results.
+Description:
+Module for tracking x-ray diffraction spots in 2D
 
 Created on: Fri Nov 15 23:00:28 2024
 Author: Daniel Banco
