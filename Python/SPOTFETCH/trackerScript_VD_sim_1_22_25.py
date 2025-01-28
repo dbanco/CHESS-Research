@@ -30,21 +30,35 @@ params['pool'] = 16
 params['parallelFlag'] = False
 params['benchmarkFlag'] = True
 
+prmBlob = {}
+prmBlob['detector'] = 'eiger_sim'
+prmBlob['imSize'] = (5000,5000)
+prmBlob['yamlFile'] = os.path.join(topPath,'c103_eiger_calibration.yml') #mruby_0401_eiger_calibration
+prmBlob['roiSize'] = [31,31,11]
+prmBlob['gamma'] = [4,5,9,6,2,2]
+prmBlob['pool'] = 16
+prmBlob['parallelFlag'] = False
+prmBlob['benchmarkFlag'] = True
+
 spotInd = 0
-suffix = '_1_22_25_rot_13'
+suffix = '_1_22_25_rot_chess'
 ttPath = os.path.join(topPath,'outputs'+suffix)
+
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
 
 dataFileSequence = [] 
 for scan in scanRange:
     dataFileSequence.append(dataFile.format(scan=scan)) 
-
-# Run tracking
-spotInds = np.arange(2,5)
-for spotInd in spotInds:
     initSpotData = np.load(spotsFiles[0])
-    sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
+
+spotInds = np.arange(8000)
+
+# # Run tracking
+# for spotInd in spotInds:
+#     sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
+
+
 
 # Process tracking results
 print('Processing Results')
@@ -52,8 +66,8 @@ resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)
 correctDetects = resultsData['truthDist'] < 5
 
 # Make track image files
-output_path = os.path.join(topPath,'imageFigs'+suffix)
-dome = 4
-num_cols = 5
-sf.makeTrackImages(dome,num_cols,output_path,spotInds,initSpotData,scanRange,dataFile,ttPath,spotsFiles,params)
+# output_path = os.path.join(topPath,'imageFigs'+suffix)
+# dome = 4
+# num_cols = 5
+# sf.makeTrackImages(dome,num_cols,output_path,spotInds,initSpotData,scanRange,dataFile,ttPath,spotsFiles,params)
 

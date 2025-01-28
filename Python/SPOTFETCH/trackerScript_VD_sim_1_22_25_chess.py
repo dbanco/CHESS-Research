@@ -44,7 +44,7 @@ for scan in scanRange:
     dataFileSequence.append(dataFile.format(scan=scan)) 
 
 # Run tracking
-spotInds = np.arange(5)
+spotInds = np.arange(2,5)
 for spotInd in spotInds:
     initSpotData = np.load(spotsFiles[0])
     sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
