@@ -2,14 +2,17 @@
 spotfetch: A Python module for X-ray diffraction spot analysis.
 
 Submodules:
-- io: Handles input/output operations.
-- processing: Contains functions for data processing and spot detection.
-- visualization: Tools for plotting and visualizing diffraction patterns.
+- detectors:
+- tracking: 
+- blob_tracking: 
+- visualization: Tools for plotting and visualizing
+- labeler:
 
 """
 
-from .spotfetch import *
+from .utilities import *
 from .visualization import *
 from .labeler import *
 from .detectors import *
 from .tracking import *
+from .blob_tracking import *

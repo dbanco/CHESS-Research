@@ -1,4 +1,4 @@
-function [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_matched(sigma)
+function [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 30;
 N = 55; 
@@ -25,6 +25,12 @@ Dtrue(1,:,1) = gaussian_basis_wrap_1D(M,center,max_width,'2-norm');
 Dtrue(1,:,2) = tooth(M,tooth_width);
 
 ADtrue = reSampleCustomArrayCenter(N,Dtrue,scales,center);
+i = 9;
+t_widths = 4:2:16;
+for j = 1:7
+    ADtrue(1,:,i) = tooth(M,t_widths(j));
+    i = i + 1;
+end
 ADpad = padarray(ADtrue,[0 M-1 0 0],0,'post');
 ADf = fft2(ADpad);
 
@@ -59,4 +65,14 @@ plot(yn(:,30),'-o')
 figure(4)
 vdf = squeeze(sum(squeeze(Xtrue),1));
 imagesc(vdf)
+
+figure(5)
+i = 1;
+for k = 1:2
+    for j = 1:8
+        subplot(2,8,i)
+        plot(ADtrue(1,:,i))
+        axis([0,60,0,0.7])
+        i = i + 1;
+    end
 end
