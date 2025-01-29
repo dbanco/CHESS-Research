@@ -424,7 +424,8 @@ def getInterpParamsEiger(tth, eta, params):
     ff_pix = panelPixelsEiger(ff_trans, mmPerPixel, imSize)
 
     new_center = np.array([center[0] - y_cart[0], center[1] - x_cart[0]])
-    roiShape = getROIshapeEiger(x_cart, y_cart, ff_pix)
+    x_pan, y_pan = getEigerPixels(x_cart, y_cart, ff_pix)
+    roiShape = [y_pan[1]-y_pan[0],x_pan[1]-x_pan[0]]
 
     Ainterp = bilinearInterpMatrix(roiShape, rad_dom, eta_dom, new_center, detectDist)
 
