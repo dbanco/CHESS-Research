@@ -42,11 +42,11 @@ for scan in scanRange:
     
 initSpotData = np.load(spotsFiles[0])
 
-spotInds = np.arange(5)
+spotInds = np.arange(1)
 
 # Run tracking
-for spotInd in spotInds:
-    sf.trackSpotBlob(spotInd,initSpotData,dataFileSequence,ttPath,prmBlob)
+# for spotInd in spotInds:
+#     sf.trackSpotBlob(spotInd,initSpotData,dataFileSequence,ttPath,prmBlob)
 
 # Make track image files
 output_path = os.path.join(topPath,'imageFigs'+suffix)

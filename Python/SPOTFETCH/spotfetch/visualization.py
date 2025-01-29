@@ -375,6 +375,17 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
     spot_id = sf.getSpotID(spotData,spotInd)
     
     for scan_ind in range(T):
+        trackFound = False
+        if (track_data[scan_ind] != False):
+           trackFound = True
+           track = track_data[scan_ind].copy()
+           etaTrack = track['eta']
+           tthTrack = track['tth']
+           frmTrack = round(track['frm'])
+           y_track, x_track = sf.etaTthToPix(etaTrack, tthTrack, etaRoi, tthRoi, params)
+           inds = np.where(np.sum(track['blob'],axis=(0,1)))
+           frm1 = sf.indToFrame(np.min(inds),frmTrack,params['roiSize'][2])
+           frm2 = sf.indToFrame(np.max(inds),frmTrack,params['roiSize'][2])
         for om_ind in range(N_ome):
             i = int(np.floor(scan_ind/num_cols))
             j = np.mod(scan_ind,num_cols)
@@ -388,10 +399,17 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
             # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
             
             # 2. Show the track, truth, sim_truth if they exist
-            trackFound = False
-            if (track_data[scan_ind] != False):
-                if round(track_data[scan_ind]['frm']) == frm:
-                    trackFound = True
+            if trackFound:
+                if frm == frm1:
+                    # Plot track square 1
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                elif frm == frm2:
+                    # Plot track square 2
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                elif (frm >= frm1) and (frm <= frm2):
+                    # Plot track circle
+                    ax.plot(x_track,y_track,marker='o',fillstyle='none',markersize=16,color='red')
+                
             if len(truth_data) > 0:
                 [truthFound, om_ind2] = sf.checkTruth(truth_data,scan_ind,scan,frm)  
             if len(spotDataList) > 0:
@@ -407,12 +425,7 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
                            (x1 >= 0) and (x1 < params['roiSize'][1]):
                             ax.plot(x1,y1,marker='o',fillstyle='none',markersize=16,color='cyan')
                             ax.plot(x1,y1,marker='s',fillstyle='none',markersize=36,color='cyan')
-                    
-            # Add tracks and truth if available
-            if trackFound:
-                track = track_data[scan_ind].copy()
-                sf.showTrack(ax,track,etaRoi,tthRoi,\
-                                 eta0,tth0,params)
+                            
             if truthFound:
                 truth = truth_data[scan_ind][om_ind2].copy()
                 sf.showTruth(ax,truth,etaRoi,tthRoi,params)
@@ -486,12 +499,10 @@ def roiTensor(spotInd,spotData,dome,scanRange,dataPath,trackPath,truthPath,spotF
 
 def saveROItensors(dome,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
     os.makedirs(output_path, exist_ok=True)
-
     for spotInd in spotInds:
         print(f'Spot {spotInd}')
         outFile = os.path.join(output_path,f'roiTensor_{spotInd}.pkl')
         roiTensor_k = sf.roiTensor(spotInd,spotData,dome,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
-
         with open(outFile, 'wb') as f:
             pickle.dump(roiTensor_k,f)
                 
@@ -500,7 +511,6 @@ def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFi
         
     for spotInd in spotInds:
         fig_list = sf.roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
-
         for i, fig in enumerate(fig_list):
             figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
             fig.savefig(figure_file)          
@@ -510,7 +520,6 @@ def makeBlobTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,da
         
     for spotInd in spotInds:
         fig_list = sf.roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
-
         for i, fig in enumerate(fig_list):
             figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
             fig.savefig(figure_file)   

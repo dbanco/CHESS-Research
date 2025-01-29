@@ -644,6 +644,35 @@ def pixToEtaTth(p1, p2, tthRoi, etaRoi, params):
     tthNew = np.arctan(radNew * mmPerPixel / detectDist)
 
     return etaNew, tthNew, deta, dtth
+
+def indToFrame(ind, frmRoi, numFrms):
+    """
+    Maps an index to a frame number within a range of frames.
+
+    Parameters:
+    -----------
+    ind : int
+        The index of the frame.
+    frmRoi : int
+        The starting frame number.
+    numFrms : int
+        The total number of frames in the range.
+
+    Returns:
+    --------
+    outputFrame : int
+        The calculated frame number.
+    """
+    # Ensure the index is within bounds
+    if ind < 0 or ind >= numFrms:
+        raise ValueError(f"Index {ind} is out of bounds for numFrms {numFrms}")
+    
+    # Calculate the offset from the middle frame
+    offset = ind - (numFrms // 2)
+    
+    # Return the frame number
+    return frmRoi + offset
+
      
 # def visualTrackData(trackData):
 #     T = len(trackData)
