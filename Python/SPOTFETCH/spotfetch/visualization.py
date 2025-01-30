@@ -820,6 +820,8 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
         
     return roi_list
 
+
+
 def plotROI(ax,roi,tthRoi,etaRoi,params):
         
     detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(params,tthRoi,etaRoi)

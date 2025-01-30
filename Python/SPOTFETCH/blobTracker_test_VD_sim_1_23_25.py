@@ -28,32 +28,13 @@ prmBlob['gamma'] = [8,8,8,6,2,2]
 prmBlob['pool'] = 16
 prmBlob['parallelFlag'] = False
 prmBlob['benchmarkFlag'] = True
+
 prmBlob['gaussian_derivatives'] = False
-# Blob 5
 prmBlob['sigmas'] = np.array([2,2,2])
 prmBlob['dsigma'] = np.array([1.5,1.5,1.5])
-
-# Blob 6
-prmBlob['sigmas'] = np.array([2,2,0.5])
-prmBlob['dsigma'] = np.array([1.5,1.5,1])
-
-# Blob 7
-prmBlob['sigmas'] = np.array([2,2,2])
-prmBlob['dsigma'] = np.array([1.5,1.5,1.5])
-prmBlob['gaussian_derivatives'] = True
-
-# Blob 8
-prmBlob['sigmas'] = np.array([2,  3, 0.5])
-prmBlob['dsigma'] = np.array([1.5,2, 0.25])
-prmBlob['gaussian_derivatives'] = True
-
-# Blob 9
-prmBlob['sigmas'] = np.array([2,2,2])
-prmBlob['dsigma'] = np.array([1,1,1])
-prmBlob['gaussian_derivatives'] = True
 
 spotInd = 0
-suffix = '_1_29_25_blob_'
+suffix = '_1_23_25_blob_'
 ttPath = os.path.join(topPath,'outputs'+suffix)
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
