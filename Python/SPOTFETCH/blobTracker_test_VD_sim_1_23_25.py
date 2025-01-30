@@ -53,6 +53,5 @@ for spotInd in spotInds:
 
 # Make track image files
 output_path = os.path.join(topPath,'imageFigs'+suffix)
-dome = 5
 num_cols = 5
-sf.makeBlobTrackImages(dome,num_cols,output_path,spotInds,initSpotData,scanRange,dataFileSequence,ttPath,spotsFiles,prmBlob)
+sf.makeBlobTrackImages(num_cols,output_path,spotInds,initSpotData,scanRange,dataFileSequence,ttPath,spotsFiles,prmBlob)
