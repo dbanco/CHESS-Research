@@ -56,6 +56,7 @@ SOFTWARE.
 
 import numpy as np
 import pandas as pd
+import pickle
 import os
 import glob
 from .detectors import loadYamlData, polarDomain
@@ -673,6 +674,35 @@ def indToFrame(ind, frmRoi, numFrms):
     # Return the frame number
     return frmRoi + offset
 
+def loadTrackData(trackPath,spotInd):
+    '''
+    Loads in track data
+    '''
+    track_file = os.path.join(trackPath,f'trackData_{spotInd}.pkl')
+    if os.path.exists(track_file):
+        with open(track_file, 'rb') as f:
+            outData = pickle.load(f)
+            track_data = outData['trackData']
+            print('Track loaded')
+    else:
+        print('Track data {spotInd} does not exist')
+        track_data = []
+        
+    return track_data
+
+def loadTruthData(truthPath,spotInd):
+    '''
+    Loads in truth data
+    '''
+    truth_file = os.path.join(truthPath,f'truthData_{spotInd}.pkl')
+    if os.path.exists(truth_file):
+        with open(truth_file, 'rb') as f:
+            truth_data = pickle.load(f)
+            print('Truth loaded')
+    else:   
+        truth_data = []
+
+    return truth_data
      
 # def visualTrackData(trackData):
 #     T = len(trackData)

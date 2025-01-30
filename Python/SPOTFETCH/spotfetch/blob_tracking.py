@@ -118,14 +118,14 @@ def initSpotBlob(spotInd, eta, tth, frm, fileName, trackFile, params):
     roi3D = sf.loadPolarROI3D(fileName, tth, eta, frm, params)
 
     # 2. Perform blob detection
-    blobs, num_blobs, hess_mat = sf.detectBlobDoG(roi3D)
+    blobs, num_blobs, hess_mat = sf.detectBlobDoG(roi3D,params)
 
     # 3. Extract blob features
     features = sf.blobFeaturesDoG(roi3D, blobs, num_blobs, hess_mat)
 
     # 4. Identify the initial spot blob closest to the center of ROI
-    center = (np.array(params['roiSize']) - 1) / 2
-    distances = np.sum((np.array(features['com']) - center) ** 2, axis=1)
+    center = (np.array([params['roiSize']]) - 1) / 2
+    distances = np.sum((features[4:7,:] - np.transpose(center)) ** 2, axis=0)
     closest_blob_idx = np.argmin(distances)
 
     # Visualize the ROI and detected blobs for debugging
@@ -139,12 +139,12 @@ def initSpotBlob(spotInd, eta, tth, frm, fileName, trackFile, params):
         blob[~(blobs == (closest_blob_idx + 1))] = 0
 
         newTrack = assembleBlobTrack(tth, eta, frm, 0, blob,
-                                     features[closest_blob_idx], params)
+                                     features[:,closest_blob_idx], params)
 
         outData['trackData'].append(newTrack)
 
         # Visualize the isolated blob for debugging
-        sf.showTensor(blob)
+        # sf.showTensor(blob)
     else:
         # If no valid blob is found, append False
         outData['trackData'].append(False)
@@ -153,7 +153,7 @@ def initSpotBlob(spotInd, eta, tth, frm, fileName, trackFile, params):
     if params.get('benchmarkFlag', False):
         end_time = time.time()
         outData['trackTimes'].append(end_time - start_time)
-
+        print(f'Track time spot {spotInd}, scan 0, {end_time - start_time}')
     # Save the output data to a file
     with open(trackFile, 'wb') as f:
         pickle.dump(outData, f)
@@ -207,15 +207,13 @@ def processSpotBlob(spotInd, t_ind, fnames, trackFile, params):
         roi3D = sf.loadPolarROI3D(fnames, prevTth, prevEta, prevFrm, params)
 
         # 3. Perform blob detection
-        blobs, num_blobs, hess_mat = sf.detectBlobDoG(roi3D)
+        blobs, num_blobs, hess_mat = sf.detectBlobDoG(roi3D,params)
 
         # 4. Extract blob features
         features = sf.blobFeaturesDoG(roi3D, blobs, num_blobs, hess_mat)
 
         # 5. Compare detected blobs to previous track
-        selInd = compareBlobs(
-            prevTrack, prevTth, prevEta, prevFrm, t_ind, features, params
-        )
+        selInd = compareBlobs(prevTrack, t_ind, features, params)
 
         # 6. If a matching blob is found, update the track
         if selInd == -1:
@@ -223,12 +221,10 @@ def processSpotBlob(spotInd, t_ind, fnames, trackFile, params):
         else:
             # Update blob for current track
             blob = roi3D.copy()
-            blob[~(blobs == selInd)] = 0
+            blob[~(blobs == selInd + 1)] = 0
             newTrack = assembleBlobTrack(
                 prevTth, prevEta, prevFrm, t_ind, blob,
-                features['RT'][selInd],features['ST'][selInd],
-                features['AT'][selInd],features['sum'][selInd],
-                features['com'][selInd], params
+                features[:,selInd], params
             )
             outData['trackData'].append(newTrack)
 
@@ -236,12 +232,13 @@ def processSpotBlob(spotInd, t_ind, fnames, trackFile, params):
     if params.get('benchmarkFlag', False):
         end_time = time.time()
         outData['trackTimes'].append(end_time - start_time)
+        print(f'Track time spot {spotInd}, scan {t_ind}, {end_time - start_time}')
 
     # Save the updated track data to the track file
     with open(trackFile, 'wb') as f:
         pickle.dump(outData, f)
 
-def compareBlobs(prevTrack, prevTth, prevEta, prevFrm, t_ind, features, params):
+def compareBlobs(prevTrack, t_ind, features, params):
     """
     Compares blobs to the previous track and selects the best match.
 
@@ -257,8 +254,8 @@ def compareBlobs(prevTrack, prevTth, prevEta, prevFrm, t_ind, features, params):
         Previous frame index.
     t_ind : int
         Current time index.
-    features : dict
-        Dictionary containing blob features (RT, ST, AT, sum, com).
+    features : np.array((7,1))
+        Array containing blob features (RT, ST, AT, sum, com_tth, com_eta, com_ome).
     params : dict
         Dictionary of parameters, including thresholds and ROI size.
 
@@ -267,15 +264,24 @@ def compareBlobs(prevTrack, prevTth, prevEta, prevFrm, t_ind, features, params):
     int
         Index of the selected blob or -1 if no match is found.
     """
-    com = features['com']
-    scores = np.full(len(com), np.inf)  # Initialize scores with infinity
+    num_blobs = features.shape[1]
+    scores = np.full(num_blobs, np.inf)  # Initialize scores with infinity
     
-    for i, center in enumerate(com):
-        if np.isnan(center).any():
+    prevTth = prevTrack['tth']
+    prevEta = prevTrack['eta']
+    prevFrm = prevTrack['frm']
+    RT = prevTrack['features'][0]
+    ST = prevTrack['features'][1]
+    AT = prevTrack['features'][2]
+    sumInt = prevTrack['features'][3]
+    
+    for i in range(num_blobs):
+        com = features[4:7,i]
+        if np.isnan(com).any():
             continue
-        
-        etaNew, tthNew, deta, dtth = sf.pixToEtaTth(center[1], center[0], prevTth, prevEta, params)
-        frmNew = prevFrm + center[2] - (params['roiSize'][2] - 1) / 2
+
+        etaNew, tthNew, deta, dtth = sf.pixToEtaTth(com[1], com[0], prevTth, prevEta, params)
+        frmNew = prevFrm + com[2] - (params['roiSize'][2] - 1) / 2
         
         # 1. Check if within minimum distance
         tthCheck = abs(tthNew - prevTth) < params['gamma'][0] * dtth
@@ -284,10 +290,10 @@ def compareBlobs(prevTrack, prevTth, prevEta, prevFrm, t_ind, features, params):
         
         if tthCheck and etaCheck and frmCheck:
             # 2. Compute match score
-            RTdiff = abs(prevTrack['RT'] - features['RT'][i])
-            STdiff = abs(prevTrack['ST'] - features['ST'][i]) / prevTrack['ST']
-            ATdiff = abs(prevTrack['AT'] - features['AT'][i]) / prevTrack['AT']
-            sumIntdiff = abs(prevTrack['sum'] - features['sum'][i]) / prevTrack['sum']
+            RTdiff = abs(RT - features[0,i])
+            STdiff = abs(ST - features[1,i]) / ST
+            ATdiff = abs(AT - features[2,i]) / AT
+            sumIntdiff = abs(sumInt - features[3,i]) / sumInt
             blobDist = np.sqrt(
                 ((tthNew - prevTth) / dtth)**2 +
                 ((etaNew - prevEta) / deta)**2 +
@@ -311,8 +317,8 @@ def assembleBlobTrack(tthRoi, etaRoi, frmRoi, scan, blob, features, params):
         Current scan index.
     blob : ndarray
         The blob data.
-    features : dict
-        Blob features.
+    features : np.array((7,1))
+        Array containing blob features (RT, ST, AT, sum, com_tth, com_eta, com_ome).
     params : dict
         Parameters for feature extraction.
 
@@ -321,7 +327,7 @@ def assembleBlobTrack(tthRoi, etaRoi, frmRoi, scan, blob, features, params):
     dict
         New track dictionary with updated information.
     """
-    com = features['com']
+    com = features[4:7]
     etaNew, tthNew, deta, dtth = sf.pixToEtaTth(com[1], com[0], tthRoi, etaRoi, params)
     frmNew = frmRoi + com[2] - (params['roiSize'][2] - 1) / 2
     
@@ -361,9 +367,9 @@ def DoG(f, sigma, dsigma, gamma=2):
     """
     g1 = gaussian_filter(f, sigma=sigma)
     g2 = gaussian_filter(f, sigma=sigma + dsigma)
-    return (g2 - g1) / (sigma * dsigma)
+    return (g2 - g1) / (np.mean(sigma) * np.mean(dsigma))
 
-def detectBlobDoG(x):
+def detectBlobDoG(x,params):
     """
     Detects blobs using the Difference of Gaussians (DoG) method.
 
@@ -383,10 +389,10 @@ def detectBlobDoG(x):
             Hessian matrices of the DoG result.
     """
     # 1. Compute normalized DoG
-    dog_norm = DoG(x, sigma=2, dsigma=1.5)
+    dog_norm = DoG(x, sigma=params['sigmas'], dsigma=params['dsigma'])
 
     # 2. Pre-segmentation
-    hess_mat = hessian_matrix(dog_norm)
+    hess_mat = hessian_matrix(dog_norm,use_gaussian_derivatives=params['gaussian_derivatives'])
     D1 = np.zeros(hess_mat[0].shape)
     D2 = np.zeros(hess_mat[0].shape)
     D3 = np.zeros(hess_mat[0].shape)
@@ -427,13 +433,15 @@ def blobFeaturesDoG(x, blobs, num_blobs, hess_mat):
         A dictionary containing the following features:
         - Blobness feature (RT)
         - Flatness feature (ST)
-        - Average intensity feature (AT)
-        - Total intensity feature (sum)
-        - Center of mass feature (com)
+        - Average intensity (AT)
+        - Total intensity (sum)
+        - Center of mass 2theta 
+        - Center of mass eta
+        - Center of mass omega
     """
     
-    # Initialize lists to hold the features for all blobs
-    RT, ST, AT, sum_intensity, com = [], [], [], [], []
+    # Initialize features for all blobs
+    features = np.zeros((7,num_blobs))
     
     for i in range(1, num_blobs + 1):
         # Find indices of the current blob
@@ -453,17 +461,17 @@ def blobFeaturesDoG(x, blobs, num_blobs, hess_mat):
         eigs_i = np.linalg.eig(h_mat)
         
         # Blobness feature
-        RT_value = 3 * np.abs(eigs_i[0][0] * eigs_i[0][1] * eigs_i[0][2])**(2/3) / (
+        RT = 3 * np.abs(eigs_i[0][0] * eigs_i[0][1] * eigs_i[0][2])**(2/3) / (
             np.abs(eigs_i[0][0] * eigs_i[0][1]) + 
             np.abs(eigs_i[0][0] * eigs_i[0][2]) + 
             np.abs(eigs_i[0][2] * eigs_i[0][1])
         )
         
         # Flatness feature
-        ST_value = np.sqrt(eigs_i[0][0]**2 + eigs_i[0][1]**2 + eigs_i[0][2]**2)
+        ST = np.sqrt(eigs_i[0][0]**2 + eigs_i[0][1]**2 + eigs_i[0][2]**2)
         
         # Average intensity feature
-        AT_value = np.mean(x[b_indices])
+        AT = np.mean(x[b_indices])
         
         # Total intensity feature
         sumIntensity = np.mean(x[b_indices])
@@ -471,23 +479,16 @@ def blobFeaturesDoG(x, blobs, num_blobs, hess_mat):
         # Center of mass feature
         xx = x.copy()
         xx[~b_indices] = 0
-        com_value = center_of_mass(xx)
+        com = center_of_mass(xx)
         
-        # Append the features to the respective lists
-        RT.append(RT_value)
-        ST.append(ST_value)
-        AT.append(AT_value)
-        sum_intensity.append(sumIntensity)
-        com.append(com_value)
+        features[0,i-1] = RT
+        features[1,i-1] = ST
+        features[2,i-1] = AT
+        features[3,i-1] = sumIntensity
+        features[4:7,i-1] = com
     
-    # Return a dictionary containing the features
-    return {
-        'RT': RT,
-        'ST': ST,
-        'AT': AT,
-        'sum': sum_intensity,
-        'com': com
-    }
+    # return feature array
+    return features
 
 # def roiTensor(spotInd,spotData,dome,scanRange,dataPath,spotFiles,params):
 

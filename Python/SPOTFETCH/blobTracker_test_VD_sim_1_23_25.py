@@ -10,7 +10,6 @@ import os
 
 # topPath = r"C:\Users\dpqb1\Documents\Data\VD_sim_processing"
 topPath = r"E:\VD_sim_processing"
-dataFile1 = os.path.join(topPath,r"state_*\simulation\outputs\c103_polycrystal_sample_2_state_*_layer_1_output_data.npz")
 dataFile = os.path.join(topPath,r"state_{scan}\simulation\outputs\c103_polycrystal_sample_2_state_{scan}_layer_1_output_data.npz")
 
 scanRange = np.arange(5)
@@ -29,9 +28,32 @@ prmBlob['gamma'] = [8,8,8,6,2,2]
 prmBlob['pool'] = 16
 prmBlob['parallelFlag'] = False
 prmBlob['benchmarkFlag'] = True
+prmBlob['gaussian_derivatives'] = False
+# Blob 5
+prmBlob['sigmas'] = np.array([2,2,2])
+prmBlob['dsigma'] = np.array([1.5,1.5,1.5])
+
+# Blob 6
+prmBlob['sigmas'] = np.array([2,2,0.5])
+prmBlob['dsigma'] = np.array([1.5,1.5,1])
+
+# Blob 7
+prmBlob['sigmas'] = np.array([2,2,2])
+prmBlob['dsigma'] = np.array([1.5,1.5,1.5])
+prmBlob['gaussian_derivatives'] = True
+
+# Blob 8
+prmBlob['sigmas'] = np.array([2,  3, 0.5])
+prmBlob['dsigma'] = np.array([1.5,2, 0.25])
+prmBlob['gaussian_derivatives'] = True
+
+# Blob 9
+prmBlob['sigmas'] = np.array([2,2,2])
+prmBlob['dsigma'] = np.array([1,1,1])
+prmBlob['gaussian_derivatives'] = True
 
 spotInd = 0
-suffix = '_1_23_25_blob_4'
+suffix = '_1_29_25_blob_'
 ttPath = os.path.join(topPath,'outputs'+suffix)
 if not os.path.exists(ttPath):
     os.mkdir(ttPath)
@@ -45,12 +67,11 @@ initSpotData = np.load(spotsFiles[0])
 spotInds = np.arange(1)
 
 # Run tracking
-# for spotInd in spotInds:
-#     sf.trackSpotBlob(spotInd,initSpotData,dataFileSequence,ttPath,prmBlob)
+for spotInd in spotInds:
+    sf.trackSpotBlob(spotInd,initSpotData,dataFileSequence,ttPath,prmBlob)
 
 # Make track image files
 output_path = os.path.join(topPath,'imageFigs'+suffix)
-dome = 4
+dome = 5
 num_cols = 5
-sf.makeBlobTrackImages(dome,num_cols,output_path,spotInds,initSpotData,scanRange,dataFile,ttPath,spotsFiles,prmBlob)
-
+sf.makeBlobTrackImages(dome,num_cols,output_path,spotInds,initSpotData,scanRange,dataFileSequence,ttPath,spotsFiles,prmBlob)

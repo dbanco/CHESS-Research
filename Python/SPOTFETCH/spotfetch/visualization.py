@@ -298,11 +298,8 @@ def roiTrackVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,t
                 ax.set_ylabel(f'{frm}')
     return fig_list
 
-def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPath,truthPath,spotFiles,params):
-
+def initRoiFigs(scanRange,num_cols,N_ome,spotInd):
     T = len(scanRange)
-    N_ome = 2*dome+1
-    
     num_figs = int(np.ceil(T/num_cols))
     
     fig_list = []
@@ -333,29 +330,17 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
         fig_list[i].text(0.5, 0.04, 'Scan #', ha='center', fontsize=24)
         fig_list[i].text(0.5, 0.95, f'Spot {spotInd}, Scans {j1}-{j2}', ha='center', fontsize=32)      
         fig_list[i].subplots_adjust(wspace=0.05, hspace=0.01)
+        
+        return fig_list, axes_list
+
+def showRoi3D(spotInd,spotData,num_cols,scanRange,dataFileSequence,trackPath,truthPath,spotFiles,params):
     
     # Load track data
-    track_file = os.path.join(trackPath,f'trackData_{spotInd}.pkl')
-    if os.path.exists(track_file):
-        with open(track_file, 'rb') as f:
-            outData = pickle.load(f)
-            track_data = outData['trackData']
-            print('Track loaded')
-    else:
-        track_data = []
-        trackFound = False
+    track_data = sf.loadTrackData(trackPath,spotInd)
         
     # Load truth data 
-    truth_file = os.path.join(trackPath,f'truthData_{spotInd}.pkl')
-    if os.path.exists(truth_file):
-        with open(truth_file, 'rb') as f:
-            truth_data = pickle.load(f)
-            print('Truth loaded')
-    else:   
-        T = len(scanRange)
-        truth_data = []
-        truthFound = False
-        
+    truth_data = sf.loadTruthData(trackPath,spotInd)
+    
     # Load sim truth
     spotDataList = []
     for i in range(len(spotFiles)):
@@ -369,12 +354,20 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
     frm0 = spotData['ome_idxs'][spotInd]
     print(spotData['omes'][spotInd])
     
-    etaRoi = eta0
-    tthRoi = tth0
-    frmRange = np.arange(frm0-dome,frm0+dome+1)
     spot_id = sf.getSpotID(spotData,spotInd)
     
-    for scan_ind in range(T):
+    # Initialize figures
+    N_ome = params['roiSize'][2]
+    dome = (N_ome-1)/2
+    frmRange = np.arange(frm0-dome,frm0+dome+1)
+
+    fig_list, axes_list = sf.initRoiFigs(scanRange,num_cols,N_ome,spotInd)
+    
+    for scan_ind in range(len(scanRange)):
+        # Load roi data
+        scan = scanRange[scan_ind]
+        roi3D = sf.loadPolarROI3D(dataFileSequence[scan_ind], tth0, eta0, frm0, params)
+        
         trackFound = False
         if (track_data[scan_ind] != False):
            trackFound = True
@@ -382,20 +375,20 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
            etaTrack = track['eta']
            tthTrack = track['tth']
            frmTrack = round(track['frm'])
-           y_track, x_track = sf.etaTthToPix(etaTrack, tthTrack, etaRoi, tthRoi, params)
+           y_track, x_track = sf.etaTthToPix(etaTrack, tthTrack, eta0, tth0, params)
            inds = np.where(np.sum(track['blob'],axis=(0,1)))
            frm1 = sf.indToFrame(np.min(inds),frmTrack,params['roiSize'][2])
            frm2 = sf.indToFrame(np.max(inds),frmTrack,params['roiSize'][2])
+           
         for om_ind in range(N_ome):
             i = int(np.floor(scan_ind/num_cols))
             j = np.mod(scan_ind,num_cols)
             ax = axes_list[i][om_ind,j]
-            scan = scanRange[scan_ind]
             frm = sf.wrapFrame(frmRange[om_ind])
             
             print(f'Scan {scan}, Frame {frm}')
             # 1. Show ROI
-            sf.showROI(ax,dataPath, scan, frm, tthRoi, etaRoi, params)
+            sf.plotROI(ax,roi3D[:,:,om_ind],tth0, eta0, params)
             # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
             
             # 2. Show the track, truth, sim_truth if they exist
@@ -406,7 +399,204 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
                 elif frm == frm2:
                     # Plot track square 2
                     ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
-                elif (frm >= frm1) and (frm <= frm2):
+                if (frm >= frm1) and (frm <= frm2):
+                    # Plot track circle
+                    ax.plot(x_track,y_track,marker='o',fillstyle='none',markersize=16,color='red')
+                
+            if len(truth_data) > 0:
+                [truthFound, om_ind2] = sf.checkTruth(truth_data,scan_ind,scan,frm)  
+            if len(spotDataList) > 0:
+                m_ind = sf.matchSpotID(spotDataList[scan_ind],spot_id,spotInd)
+                if not np.isnan(m_ind):
+                    if frm == spotDataList[scan_ind]['ome_idxs'][m_ind]:
+                        # Plot the sim truth
+                        x = spotDataList[scan_ind]['Xm'][m_ind]
+                        y = spotDataList[scan_ind]['Ym'][m_ind]
+                        etaTrue, tthTrue = sf.xyToEtaTthRecenter(x,y,params)
+                        [y1, x1] = sf.etaTthToPix(etaTrue,tthTrue,eta0,tth0,params)
+                        if (y1 >= 0) and (y1 < params['roiSize'][0]) and\
+                           (x1 >= 0) and (x1 < params['roiSize'][1]):
+                            ax.plot(x1,y1,marker='o',fillstyle='none',markersize=16,color='cyan')
+                            ax.plot(x1,y1,marker='s',fillstyle='none',markersize=36,color='cyan')
+                            
+            if len(truth_data) > 0:
+                truth = truth_data[scan_ind][om_ind2].copy()
+                sf.showTruth(ax,truth,eta0,tth0,params)
+            
+            # Label plots
+            if om_ind == N_ome-1:
+                ax.set_xlabel(f'{scan}')
+            if scan_ind == 0:
+                ax.set_ylabel(f'{frm}')
+    return fig_list
+
+def showRoiBlobs(spotInd,spotData,num_cols,scanRange,dataFileSequence,trackPath,truthPath,spotFiles,params):
+    
+    # Load track data
+    track_data = sf.loadTrackData(trackPath,spotInd)
+        
+    # Load truth data 
+    truth_data = sf.loadTruthData(trackPath,spotInd)
+    
+    # Load sim truth
+    spotDataList = []
+    for i in range(len(spotFiles)):
+        if os.path.exists(spotFiles[i]):
+            spotDataList.append(np.load(spotFiles[i]))
+    
+    # Get initial spot location
+    x = spotData['Xm'][spotInd]
+    y = spotData['Ym'][spotInd]
+    eta0, tth0 = sf.xyToEtaTthRecenter(x,y,params)
+    frm0 = spotData['ome_idxs'][spotInd]
+    print(spotData['omes'][spotInd])
+    
+    spot_id = sf.getSpotID(spotData,spotInd)
+    
+    # Initialize figures
+    N_ome = params['roiSize'][2]
+    dome = (N_ome-1)/2
+    frmRange = np.arange(frm0-dome,frm0+dome+1)
+
+    fig_list, axes_list = sf.initRoiFigs(scanRange,num_cols,N_ome,spotInd)
+    
+    for scan_ind in range(len(scanRange)):
+        # Load roi data
+        scan = scanRange[scan_ind]
+        roi3D = sf.loadPolarROI3D(dataFileSequence[scan_ind], tth0, eta0, frm0, params)
+        blobs,_,_ = sf.detectBlobDoG(roi3D,params)
+        
+        trackFound = False
+        if (track_data[scan_ind] != False):
+           trackFound = True
+           track = track_data[scan_ind].copy()
+           etaTrack = track['eta']
+           tthTrack = track['tth']
+           frmTrack = round(track['frm'])
+           y_track, x_track = sf.etaTthToPix(etaTrack, tthTrack, eta0, tth0, params)
+           inds = np.where(np.sum(track['blob'],axis=(0,1)))
+           frm1 = sf.indToFrame(np.min(inds),frmTrack,params['roiSize'][2])
+           frm2 = sf.indToFrame(np.max(inds),frmTrack,params['roiSize'][2])
+           
+        for om_ind in range(N_ome):
+            i = int(np.floor(scan_ind/num_cols))
+            j = np.mod(scan_ind,num_cols)
+            ax = axes_list[i][om_ind,j]
+            frm = sf.wrapFrame(frmRange[om_ind])
+            
+            print(f'Scan {scan}, Frame {frm}')
+            # 1. Show ROI
+            sf.plotROI(ax,blobs[:,:,om_ind],tth0, eta0, params)
+            # roiPlt.set_clim(0, 10)
+            # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
+            
+            # 2. Show the track, truth, sim_truth if they exist
+            if trackFound:
+                if frm == frm1:
+                    # Plot track square 1
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                elif frm == frm2:
+                    # Plot track square 2
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                if (frm >= frm1) and (frm <= frm2):
+                    # Plot track circle
+                    ax.plot(x_track,y_track,marker='o',fillstyle='none',markersize=16,color='red')
+                
+            if len(truth_data) > 0:
+                [truthFound, om_ind2] = sf.checkTruth(truth_data,scan_ind,scan,frm)  
+            if len(spotDataList) > 0:
+                m_ind = sf.matchSpotID(spotDataList[scan_ind],spot_id,spotInd)
+                if not np.isnan(m_ind):
+                    if frm == spotDataList[scan_ind]['ome_idxs'][m_ind]:
+                        # Plot the sim truth
+                        x = spotDataList[scan_ind]['Xm'][m_ind]
+                        y = spotDataList[scan_ind]['Ym'][m_ind]
+                        etaTrue, tthTrue = sf.xyToEtaTthRecenter(x,y,params)
+                        [y1, x1] = sf.etaTthToPix(etaTrue,tthTrue,eta0,tth0,params)
+                        if (y1 >= 0) and (y1 < params['roiSize'][0]) and\
+                           (x1 >= 0) and (x1 < params['roiSize'][1]):
+                            ax.plot(x1,y1,marker='o',fillstyle='none',markersize=16,color='cyan')
+                            ax.plot(x1,y1,marker='s',fillstyle='none',markersize=36,color='cyan')
+                            
+            if len(truth_data) > 0:
+                truth = truth_data[scan_ind][om_ind2].copy()
+                sf.showTruth(ax,truth,eta0,tth0,params)
+            
+            # Label plots
+            if om_ind == N_ome-1:
+                ax.set_xlabel(f'{scan}')
+            if scan_ind == 0:
+                ax.set_ylabel(f'{frm}')
+    return fig_list
+
+def showRoiTrackBlobs(spotInd,spotData,num_cols,scanRange,dataFileSequence,trackPath,truthPath,spotFiles,params):
+    
+    # Load track data
+    track_data = sf.loadTrackData(trackPath,spotInd)
+        
+    # Load truth data 
+    truth_data = sf.loadTruthData(trackPath,spotInd)
+    
+    # Load sim truth
+    spotDataList = []
+    for i in range(len(spotFiles)):
+        if os.path.exists(spotFiles[i]):
+            spotDataList.append(np.load(spotFiles[i]))
+    
+    # Get initial spot location
+    x = spotData['Xm'][spotInd]
+    y = spotData['Ym'][spotInd]
+    frm0 = spotData['ome_idxs'][spotInd]
+    print(spotData['omes'][spotInd])
+    
+    spot_id = sf.getSpotID(spotData,spotInd)
+    
+    # Initialize figures
+    N_ome = params['roiSize'][2]
+    dome = (N_ome-1)/2
+    frmRange = np.arange(frm0-dome,frm0+dome+1)
+
+    fig_list, axes_list = sf.initRoiFigs(scanRange,num_cols,N_ome,spotInd)
+    
+    for scan_ind in range(len(scanRange)):
+        # Load roi data
+        scan = scanRange[scan_ind]        
+        trackFound = False
+        if (track_data[scan_ind] != False):
+           trackFound = True
+           track = track_data[scan_ind].copy()
+           blob = track['blob']
+           etaRoi = track['etaRoi']
+           tthRoi = track['tthRoi']
+           etaTrack = track['eta']
+           tthTrack = track['tth']
+           frmTrack = round(track['frm'])
+           y_track, x_track = sf.etaTthToPix(etaTrack, tthTrack, etaRoi, tthRoi, params)
+           inds = np.where(np.sum(track['blob'],axis=(0,1)))
+           frm1 = sf.indToFrame(np.min(inds),frmTrack,params['roiSize'][2])
+           frm2 = sf.indToFrame(np.max(inds),frmTrack,params['roiSize'][2])
+           
+        for om_ind in range(N_ome):
+            i = int(np.floor(scan_ind/num_cols))
+            j = np.mod(scan_ind,num_cols)
+            ax = axes_list[i][om_ind,j]
+            frm = sf.wrapFrame(frmRange[om_ind])
+            
+            print(f'Scan {scan}, Frame {frm}')
+            # 1. Show ROI
+            sf.plotROI(ax,blob[:,:,om_ind],tthRoi, etaRoi, params)
+            # roiPlt.set_clim(0, 10)
+            # sf.showInitial(ax,etaRoi,tthRoi,eta0,tth0,params)
+            
+            # 2. Show the track, truth, sim_truth if they exist
+            if trackFound:
+                if frm == frm1:
+                    # Plot track square 1
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                elif frm == frm2:
+                    # Plot track square 2
+                    ax.plot(x_track,y_track,marker='s',fillstyle='none',markersize=36,color='red')
+                if (frm >= frm1) and (frm <= frm2):
                     # Plot track circle
                     ax.plot(x_track,y_track,marker='o',fillstyle='none',markersize=16,color='red')
                 
@@ -426,7 +616,7 @@ def roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataPath,trackPa
                             ax.plot(x1,y1,marker='o',fillstyle='none',markersize=16,color='cyan')
                             ax.plot(x1,y1,marker='s',fillstyle='none',markersize=36,color='cyan')
                             
-            if truthFound:
+            if len(truth_data) > 0:
                 truth = truth_data[scan_ind][om_ind2].copy()
                 sf.showTruth(ax,truth,etaRoi,tthRoi,params)
             
@@ -515,15 +705,20 @@ def makeTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFi
             figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
             fig.savefig(figure_file)          
             
-def makeBlobTrackImages(dome,num_cols,output_path,spotInds,spotData,scanRange,dataFile,ttPath,spotsFiles,params):
-    os.makedirs(output_path, exist_ok=True) 
-        
+def makeBlobTrackImages(num_cols,output_path,spotInds,spotData,scanRange,dataFileSequence,ttPath,spotsFiles,params):
+    os.makedirs(output_path, exist_ok=True)        
     for spotInd in spotInds:
-        fig_list = sf.roiTrackBlobVisual(spotInd,spotData,dome,num_cols,scanRange,dataFile,ttPath,ttPath,spotsFiles,params)
+        fig_list = sf.showRoi3D(spotInd,spotData,num_cols,scanRange,dataFileSequence,ttPath,ttPath,spotsFiles,params)
         for i, fig in enumerate(fig_list):
             figure_file = os.path.join(output_path, f"fig_{spotInd}-{i}.png")
-            fig.savefig(figure_file)   
+            fig.savefig(figure_file)  
+        
+        fig_list = sf.showRoiBlobs(spotInd,spotData,num_cols,scanRange,dataFileSequence,ttPath,ttPath,spotsFiles,params)
+        for i, fig in enumerate(fig_list):
+            figure_file = os.path.join(output_path,f'blobs_{spotInd}-{i}.png')
+            fig.savefig(figure_file) 
             
+
 def makeTrackSlides(ppt_file,output_path,spotInds,resultsData,spotData):
     ppt = Presentation()
     for si,spotInd in enumerate(spotInds):
@@ -597,7 +792,7 @@ def format_row(row_idx, value):
         return f"{value:.2f}"
     else:  # Default
         return str(value)
-    
+
 def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
     tths = spot_data['tths']
     etas = spot_data['etas']     
@@ -619,12 +814,25 @@ def loadSpotsAtFrame(spot_data,fnames,frame,params,detectFrame=[]):
         if detectFrame == []:
             detectFrame = frame
             
-        roi_polar = loadPolarROI([fnames],tth,eta,detectFrame,params)    
+        roi_polar = sf.loadPolarROI([fnames],tth,eta,detectFrame,params)    
         
         roi_list.append(roi_polar)
         
     return roi_list
+
+def plotROI(ax,roi,tthRoi,etaRoi,params):
+        
+    detectDist, mmPerPixel, ff_trans, ff_tilt = sf.loadYamlData(params,tthRoi,etaRoi)
+    rad_dom, eta_dom = sf.polarDomain(detectDist, mmPerPixel,tthRoi, etaRoi, params['roiSize'])
+    tth_dom = np.arctan(rad_dom*mmPerPixel/detectDist)
     
+    roiPlt = ax.imshow(roi)
+    plt.xticks([0,params['roiSize'][0]], [f'{eta_dom[0]:.4g}',f'{eta_dom[-1]:.4g}'])
+    plt.yticks([0,params['roiSize'][1]], [f'{tth_dom[0]:.4g}',f'{tth_dom[-1]:.4g}'])
+    ax.text(1, 2, f'max: {roi.max():.2f}', color='white', fontsize=12, weight='bold')
+    
+    return roiPlt
+
 def showROI(ax,dataPath,scan,frm,tthRoi,etaRoi,params):
     
     roi = sf.loadROI(dataPath,scan,frm,etaRoi,tthRoi,params)
