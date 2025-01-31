@@ -4,7 +4,6 @@ lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 
-
 % Experiment Setup
 sigmas = 0:0.01:0.1;
 
@@ -55,14 +54,14 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 sig_ind = 2:4;
-ind1 = 1:10;
-ind2 = 1:10:56;
-ind3 = [2,3,4,5];
+ind1 = 11:12;
+ind2 = [1,30,31];
+ind3 = [5];
 dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
 for trials = 1
-for s1 = 2
+for s1 = 1
 for s2 = 1
 for s3 = 2
 for s4 = 1

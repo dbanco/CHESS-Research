@@ -4,15 +4,15 @@ lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
-% criterion = 'discrepancy';
-criterion = 'truth_error';
+criterion = 'discrepancy';
+% criterion = 'truth_error';
 
 % topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_10_Dtrue_Xtrue';
 % topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_31_Dtrue1_Xzeros0';
 % dirStartS = 'steps_matched_results';
 fig_num = 22;
 
-dataset = 'sim2_gaussian_tooth_unmatched2';
+dataset = 'dissertation';
 testType = 'Dflat0_Xzeros0';
 topDir = ['E:\MCDLOF_processing\Outputs_',dataset,'_',testType];
 dirStartS = [dataset,'_log_results'];
