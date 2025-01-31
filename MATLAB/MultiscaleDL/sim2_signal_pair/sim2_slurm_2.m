@@ -33,16 +33,16 @@ opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 % opt.Penalty = 'l1-norm';
-opt.Penalty = 'log';
-opt.coefInit = 'zeros';
-opt.dictInit = 'rand';
+% opt.Penalty = 'log';
+% opt.coefInit = 'zeros';
+% opt.dictInit = 'flat';
 opt.a = 1;
 
 % Multiscale dictionary setup
 K = 2;
 scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],16,8, 1/8);
-scales{2} = genRationals([0;1],[1;1],16,8, 1/8);
+scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
+scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
 
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
@@ -58,7 +58,7 @@ sig_ind = 2:4;
 ind1 = 1:10;
 ind2 = 1:10:56;
 ind3 = [2,3,4,5];
-dataset = 'sim2_gaussian_tooth_unmatched2';
+dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
 for trials = 1

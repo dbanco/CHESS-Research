@@ -1,4 +1,4 @@
-function [yn,y,K,J,N,M,T,Xtrue,Dtrue,scales] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma)
+function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma)
 %% Construct 1D test problem Gaussian and linear 
 T = 30;
 N = 55; M = 45;
@@ -13,7 +13,6 @@ K = 2;
 scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
-J = size(scales{1},2);
 Uarray = zeros(numel(scales),1);
 for i = 1:numel(scales)
     Uarray(i) = size(scales{i},2);
@@ -60,37 +59,37 @@ yn = y + randn(1,N,1,T)*sigma;
 yn = reshape(yn,[1,N,T]);
 
 % snr = norm(y(:))/norm(y(:)-yn(:))
-% Reduce data to a time subset
+% % Reduce data to a time subset
 % trange = 1:60;
 % yn = yn(:,:,trange);
 % y = y(:,:,trange);
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
 
-% figure
-% imagesc(squeeze(yn))
-% 
-% f1 = figure;
-% hold on
-% for i = 1:J
-% %     subplot(7,7,i)
-%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
-%     set(gca, 'XtickLabel','')
-%     set(gca, 'FontSize', 16)
-% end
-% f1.Position = [1 100 900 500];
-% 
-% f2 = figure;
-% hold on
-% for i = J+1:J+J
-% %     subplot(7,7,i)
-%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
-%     set(gca, 'XtickLabel','')
-%     set(gca, 'FontSize', 16)
-% end
-% f2.Position = [1 100 900 500];
-% 
-% figure
-% imagesc(squeeze(sum(Xtrue,[1,2])))
+figure
+imagesc(squeeze(yn))
+
+f1 = figure;
+hold on
+for i = 1:J
+%     subplot(7,7,i)
+    plot(real(ADtrue(:,:,i)),'Linewidth',1)
+    set(gca, 'XtickLabel','')
+    set(gca, 'FontSize', 16)
+end
+f1.Position = [1 100 900 500];
+
+f2 = figure;
+hold on
+for i = J+1:J+J
+%     subplot(7,7,i)
+    plot(real(ADtrue(:,:,i)),'Linewidth',1)
+    set(gca, 'XtickLabel','')
+    set(gca, 'FontSize', 16)
+end
+f2.Position = [1 100 900 500];
+
+figure
+imagesc(squeeze(sum(Xtrue,[1,2])))
 
 end
