@@ -52,28 +52,28 @@ y = squeeze(unpad(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'),M-1,'pre'));
 
 yn = y + randn(N,T)*sigma;
 
-figure(2)
-imagesc(yn)
-
-figure(3)
-subplot(3,1,1)
-plot(yn(:,1),'-o')
-subplot(3,1,2)
-plot(yn(:,12),'-o')
-subplot(3,1,3)
-plot(yn(:,30),'-o')
-
-figure(4)
-vdf = squeeze(sum(squeeze(Xtrue),1));
-imagesc(vdf)
-
-figure(5)
-i = 1;
-for k = 1:2
-    for j = 1:8
-        subplot(2,8,i)
-        plot(ADtrue(1,:,i))
-        axis([0,60,0,0.7])
-        i = i + 1;
-    end
-end
+% figure(2)
+% imagesc(yn)
+% 
+% figure(3)
+% subplot(3,1,1)
+% plot(yn(:,1),'-o')
+% subplot(3,1,2)
+% plot(yn(:,12),'-o')
+% subplot(3,1,3)
+% plot(yn(:,30),'-o')
+% 
+% figure(4)
+% vdf = squeeze(sum(squeeze(Xtrue),1));
+% imagesc(vdf)
+% 
+% figure(5)
+% i = 1;
+% for k = 1:2
+%     for j = 1:8
+%         subplot(2,8,i)
+%         plot(ADtrue(1,:,i))
+%         axis([0,60,0,0.7])
+%         i = i + 1;
+%     end
+% end

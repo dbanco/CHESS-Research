@@ -29,6 +29,10 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched(sigma);
     case 'sim2_gaussian_tooth_unmatched2'
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched2(sigma);
+    case 'sim2_gaussian_tooth_matched2'
+        [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched2(sigma);
+    case 'dissertation'
+        [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma);
     otherwise
         error('Invalid dataset name')
 end
