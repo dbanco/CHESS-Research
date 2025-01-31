@@ -56,7 +56,8 @@ end
 Xf = fft2(Xtrue);
 y = unpad(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'),M-1,'pre');
 yn = y + randn(1,N,1,T)*sigma;
-yn = reshape(yn,[1,N,T]);
+yn = reshape(yn,[N,T]);
+y = reshape(y,[N,T]);
 
 % snr = norm(y(:))/norm(y(:)-yn(:))
 % % Reduce data to a time subset
