@@ -58,7 +58,7 @@ sig_ind = 2:4;
 ind1 = 1:10;
 ind2 = 1:10:56;
 ind3 = [2,3,4,5];
-dataset = 'sim2_gaussian_tooth_unmatched';
+dataset = 'sim2_gaussian_tooth_unmatched2';
 % dataset = 'sim2_tooth_backtooth_matched';
 
 for trials = 1
@@ -75,7 +75,7 @@ for s4 = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_sim2_lam_all',...
+    topDir = ['/cluster/home/dbanco02/Outputs_',dataset...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
         dataset,'_',opt.Penalty,'_results'];

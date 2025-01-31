@@ -27,6 +27,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_tooth_backtooth_matched(sigma);
     case 'sim2_gaussian_tooth_unmatched'
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched(sigma);
+    case 'sim2_gaussian_tooth_unmatched2'
+        [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched2(sigma);
     otherwise
         error('Invalid dataset name')
 end

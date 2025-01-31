@@ -533,7 +533,7 @@ def loadPolarROI3D(fnames, tth, eta, frame, params):
     elif params['detector'] == 'eiger':
         roi3D = loadEigerPolarRoi3D(fnames, tth, eta, frame, params)
     elif params['detector'] == 'eiger_sim':
-        roi3D = loadEigerSimPolarRoi3D(fnames, tth, eta, frame, params)
+        roi3D = loadEigerPolarRoi3D(fnames, tth, eta, frame, params)
     return roi3D
 
 def loadDexPolarRoi(fnames, tth, eta, frame, params):
@@ -716,9 +716,9 @@ def loadEigerPolarRoi3D(fname,tth,eta,frame,params):
     for i, frm in enumerate(frmRange):
         # 3. Load needed Cartesian ROI pixels
         if params['detector'] == 'eiger':
-            roi = loadEigerPanelROI(x_cart, y_cart, ff1_pix, fname, frame)
+            roi = loadEigerPanelROI(x_cart, y_cart, ff1_pix, fname, frm)
         elif params['detector'] == 'eiger_sim':
-            roi = loadEigerSimPanelROI(x_cart, y_cart, ff1_pix, fname, frame)
+            roi = loadEigerSimPanelROI(x_cart, y_cart, ff1_pix, fname, frm)
         # 4. Apply interpolation matrix to Cartesian pixels get Polar values
         roi_polar_vec = Ainterp.dot(roi.flatten())
         # 5. Reshape and output roi
@@ -861,7 +861,7 @@ def loadEigerSimPanelROI(x_cart, y_cart, ff1_pix, fname, frame):
     imgFull = np.zeros((shp[0], shp[1]))
 
     # Load data for the specific frame
-    frame = frame - 2
+    frame = int(frame - 2)
     rowD = simData[f'{frame}_row']
     colD = simData[f'{frame}_col']
     datD = simData[f'{frame}_data']
