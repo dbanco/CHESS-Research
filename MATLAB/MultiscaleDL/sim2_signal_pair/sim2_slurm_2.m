@@ -61,7 +61,7 @@ dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
 for trials = 1
-for s1 = 1
+for s1 = 2
 for s2 = 1
 for s3 = 2
 for s4 = 1
@@ -74,7 +74,7 @@ for s4 = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_',dataset...
+    topDir = ['/cluster/home/dbanco02/Outputs_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
         dataset,'_',opt.Penalty,'_results'];
