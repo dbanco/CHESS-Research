@@ -54,7 +54,7 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 sig_ind = 2:4;
-ind1 = 11:12;
+ind1 = 11:15;
 ind2 = [1,30,31];
 ind3 = [5];
 dataset = 'dissertation';
@@ -63,7 +63,7 @@ dataset = 'dissertation';
 for trials = 1
 for s1 = 2
 for s2 = 1
-for s3 = 2
+for s3 = 3
 for s4 = 1
     opt.Penalty = penalties{s1};
     opt.coefInit = xinits{s2};
