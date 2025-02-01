@@ -67,30 +67,30 @@ y = reshape(y,[N,T]);
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
 
-figure
-imagesc(squeeze(yn))
-
-f1 = figure;
-hold on
-for i = 1:J
-%     subplot(7,7,i)
-    plot(real(ADtrue(:,:,i)),'Linewidth',1)
-    set(gca, 'XtickLabel','')
-    set(gca, 'FontSize', 16)
-end
-f1.Position = [1 100 900 500];
-
-f2 = figure;
-hold on
-for i = J+1:J+J
-%     subplot(7,7,i)
-    plot(real(ADtrue(:,:,i)),'Linewidth',1)
-    set(gca, 'XtickLabel','')
-    set(gca, 'FontSize', 16)
-end
-f2.Position = [1 100 900 500];
-
-figure
-imagesc(squeeze(sum(Xtrue,[1,2])))
+% figure
+% imagesc(squeeze(yn))
+% 
+% f1 = figure;
+% hold on
+% for i = 1:J
+% %     subplot(7,7,i)
+%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
+%     set(gca, 'XtickLabel','')
+%     set(gca, 'FontSize', 16)
+% end
+% f1.Position = [1 100 900 500];
+% 
+% f2 = figure;
+% hold on
+% for i = J+1:J+J
+% %     subplot(7,7,i)
+%     plot(real(ADtrue(:,:,i)),'Linewidth',1)
+%     set(gca, 'XtickLabel','')
+%     set(gca, 'FontSize', 16)
+% end
+% f2.Position = [1 100 900 500];
+% 
+% figure
+% imagesc(squeeze(sum(Xtrue,[1,2])))
 
 end

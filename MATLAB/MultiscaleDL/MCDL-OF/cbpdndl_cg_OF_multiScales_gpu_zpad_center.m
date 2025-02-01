@@ -254,6 +254,9 @@ if opt.plotDict
     xFig = figure;
 end
 
+if opt.Recenter
+    G = recenter_dictionary(G);
+end
 [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
 AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
@@ -391,11 +394,12 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % but it appears to be more stable to use the shrunk coefficient variable Y
     AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
     if ~opt.Dfixed
-        if opt.Recenter
-            D,G = recenter_dictionary(D,G);
-        end
+        
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
+        if opt.Recenter
+            D = recenter_dictionary(D);
+        end
         cgIters1 = cgst.pit;
         Df = fft2(D);
         
@@ -674,21 +678,22 @@ function [D, G] = recenter_dictionary(D, G)
 % D: Dictionary matrix (atoms in columns)
 % G: Coefficient matrix (optional, updated accordingly)
 
-[~, num_atoms] = size(D); % Number of atoms
+[~, M, num_atoms] = size(D); % Number of atoms
 
 for i = 1:num_atoms
     % Compute the center of mass of the atom
-    t_center = computeCenterOfMass(D(:, i));
+    actual_center = round((M+1)/2);
+    t_center = computeCenterOfMass(D(1,:, i));
     
     % Compute the shift needed to center the atom
-    shift_amount = round(size(D, 1) / 2 - t_center);
+    shift_amount = round(actual_center - t_center);
     
     % Circularly shift the atom
-    D(:, i) = circshift(D(:, i), shift_amount);
+    D(1,:, i) = circshift(D(1,:, i), shift_amount, 2);
     
     % Apply the same shift to the coefficient matrix G if provided
     if nargin > 1 && ~isempty(G)
-        G(i, :) = circshift(G(i, :), shift_amount);
+        G(1,i, :) = circshift(G(1,i, :), shift_amount, 2);
     end
 end
 
