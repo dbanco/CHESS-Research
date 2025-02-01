@@ -31,6 +31,7 @@ opt.HSiters = 100;
 opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
+opt.Recenter = 1;
 % opt.Penalty = 'l1-norm';
 % opt.Penalty = 'log';
 % opt.coefInit = 'zeros';
@@ -63,7 +64,7 @@ dataset = 'dissertation';
 for trials = 1
 for s1 = 2
 for s2 = 1
-for s3 = 3
+for s3 = 2
 for s4 = 1
     opt.Penalty = penalties{s1};
     opt.coefInit = xinits{s2};
@@ -74,7 +75,7 @@ for s4 = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_recenter_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
         dataset,'_',opt.Penalty,'_results'];
