@@ -83,6 +83,7 @@ function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_mu
 %   NonNegCoef       Flag indicating whether solution should be forced to
 %                    be non-negative
 %   ZeroMean         Force learned dictionary entries to be zero-mean
+%   Recenter         Recenters learned dictionary atom before sparse coding
 %
 %
 % Author: Brendt Wohlberg <brendt@lanl.gov>  Modified: 2015-12-18
@@ -390,6 +391,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % but it appears to be more stable to use the shrunk coefficient variable Y
     AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
     if ~opt.Dfixed
+        if opt.Recenter
+            D,G = recenter_dictionary(D,G);
+        end
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
         cgIters1 = cgst.pit;
@@ -665,6 +669,36 @@ function y = removeNan(x)
     y(isnan(x))=0;
 return
 
+function [D, G] = recenter_dictionary(D, G)
+% Recenter each atom in the dictionary D
+% D: Dictionary matrix (atoms in columns)
+% G: Coefficient matrix (optional, updated accordingly)
+
+[~, num_atoms] = size(D); % Number of atoms
+
+for i = 1:num_atoms
+    % Compute the center of mass of the atom
+    t_center = computeCenterOfMass(D(:, i));
+    
+    % Compute the shift needed to center the atom
+    shift_amount = round(size(D, 1) / 2 - t_center);
+    
+    % Circularly shift the atom
+    D(:, i) = circshift(D(:, i), shift_amount);
+    
+    % Apply the same shift to the coefficient matrix G if provided
+    if nargin > 1 && ~isempty(G)
+        G(i, :) = circshift(G(i, :), shift_amount);
+    end
+end
+
+function t_center = computeCenterOfMass(atom)
+    % atom: 1D array representing learned atom
+    L = length(atom);
+    t = 1:L;
+    t_center = sum(t .* abs(atom)) / sum(abs(atom));
+return
+
 function opt = defaultopts(opt)
   if ~isfield(opt,'Verbose')
     opt.Verbose = 0;
@@ -791,5 +825,8 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'Penalty')
       opt.Penalty = 'l1-norm';
+  end
+  if ~isfield(opt,'Recenter')
+      opt.Recenter = 0;
   end
 return
