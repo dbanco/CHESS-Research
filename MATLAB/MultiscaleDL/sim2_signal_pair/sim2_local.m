@@ -32,10 +32,6 @@ opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 1;
-% opt.Penalty = 'l1-norm';
-% opt.Penalty = 'log';
-% opt.coefInit = 'zeros';
-% opt.dictInit = 'flat';
 opt.a = 1;
 
 % Multiscale dictionary setup
@@ -44,25 +40,20 @@ scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
 
+datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
+            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
 
-scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper';
-jobDir = '/cluster/home/dbanco02/jobs/';
+
 k = 1;
 
-datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2'};
 sig_ind = 2:4;
 ind1 = 11:15;
 ind2 = [1,30,31];
 ind3 = [5];
-% dataset = 'dissertation';
-% dataset = 'sim2_tooth_backtooth_matched';
-
 for s0 = 1:4
 dataset = datasets{s0};
 for trials = 1
@@ -79,19 +70,23 @@ for s4 = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_recenter_',dataset,'_',opt.Penalty,...
+    % topDir = ['/cluster/home/dbanco02/Outputs_recenter_',dataset,'_',opt.Penalty,...
+    %     '_D',opt.dictInit,num2str(opt.Dfixed),...
+    %     '_X',opt.coefInit,num2str(opt.Xfixed),'/',...
+    %     dataset,'_',opt.Penalty,'_results'];
+
+    topDir = ['E:\MCDLOF_processing\\Outputs_recenter_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),'/results'];
+        '_X',opt.coefInit,num2str(opt.Xfixed),'\\',...
+        dataset,'_',opt.Penalty,'_results'];
     
     for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
         for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
-            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                    j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
-            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-            k = k + 1;
+            sim_mcdlof_wrapper(lambdaVals,lambdaOFVals,lambdaHSVals,...
+                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
         end
         end
         end
@@ -103,5 +98,4 @@ end
 end
 end
 end
-
 slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
