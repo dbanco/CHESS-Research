@@ -254,6 +254,9 @@ if opt.plotDict
     xFig = figure;
 end
 
+if opt.Recenter
+    G = recenter_dictionary(G);
+end
 [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
 AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
@@ -391,11 +394,12 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % but it appears to be more stable to use the shrunk coefficient variable Y
     AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
     if ~opt.Dfixed
-        if opt.Recenter
-            [D,G] = recenter_dictionary(D,G);
-        end
+        
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
+        if opt.Recenter
+            D = recenter_dictionary(D);
+        end
         cgIters1 = cgst.pit;
         Df = fft2(D);
         
