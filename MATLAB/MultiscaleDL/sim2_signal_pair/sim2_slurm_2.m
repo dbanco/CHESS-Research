@@ -48,6 +48,7 @@ penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
+recenter = {0,1};
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdlof_wrapper';
@@ -63,13 +64,14 @@ ind3 = [5];
 % dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
-for s0 = 1:4
+for s0 = 1:2
 dataset = datasets{s0};
 for trials = 1
-for s1 = 2
+for s1 = 1:2
 for s2 = 1
-for s3 = 2
+for s3 = 2:3
 for s4 = 1
+for s5 = 1:2
     opt.Penalty = penalties{s1};
     opt.coefInit = xinits{s2};
     opt.dictInit = dinits{s3};
@@ -97,6 +99,7 @@ for s4 = 1
         end
     end
     
+end
 end
 end
 end
