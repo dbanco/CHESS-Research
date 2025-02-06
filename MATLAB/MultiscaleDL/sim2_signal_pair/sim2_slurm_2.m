@@ -48,7 +48,7 @@ penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
-recenter = {0,1};
+recenters = {0,1};
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdlof_wrapper';
@@ -77,14 +77,16 @@ for s5 = 1:2
     opt.coefInit = xinits{s2};
     opt.dictInit = dinits{s3};
     opt.Dfixed = dfixes{s4};
-    
+    opt.Recenter = recenters{s5};
+
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_recenter_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),'/results'];
+        '_X',opt.coefInit,num2str(opt.Xfixed),...
+        '_recenter',num2str(opt.Recenter),'/results'];
     
     for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
