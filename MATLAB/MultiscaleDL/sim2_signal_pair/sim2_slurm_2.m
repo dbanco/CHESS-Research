@@ -48,7 +48,7 @@ penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
-recenter = {0,1};
+recenters = {0,1};
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdlof_wrapper';
@@ -56,15 +56,16 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2','dissertation'};
-sig_ind = 2:4;
+            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
+            'dissertation','dissertation_long','dissertation_long_separate'};
+sig_ind = 2;
 ind1 = 11:15;
 ind2 = [1,30,31];
 ind3 = [5];
 % dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
-for s0 = [1,2,5]
+for s0 = [6,7]
 dataset = datasets{s0};
 for trials = 1
 for s1 = 1:2
@@ -76,14 +77,16 @@ for s5 = 1:2
     opt.coefInit = xinits{s2};
     opt.dictInit = dinits{s3};
     opt.Dfixed = dfixes{s4};
-    
+    opt.Recenter = recenters{s5};
+
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_recenter_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),'/results'];
+        '_X',opt.coefInit,num2str(opt.Xfixed),...
+        '_recenter',num2str(opt.Recenter),'/results'];
     
     for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
