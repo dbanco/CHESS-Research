@@ -56,15 +56,16 @@ jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2','dissertation'};
-sig_ind = 2:4;
+            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
+            'dissertation','dissertation_long','dissertation_long_separate'};
+sig_ind = 2;
 ind1 = 11:15;
 ind2 = [1,30,31];
 ind3 = [5];
 % dataset = 'dissertation';
 % dataset = 'sim2_tooth_backtooth_matched';
 
-for s0 = [1,2,5]
+for s0 = [6,7]
 dataset = datasets{s0};
 for trials = 1
 for s1 = 1:2
