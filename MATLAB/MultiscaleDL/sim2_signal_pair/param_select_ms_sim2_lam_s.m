@@ -4,35 +4,49 @@ lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
-tradeoff_s = 0.4;
-tradeoff_of = 1;
-scaleP = [0.4,5.4,9.48,116,0,100];
+fig_num = 22;
+
+datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
+            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
+            'dissertation','dissertation_long','dissertation_long_separate'};
+penalties = {'l1-norm','log'};
+xinits = {'zeros','true'};
+dinits = {'rand','flat','true'};
+dfixes = {0,1};
+recenters = {0,1};
+
+% Setup Dataset
+s0 = 6;
+s1 = 2;
+s2 = 1;
+s3 = 2;
+s4 = 1;
+s5 = 2;
+dataset = datasets{s0};
+opt.Penalty = penalties{s1};
+opt.coefInit = xinits{s2};
+opt.dictInit = dinits{s3};
+opt.Dfixed = dfixes{s4};
+opt.Recenter = recenters{s5};
+
+topDir = ['E:\MCDLOF_processing\Outputs_',dataset,'_',opt.Penalty,...
+    '_D',opt.dictInit,num2str(opt.Dfixed),...
+    '_X',opt.coefInit,num2str(opt.Xfixed),...
+    '_recenter',num2str(opt.Recenter),'\results'];
 
 % criterion = 'discrepancy';
 criterion = 'truth_error';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
-
-% topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_10_Dtrue_Xtrue';
-% topDir = 'C:\Users\dpqb1\Documents\Outputs2024_10_31_Dtrue1_Xzeros0';
-% dirStartS = 'steps_matched_results';
-fig_num = 22;
-
-dataset = 'sim2_gaussian_tooth_matched';
-testType = 'Drand0_Xzeros0';
-topDir = ['E:\Outputs_sim2_lam_all2_',testType];
-dirStartS = 'sim2_gaussian_tooth_matched_log_results';
-
 sig_ind = 2:4;
-for n = 2:4
-    inDir = [topDir,'\',dirStartS,'_sig_',num2str(n)];
-     % True error
+for n = sig_ind
+    inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
-    [lambda_s_sel,j_s] = param_select_lambda_s(inDir,tradeoff_s,scaleP,22,criterion,sigmas(n),y_true);
+    [lambda_s_sel,j_s] = param_select_lambda_s(inDir,0,0,fig_num,criterion,sigmas(n),y_true);
     selected_lam_s_vec(n) = lambda_s_sel;
 end
-LcurveFile = fullfile(topDir,['l-curve_plot',dirStartS,'.png']); 
+LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
 fig = gcf;
 fig.Position = [100 100 1400 800];
 saveas(gcf, LcurveFile);

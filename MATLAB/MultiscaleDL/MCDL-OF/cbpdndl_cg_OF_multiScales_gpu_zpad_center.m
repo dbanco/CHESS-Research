@@ -473,7 +473,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         case 'l1-norm'
             Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
         case 'log'
-            Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
+            Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
     end
 
     % Optical flow terms
