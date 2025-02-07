@@ -58,21 +58,20 @@ k = 1;
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
             'dissertation','dissertation_long','dissertation_long_separate'};
-sig_ind = 2;
-ind1 = 11:20;
+sig_ind = 2:4;
+ind1 = 1:106;
 ind2 = [1]%,30,31];
-ind3 = [5];
-% dataset = 'dissertation';
-% dataset = 'sim2_tooth_backtooth_matched';
+ind3 = [1];
 
-for s0 = [6,7]
+% --- Dataset, Initialization, Parameters ---
+for s0 = 6
 dataset = datasets{s0};
 for trials = 1
-for s1 = 1:2
+for s1 = 2
 for s2 = 1
-for s3 = 2:3
+for s3 = 2
 for s4 = 1
-for s5 = 1:2
+for s5 = 2
     opt.Penalty = penalties{s1};
     opt.coefInit = xinits{s2};
     opt.dictInit = dinits{s3};
@@ -87,8 +86,9 @@ for s5 = 1:2
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
-    
-    for sig_i = sig_ind
+        
+        % --- Noise level, regularization parameters ---
+        for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
         for j_s = ind1
         for j_of = ind2
@@ -100,8 +100,7 @@ for s5 = 1:2
         end
         end
         end
-    end
-    
+        end
 end
 end
 end
