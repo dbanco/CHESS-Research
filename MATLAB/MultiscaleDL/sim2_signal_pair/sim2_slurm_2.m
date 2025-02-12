@@ -58,7 +58,7 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2;
+sig_ind = 3:6;
 ind1 = 1:106;
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
