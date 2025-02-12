@@ -60,8 +60,8 @@ recenters = {0,1};
 
 sig_ind = 2;
 ind1 = 1:106;
-% ind2 = 2:50;
-% ind3 = 2:6;
+ind2 = 1;%2:50;
+ind3 = 1;%2:6;
 
 % SELECTED PARAMS ind1: 0,4,4,9
 selected_lam_s = [0,6,6,9];
