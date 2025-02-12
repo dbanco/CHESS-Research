@@ -35,14 +35,14 @@ suffix = [dataset,'_',opt.Penalty,...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter)];
 
-topDir = ['E:\MCDLOF_processing\Outputs_',suffix];
+topDir = ['E:\MCDLOF_processing\Outputs_a0.1_',suffix];
 
 % criterion = 'discrepancy';
 criterion = 'truth_error';
 
 selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
-sig_ind = 2:4;
+sig_ind = 3;
 for n = sig_ind
     inDir = [topDir,'\results','_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
@@ -71,7 +71,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_',criterion,'_',suffix,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_a0.1_lam_s_',criterion,'_',suffix,'.pptx'];
 titleStr = ['Sim 2 Recovery, ',suffix];
 createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,dirStartS,sigmas,...
     selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind)

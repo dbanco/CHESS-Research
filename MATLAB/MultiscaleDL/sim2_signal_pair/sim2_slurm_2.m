@@ -36,7 +36,7 @@ opt.Recenter = 1;
 % opt.Penalty = 'log';
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
-opt.a = 1;
+opt.a = 0.1;
 
 % Multiscale dictionary setup
 K = 2;
@@ -58,13 +58,13 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2:4;
-% ind1 = 1:106;
-ind2 = 2:50;
-ind3 = 2:6;
+sig_ind = 2;
+ind1 = 1:106;
+ind2 = 1;%2:50;
+ind3 = 1;%2:6;
 
 % SELECTED PARAMS ind1: 0,4,4,9
-seleced_lam_s = [0,6,6,9];
+selected_lam_s = [0,6,6,9];
 % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
 
 % --- Dataset, Initialization, Parameters ---
@@ -93,7 +93,7 @@ for s5 = 2
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-            ind1 = selected_lam_s(sig_i);
+            % ind1 = selected_lam_s(sig_i);
         for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
