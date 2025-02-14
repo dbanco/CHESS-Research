@@ -12,7 +12,6 @@ mkdir(figDir)
 y = reshape(y,[1,N,T]);
 
 % Model Setup
-
 J = size(scales{1},2);
 opt.DictFilterSizes = [1; M];
 center = (M+1)/2;
