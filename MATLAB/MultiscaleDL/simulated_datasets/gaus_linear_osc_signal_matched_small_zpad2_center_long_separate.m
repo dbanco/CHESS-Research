@@ -7,6 +7,9 @@ if nargin < 1
     sigma = 0.01;
 %     sigma = 0.015;
 end
+if nargin < 2
+    plotFlag = false;
+end
 
 % Model Setup
 K = 2;
@@ -59,7 +62,7 @@ yn = y + randn(1,N,1,T)*sigma;
 yn = reshape(yn,[N,T]);
 y = reshape(y,[N,T]);
 
-snr = norm(y(:))/norm(y(:)-yn(:))
+snr = norm(y(:))/norm(y(:)-yn(:));
 % Reduce data to a time subset
 % trange = 1:60;
 % yn = yn(:,:,trange);
@@ -67,29 +70,31 @@ snr = norm(y(:))/norm(y(:)-yn(:))
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
 
-figure(2)
-imagesc(yn)
-
-figure(3)
-subplot(3,1,1)
-plot(yn(:,1),'-o')
-subplot(3,1,2)
-plot(yn(:,12),'-o')
-subplot(3,1,3)
-plot(yn(:,30),'-o')
-
-figure(4)
-vdf = squeeze(sum(squeeze(Xtrue),1));
-imagesc(vdf)
-
-figure(5)
-i = 1;
-for k = 1:2
-    for j = 1:8
-        subplot(2,8,i)
-        plot(ADtrue(1,:,i))
-        axis([0,60,0,0.9])
-        i = i + 1;
+if plotFlag
+    figure(2)
+    imagesc(yn)
+    
+    figure(3)
+    subplot(3,1,1)
+    plot(yn(:,1),'-o')
+    subplot(3,1,2)
+    plot(yn(:,12),'-o')
+    subplot(3,1,3)
+    plot(yn(:,30),'-o')
+    
+    figure(4)
+    vdf = squeeze(sum(squeeze(Xtrue),1));
+    imagesc(vdf)
+    
+    figure(5)
+    i = 1;
+    for k = 1:2
+        for j = 1:8
+            subplot(2,8,i)
+            plot(ADtrue(1,:,i))
+            axis([0,60,0,0.9])
+            i = i + 1;
+        end
     end
 end
 
