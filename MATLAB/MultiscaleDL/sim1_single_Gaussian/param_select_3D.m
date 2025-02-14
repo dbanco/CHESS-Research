@@ -1,4 +1,4 @@
-function [lambda_all,selInd,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true)
+function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true)
 %param_select_3D 
 
 % Extract the file names and store them in a cell array
@@ -76,13 +76,13 @@ if nargin > 3
 end
 
 objective = struct();
-objective.error = error;
-objective.rel_error = rel_error;
-objective.true_error = true_error;
-objective.l1_norm = l1_norm;
-objective.log_penalty = log_penalty;
-objective.of_penalty = of_penalty;
-objective.hs_penalty = hs_penalty;
+objective.error = error(i);
+objective.rel_error = rel_error(i);
+objective.true_error = true_error(i);
+objective.l1_norm = l1_norm(i);
+objective.log_penalty = log_penalty(i);
+objective.of_penalty = of_penalty(i);
+objective.hs_penalty = hs_penalty(i);
 
 
 end
