@@ -41,6 +41,14 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long(sigma,plotFlag);
     case 'dissertation_long_separate'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long_separate(sigma,plotFlag);
+    case 'mmpad_ring1'
+        yn = loadMMPAD1D(ring_num,1,'/cluster/home/dbanco02/mmpad');
+        y = y(:,21:100);
+        [N,T] = size(y);
+        y = yn;
+        M = N;
+        Xtrue = 0;
+        Dtrue = 0;
     otherwise
         error('Invalid dataset name')
 end

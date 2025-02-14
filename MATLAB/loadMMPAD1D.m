@@ -1,7 +1,7 @@
 function y = loadMMPAD1D(ring,interp,topDir)
 % Load MMPAD subset
 if nargin < 3
-    topDir = ['C:\Users\dpqb1\Documents\Data\ring',num2str(ring),'_zero'];
+    topDir = ['E:\Data\mmpad\ring',num2str(ring),'_zero'];
 end
 fName = 'mmpad_img_%i.mat';
 % Load first image
