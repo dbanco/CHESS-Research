@@ -3,9 +3,10 @@ function y = loadMMPAD1D(ring,interp,topDir)
 if nargin < 3
     topDir = ['E:\Data\mmpad\ring',num2str(ring),'_zero'];
 end
+
 fName = 'mmpad_img_%i.mat';
 % Load first image
-f=load(fullfile(topDir,sprintf(fName,1)));
+f=load(fullfile(topDir,sprintf('ring%i_zero',ring_num),sprintf(fName,1)));
 [theta,eta] = size(f.polar_image);
 
 T = 546;
