@@ -42,6 +42,7 @@ switch dataset
     case 'dissertation_long_separate'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long_separate(sigma,plotFlag);
     case 'mmpad_ring1'
+        ring_num = 1;
         yn = loadMMPAD1D(ring_num,1,'/cluster/home/dbanco02/mmpad');
         y = y(:,21:100);
         [N,T] = size(y);
