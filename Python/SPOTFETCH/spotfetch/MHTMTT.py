@@ -40,6 +40,38 @@ class Measurement:
         
         pass
 
+class Track:
+    """Represents a tracked spot in 3D space."""
+    
+    def __init__(self, measurement):
+        """
+        Initialize a detected spot.
+        
+        Parameters:
+        - measurment: A measurement object
+        
+        Properties:
+        - com (array): center of mass (tt,eta,ome) of the blob.
+        - bound_box (array): boudning box (tth1,tth2,eta1,eta2,ome1,ome2) of blob 
+        - intensity (float): Total intensity of the detected spot.
+        - overlap
+        - com_velocity
+        - Maybe other things related to state transition model?
+        
+        """
+        position = center_of_mass
+        pass
+
+    def update(self, measurement):
+        """
+        Update the track with a new detection.
+        
+        Parameters:
+        - measurment: A measurement object
+        """
+        
+        pass
+
 def find_bounding_box(mask):
   """
   Finds the bounding box coordinates of non-zero pixels in a binary mask.
