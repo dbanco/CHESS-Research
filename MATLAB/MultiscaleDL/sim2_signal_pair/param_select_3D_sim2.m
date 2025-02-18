@@ -36,11 +36,12 @@ suffix = [dataset,'_',opt.Penalty,...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter)];
 
-% topDir = ['E:\MCDLOF_processing\Outputs_lamS_',suffix];
-topDir = ['E:\MCDLOF_processing\Outputs_a0.1_',suffix];
+topDir = ['E:\MCDLOF_processing\Outputs_lamS_',suffix];
+% topDir = ['E:\MCDLOF_processing\Outputs_a0.1_',suffix];
 
 criterion = 'discrepancy';
 % criterion = 'truth_error';
+useMin = true;
 
 selected_lam_all_vec = zeros(NN,3);
 selected_inds_all = zeros(NN,3);
@@ -51,7 +52,7 @@ i = 1;
 for n = sig_ind
     inDir = [topDir,'\results','_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
-    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),y_true);
+    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),y_true,useMin);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_inds_all(n,:) = lambdasToInds(lambda_all,{lambdaVals,lambdaHSVals,lambdaHSVals});
     true_error_sig(i) = objective.true_error;
@@ -63,22 +64,22 @@ fig.Position = [100 100 1400 800];
 saveas(gcf, LcurveFile);
 removeWhiteSpace(LcurveFile)
 
-[meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
+[meanSNR,noiseError,noiseTheor] = computeSNR_noiseError(dataset,sig_ind);
 
 figure()
 hold on
-plot(meanSNR,noiseError,'o-')
+plot(meanSNR,noiseTheor,'o-')
 plot(meanSNR,true_error_sig,'s-')
 xlabel('SNR','Fontsize',14)
 ylabel('Error','Fontsize',14)
-legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',... 
+legend('$\sigma\sqrt{NT}$','$\|\hat{{\bf b}}-{\bf f}\|_2$',... 
         'interpreter','latex','Fontsize',14)
     % '$\|\hat{{\bf b}}-{\bf f}\|_2$ (OF)',...
 
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_a0.1_lam_s_',criterion,'_',suffix,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_a1_lam_s_',criterion,'_',suffix,'.pptx'];
 titleStr = ['Sim 2 Recovery, ',suffix];
 createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,...
     selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind)
