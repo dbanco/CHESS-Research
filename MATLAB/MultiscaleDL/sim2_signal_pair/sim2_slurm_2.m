@@ -71,16 +71,16 @@ selected_lam_s = [0,6,6,9];
 for s0 = 6
 dataset = datasets{s0};
 for trials = 1
-for s1 = 1
-for s2 = 1
-for s3 = 2
-for s4 = 1
-for s5 = 2
-    opt.Penalty = penalties{s1};
-    opt.coefInit = xinits{s2};
-    opt.dictInit = dinits{s3};
-    opt.Dfixed = dfixes{s4};
-    opt.Recenter = recenters{s5};
+for s_pen = 1
+for s_xinit = 1
+for s_dinit = 2
+for s_dfix = 1
+for s_recenter = 2
+    opt.Penalty = penalties{s_pen};
+    opt.coefInit = xinits{s_xinit};
+    opt.dictInit = dinits{s_dinit};
+    opt.Dfixed = dfixes{s_dfix};
+    opt.Recenter = recenters{s_recenter};
 
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
