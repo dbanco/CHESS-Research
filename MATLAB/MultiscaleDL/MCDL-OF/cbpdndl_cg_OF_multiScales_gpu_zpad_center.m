@@ -279,8 +279,6 @@ switch opt.Penalty
     case 'log'
         Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
 end
-Jlg1 = rho*sum((U(:)).^2);
-Jlg2 = sigma*sum((H(:)).^2);
 if lambda2 > 0
     [~,~,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
     [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
@@ -288,6 +286,8 @@ else
     Jhs = 0;
     Jof = 0;
 end
+Jlg1 = rho*sum((U(:)).^2);
+Jlg2 = sigma*sum((H(:)).^2);
 Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;% + Jlg1 + Jlg2;
 
 % Initial min solution
@@ -308,8 +308,8 @@ optinf.itstat = [optinf.itstat;...
     end
     fprintf(sfms, dvc);
   end
-
-% Main loop
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Main loop %%%%%%%%%%
 k = 1;
 while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Solve X subproblem. It would be simpler and more efficient (since the
@@ -323,6 +323,17 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     if ~opt.Xfixed
         % Xf = solvedbi_sm(AGf, rho, AGSf + rho*fft2(Y - U));
         % cgIters2 = 1;
+
+        if opt.Recenter
+            [G, shifts] = recenter_dictionary(G);
+            % if any(abs(shifts)) > 0
+            %     shifts;
+            % end
+            % Y = shift_array(Y,-shifts,J);
+            % Yf = fft2(Y);
+            % U = shift_array(U,-shifts,J);
+        end
+
         [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
             opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
         cgIters2 = cgst.pit;
@@ -355,10 +366,37 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             Y(:,(end-size(D0,2)+2):end,:,:) = 0;
         end
         Yf = fft2(Y);
+
+        % Sparsity term
+        switch opt.Penalty
+            case 'l1-norm'
+                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+            case 'log'
+                Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
+        end
+    
+        % % Update optical flow velocities
+        % if (opt.UpdateVelocity && (lambda2 > 0)) || nargin < 6
+        %     [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
+        % end
+        % 
+        % % Optical flow terms
+        % if lambda2 > 0
+        %     [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
+        % else
+        %     Jof = 0;
+        %     Jhs = 0;
+        % end
+        % [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
+        % AG = padarray(AG,[0 M-1 0 0],0,'post');
+        % AGf = fft2(AG);
+        % recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
+        % Jdf = sum(vec(abs(recon-S).^2))/2;
+        % Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
         
         % Data fidelity term in Fourier domain
     %     recon = sum(bsxfun(@times,AGf,Yf),3);
-    %     Jdf3 = sum(vec(abs(recon-Sf).^2))
+    %     Jdf = sum(vec(abs(recon-Sf).^2))
     
         % Update dual variable corresponding to X, Y, Z
         U = U + Xr - Y;
@@ -397,10 +435,8 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
-        if opt.Recenter
-            D = recenter_dictionary(D);
-        end
         cgIters1 = cgst.pit;
+        
         Df = fft2(D);
         
         clear YSf;
@@ -421,7 +457,34 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         Dr = G;
         cgIters1 = 0;
     end
-    
+
+    % [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
+    % AG = padarray(AG,[0 M-1 0 0],0,'post');
+    % AGf = fft2(AG);
+    % recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
+    % Jdf = sum(vec(abs(recon-S).^2))/2;
+    % Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
+    % if opt.Recenter
+    %     [G, shifts] = recenter_dictionary(G);
+    %     if any(abs(shifts)) > 0
+    %         shifts;
+    %     end
+    %     Y = shift_array(Y,-shifts,J);
+    %     Yf = fft2(Y);
+    %     U = shift_array(U,-shifts,J);
+    % end
+    % 
+    % [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
+    % AG = padarray(AG,[0 M-1 0 0],0,'post');
+    % AGf = fft2(AG);
+    % recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
+    % Jdf = sum(vec(abs(recon-S).^2))/2;
+    % Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
+    % 
+    % if any(abs(shifts)) > 0
+    %     shifts;
+    % end
+
     % Update alphas
     [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
     AG = padarray(AG,[0 M-1 0 0],0,'post');
@@ -485,6 +548,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     end
     
     Jlg2 = sigma/2*sum((D(:)-G(:)+H(:)).^2) - sigma/2*sum(H(:).^2);
+
     % Full objective
     Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
 
@@ -673,12 +737,14 @@ function y = removeNan(x)
     y(isnan(x))=0;
 return
 
-function [D, G] = recenter_dictionary(D, G)
+function [D, shifts] = recenter_dictionary(D)
 % Recenter each atom in the dictionary D
 % D: Dictionary matrix (atoms in columns)
 % G: Coefficient matrix (optional, updated accordingly)
 
 [~, M, num_atoms] = size(D); % Number of atoms
+
+shifts = zeros(num_atoms,1);
 
 for i = 1:num_atoms
     % Compute the center of mass of the atom
@@ -686,16 +752,29 @@ for i = 1:num_atoms
     t_center = computeCenterOfMass(D(1,:, i));
     
     % Compute the shift needed to center the atom
-    shift_amount = round(actual_center - t_center);
+    shift = round(actual_center - t_center);
     
-    % Circularly shift the atom
-    D(1,:, i) = circshift(D(1,:, i), shift_amount, 2);
-    
-    % Apply the same shift to the coefficient matrix G if provided
-    if nargin > 1 && ~isempty(G)
-        G(1,i, :) = circshift(G(1,i, :), shift_amount, 2);
+    if abs(shift) > 0
+        if all(D(1,1:abs(shift),i)==0) && all(D(1,end-abs(shift):end,i)==0)
+            shifts(i) = shift;
+            % Circularly shift the atom
+            D(1,:, i) = circshift(D(1,:, i), shift, 2);
+        else
+            shifts(i) = 0;
+        end
+    else
+        shifts(i) = 0;
     end
+    
 end
+
+function X = shift_array(X,shifts,J)
+    for i = 1:numel(shifts)
+        i1 = i + J*(i-1);
+        i2 = J*i;
+        X(:,:,i1:i2,:) = circshift(X(:,:,i1:i2,:), shifts(i), 2);
+    end
+return
 
 function t_center = computeCenterOfMass(atom)
     % atom: 1D array representing learned atom
@@ -775,7 +854,7 @@ function opt = defaultopts(opt)
     opt.AutoSigmaScaling = 0;
   end
   if ~isfield(opt,'StdResiduals')
-    opt.StdResiduals = 0;
+    opt.StdResiduals = 1;
   end
   if ~isfield(opt,'XRelaxParam')
     opt.XRelaxParam = 1;
