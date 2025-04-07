@@ -29,7 +29,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 
-topDir = ['E:\MCDLOF_processing\Outputs_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_4_7_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter),'\results'];
@@ -39,7 +39,7 @@ criterion = 'truth_error';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
-sig_ind = 2:4;
+sig_ind = 2;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
