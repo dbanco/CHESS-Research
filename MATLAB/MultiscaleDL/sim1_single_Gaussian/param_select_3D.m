@@ -1,5 +1,9 @@
-function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true)
+function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true,useMin)
 %param_select_3D 
+
+if nargin < 6
+    useMin = false;
+end
 
 % Extract the file names and store them in a cell array
 files = dir(fullfile(outputDir, '*.mat'));
@@ -18,13 +22,18 @@ for i = 1:numel(matFileNames)
     % Load outputs
     load(fullfile(outputDir,matFileNames{i}))
 
-    D = outputs.D;
     N = outputs.N;
     M = outputs.M;
     T = outputs.T;
     K = outputs.K;
     y = outputs.y;
-    X = outputs.X;
+    if useMin
+        D = outputs.Dmin;
+        X = outputs.Ymin;
+    else
+        D = outputs.D;
+        X = outputs.X;
+    end
     scales = outputs.scales;
     center = (M+1)/2;
 
@@ -59,7 +68,7 @@ end
 % Normalized origin distance criterion
 switch criterion
     case 'discrepancy'
-        crit = abs(error/sqrt(N*T) - sigma);
+        crit = abs(error/(N*T) - sigma^2);
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'truth_error'

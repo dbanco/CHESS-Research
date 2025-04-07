@@ -1,10 +1,11 @@
-function [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind)
+function [meanSNR,noiseError,noiseTheor] = computeSNR_noiseError(dataset,sig_ind)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 meanSNR = zeros(numel(sigmas),1);
 noiseError = zeros(numel(sigmas),1);
+noiseTheor = zeros(numel(sigmas),1);
 for n = sig_ind
     [y,y_true,N,M,T] = sim_switch_multiscale_dl(sigmas(n),dataset);
     
@@ -17,11 +18,13 @@ for n = sig_ind
         sigPwr(t) = norm(y_true(:,t));
     end
     
-    noiseError(n) = 0.5*norm(y(:)-y_true(:)).^2; 
+    noiseError(n) = norm(y(:)-y_true(:)); 
     meanSNR(n) = mean(SNR);
+    noiseTheor(n) = sqrt(sigmas(n)^2*N*T);
 end
 
 meanSNR = meanSNR(sig_ind);
 noiseError = noiseError(sig_ind);
+noiseTheor = noiseTheor(sig_ind);
 
 end

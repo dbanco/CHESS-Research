@@ -60,8 +60,6 @@ spotInds = np.arange(8000)
 # for spotInd in spotInds:
 #     sf.trackSpot(spotInd,initSpotData,dataFileSequence,ttPath,params)
 
-
-
 # Process tracking results
 print('Processing Results')
 resultsData = sf.trackingResultsSim(spotInds,spotsFiles,scanRange,ttPath,params)

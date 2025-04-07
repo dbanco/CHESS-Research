@@ -27,6 +27,12 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = peak_example_steps_matched2_multiscale_dl(sigma);
     case 'sim2_gaussian_tooth_matched'
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_matched(sigma);
+    case 'sim2_gaussian_tooth_matched_mini'
+        [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_matched(sigma);
+        T = 5;
+        yn = yn(:,1:5);
+        y = y(:,1:5);
+        Xtrue = Xtrue(:,:,:,1:5);
     case 'sim2_tooth_backtooth_matched'
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_tooth_backtooth_matched(sigma);
     case 'sim2_gaussian_tooth_unmatched'
