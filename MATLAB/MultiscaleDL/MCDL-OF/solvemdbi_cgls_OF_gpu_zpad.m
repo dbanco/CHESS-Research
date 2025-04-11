@@ -53,15 +53,17 @@ ah = gpuArray(complex(conj(a)));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
-m=1;n=1;
+n=numel(isn);
 if lambda2 == 0
     b = gpuArray(complex([b1(:);b2(:)]));
+    m = numel(b);
     [xv,flg,rlr,pit] = cgls(@(ind,u,m,n) Aops1(ind,u,m,n,a,ah,xsz,M,rho),...
     0,b(:),m,n,mit,tol,1);
 else
     b = gpuArray(complex([b1(:);b2(:);zeros((N+M-1)*K*J*T,1)]));
-    [xv,flg,rlr,pit] = cgls(@(u,ind) Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2),...
-    b(:),0, tol, mit, [], isn);
+    m = numel(b);
+    [xv,flg,rlr,pit] = cgls(@(ind,u,m,n) Aops2(ind,u,m,n,a,ah,xsz,M,rho,U,V,K,lambda2),...
+    0,b(:),m,n,mit,tol,1);
 end
 warning(wrn.state, 'MATLAB:ignoreImagPart'); % 
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
@@ -71,11 +73,11 @@ x = reshape(xv, xsz);
 end
 
 function out = Aops1(ind,u,m,n,a,ah,xsz,M,rho)
-    if ind==1 
+    if ind == 1 
         u = reshape(u, xsz);
         out1 = sum(pagefun(@times, a, u), 3);
         out = [vec(out1);rho*vec(u)];
-    else 
+    elseif ind == 2 
         numelb = xsz(2)*xsz(4);
         numelx = xsz(2)*xsz(3)*xsz(4);
         bsz = [1,xsz(2),1,xsz(4)];
@@ -83,15 +85,17 @@ function out = Aops1(ind,u,m,n,a,ah,xsz,M,rho)
         u2 = reshape(u(numelb+1:numelb+numelx), xsz);
         out1 = pagefun(@times, ah, fft2(maskPad(ifft2(u1,'symmetric'),M)));
         out = vec(out1) + rho*vec(u2);
+    elseif ind == 0
+        out = 'Aops1';
     end
 end
-function out = Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2)
-    if ind==1 
+function out = Aops2(ind,u,m,n,a,ah,xsz,M,rho,U,V,K,lambda2)
+    if ind == 1 
         u = reshape(u, xsz);
         out1 = sum(pagefun(@times, a, u), 3);
         out2 = vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,0) ));
         out = [vec(out1);rho*vec(u);lambda2*vec(out2)];
-    else 
+    elseif ind == 2
         numelb = xsz(2)*xsz(4);
         numelx = xsz(2)*xsz(3)*xsz(4);
         bsz = [1,xsz(2),1,xsz(4)];
@@ -101,6 +105,8 @@ function out = Aops2(u,ind,a,ah,xsz,M,rho,U,V,K,lambda2)
         out1 = pagefun(@times, ah, fft2(maskPad(ifft2(u1,'symmetric'),M)));
         out2 = vec(fft2(opticalFlowOp(real(ifft2(reshape(u3,xsz),'symmetric')),U,V,K,2) ));
         out = vec(out1) + rho*vec(u2) + lambda2*vec(out2);
+    elseif ind == 0
+        out = 'Aops2';
     end
 end
 

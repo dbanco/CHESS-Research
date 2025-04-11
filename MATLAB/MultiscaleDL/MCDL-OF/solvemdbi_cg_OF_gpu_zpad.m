@@ -64,22 +64,15 @@ AhAvop2 = @(u) vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
-if lambda2 == 0
 
-    
+if lambda2 == 0    
     [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u,...
     b(:), tol, mit, [], [], isn);
 else
     [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
     b(:), tol, mit, [], [], isn);
 end
-% if lambda2 == 0
-%     [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u,...
-%     b(:), tol, mit, [], [], isn);
-% else
-%     [xv,flg,rlr,pit,resvec] = cgls(@(u) AhAvop(u) + rho*u + lambda2*AhAvop2(u),...
-%     b(:), tol, mit, [], [], isn);
-% end
+
 warning(wrn.state, 'MATLAB:ignoreImagPart'); % 
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 
