@@ -6,7 +6,7 @@ U = KU/K;
 [nablaU2,nablaV2] = laplaceOp(u,v,K,U);
 
 objOF = sum((Fy.*v + Fx.*u + Ft).^2,'all');
-objHS = sum(v.*nablaV2,'all') + sum(u.*nablaU2,'all');
+objHS = sum((v.*nablaV2).^2,'all') + sum((u.*nablaU2).^2,'all');
 
 if nargout > 2
     b = [-Fx(:).*Ft(:); -Fy(:).*Ft(:)];
