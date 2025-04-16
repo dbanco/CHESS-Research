@@ -23,14 +23,14 @@ end
 
 % position = 15+[linspace(20,50,20),30+20.*linspace(1,0.1,30).*cos((0:29)/3)];
 
-f1 = cos((0:49)/(2.5*pi));
-posStart = 10;
-posEnd = 70;
+f1 = cos(linspace(0,2*pi,50));
+posStart = 35;
+posEnd = 90;
 minVal = min(f1);
 maxVal = max(f1)-minVal;
 position = round((f1-minVal)/maxVal*(posEnd-posStart) + posStart) + center;
 
-f2 = cos((0:49)/(2.5*pi));
+f2 = -cos(linspace(0,2*pi,50));
 minVal = min(f2);
 maxVal = max(f2)-minVal;
 
