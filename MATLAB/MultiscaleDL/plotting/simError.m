@@ -19,8 +19,9 @@ for n = sig_ind
     spDir = [dirStartS,'_sig_',num2str(n)];
     j_s = find(lambdaVals == selected_lam_s_vec(n));
     j_of = 1;
-    dataFileS = sprintf("output_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
-                    j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
+    j_hs = 1;
+    dataFileS = sprintf("output_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.mat",...
+                    j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
     
     load(fullfile(topDir,spDir,dataFileS))
     D = outputs.D;
@@ -87,4 +88,11 @@ for n = sig_ind
     end
 
 end
+
+trueErrS = trueErrS(sig_ind);
+dataErrS = dataErrS(sig_ind);
+trueErrOF = trueErrOF(sig_ind);
+dataErrOF = dataErrOF(sig_ind);
+noiseNorm = noiseNorm(sig_ind);
+
 end
