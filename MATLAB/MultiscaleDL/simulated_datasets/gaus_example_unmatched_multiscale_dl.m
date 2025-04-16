@@ -1,10 +1,13 @@
-function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_unmatched_multiscale_dl(sigma)
+function [yn,y,N,M,T,Xtrue,Dtrue] = gaus_example_unmatched_multiscale_dl(sigma,plotFlag)
 %% Construct 1D test problem Gaussian and linear 
 T = 50;
 N = 105; M = 105;
 
 if nargin < 1
     sigma = 0.01;
+end
+if nargin < 2
+    plotFlag = false;
 end
 
 % Position in time
@@ -55,7 +58,32 @@ ADf = fft2(ADpad);
 y = squeeze(unpad(ifft2(sum(bsxfun(@times,ADf,Xf),3),'symmetric'),M-1,'pre'));
 yn = y + randn(N,T)*sigma;
 
-% figure(22)
-% imagesc(yn)
+if plotFlag
+    figure(2)
+    imagesc(yn)
+    
+    figure(3)
+    subplot(3,1,1)
+    plot(yn(:,1),'-o')
+    subplot(3,1,2)
+    plot(yn(:,25),'-o')
+    subplot(3,1,3)
+    plot(yn(:,50),'-o')
+    
+    figure(4)
+    vdf = squeeze(sum(squeeze(Xtrue),1));
+    imagesc(vdf)
+    
+    figure(5)
+    i = 1;
+    for k = 1:2
+        for j = 1:8
+            subplot(2,8,i)
+            plot(ADtrue(1,:,i))
+            axis([0,N,0,0.9])
+            i = i + 1;
+        end
+    end
+end
 
 end

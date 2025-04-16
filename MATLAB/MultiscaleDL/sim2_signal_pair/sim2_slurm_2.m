@@ -43,6 +43,7 @@ K = 2;
 scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
+J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdlof_wrapper';

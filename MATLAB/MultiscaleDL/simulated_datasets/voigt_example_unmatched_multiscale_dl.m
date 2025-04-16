@@ -1,5 +1,11 @@
 function [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_unmatched_multiscale_dl(sigma,plotFlag)
-%% Construct 1D test problem Gaussian and linear 
+if nargin < 1
+    sigma = 0.01;
+end
+if nargin < 2
+    plotFlag = false;
+end
+
 T = 50;
 N = 105; M = 105;
 J = 16;
@@ -12,12 +18,6 @@ J = size(scales{1},2);
 KJ = K*J;
 center = (M+1)/2;
 
-if nargin < 1
-    sigma = 0.01;
-end
-if nargin < 2
-    plotFlag = false;
-end
 
 % Position in time
 
@@ -39,8 +39,6 @@ width = round((f2-minVal)/maxVal*(J-1) + 1);
 max_width = 8;
 
 mixing = 0.5;
-
-
 
 Dtrue = zeros(1,M,K);
 Dtrue(1,:,1) = voigt_basis_wrap_1D(M,center,max_width,mixing,'2-norm');
