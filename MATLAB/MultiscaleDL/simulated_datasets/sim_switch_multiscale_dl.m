@@ -56,6 +56,10 @@ switch dataset
         M = N;
         Xtrue = 0;
         Dtrue = 0;
+    case 'pseudo-voigt_unmatched'
+        [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_unmatched_multiscale_dl(sigma);
+    case 'pseudo-voigt_matched'
+        [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_matched_multiscale_dl(sigma);
     otherwise
         error('Invalid dataset name')
 end
