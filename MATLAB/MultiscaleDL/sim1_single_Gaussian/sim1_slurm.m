@@ -32,7 +32,7 @@ opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
-opt.a = 0.1;
+opt.a = 1;
 
 % Multiscale dictionary setup
 K = 1;
