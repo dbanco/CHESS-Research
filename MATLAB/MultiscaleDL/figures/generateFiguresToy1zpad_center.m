@@ -92,7 +92,7 @@ end
 f5 = figure;
 jj = 1;
 T = size(X,4);
-for t = [1,round(T/4)/4,round(T/2),round(3*T/4)]
+for t = [1,round(T/4),round(T/2),round(3*T/4)]
     subplot(2,2,jj)
     imagesc(squeeze(X(:,:,:,t))')
     ylabel('\sigma')

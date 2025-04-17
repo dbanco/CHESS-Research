@@ -20,27 +20,29 @@ img = Picture(LcurveFile);
 replace(slide2, 'Content', img);
 
 NN = numel(sigmas);
+i = 1;
 for n = sig_ind
     spDir = [dirStartS,'_sig_',num2str(n)];
 
     j_s = find(lambdaVals == selected_lam_s_vec(n));
     j_of = 1;
+    j_hs = 1;
     
-    dictPngS = sprintf("dict_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e.png",...
-            j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
+    dictPngS = sprintf("dict_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.png",...
+            j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
 %     reconPngS = sprintf("recon_j1_sig_%0.2e_lam1_%0.2e_lam2_%0.2e.png",...
 %             sigmas(n),selected_lam_s_vec(n),0);
-    vdfPngS = sprintf("vdf_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e.png",...
-            j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
-    x1PngS = sprintf("X1_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e.png",...
-            j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
-    reconGifS = sprintf("y_recon_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e.gif",...
-            j_s,j_of,sigmas(n),selected_lam_s_vec(n),0);
+    vdfPngS = sprintf("vdf_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.png",...
+            j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
+    x1PngS = sprintf("X1_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.png",...
+            j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
+    reconGifS = sprintf("y_recon_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.gif",...
+            j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
 
     % Dictionaries
     slide2 = add(ppt_sim1, 'Title and Content');
     replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),selected_lam_s_vec(n),0));
+        n,meanSNR(i),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,dictPngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
@@ -48,7 +50,7 @@ for n = sig_ind
     % VDFs
     slide2 = add(ppt_sim1, 'Title and Content');
     replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2f, Lam_of=%0.2f',...
-        n,meanSNR(n),selected_lam_s_vec(n),0));
+        n,meanSNR(i),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,vdfPngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
@@ -56,7 +58,7 @@ for n = sig_ind
     % X1
     slide2 = add(ppt_sim1, 'Title and Content');
     replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f,Lam_s=%0.2 Lam_of=%0.2f',...
-        n,meanSNR(n),selected_lam_s_vec(n),0));
+        n,meanSNR(i),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,x1PngS);  % Specify the image file you want to insert
     img = Picture(imagePath);
     replace(slide2, 'Content', img);
@@ -64,7 +66,7 @@ for n = sig_ind
     % Recon
     slide2 = add(ppt_sim1, 'Title and Content');
     replace(slide2, 'Title', sprintf('Noise Level %i, SNR = %0.2f, Lam_s=%0.2, Lam_of=%0.2f',...
-        n,meanSNR(n),selected_lam_s_vec(n),0));
+        n,meanSNR(i),selected_lam_s_vec(n),0));
     imagePath = fullfile(topDir,spDir,reconGifS);  % Specify the image file you want to insert
     try
         img = Picture(imagePath);
@@ -73,6 +75,7 @@ for n = sig_ind
         disp('Failed on file:')
         disp(reconGifS)
     end
+    i = i + 1;
 end
 
 % Close and save the presentation
