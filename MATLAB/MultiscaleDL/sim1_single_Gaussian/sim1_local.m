@@ -10,7 +10,7 @@ sigmas = 0:0.01:0.1;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;
+opt.MaxMainIter = 150;%1000;
 opt.MaxCGIter = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
@@ -54,7 +54,7 @@ sig_ind = 2;
 % ind1 = 11:15;
 % ind2 = [1,30,31];
 % ind3 = [5];
-ind1 = [11];
+ind1 = [30];
 ind2 = [1];%[30];
 ind3 = [1];%[5];
 
@@ -101,4 +101,3 @@ end
 end
 end
 end
-slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
