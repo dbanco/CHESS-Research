@@ -9,7 +9,8 @@ fig_num = 22;
 
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
-            'dissertation','dissertation_long','dissertation_long_separate'};
+            'dissertation','dissertation_long','dissertation_long_separate',...
+            'pseudo-voigt_unmatched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -17,7 +18,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 6;
+s0 = 8;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -36,7 +37,7 @@ suffix = [dataset,'_',opt.Penalty,...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter)];
 
-topDir = ['E:\MCDLOF_processing\Outputs_lamS_',suffix];
+topDir = ['E:\MCDLOF_processing\Outputs_4_18_',suffix];
 % topDir = ['E:\MCDLOF_processing\Outputs_a0.1_',suffix];
 
 criterion = 'discrepancy';
@@ -46,7 +47,7 @@ useMin = true;
 selected_lam_all_vec = zeros(NN,3);
 selected_inds_all = zeros(NN,3);
 
-sig_ind = 2:4;
+sig_ind = 2:6;
 true_error_sig = zeros(numel(sig_ind),1);
 i = 1;
 for n = sig_ind
@@ -54,7 +55,7 @@ for n = sig_ind
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),y_true,useMin);
     selected_lam_all_vec(n,:) = lambda_all;
-    selected_inds_all(n,:) = lambdasToInds(lambda_all,{lambdaVals,lambdaHSVals,lambdaHSVals});
+    selected_inds_all(n,:) = lambdasToInds(lambda_all,{lambdaVals,lambdaOFVals,lambdaHSVals});
     true_error_sig(i) = objective.true_error;
     i = i + 1;
 end
