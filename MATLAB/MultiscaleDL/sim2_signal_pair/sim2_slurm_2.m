@@ -52,14 +52,15 @@ k = 1;
 
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
-            'dissertation','dissertation_long','dissertation_long_separate'};
+            'dissertation','dissertation_long',...
+            'dissertation_long_separate','voigt_tooth_matched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2:4;
+sig_ind = 2:6;
 ind1 = 1:106;
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
@@ -69,7 +70,7 @@ selected_lam_s = [0,6,6,9];
 % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 6
+for s0 = 8
 dataset = datasets{s0};
 for trials = 1
 for s_pen = 2
