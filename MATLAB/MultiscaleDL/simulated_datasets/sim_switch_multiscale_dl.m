@@ -60,6 +60,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_unmatched_multiscale_dl(sigma);
     case 'pseudo-voigt_matched'
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_matched_multiscale_dl(sigma);
+    case 'voigt_tooth_matched'
+        [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched(sigma,plotFlag);
     otherwise
         error('Invalid dataset name')
 end
