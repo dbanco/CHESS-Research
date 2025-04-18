@@ -24,8 +24,8 @@ center = (M+1)/2;
 % position = 15+[linspace(20,50,20),30+20.*linspace(1,0.1,30).*cos((0:29)/3)];
 
 f1 = cos(linspace(0,2*pi,50));
-posStart = 45;
-posEnd = 80;
+posStart = 50;
+posEnd = 70;
 minVal = min(f1);
 maxVal = max(f1)-minVal;
 position = round((f1-minVal)/maxVal*(posEnd-posStart) + posStart) + center;
