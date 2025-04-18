@@ -9,7 +9,7 @@ fig_num = 22;
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
             'dissertation','dissertation_long','dissertation_long_separate',...
-            'pseudo-voigt_unmatched'};
+            'pseudo-voigt_unmatched','voigt_tooth_matched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -17,7 +17,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 8;
+s0 = 9;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -30,17 +30,17 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_4_11_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-% criterion = 'discrepancy';
-criterion = 'truth_error';
+criterion = 'discrepancy';
+% criterion = 'truth_error';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
-sig_ind = 2:4;
+sig_ind = 2:6;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
@@ -72,7 +72,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s',criterion,'_',dirStartS,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s',criterion,'_',dataset,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 2 Recovery,',dirStartS];
 createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
 
