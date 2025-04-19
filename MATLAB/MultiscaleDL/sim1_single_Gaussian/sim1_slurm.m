@@ -16,7 +16,7 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho and sigma params
-opt.rho = 100;
+opt.rho = 300;
 opt.sigma = 50;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;
@@ -63,9 +63,9 @@ selected_lam_s = [0,7,11,17,19,26];
 % ind2 = [1,30,31];
 % ind3 = [5];
 
-% ind1 = 1:106;
-ind2 = [1:50];
-ind3 = [1:6];
+ind1 = 1:106;
+% ind2 = [1:50];
+% ind3 = [1:6];
 
 k = 1;
 for s_dataset = 1
@@ -93,8 +93,8 @@ for s_recenter = 2
     
     for sig_i = sig_ind
         % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
-        for j_s = selected_lam_s(sig_i)
-        % for j_s = ind1
+        % for j_s = selected_lam_s(sig_i)
+        for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
