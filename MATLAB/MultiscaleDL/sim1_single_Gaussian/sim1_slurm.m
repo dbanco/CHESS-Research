@@ -71,7 +71,7 @@ k = 1;
 for s_dataset = 1
 dataset = datasets{s_dataset};
 for trials = 1
-for s_pen = 2
+for s_pen = 1
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
@@ -86,7 +86,7 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_4_18_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_4_21_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
