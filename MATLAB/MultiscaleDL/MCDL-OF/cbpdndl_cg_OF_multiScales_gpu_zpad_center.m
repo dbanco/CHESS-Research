@@ -708,7 +708,7 @@ for i = 1:num_atoms
     % Compute the center of mass of the atom
     actual_center = round((M+1)/2);
     t_center = computeCenterOfMass(D(1,:, i));
-    threshold = 0.1*mean(D(1,:,i));
+    threshold = 0.1*max(D(1,:,i));
     
     % Compute the shift needed to center the atom
     shift = round(actual_center - t_center);

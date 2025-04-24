@@ -72,7 +72,7 @@ switch criterion
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'relaxed discrepancy'
-        crit = abs(error/(N*T) - 1.1*sigma^2);
+        crit = abs(error/(N*T) - 1.5*sigma^2);
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'truth_error'
