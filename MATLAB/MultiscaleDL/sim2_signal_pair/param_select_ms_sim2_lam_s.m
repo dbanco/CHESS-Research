@@ -30,22 +30,24 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_',dataset,'_',opt.Penalty,...
-    '_D',opt.dictInit,num2str(opt.Dfixed),...
+topDir = ['E:\MCDLOF_processing\Outputs_4_23',...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-criterion = 'discrepancy';
+% criterion = 'discrepancy';
 % criterion = 'truth_error';
+criterion = 'relaxed discrepancy';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
+selected_inds = zeros(NN,1);
 sig_ind = 2:6;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
-    [lambda_s_sel,j_s] = param_select_lambda_s(inDir,0,0,fig_num,criterion,sigmas(n),y_true);
-    selected_lam_s_vec(n) = lambda_s_sel;
+    [lambda_s_sel,j_s] = param_select_3D(inDir,fig_num,criterion,sigmas(n),y_true,useMin);
+    selected_lam_s_vec(n) = lambda_all(1);
+    selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
 fig = gcf;
