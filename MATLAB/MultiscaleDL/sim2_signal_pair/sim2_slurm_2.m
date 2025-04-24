@@ -36,7 +36,7 @@ opt.Recenter = 1;
 % opt.Penalty = 'log';
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
-opt.a = 0.1;
+opt.a = 1;
 
 % Multiscale dictionary setup
 K = 2;
@@ -66,7 +66,7 @@ ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
 % SELECTED PARAMS ind1: 0,4,4,9
-selected_lam_s = [0,6,6,9];
+% selected_lam_s = [0,6,6,9];
 % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
 
 % --- Dataset, Initialization, Parameters ---
