@@ -104,7 +104,7 @@ for s_recenter = 2
     for sig_i = sig_ind
         %%% PARAMETER SELECTION
         inDir = [psDir,'\results_sig_',num2str(sig_i)];
-        [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
+        [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(sig_i),dataset);
         [lambda_all,objective] = param_select_3D(inDir,0,criterion,sigmas(sig_i),y_true,useMin,relax_param);
         j_s_select = find(lambdaVals == lambda_all(1));
         %%%
