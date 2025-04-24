@@ -1,9 +1,13 @@
-function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true,useMin)
+function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true,useMin,relax_param)
 %param_select_3D 
 
+if nargin < 7
+    relax_param = 1.05;
+end
 if nargin < 6
     useMin = false;
 end
+
 
 % Extract the file names and store them in a cell array
 files = dir(fullfile(outputDir, '*.mat'));
@@ -72,14 +76,14 @@ switch criterion
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'relaxed discrepancy'
-        crit = abs(error/(N*T) - 1.5*sigma^2);
+        crit = abs(error/(N*T) - relax_param*sigma^2);
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'truth_error'
         [~,selInd] = min(true_error);
         lambda_all = lambda_vec(selInd,:);
 end
-if nargin > 3
+if fig_num > 0
     figure(fig_num)
     loglog(l1_norm(1:end),error(1:end),'o')
     ylabel('Error')
