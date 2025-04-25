@@ -714,13 +714,15 @@ for i = 1:num_atoms
     shift = round(actual_center - t_center);
     
     if abs(shift) > 0
-        if all(D(1,1:abs(shift),i)<threshold) || all(D(1,end-abs(shift):end,i)<threshold)
-            shifts(i) = shift;
-            % Circularly shift the atom
-            D(1,:, i) = circshift(D(1,:, i), shift, 2);
-        else
-            shifts(i) = 0;
-        end
+        D(1,:, i) = circshift(D(1,:, i), shift, 2);
+        shifts(i) = shift;
+        % if all(D(1,1:abs(shift),i)<threshold) || all(D(1,end-abs(shift):end,i)<threshold)
+        %     shifts(i) = shift;
+        %     % Circularly shift the atom
+        %     D(1,:, i) = circshift(D(1,:, i), shift, 2);
+        % else
+        %     shifts(i) = 0;
+        % end
     else
         shifts(i) = 0;
     end

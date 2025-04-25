@@ -1,4 +1,4 @@
-function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,sig_ind,topDir,dirStart1,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,dirStart2,selected_lam_all_vec2)
+function [noiseNorm,trueErrS,dataErrS,l0_normS,trueErrOF,dataErrOF,l0_normOF] = simError(y_true,sigmas,sig_ind,topDir,dirStart1,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,topDir2,selected_lam_all_ind_vec2)
 %UNTITLED Summary of this function goes here
 
 NN = numel(sigmas);
@@ -8,10 +8,11 @@ dataErrS = zeros(NN,1);
 trueErrOF = zeros(NN,1);
 dataErrOF = zeros(NN,1);
 noiseNorm = zeros(NN,1);
+l0_normS = zeros(NN,1);
+l0_normOF = zeros(NN,1);
 
 if nargin < 10
     selected_lam_all_vec2 = zeros(NN,1);
-    dirStart2 = 'none';
 end
 
 for n = sig_ind
@@ -42,15 +43,21 @@ for n = sig_ind
     
     trueErrS(n) = norm(y_true-Yhat);
     dataErrS(n) = norm(squeeze(y)-Yhat);
+    l0_normS(n) = sum(X(:)>0,'all')
     
     if nargin > 10
-        hsDir = [dirStart2,'_sig_',num2str(n)];
-    
-        j_of = find(lambdaOFVals == selected_lam_all_vec2(n));
-        dataFileOF = sprintf("output_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
-                            j_of,sigmas(n),selected_lam_s_vec(n),selected_lam_all_vec2(n));
+        hsDir = [dirStart1,'_sig_',num2str(n)];
 
-        load(fullfile(topDir,hsDir,dataFileOF))
+        j_s = selected_lam_all_ind_vec2(n,1)
+        j_of = selected_lam_all_ind_vec2(n,2)
+        j_hs = selected_lam_all_ind_vec2(n,3)
+        dataFileOF = sprintf("output_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.mat",...
+                        j_s,j_of,j_hs,sigmas(n),...
+                        lambdaVals(j_s),...
+                        lambdaOFVals(j_of),...
+                        lambdaHSVals(j_hs));
+    
+        load(fullfile(topDir2,hsDir,dataFileOF))
         D = outputs.D;
         N = outputs.N;
         M = outputs.M;
@@ -67,6 +74,7 @@ for n = sig_ind
         
         trueErrOF(n) = norm(y_true-Yhat);
         dataErrOF(n) = norm(squeeze(y)-Yhat);
+        l0_normOF(n) = sum(X(:)>0,'all')
     end
     
     T = outputs.T;
@@ -93,8 +101,10 @@ end
 
 trueErrS = trueErrS(sig_ind);
 dataErrS = dataErrS(sig_ind);
+l0_normS = l0_normS(sig_ind);
 trueErrOF = trueErrOF(sig_ind);
 dataErrOF = dataErrOF(sig_ind);
+l0_normOF = l0_normOF(sig_ind);
 noiseNorm = noiseNorm(sig_ind);
 
 end

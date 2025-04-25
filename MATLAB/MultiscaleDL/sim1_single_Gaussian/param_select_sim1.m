@@ -30,7 +30,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_4_24_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_4_19_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -47,7 +47,7 @@ selected_inds = zeros(NN,1);
 
 useMin = 1;
 relax_param = 1.05;
-sig_ind = 2:3;
+sig_ind = 2:6;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
@@ -81,7 +81,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim1_lam_of_4_24',...
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim1_lam_s_4_19',...
            '_relax_',num2str(relax_param),...
            '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 1 Param Select,',dirStartS];

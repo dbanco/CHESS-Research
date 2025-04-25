@@ -1,6 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
+% lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
+lambdaVals = logspace(-4,-1,100);
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 
@@ -61,7 +62,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 sig_ind = 2:6;
-ind1 = 1:106;
+ind1 = 1:numel(lambdaVals);
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
