@@ -47,7 +47,7 @@ selected_inds = zeros(NN,1);
 
 useMin = 1;
 relax_param = 1.05;
-sig_ind = 2;
+sig_ind = 2:3;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
