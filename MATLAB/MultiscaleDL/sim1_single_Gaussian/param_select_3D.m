@@ -8,7 +8,6 @@ if nargin < 6
     useMin = false;
 end
 
-
 % Extract the file names and store them in a cell array
 files = dir(fullfile(outputDir, '*.mat'));
 matFileNames = {files.name};
@@ -18,6 +17,7 @@ error = zeros(NN,1);
 rel_error = zeros(NN,1);
 true_error = zeros(NN,1);
 l1_norm = zeros(NN,1);
+l0_norm = zeros(NN,1);
 log_penalty = zeros(NN,1);
 of_penalty = zeros(NN,1);
 hs_penalty = zeros(NN,1);
@@ -55,6 +55,7 @@ for i = 1:numel(matFileNames)
     log_penalty(i) = sum(vec(log(1 + outputs.opt.a.*abs(X))));
     % Compute L1-norm
     l1_norm(i) = norm(X(:),1);
+    l0_norm(i) = sum(X(:)>0,'all');
     % Compute OF, HS penalties
     Xpad = padarray(squeeze(outputs.X),[1 1 1],0,'pre');
     Fx = diffxHS(Xpad);
@@ -79,6 +80,22 @@ switch criterion
         crit = abs(error/(N*T) - relax_param*sigma^2);
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
+    case 'discrepancy range'
+        crit1 = error/(N*T) < relax_param*sigma^2;
+        crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        include = crit1 & crit2;
+        
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param*sigma^2);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+        else 
+            crit3 = l0_norm;
+            exclude = ~include;
+            crit3(exclude) = numel(X);
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
     case 'truth_error'
         [~,selInd] = min(true_error);
         lambda_all = lambda_vec(selInd,:);

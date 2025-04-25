@@ -1,4 +1,4 @@
-function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_s_vec,lambdaVals,dirStartOF,selected_lam_of_vec,lambdaOFVals)
+function [noiseNorm,trueErrS,dataErrS,trueErrOF,dataErrOF] = simError(y_true,sigmas,sig_ind,topDir,dirStart1,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,dirStart2,selected_lam_all_vec2)
 %UNTITLED Summary of this function goes here
 
 NN = numel(sigmas);
@@ -9,19 +9,21 @@ trueErrOF = zeros(NN,1);
 dataErrOF = zeros(NN,1);
 noiseNorm = zeros(NN,1);
 
-if nargin < 8
-    selected_lam_of_vec = zeros(NN,1);
-    lambdaOFVals = [0,0,0];
-    dirStartOF = 'none';
+if nargin < 10
+    selected_lam_all_vec2 = zeros(NN,1);
+    dirStart2 = 'none';
 end
 
 for n = sig_ind
-    spDir = [dirStartS,'_sig_',num2str(n)];
-    j_s = find(lambdaVals == selected_lam_s_vec(n));
-    j_of = 1;
-    j_hs = 1;
+    spDir = [dirStart1,'_sig_',num2str(n)];
+    j_s = find(lambdaVals == selected_lam_all_vec(n,1));
+    j_of = find(lambdaOFVals == selected_lam_all_vec(n,2));
+    j_hs = find(lambdaHSVals == selected_lam_all_vec(n,3));
     dataFileS = sprintf("output_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e.mat",...
-                    j_s,j_of,j_hs,sigmas(n),selected_lam_s_vec(n),0,0);
+                    j_s,j_of,j_hs,sigmas(n),...
+                    selected_lam_all_vec(n,1),...
+                    selected_lam_all_vec(n,2),...
+                    selected_lam_all_vec(n,3));
     
     load(fullfile(topDir,spDir,dataFileS))
     D = outputs.D;
@@ -41,12 +43,12 @@ for n = sig_ind
     trueErrS(n) = norm(y_true-Yhat);
     dataErrS(n) = norm(squeeze(y)-Yhat);
     
-    if nargin > 7
-        hsDir = [dirStartOF,'_sig_',num2str(n)];
+    if nargin > 10
+        hsDir = [dirStart2,'_sig_',num2str(n)];
     
-        j_of = find(lambdaOFVals == selected_lam_of_vec(n));
+        j_of = find(lambdaOFVals == selected_lam_all_vec2(n));
         dataFileOF = sprintf("output_j%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e",...
-                            j_of,sigmas(n),selected_lam_s_vec(n),selected_lam_of_vec(n));
+                            j_of,sigmas(n),selected_lam_s_vec(n),selected_lam_all_vec2(n));
 
         load(fullfile(topDir,hsDir,dataFileOF))
         D = outputs.D;
