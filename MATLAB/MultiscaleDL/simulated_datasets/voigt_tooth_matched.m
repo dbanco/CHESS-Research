@@ -1,6 +1,6 @@
 function [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched(sigma,plotFlag)
 %% Construct 1D test problem Gaussian and linear 
-T = 100;
+T = 80;
 N = 55; M = 45;
 center = (M+1)/2;
 if nargin < 1
@@ -30,12 +30,12 @@ opt.DictFilterSizes = [1,1;...
 % sig = 2*linspace(2,10,T);
 % width = 4*round(linspace(2,14,T));
 pFactor = 3.5;
-tt = ((1:T)+20)/(50/20)/pFactor;
+tt = linspace(0,4*pi,T);
 sig = round(   (J-1)/2*sin(tt) + (J-1)/2+1 );
 width = round( (J-1)/2*cos(tt) + (J-1)/2+1 )+ J;
  
 voigt_max_width = 5;
-tooth_max_width = 25;
+tooth_max_width = 16;
 
 mixing = 0.5;
  
@@ -43,19 +43,31 @@ mixing = 0.5;
 scaling = '2-norm';
 Dtrue = zeros(1,M,K);
 Dtrue(1,:,1) = voigt_basis_wrap_1D(M,center,voigt_max_width,mixing,scaling);
-Dtrue(1,6:tooth_max_width+5,2) = linspace(0,10,tooth_max_width)/norm(linspace(0,10,tooth_max_width));
+i1 = round(center) - tooth_max_width;
+i2 = i1 + tooth_max_width-1;
+Dtrue(1,i1:i2,2) = linspace(0,10,tooth_max_width)/norm(linspace(0,10,tooth_max_width));
 ADtrue = padarray(reSampleCustomArrayCenter(N,Dtrue,scales,center),[0,M-1,0,0],0,'post');
 ADf = fft2(ADtrue);
 
 % Position in time
-minPos1 = 0;
-minPos2 = -5;
-amp = 15;
-Pos  = M-1-5 + mod(round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi/2 )      + amp + minPos1),N);
-Pos2 =     M-1-5 + round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi + pi/2 ) + amp + minPos2);
+% minPos1 = 0;
+% minPos2 = -5;
+% amp = 15;
+% Pos  = M-1-5 + mod(round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi/2 )      + amp + minPos1),N);
+% Pos2 =     M-1-5 + round( amp*sin( 4*pi/50*((1:T)+9)/pFactor + pi + pi/2 ) + amp + minPos2);
+
+center = (M+1)/2;
+amplitude = 15;
+
+f1 = cos(linspace(0,2*pi,T));
+f2 = -f1;
+
+Pos1 = round(amplitude*f1 + M + 7);
+Pos2 = round(amplitude*f2 + M + 7);
+
 Xtrue = zeros(1,N+M-1,KJ,T);
 for t = 1:T
-    Xtrue(1,Pos(t),sig(t),t) = 1;
+    Xtrue(1,Pos1(t),sig(t),t) = 1;
     Xtrue(1,Pos2(t),width(t),t) = 1;
 end
 Xf = fft2(Xtrue);
@@ -82,7 +94,7 @@ if plotFlag
     subplot(3,1,2)
     plot(yn(:,12),'-o')
     subplot(3,1,3)
-    plot(yn(:,30),'-o')
+    plot(yn(:,T),'-o')
     
     figure(4)
     vdf = squeeze(sum(squeeze(Xtrue),1));
