@@ -1,4 +1,4 @@
-lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
+lambdaVals = logspace(-3,1,120);
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 sigmas = 0:0.01:0.1;
@@ -30,7 +30,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_4_24_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_5_1_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -82,7 +82,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_4_24',...
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_5_1',...
            '_relax_',num2str(relax_param),...
            '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 2 Recovery,',dirStartS];
