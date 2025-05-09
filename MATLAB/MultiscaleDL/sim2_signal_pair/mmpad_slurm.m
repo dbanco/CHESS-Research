@@ -40,7 +40,7 @@ opt.Recenter = 1;
 opt.a = 1;
 
 % Multiscale dictionary setup
-K = 2;
+K = 1;
 scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
@@ -89,7 +89,7 @@ for s_recenter = 2
         continue
     end
 
-    topDir = ['/cluster/home/dbanco02/Outputs_5_9_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_5_9_K1',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
