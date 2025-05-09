@@ -100,8 +100,10 @@ for s_recenter = 2
         for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
-            sim_mcdlof_wrapper(lambdaVals,lambdaOFVals,lambdaHSVals,...
-                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
+            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
+                    j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
+            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+            k = k + 1;
         end
         end
         end
