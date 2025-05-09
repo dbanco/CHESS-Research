@@ -8,7 +8,7 @@ if nargin < 6
     useMin = false;
 end
 
-[~,y_true,~,~,~,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
+[~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
 
 % Extract the file names and store them in a cell array
 files = dir(fullfile(outputDir, '*.mat'));
@@ -62,26 +62,28 @@ for i = 1:numel(matFileNames)
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
 
     % Identify correct ordering and shift of learned dictionary and apply it
-    [D_perm, best_perm, shifts, ~] = align_third_dim_and_shift(D, Dtrue);
-    X_perm = apply_perm_to_X(X, J, best_perm, shifts);
-
-    % Compute errors on recovered X and D 
-    Xerr1 = sqrt(sum((X_perm-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
-    Xerr2 = sqrt(sum((X-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
-    X_error(i) = min(Xerr1,Xerr2);
-    D_error(i) = sqrt(sum((D_perm-Dtrue).^2,'all'))/sqrt(sum((Dtrue).^2,'all'));
-    if Xerr1 < Xerr2
-        vdf = sum(X_perm,[1,2]);
-        shift = sum(X_perm,[1,3]);
-    else
-        vdf = sum(X,[1,2]);
-        shift = sum(X,[1,3]);  
-    end
-    vdf_true = sum(Xtrue,[1,2]);
-    vdf_error(i) = sqrt(sum((vdf-vdf_true).^2,'all'))/sqrt(sum((vdf_true).^2,'all'));
+    if Dtrue ~= 0
+        [D_perm, best_perm, shifts, ~] = align_third_dim_and_shift(D, Dtrue);
+        X_perm = apply_perm_to_X(X, J, best_perm, shifts);
     
-    shift_true = sum(Xtrue,[1,3]);
-    shift_error(i) = sqrt(sum((shift-shift_true).^2,'all'))/sqrt(sum((shift_true).^2,'all'));
+        % Compute errors on recovered X and D 
+        Xerr1 = sqrt(sum((X_perm-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
+        Xerr2 = sqrt(sum((X-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
+        X_error(i) = min(Xerr1,Xerr2);
+        D_error(i) = sqrt(sum((D_perm-Dtrue).^2,'all'))/sqrt(sum((Dtrue).^2,'all'));
+        if Xerr1 < Xerr2
+            vdf = sum(X_perm,[1,2]);
+            shift = sum(X_perm,[1,3]);
+        else
+            vdf = sum(X,[1,2]);
+            shift = sum(X,[1,3]);  
+        end
+        vdf_true = sum(Xtrue,[1,2]);
+        vdf_error(i) = sqrt(sum((vdf-vdf_true).^2,'all'))/sqrt(sum((vdf_true).^2,'all'));
+        
+        shift_true = sum(Xtrue,[1,3]);
+        shift_error(i) = sqrt(sum((shift-shift_true).^2,'all'))/sqrt(sum((shift_true).^2,'all'));
+    end
 
     % Compute log penalty
     log_penalty(i) = sum(vec(log(1 + outputs.opt.a.*abs(X))));
@@ -116,7 +118,7 @@ switch criterion
         crit1 = error/(N*T) < relax_param*sigma^2;
         crit2 = error/(N*T) > (2-relax_param)*sigma^2;
         include = crit1 & crit2;
-        
+
         if sum(include) == 0 % default to relaxed discrepancy
             crit = abs(error/(N*T) - relax_param*sigma^2);
             [~,selInd] = min(crit);
@@ -129,6 +131,26 @@ switch criterion
             [~,selInd] = min(crit3);
             lambda_all = lambda_vec(selInd,:);
         end
+
+    case 'discrepancy range mmpad'
+        mmpad_thresh = 1/(N*T);
+        crit1 = error/(N*T) < relax_param*mmpad_thresh;
+        crit2 = error/(N*T) > (2-relax_param)*mmpad_thresh;
+        include = crit1 & crit2;
+        
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param*mmpad_thresh);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+            error('No solution in discrepancy range');
+        else 
+            crit3 = l0_norm;
+            exclude = ~include;
+            crit3(exclude) = numel(X);
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
+
     case 'truth_error'
         [~,selInd] = min(true_error);
         lambda_all = lambda_vec(selInd,:);
