@@ -1,4 +1,4 @@
-function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,y_true,useMin,relax_param)
+function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,dataset,useMin,relax_param)
 %param_select_3D 
 
 if nargin < 7
@@ -7,6 +7,8 @@ end
 if nargin < 6
     useMin = false;
 end
+
+[~,y_true,~,~,~,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
 
 % Extract the file names and store them in a cell array
 files = dir(fullfile(outputDir, '*.mat'));
@@ -22,6 +24,11 @@ log_penalty = zeros(NN,1);
 of_penalty = zeros(NN,1);
 hs_penalty = zeros(NN,1);
 lambda_vec = zeros(NN,3);
+D_error = zeros(NN,1);
+X_error = zeros(NN,1);
+vdf_error = zeros(NN,1);
+shift_error = zeros(NN,1);
+
 for i = 1:numel(matFileNames)
     % Load outputs
     load(fullfile(outputDir,matFileNames{i}))
@@ -30,6 +37,8 @@ for i = 1:numel(matFileNames)
     M = outputs.M;
     T = outputs.T;
     K = outputs.K;
+    KJ = size(Xtrue,3);
+    J = KJ/K;
     y = outputs.y;
     if useMin
         D = outputs.Dmin;
@@ -51,6 +60,29 @@ for i = 1:numel(matFileNames)
     error(i) = sum((squeeze(y)-Yhat).^2,'all');
     rel_error(i) = error(i)./sum(squeeze(y).^2,'all');
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
+
+    % Identify correct ordering and shift of learned dictionary and apply it
+    [D_perm, best_perm, shifts, ~] = align_third_dim_and_shift(D, Dtrue);
+    X_perm = apply_perm_to_X(X, J, best_perm, shifts);
+
+    % Compute errors on recovered X and D 
+    Xerr1 = sqrt(sum((X_perm-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
+    Xerr2 = sqrt(sum((X-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
+    X_error(i) = min(Xerr1,Xerr2);
+    D_error(i) = sqrt(sum((D_perm-Dtrue).^2,'all'))/sqrt(sum((Dtrue).^2,'all'));
+    if Xerr1 < Xerr2
+        vdf = sum(X_perm,[1,2]);
+        shift = sum(X_perm,[1,3]);
+    else
+        vdf = sum(X,[1,2]);
+        shift = sum(X,[1,3]);  
+    end
+    vdf_true = sum(Xtrue,[1,2]);
+    vdf_error(i) = sqrt(sum((vdf-vdf_true).^2,'all'))/sqrt(sum((vdf_true).^2,'all'));
+    
+    shift_true = sum(Xtrue,[1,3]);
+    shift_error(i) = sqrt(sum((shift-shift_true).^2,'all'))/sqrt(sum((shift_true).^2,'all'));
+
     % Compute log penalty
     log_penalty(i) = sum(vec(log(1 + outputs.opt.a.*abs(X))));
     % Compute L1-norm
@@ -111,13 +143,18 @@ if fig_num > 0
 end
 
 objective = struct();
-objective.error = error(i);
-objective.rel_error = rel_error(i);
-objective.true_error = true_error(i);
-objective.l1_norm = l1_norm(i);
-objective.log_penalty = log_penalty(i);
-objective.of_penalty = of_penalty(i);
-objective.hs_penalty = hs_penalty(i);
+objective.error = error(selInd);
+objective.rel_error = rel_error(selInd);
+objective.true_error = true_error(selInd);
+objective.l1_norm = l1_norm(selInd);
+objective.l0_norm = l0_norm(selInd);
+objective.log_penalty = log_penalty(selInd);
+objective.of_penalty = of_penalty(selInd);
+objective.hs_penalty = hs_penalty(selInd);
+objective.X_error = X_error(selInd);
+objective.D_error = D_error(selInd);
+objective.vdf_error = vdf_error(selInd);
+objective.shift_error = shift_error(selInd);
 
 
 end

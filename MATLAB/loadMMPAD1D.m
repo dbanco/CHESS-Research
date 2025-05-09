@@ -6,7 +6,7 @@ end
 
 fName = 'mmpad_img_%i.mat';
 % Load first image
-f=load(fullfile(topDir,sprintf('ring%i_zero',ring_num),sprintf(fName,1)));
+f=load(fullfile(topDir,sprintf('ring%i_zero',ring),sprintf(fName,1)));
 [theta,eta] = size(f.polar_image);
 
 T = 546;
@@ -19,7 +19,7 @@ t_step = 1;
 y = zeros(numel(sub_eta),sub_T);
 j = 1;
 for i = t_step:t_step:sub_T
-    f=load(fullfile(topDir,sprintf(fName,i)));
+    f=load(fullfile(topDir,sprintf('ring%i_zero',ring),sprintf(fName,i)));
     
     % Sum over 2theta
     x = sum(f.polar_image(sub_theta,sub_eta),1);
