@@ -40,7 +40,7 @@ opt.Recenter = 1;
 opt.a = 1;
 
 % Multiscale dictionary setup
-K = 1;
+K = 3;
 scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
@@ -78,7 +78,7 @@ for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
-for s_recenter = 2
+for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
