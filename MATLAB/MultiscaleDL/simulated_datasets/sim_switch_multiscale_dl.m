@@ -49,8 +49,11 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long_separate(sigma,plotFlag);
     case 'mmpad_ring1'
         ring_num = 1;
-        %'/cluster/home/dbanco02/mmpad'
-        yn = loadMMPAD1D(ring_num,1,'E:\Data\mmpad');
+        try
+            yn = loadMMPAD1D(ring_num,1,'/cluster/home/dbanco02/mmpad');
+        catch
+            yn = loadMMPAD1D(ring_num,1,'E:\Data\mmpad');
+        end
         yn = yn(:,21:100);
         [N,T] = size(yn);
         y = yn;
