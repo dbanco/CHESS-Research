@@ -4,6 +4,7 @@ lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
 
+close all
 fig_num = 22;
 
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
@@ -30,7 +31,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_5_1_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_5_2_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -47,15 +48,18 @@ selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
+objectives = cell(NN,1);
+
 sig_ind = 2:6;
 
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
-    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),y_true,useMin,relax_param);
+    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
     selected_lam_s_vec(n) = lambda_all(1);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
+    objectives{n} = objective;
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
 fig = gcf;
@@ -82,9 +86,9 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_5_1',...
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_5_2',...
            '_relax_',num2str(relax_param),...
            '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 2 Recovery,',dirStartS];
-createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
+createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
 
