@@ -42,8 +42,9 @@ opt.a = 1;
 % Multiscale dictionary setup
 K = 3;
 scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
-scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
+for i = 1:K
+    scales{i} = genRationals([0;1],[1;1],8,8, 1/6);
+end
 J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
