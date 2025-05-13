@@ -42,7 +42,7 @@ topDir = ['E:\MCDLOF_processing\Outputs_5_2_',dataset,'_',opt.Penalty,...
 criterion = 'discrepancy range';
 
 useMin = 1;
-relax_param = 1.2;
+relax_param = 1.1;
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
