@@ -61,7 +61,8 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2:6;
+sig_ind = 2;
+
 ind1 = 1:numel(lambdaVals);
 ind2 = 2:50;
 ind3 = 2:6;
