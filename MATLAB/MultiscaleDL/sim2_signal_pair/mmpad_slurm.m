@@ -40,7 +40,7 @@ opt.Recenter = 1;
 opt.a = 1;
 
 % Multiscale dictionary setup
-K = 2;
+K = 1;
 scales = cell(K,1);
 for i = 1:K
     scales{i} = genRationals([0;1],[1;1],8,8, 1/6);
