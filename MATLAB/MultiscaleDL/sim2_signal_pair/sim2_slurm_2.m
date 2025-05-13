@@ -70,7 +70,7 @@ ind3 = 2:6;
 % SELECTED PARAMS ind1: 0,4,4,9
 selected_lam_s_inds = [0,36,47,54,58,64];
 % selected_lam_s = [0,6,6,9];
-j_s_select = find(lambdaVals == selected_lam_s_vec);
+% j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
 for s0 = 8
