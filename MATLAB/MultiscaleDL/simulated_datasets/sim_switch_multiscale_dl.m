@@ -66,6 +66,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_matched_multiscale_dl(sigma);
     case 'voigt_tooth_matched'
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched(sigma,plotFlag);
+    case 'gaussian_tooth_matched'
+        [yn,y,N,M,T,Xtrue,Dtrue] = gaussian_tooth_matched(sigma,plotFlag);
     otherwise
         error('Invalid dataset name')
 end

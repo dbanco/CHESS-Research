@@ -157,11 +157,11 @@ switch criterion
 end
 if fig_num > 0
     figure(fig_num)
-    loglog(l1_norm(1:end),error(1:end),'o')
+    loglog(log_penalty(1:end),error(1:end),'o')
     ylabel('Error')
-    xlabel('l_1-norm')
+    xlabel('log penalty')
     hold on
-    loglog(l1_norm(selInd),error(selInd),'sr','MarkerSize',10)
+    loglog(log_penalty(selInd),error(selInd),'sr','MarkerSize',10)
 end
 
 objective = struct();
