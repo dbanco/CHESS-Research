@@ -98,7 +98,6 @@ for s_recenter = 1
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-            ind1 = selected_lam_s(sig_i);
         j_s_select = selected_lam_s_inds(sig_i);
         % for j_s = j_s_select-2:j_s_select+2
         for j_s = j_s_select
