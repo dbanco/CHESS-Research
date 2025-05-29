@@ -13,6 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
+opt.NoOFIters = 200;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -62,14 +63,14 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2:6;
+sig_ind = 1:3;
 
 ind1 = 1:numel(lambdaVals);
-ind2 = 2:50;
-ind3 = 2:6;
+ind2 = [1,2,5,10,20,40];
+ind3 = 4;
 
 % SELECTED PARAMS:
-selected_lam_s_inds = [0,37,46,53,57,63];
+selected_lam_s_inds = [30,37,46,53,57,63];
 % j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
@@ -91,7 +92,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_5_22_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_5_29_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];

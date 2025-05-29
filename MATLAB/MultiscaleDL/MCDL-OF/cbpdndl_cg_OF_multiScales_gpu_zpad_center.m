@@ -386,8 +386,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % variable D as the dictionary, but this appears to be unstable. Instead,
     % use the projected dictionary variable G
     if ~opt.Xfixed
+        withOF = k > opt.NoOFIters;
         [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
-            opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu); 
+            opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu,withOF); 
         cgIters2 = cgst.pit;
         % [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, Sfpad, fft2(Y-U) ,...
         %     opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
