@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b, tol, mit, isn,N,M,K,J,T,lambda2,U,V,useGpu)
+function [x, cgst] = solvemdbi_cg_OF_gpu_zpad(a, rho, b, tol, mit, isn,N,M,K,J,T,lambda2,U,V,useGpu,withOF)
 
 % solvemdbi_cg_OF -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -65,7 +65,7 @@ AhAvop2 = @(u) vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
 
-if lambda2 == 0    
+if (lambda2 == 0) || ~withOF
     [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u) + rho*u,...
     b(:), tol, mit, [], [], isn);
 else

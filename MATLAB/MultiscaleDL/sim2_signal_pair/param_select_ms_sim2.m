@@ -32,7 +32,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_5_22_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_5_22a_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -43,7 +43,7 @@ topDir = ['E:\MCDLOF_processing\Outputs_5_22_',dataset,'_',opt.Penalty,...
 criterion = 'discrepancy range';
 
 useMin = 1;
-relax_param = 1.1;
+relax_param = 1.2;
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);

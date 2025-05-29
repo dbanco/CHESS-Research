@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 % lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaVals = logspace(-4,-1,100);
+lambdaVals = logspace(-3,1,120);
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 
@@ -13,6 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
+opt.NoOFIters = 200;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -54,7 +55,8 @@ k = 1;
 datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
             'dissertation','dissertation_long',...
-            'dissertation_long_separate','voigt_tooth_matched'};
+            'dissertation_long_separate','voigt_tooth_matched',...
+            'gaussian_tooth_matched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -66,12 +68,16 @@ ind1 = 1:numel(lambdaVals);
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
+ind1 = 30;
+ind2 = 8;
+ind3 = 2;
+
 % SELECTED PARAMS ind1: 0,4,4,9
 % selected_lam_s = [0,6,6,9];
 % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 8
+for s0 = 9
 dataset = datasets{s0};
 for trials = 1
 for s_pen = 2
@@ -89,10 +95,10 @@ for s_recenter = 2
         continue
     end
 
-    topDir = ['E:\MCDLOF_processing\\Outputs_4_29_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_5_28_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),'\\',...
-        dataset,'_',opt.Penalty,'_results'];
+        '_X',opt.coefInit,num2str(opt.Xfixed),...
+        '_recenter',num2str(opt.Recenter),'/results'];
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
