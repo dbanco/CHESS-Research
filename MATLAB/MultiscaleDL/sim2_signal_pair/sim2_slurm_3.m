@@ -2,7 +2,7 @@
 % Directory
 % lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaVals = logspace(-3,1,120);
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 
 % Experiment Setup
@@ -13,7 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
-opt.NoOFIters = 200;
+opt.NoOFIters = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -63,14 +63,14 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 4:6;
+sig_ind = 2:3;
 
 ind1 = 1:numel(lambdaVals);
-ind2 = [1,2,5,10,20,40];
-ind3 = 4;
+ind2 = 2:20;
+ind3 = 2:6;
 
 % SELECTED PARAMS:
-selected_lam_s_inds = [30,37,46,53,57,63];
+selected_lam_s_inds = [30,37,49,56,62,66];
 % j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
@@ -101,9 +101,9 @@ for s_recenter = 2
         for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
         % for j_s = j_s_select-2:j_s_select+2
-        for j_s = ind1
-        for j_of = 1
-        for j_hs = 1
+        for j_s = j_s_select
+        for j_of = ind2
+        for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')

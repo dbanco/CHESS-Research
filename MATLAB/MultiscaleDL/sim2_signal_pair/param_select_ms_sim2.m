@@ -19,7 +19,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 10;
+s0 = 11;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -51,7 +51,7 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
-sig_ind = 1:3;
+sig_ind = 2:6;
 
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
