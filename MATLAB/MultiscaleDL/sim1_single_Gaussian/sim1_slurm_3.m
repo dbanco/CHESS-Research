@@ -127,7 +127,6 @@ for s_recenter = 2
             k = k + 1;
         end
         end
-        end
     end
     
 end
