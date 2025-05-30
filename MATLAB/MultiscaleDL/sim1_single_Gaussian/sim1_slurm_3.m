@@ -116,8 +116,11 @@ for s_recenter = 2
         j_hs_select = selected_lam_hs_inds(sig_i);
         for j_s = j_s_select
         % for j_s = ind1
-        for j_of = [1,j_of_select]
-        for j_hs = [1,j_hs_select]
+        j_ofs = [1,j_of_select];
+        j_hss = [1,j_hs_select];
+        for iii = 1:2
+            j_of = j_ofs(iii);
+            j_hs = j_hss(iii);
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
