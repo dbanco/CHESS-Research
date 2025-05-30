@@ -56,7 +56,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
             'dissertation','dissertation_long',...
             'dissertation_long_separate','voigt_tooth_matched',...
-            'gaussian_tooth_matched'};
+            'gaussian_tooth_matched','gaussian_tooth_matched_long'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -74,7 +74,7 @@ selected_lam_s_inds = [30,37,46,53,57,63];
 % j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 9
+for s0 = 10
 dataset = datasets{s0};
 for trials = 1
 for s_pen = 2
