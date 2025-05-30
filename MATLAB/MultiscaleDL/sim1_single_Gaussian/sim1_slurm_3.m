@@ -57,8 +57,7 @@ sig_ind = 2:6;
 
 % SELECTE PARAMETERS:
 selected_lam_s = [0,7,11,17,19,26];
-selected_lam_of = [0,8,4,13,0,0];
-selected_lam_hs = [0,2,5,2,0,0];
+
 % Regularization parameters
 % ind1 = 11:15;
 % ind2 = [1,30,31];
@@ -102,6 +101,8 @@ for s_recenter = 2
     % '_recenter',num2str(opt.Recenter)];
     %%%
     selected_lam_s_inds = [0,9,12,21,30,37];
+    selected_lam_of_inds = [0,8,4,13,0,0];
+    selected_lam_hs_inds = [0,2,5,2,0,0];
 
     for sig_i = 2:4
         %%% PARAMETER SELECTION
