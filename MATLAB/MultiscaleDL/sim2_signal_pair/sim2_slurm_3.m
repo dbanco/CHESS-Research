@@ -63,7 +63,7 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 1:3;
+sig_ind = 4:6;
 
 ind1 = 1:numel(lambdaVals);
 ind2 = [1,2,5,10,20,40];
