@@ -51,7 +51,7 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
-sig_ind = 2:3;
+sig_ind = 2:6;
 
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
