@@ -11,7 +11,8 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
             'dissertation','dissertation_long','dissertation_long_separate',...
             'pseudo-voigt_unmatched','voigt_tooth_matched',...
-            'gaussian_tooth_matched','gaussian_tooth_matched_long'};
+            'gaussian_tooth_matched','gaussian_tooth_matched_long',...
+            'gaussian_tooth_matched_long2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -19,7 +20,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 11;
+s0 = 12;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -32,9 +33,10 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_5_29_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_4_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
-    '_X',opt.coefInit,num2str(opt.Xfixed),...
+    '_X',opt.coefInit,num2str(opt.Xfixed)];
+topDir = ['E:\MCDLOF_processing\',test_name,...
     '_recenter',num2str(opt.Recenter)];
 
 % criterion = 'discrepancy';
@@ -51,7 +53,7 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
-sig_ind = 2:6;
+sig_ind = 1:6;
 
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
@@ -87,9 +89,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_lam_s_5_29',...
-           '_relax_',num2str(relax_param),...
-           '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_',test_name,'.pptx'];
 titleStr = ['Sim 2 Recovery,',dirStartS];
 createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
 
