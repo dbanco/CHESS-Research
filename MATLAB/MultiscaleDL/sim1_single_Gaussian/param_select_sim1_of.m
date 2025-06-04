@@ -75,6 +75,7 @@ removeWhiteSpace(LcurveFile)
 %% Compute errors
 dirStartS = 'results';
 selected_lam_all_vec2 = [0,0,0;9,1,1;12,1,1;21,1,1;30,1,1;37,1,1];
+[~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
 [noiseNorm,trueErr1,dataErr1,l0_norm1,trueErr2,dataErr2,l0_norm2] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,topDir2,selected_lam_all_vec2);
 
 figure()
