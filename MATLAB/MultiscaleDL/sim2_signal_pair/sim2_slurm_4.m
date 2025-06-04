@@ -13,7 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
-opt.NoOFIters = 100;
+opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -64,19 +64,15 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 2;
+sig_ind = 1:6;
+
 ind1 = 1:numel(lambdaVals);
-ind1 = 11:24;
-ind2 = 1;%2:50;
-ind3 = 1;%2:6;
+ind2 = 1;
+ind3 = 1;
 
-% ind1 = 40;
-% ind2 = 8;%[2,8,14];
-% ind3 = 3; %2
-
-% SELECTED PARAMS ind1: 0,4,4,9
-% selected_lam_s = [0,6,6,9];
-% j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
+% SELECTED PARAMS:
+% selected_lam_s_inds = [30,37,49,56,62,66];
+% j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
@@ -96,20 +92,23 @@ for s_recenter = 2
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
     end
-
-    topDir = ['E:\MCDLOF_processing\\Outputs_6_2_',dataset,'_',opt.Penalty,...
+    
+    topDir = ['/cluster/home/dbanco02/Outputs_6_4_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-            % ind1 = selected_lam_s(sig_i);
-        for j_s = ind1
+        j_s_select = selected_lam_s_inds(sig_i);
+        % for j_s = j_s_select-2:j_s_select+2
+        for j_s = j_s_select
         for j_of = ind2
         for j_hs = ind3
-            sim_mcdlof_wrapper(lambdaVals,lambdaOFVals,lambdaHSVals,...
-                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
+            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
+                    j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
+            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+            k = k + 1;
         end
         end
         end
@@ -121,3 +120,5 @@ end
 end
 end
 end
+
+slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
