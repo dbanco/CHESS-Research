@@ -103,7 +103,9 @@ for i = 1:numel(matFileNames)
     lambda_vec(i,2) = outputs.lambda2;
     lambda_vec(i,3) = outputs.opt.Smoothness;
 end
-
+if sigma == 0
+    sigma = 5e-3;
+end
 % Normalized origin distance criterion
 switch criterion
     case 'discrepancy'

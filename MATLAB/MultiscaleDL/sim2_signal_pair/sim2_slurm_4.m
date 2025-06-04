@@ -67,11 +67,11 @@ recenters = {0,1};
 sig_ind = 1:6;
 
 ind1 = 1:numel(lambdaVals);
-ind2 = 1;
-ind3 = 1;
+ind2 = 2:20;
+ind3 = 2:6;
 
 % SELECTED PARAMS:
-% selected_lam_s_inds = [30,37,49,56,62,66];
+selected_lam_s_inds = [43,44,55,58,65,69];
 % j_s_select = find(lambdaVals == selected_lam_s_vec);
 
 % --- Dataset, Initialization, Parameters ---
@@ -100,9 +100,9 @@ for s_recenter = 2
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-        % j_s_select = selected_lam_s_inds(sig_i);
+        j_s_select = selected_lam_s_inds(sig_i);
         % for j_s = j_s_select-2:j_s_select+2
-        for j_s = ind1
+        for j_s = j_s_select
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
