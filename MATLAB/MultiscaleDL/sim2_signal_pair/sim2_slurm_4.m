@@ -79,7 +79,7 @@ selected_lam_s_inds = [43,44,55,58,65,69];
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trials = 1:20
+for trial = 1:20
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
