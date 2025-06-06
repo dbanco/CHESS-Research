@@ -243,7 +243,7 @@ if isempty(opt.H0)
 %   if isempty(opt.G0),
     H = zeros(size(G), class(S));
 %   else
-%     H = G;
+%     H = G;rece
 %   end
 else
   H = opt.H0;
