@@ -62,7 +62,7 @@ for i = 1:numel(matFileNames)
     true_error(i) = sqrt(sum((y_true-Yhat).^2,'all'));
 
     % Identify correct ordering and shift of learned dictionary and apply it
-    if Dtrue ~= 0
+    if ~isscalar(Dtrue)
         [D_perm, best_perm, shifts, ~] = align_third_dim_and_shift(D, Dtrue);
         X_perm = apply_perm_to_X(X, J, best_perm, shifts);
     

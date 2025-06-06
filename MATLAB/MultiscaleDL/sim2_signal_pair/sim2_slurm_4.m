@@ -67,8 +67,10 @@ recenters = {0,1};
 sig_ind = 1:6;
 
 ind1 = 1:numel(lambdaVals);
-ind2 = 2:20;
-ind3 = 2:6;
+% ind2 = 2:20;
+% ind3 = 2:6;
+ind2 = 1;
+ind3 = 1;
 
 % SELECTED PARAMS:
 selected_lam_s_inds = [43,44,55,58,65,69];
@@ -77,7 +79,7 @@ selected_lam_s_inds = [43,44,55,58,65,69];
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trials = 1
+for trials = 1:20
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -93,10 +95,10 @@ for s_recenter = 2
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_6_4_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_5trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results'];
+        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
