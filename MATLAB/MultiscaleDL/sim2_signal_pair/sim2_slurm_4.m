@@ -13,7 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
-opt.NoOFIters = 0;
+opt.NoOFIters = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -67,10 +67,10 @@ recenters = {0,1};
 sig_ind = 1:6;
 
 ind1 = 1:numel(lambdaVals);
-% ind2 = 2:20;
-% ind3 = 2:6;
-ind2 = 1;
-ind3 = 1;
+ind2 = 2:20;
+ind3 = 2:6;
+% ind2 = 1;
+% ind3 = 1;
 
 % SELECTED PARAMS:
 selected_lam_s_inds = [43,44,55,58,65,69];
@@ -79,7 +79,7 @@ selected_lam_s_inds = [43,44,55,58,65,69];
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trial = 1:20
+for trial = 1
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -95,7 +95,7 @@ for s_recenter = 2
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_6_5trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_6of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -104,7 +104,7 @@ for s_recenter = 2
         for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
         % for j_s = j_s_select-2:j_s_select+2
-        for j_s = j_s_select
+        for j_s = (j_s_select-1):(j_s_select+1)
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
