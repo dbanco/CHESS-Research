@@ -1,6 +1,8 @@
-function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,dataset,useMin,relax_param)
+function [lambda_all,objective] = param_select_3D(outputDir,fig_num,criterion,sigma,dataset,useMin,relax_param,indep_only)
 %param_select_3D 
-
+if nargin < 8
+    indep_only = false;
+end
 if nargin < 7
     relax_param = 1.05;
 end
@@ -32,7 +34,11 @@ shift_error = zeros(NN,1);
 for i = 1:numel(matFileNames)
     % Load outputs
     load(fullfile(outputDir,matFileNames{i}))
-
+    if indep_only
+        if outputs.lambda2 > 0
+            continue
+        end
+    end
     N = outputs.N;
     M = outputs.M;
     T = outputs.T;

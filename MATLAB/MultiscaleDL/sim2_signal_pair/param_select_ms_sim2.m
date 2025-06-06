@@ -60,7 +60,7 @@ sig_ind = 1:6;
 for n = sig_ind
     inDir = [topDir,'\results_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
-    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
+    [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param,true);
     selected_lam_s_vec(n) = lambda_all(1);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
