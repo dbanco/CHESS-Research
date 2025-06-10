@@ -53,7 +53,7 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
-sig_ind = 2:6;
+sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
 selected_lam_s = [0,7,11,17,19,26];
@@ -63,9 +63,11 @@ selected_lam_s = [0,7,11,17,19,26];
 % ind2 = [1,30,31];
 % ind3 = [5];
 
-% ind1 = 1:106;
-ind2 = 2:50;
-ind3 = 2:6;
+ind1 = 1:106;
+% ind2 = 2:50;
+% ind3 = 2:6;
+ind2 = 1;
+ind3 = 1;
 
 k = 1;
 for s_dataset = 1
@@ -86,7 +88,7 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_4_24_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_10_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
