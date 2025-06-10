@@ -11,6 +11,7 @@ sigmas = 0:0.01:0.1;
 opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
+opt.noOFIters = 0;
 opt.MaxCGIter = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
