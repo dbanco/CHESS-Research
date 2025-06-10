@@ -104,7 +104,7 @@ for s_recenter = 2
     %%%
     selected_lam_s_inds = [0,9,12,21,30,37];
 
-    for sig_i = 6
+    for sig_i = sig_ind
         %%% PARAMETER SELECTION
         % inDir = [psDir,'\results_sig_',num2str(sig_i)];
         % [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(sig_i),dataset);
@@ -112,7 +112,7 @@ for s_recenter = 2
         % j_s_select = find(lambdaVals == lambda_all(1));
         %%%
         j_s_select = selected_lam_s_inds(sig_i);
-        for j_s = j_s_select-2:j_s_select+2
+        for j_s = ind1%j_s_select-2:j_s_select+2
         % for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
