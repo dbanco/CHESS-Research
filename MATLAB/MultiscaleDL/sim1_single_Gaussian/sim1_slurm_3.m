@@ -87,7 +87,7 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_4_24trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_10trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -105,7 +105,7 @@ for s_recenter = 2
     selected_lam_of_inds = [0,8,4,13,0,0];
     selected_lam_hs_inds = [0,2,5,2,0,0];
 
-    for sig_i = 2:4
+    for sig_i = 1:6
         %%% PARAMETER SELECTION
         % inDir = [psDir,'\results_sig_',num2str(sig_i)];
         % [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(sig_i),dataset);

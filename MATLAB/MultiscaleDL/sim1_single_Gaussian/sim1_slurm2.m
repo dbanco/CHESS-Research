@@ -53,7 +53,7 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
-sig_ind = 2:6;
+sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
 selected_lam_s = [0,7,11,17,19,26];
