@@ -136,7 +136,8 @@ switch criterion
             lambda_all = lambda_vec(selInd,:);
             error('No solution in discrepancy range');
         else 
-            crit3 = l0_norm;
+            % crit3 = l0_norm;
+            crit3 = log_penalty;
             exclude = ~include;
             crit3(exclude) = numel(X);
             [~,selInd] = min(crit3);
