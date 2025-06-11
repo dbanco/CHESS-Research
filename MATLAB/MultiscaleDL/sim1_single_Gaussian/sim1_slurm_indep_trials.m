@@ -62,15 +62,15 @@ sig_ind = 1:6;
 % ind3 = [5];
 
 ind1 = 1:106;
-ind2 = 2:25;
-ind3 = 2:6;
-% ind2 = 1;
-% ind3 = 1;
+% ind2 = 2:25;
+% ind3 = 2:6;
+ind2 = 1;
+ind3 = 1;
 
 k = 1;
 for s_dataset = 1
 dataset = datasets{s_dataset};
-for trials = 1
+for trials = 1:50
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -89,7 +89,7 @@ for s_recenter = 2
     topDir = ['/cluster/home/dbanco02/Outputs_6_10_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results'];
+        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
     
     %%% PARAMETER SELECTION SETUP
     % criterion = 'relaxed discrepancy';
