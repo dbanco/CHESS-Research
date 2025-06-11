@@ -46,7 +46,7 @@ funcName = 'sim_mcdlof_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-datasets = {'pseudo-voigt_unmatched','unmatched'};
+datasets = {'pseudo-voigt_unmatched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -54,10 +54,7 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
-sig_ind = 2:6;
-
-% SELECTE PARAMETERS:
-selected_lam_s = [0,7,11,17,19,26];
+sig_ind = 1:6;
 
 % Regularization parameters
 % ind1 = 11:15;
@@ -65,8 +62,8 @@ selected_lam_s = [0,7,11,17,19,26];
 % ind3 = [5];
 
 % ind1 = 1:106;
-ind2 = 2:50;
-ind3 = 2:6;
+% ind2 = 2:50;
+% ind3 = 2:6;
 
 k = 1;
 for s_dataset = 1
@@ -90,7 +87,7 @@ for s_recenter = 2
     topDir = ['/cluster/home/dbanco02/Outputs_6_10trialsof_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results_',num2str(trial)];
+        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
     
     %%% PARAMETER SELECTION SETUP
     % criterion = 'relaxed discrepancy';
