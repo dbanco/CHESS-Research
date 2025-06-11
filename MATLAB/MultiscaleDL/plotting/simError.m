@@ -16,7 +16,7 @@ if nargin < 10
 end
 
 for n = sig_ind
-    spDir = [dirStart1,'_trial_1_sig_',num2str(n)];
+    spDir = [dirStart1,'_sig_',num2str(n)];
     j_s = find(lambdaVals == selected_lam_all_vec(n,1));
     j_of = find(lambdaOFVals == selected_lam_all_vec(n,2));
     j_hs = find(lambdaHSVals == selected_lam_all_vec(n,3));
