@@ -79,7 +79,7 @@ selected_lam_s_inds = [43,44,55,58,65,69];
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trial = 1
+for trial = 1:50
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -100,13 +100,19 @@ for s_recenter = 2
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
+    selected_lam_s_inds = [43,43,56,58,66,70];
+    selected_lam_of_inds = [3,3,5,13,7,20];
+    selected_lam_hs_inds = [6,5,3,4,2,6];
+
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
-        % for j_s = j_s_select-2:j_s_select+2
-        for j_s = (j_s_select-1):(j_s_select+1)
-        for j_of = ind2
-        for j_hs = ind3
+        j_of_select = selected_lam_of_inds(sig_i);
+        j_hs_select = selected_lam_hs_inds(sig_i);
+
+        for j_s = j_s_select
+        for j_of = j_of_select
+        for j_hs = j_hs_select
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
