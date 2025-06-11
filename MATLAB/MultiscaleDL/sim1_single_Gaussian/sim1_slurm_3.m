@@ -12,7 +12,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
-opt.NoOFIters = 100;
+opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -71,7 +71,7 @@ ind3 = 2:6;
 k = 1;
 for s_dataset = 1
 dataset = datasets{s_dataset};
-for trial = 1:20
+for trial = 1
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -87,10 +87,10 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_10trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_10of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+        '_recenter',num2str(opt.Recenter),'/results_',num2str(trial)];
     
     %%% PARAMETER SELECTION SETUP
     % criterion = 'relaxed discrepancy';
@@ -101,7 +101,7 @@ for s_recenter = 2
     % '_X',opt.coefInit,num2str(opt.Xfixed),...
     % '_recenter',num2str(opt.Recenter)];
     %%%
-    selected_lam_s_inds = [0,9,12,21,30,37];
+    selected_lam_s_inds = [11,9,12,19,23,31];
     selected_lam_of_inds = [0,8,4,13,0,0];
     selected_lam_hs_inds = [0,2,5,2,0,0];
 

@@ -109,9 +109,7 @@ for i = 1:numel(matFileNames)
     lambda_vec(i,2) = outputs.lambda2;
     lambda_vec(i,3) = outputs.opt.Smoothness;
 end
-if sigma == 0
-    sigma = 5e-3;
-end
+
 % Normalized origin distance criterion
 switch criterion
     case 'discrepancy'
@@ -123,8 +121,13 @@ switch criterion
         [~,selInd] = min(crit);
         lambda_all = lambda_vec(selInd,:);
     case 'discrepancy range'
-        crit1 = error/(N*T) < relax_param*sigma^2;
-        crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        if sigma == 0
+            crit1 = error/(N*T) < 0.002^2;
+            crit2 = crit1;
+        else
+            crit1 = error/(N*T) < relax_param*sigma^2;
+            crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        end
         include = crit1 & crit2;
 
         if sum(include) == 0 % default to relaxed discrepancy

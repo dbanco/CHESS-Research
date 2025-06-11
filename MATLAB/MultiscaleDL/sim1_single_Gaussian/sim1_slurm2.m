@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
 lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
 
 % Experiment Setup
@@ -56,19 +56,16 @@ recenter = {0,1};
 % Noise level
 sig_ind = 1:6;
 
-% SELECTE PARAMETERS:
-selected_lam_s = [0,7,11,17,19,26];
-
 % Regularization parameters
 % ind1 = 11:15;
 % ind2 = [1,30,31];
 % ind3 = [5];
 
 ind1 = 1:106;
-% ind2 = 2:50;
-% ind3 = 2:6;
-ind2 = 1;
-ind3 = 1;
+ind2 = 2:26;
+ind3 = 2:6;
+% ind2 = 1;
+% ind3 = 1;
 
 k = 1;
 for s_dataset = 1
@@ -103,7 +100,7 @@ for s_recenter = 2
     % '_X',opt.coefInit,num2str(opt.Xfixed),...
     % '_recenter',num2str(opt.Recenter)];
     %%%
-    selected_lam_s_inds = [0,9,12,21,30,37];
+    selected_lam_s_inds = [6,9,12,22,29,31];
 
     for sig_i = sig_ind
         %%% PARAMETER SELECTION
@@ -113,7 +110,7 @@ for s_recenter = 2
         % j_s_select = find(lambdaVals == lambda_all(1));
         %%%
         j_s_select = selected_lam_s_inds(sig_i);
-        for j_s = ind1%j_s_select-2:j_s_select+2
+        for j_s = j_s_select
         % for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
