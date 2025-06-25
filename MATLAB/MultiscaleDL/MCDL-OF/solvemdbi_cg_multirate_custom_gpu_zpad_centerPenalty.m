@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(ah, rho, b, tol, mit, isn,N2,M,scales,NormVals,center,useGpu)
+function [x, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_centerPenalty(ah, rho, b, tol, mit, isn,N2,M,scales,NormVals,center,useGpu)
 
 % solvemdbi_ism -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -48,6 +48,14 @@ end
 K = size(b,3);
 asz = [1 M K];
 
+
+center = (M - 1) / 2;                % Center of support
+w = (0:M-1) - center;          % Distance weights
+w = w(:);                      % Ensure column vector
+wwT = w*w';
+
+comOp = @(in) wwT*reshape(in,asz(2:3));
+
 % GPU setup
 if useGpu
     ah = gpuArray(complex(ah));
@@ -70,7 +78,7 @@ end
 
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
-[xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u)+rho*u, b(:), tol, mit, [], [], isn);
+[xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u)+ comOp(u)/M + rho*u, b(:), tol, mit, [], [], isn);
 warning(wrn.state, 'MATLAB:ignoreImagPart');
 cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 
@@ -91,6 +99,6 @@ function out = wrapAhAcpu(in,N2,scales,ah,a,M,NormVals,center)
     A2 = padarray(A1,[0 M-1 0 0],0,'post');
     Ain = ifft2(sum(bsxfun(@times,ah,fft2( A2 )),3),'symmetric');
     Ain(:,1:M-1,:,:) = 0;
-    out = reSampleTransCustomArrayCenter(M,,scales,center,NormVals);
+    out = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, a, fft2(Ain)), 4),'symmetric'),scales,center,NormVals);
 end
 

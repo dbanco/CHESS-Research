@@ -1,4 +1,4 @@
-function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
+function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center3(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -258,7 +258,7 @@ end
 if opt.Recenter
     G = recenter_dictionary(G);
 end
-[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
+[AG,NormVals,Shifts] = reSampleCustomArrayCenter3(N2,G,scales,centerM);
 AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
 AGf = fft2(AGpad);
@@ -319,11 +319,11 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Solve D subproblem. Similarly, it would be simpler and more efficient to
     % solve for D using the main coefficient variable X as the coefficients,
     % but it appears to be more stable to use the shrunk coefficient variable Y
-    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals);
+    AYS = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals,Shifts);
     if ~opt.Dfixed && k > 1
         
-        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                          cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,centerM,opt.useGpu);
+        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(Yf, sigma, AYS + sigma*(G - H),...
+                          cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,Shifts,centerM,opt.useGpu);
         cgIters1 = cgst.pit;
         
         Df = fft2(D);
@@ -346,7 +346,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         end
 
         % Update alphas
-        [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
+        [AG,NormVals,Shifts] = reSampleCustomArrayCenter3(N2,G,scales,centerM);
         AG = padarray(AG,[0 M-1 0 0],0,'post');
         AGf = fft2(AG);
         AGSf = bsxfun(@times, conj(AGf), Sfpad);
@@ -512,26 +512,27 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
 
     % Plot dictionary progress
     if opt.plotDict
-        reconA = sum(bsxfun(@times,AGf,Yf),3);
+ 
         
         figure(freconA)
         plot(squeeze(S(:,:,:,10)))
         hold on
-        plot(squeeze(ifft2(reconA(:,:,:,10),'symmetric')))
+        plot(squeeze(recon(:,:,:,10)))
         hold off
         
         figure(xFig)
         ii = 1;
         for kk = 1:K
-            subplot(1,2,kk)
+            subplot(1,K,kk)
             Ui = size(scales{kk},2) + ii - 1;
             imagesc( squeeze(sum(Y(:,:,ii:Ui,:),3)) )
             ii = ii + Ui;
         end
+        pause()
     end 
 
     if opt.plotDict
-        AG = reSampleCustomArrayCenter(N2,G,scales,centerM);
+        AG = reSampleCustomArrayCenter3(N2,G,scales,centerM);
         plotDictUsage(AG,K,1,fdict);
         pause(0.0001)
     end    
@@ -708,7 +709,6 @@ for i = 1:num_atoms
     % Compute the center of mass of the atom
     actual_center = round((M+1)/2);
     t_center = computeCenterOfMass(D(1,:, i));
-    threshold = 0.1*max(D(1,:,i));
     
     % Compute the shift needed to center the atom
     shift = round(actual_center - t_center);

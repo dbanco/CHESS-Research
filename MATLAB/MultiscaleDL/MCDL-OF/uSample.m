@@ -13,10 +13,7 @@ else
         du = zeros(N1*m,N2);
         du(m*(1:N1),:) = d;
     end
-%     norm(du(:))
-%     figure(12)
-%     hold on
-%     plot(du(:,:,1))
+
     du = lowpassM(du,m,0);
     
 end

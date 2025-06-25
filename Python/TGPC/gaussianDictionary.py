@@ -93,6 +93,48 @@ def peakDictionaryFFT(P):
 
     return D
 
+def peakDictionarySeparable(P):
+    """
+    Generate zero-mean Gaussian basis function vectors with unit 2-norm.
+
+    Inputs:
+    - P: Dictionary parameters dictionary containing:
+        - P.N: signal dimensions
+        - P.K: Number of dictionary shapes for each dimensions [K1,K2,...]
+        - P.sigmas: Vector of width parameters for each dimension [sigs1,sigs2,...]
+
+    Outputs:
+    - D: Dictionary atoms [N, K]
+    """
+
+    D = [ np.zeros((P['N'][:],P['K'][k])) for k in len(P['K']) ]
+    for nk in len(D):
+        for k,sigk in enumerate(P['sigmas'][nk]):
+            D[nk][k] = gaussian_basis_wrap_1D(P['N'], np.floor(P['N'] / 2), sigk, '2-norm')
+
+    return D
+
+def peakDictionarySeparableFFT(P):
+    """
+    Generate zero-mean Gaussian basis function vectors with unit 2-norm.
+
+    Inputs:
+    - P: Dictionary parameters dictionary containing:
+        - P.N: signal dimensions
+        - P.K: Number of dictionary shapes for each dimensions [K1,K2,...]
+        - P.sigmas: Vector of width parameters for each dimension [sigs1,sigs2,...]
+
+    Outputs:
+    - D: Dictionary atoms [N, K]
+    """
+
+    D = [ np.zeros((P['N'][:],P['K'][k])) for k in len(P['K']) ]
+    for nk in len(D):
+        for k,sigk in enumerate(P['sigmas'][nk]):
+            D[nk][k] = np.fft.fft(gaussian_basis_wrap_1D(P['N'], np.floor(P['N'] / 2), sigk, '2-norm'))
+
+    return D
+
 def computeAWMV_1D(x, sigmas):
     # Inputs:
     # x - (N x K) array of fitted coefficients

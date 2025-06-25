@@ -1,4 +1,4 @@
-function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
+function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = gcmpdl_cg_OF_multiScales_gpu_zpad_center(D0, S, lambda, lambda2, opt, scales,Uvel,Vvel)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -83,7 +83,6 @@ function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_mu
 %   NonNegCoef       Flag indicating whether solution should be forced to
 %                    be non-negative
 %   ZeroMean         Force learned dictionary entries to be zero-mean
-%   Recenter         Recenters learned dictionary atom before sparse coding
 %
 %
 % Author: Brendt Wohlberg <brendt@lanl.gov>  Modified: 2015-12-18
@@ -93,7 +92,7 @@ function [D, Y, X, Dmin, Ymin, Uvel,Vvel,optinf, Jfn, relErr] = cbpdndl_cg_OF_mu
 % the library.
 
 
-if nargin < 4
+if nargin < 4,
   opt = [];
 end
 checkopt(opt, defaultopts([]));
@@ -104,18 +103,18 @@ hstr = ['Itn   Fnc       DFid      l1        OF        HS        XYU       DGH  
         'r(X)      s(X)      r(D)      s(D) '];
 sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
 nsep = 84;
-if opt.AutoRho
+if opt.AutoRho,
   hstr = [hstr '     rho'];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
-if opt.AutoSigma
+if opt.AutoSigma,
   hstr = [hstr '     sigma  '];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
 sfms = [sfms,'\n'];
-if opt.Verbose && opt.MaxMainIter > 0
+if opt.Verbose && opt.MaxMainIter > 0,
   disp(hstr);
   disp(char('-' * ones(1,nsep)));
 end
@@ -129,9 +128,9 @@ end
 % is only 3d.
 switch numel(size(S))
     case 4
-        [~,N2,~,T] = size(S);
+        [N1,N2,~,T] = size(S);
     case 3
-        [~,N2,T] = size(S);
+        [N1,N2,T] = size(S);
     otherwise
         error('Check size of S')
 end
@@ -142,12 +141,13 @@ for i = 1:numel(scales)
     KJ = KJ + size(scales{i},2);
 end
 J = KJ/K;
-centerM = round((M+1)/2);
+center = round((M+1)/2);
 xsz = [size(S,1) size(S,2) KJ T];
 % Insert singleton 3rd dimension (for number of filters) so that
 % 4th dimension is number of images in input s volume
 S = reshape(S, [size(S,1) size(S,2) 1 T]);
 Spad = padarray(S,[0 M-1 0 0],0,'pre');
+
 
 Nx = prod(xsz);
 Nd = prod(xsz(1:2))*size(D0,3);
@@ -172,9 +172,9 @@ PzpT = @(x) bcrop(x, dsz);
 Pnonneg = @(x) makeNonneg(x);
  
 % Projection of dictionary filters onto constraint set
-if opt.ZeroMean
+if opt.ZeroMean,
   Pcn = @(x) Pnrm(Pzp(Pzmn(PzpT(x))));
-elseif opt.NonnegativeDict
+elseif opt.NonnegativeDict,
   Pcn = @(x) removeNan(Pnrm(Pzp(PzpT(Pnonneg(x)))));
 else
   Pcn = @(x) Pnrm(Pzp(PzpT(x)));
@@ -192,17 +192,17 @@ Sfpad = fft2(Spad);
 
 % Set up algorithm parameters and initialise variables
 rho = opt.rho;
-if isempty(rho), rho = 50*lambda+1; end
-% if opt.AutoRho
-%   asgr = opt.RhoRsdlRatio;
-%   asgm = opt.RhoScaling;
-% end
+if isempty(rho), rho = 50*lambda+1; end;
+if opt.AutoRho,
+  asgr = opt.RhoRsdlRatio;
+  asgm = opt.RhoScaling;
+end
 sigma = opt.sigma;
-if isempty(sigma), sigma = size(S,3); end
-% if opt.AutoSigma
-%   asdr = opt.SigmaRsdlRatio;
-%   asdm = opt.SigmaScaling;
-% end
+if isempty(sigma), sigma = size(S,3); end;
+if opt.AutoSigma,
+  asdr = opt.SigmaRsdlRatio;
+  asdm = opt.SigmaScaling;
+end
 optinf = struct('itstat', [], 'opt', opt);
 rx = Inf;
 sx = Inf;
@@ -214,16 +214,14 @@ eprid = 0;
 eduad = 0;
 
 % Initialise main working variables
-if isempty(opt.Y0)
+if isempty(opt.Y0),
   Y = zeros(xsz, class(S));
 else
   Y = opt.Y0;
 end
 Yprv = Y;
-X = Y;
-X2 = Y;
-if isempty(opt.U0)
-  if isempty(opt.Y0)
+if isempty(opt.U0),
+  if isempty(opt.Y0),
     U = zeros(xsz, class(S));
   else
     U = (lambda/rho)*sign(Y);
@@ -232,17 +230,17 @@ else
   U = opt.U0;
 end
 
-if isempty(opt.G0)
+if isempty(opt.G0),
   G = Pzp(D);
 else
   G = opt.G0;
 end
 Gprv = G;
-if isempty(opt.H0)
+if isempty(opt.H0),
 %   if isempty(opt.G0),
     H = zeros(size(G), class(S));
 %   else
-%     H = G;rece
+%     H = G;
 %   end
 else
   H = opt.H0;
@@ -250,22 +248,14 @@ end
 
 if opt.plotDict
     fdict = figure;
-    % frecon = figure;
+    frecon = figure;
     freconA = figure;
     xFig = figure;
 end
 
-if opt.Recenter
-    G = recenter_dictionary(G);
-end
-[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
-AGpad = padarray(AG,[0 M-1 0 0],0,'post');
-
-AGf = fft2(AGpad);
-AGSf = bsxfun(@times, conj(AGf), Sfpad);
-AGS = ifft2(AGSf,'symmetric');
-AGS(:,1:M-1,:,:) = 0;
-AGSf = fft2(AGS);
+[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
+AG = padarray(AG,[0 M-1 0 0],0,'post');
+AGf = fft2(AG);
 Yf = fft2(Y);
 
 % Initial solution
@@ -274,12 +264,9 @@ tk = toc(tstart);
 Jcn = norm(vec(Pcn(D) - D));
 recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
 Jdf = sum(vec(abs(recon-S).^2))/2;
-switch opt.Penalty
-    case 'l1-norm'
-        Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-    case 'log'
-        Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
-end
+Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+Jlg1 = rho*sum((U(:)).^2);
+Jlg2 = sigma*sum((H(:)).^2);
 if lambda2 > 0
     [~,~,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
     [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
@@ -287,8 +274,6 @@ else
     Jhs = 0;
     Jof = 0;
 end
-Jlg1 = rho*sum((U(:)).^2);
-Jlg2 = sigma*sum((H(:)).^2);
 Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;% + Jlg1 + Jlg2;
 
 % Initial min solution
@@ -297,160 +282,52 @@ Gmin = G;
 minJfn = Jfn;
 minCount = 0;
 
-optinf.itstat = [optinf.itstat;...reSampleTrans
+optinf.itstat = [optinf.itstat;...
        [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
-  if opt.Verbose
+  if opt.Verbose,
     dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
-    if opt.AutoRho
+    if opt.AutoRho,
       dvc = [dvc rho];
     end
-    if opt.AutoSigma
+    if opt.AutoSigma,
       dvc = [dvc sigma];
     end
     fprintf(sfms, dvc);
   end
 
-
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%% Main loop %%%%%%%%%%
+% Main loop
 k = 1;
-while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
-    % Solve D subproblem. Similarly, it would be simpler and more efficient to
-    % solve for D using the main coefficient variable X as the coefficients,
-    % but it appears to be more stable to use the shrunk coefficient variable Y
-    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals);
-    if ~opt.Dfixed && k > 1
-        
-        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                          cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,centerM,opt.useGpu);
-        cgIters1 = cgst.pit;
-        
-        Df = fft2(D);
-        
-        clear YSf;
-        D = ifft2(Df, 'symmetric');
-        if strcmp(opt.LinSolve, 'SM'), clear Df; end
-        
-        % See pg. 21 of boyd-2010-distributed
-        if opt.DRelaxParam == 1
-            Dr = D;
-        else
-            Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
-        end
-        
-        % Solve G subproblem
-        G = Pcn(Dr + H);
-        if opt.Recenter
-            [G, ~] = recenter_dictionary(G);
-        end
-
-        % Update alphas
-        [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
-        AG = padarray(AG,[0 M-1 0 0],0,'post');
-        AGf = fft2(AG);
-        AGSf = bsxfun(@times, conj(AGf), Sfpad);
-        
-        % Update dual variable corresponding to D, G
-        H = H + Dr - G;
-        clear Dr;
-    else
-        cgIters1 = 0;
-    end
-
-    % Compute primal and dual residuals and stopping thresholds for D update
-    nD = norm(D(:)); nG = norm(G(:)); nH = norm(H(:));
-    if opt.StdResiduals
-        % See pp. 19-20 of boyd-2010-distributed
-        rd = norm(vec(D - G));
-        sd = norm(vec(sigma*(Gprv - G)));
-        eprid = sqrt(Nd)*opt.AbsStopTol+max(nD,nG)*opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol+sigma*nH*opt.RelStopTol;
-    else
-        % See wohlberg-2015-adaptive
-        rd = norm(vec(D - G))/max(nD,nG);
-        sd = norm(vec(Gprv - G))/nH;
-        eprid = sqrt(Nd)*opt.AbsStopTol/max(nD,nG)+opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol/(sigma*nH)+opt.RelStopTol;
-    end
-
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % [JfnX, JfnY, Jxupdate, Jxupdate2] = checkObjective(X,Y,U,AGf,AGSf,M,S,opt,lambda,lambda2,K,rho,Uvel,Vvel);
-    % fprintf('Obj after  DL: %9.2e, %9.2e, %9.2e, %9.2e \n',JfnX, JfnY, Jxupdate, Jxupdate2)
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+while k <= opt.MaxMainIter && (rx > eprix|sx > eduax|rd > eprid|sd >eduad),
     % Solve X subproblem. It would be simpler and more efficient (since the
     % DFT is already available) to solve for X using the main dictionary
     % variable D as the dictionary, but this appears to be unstable. Instead,
     % use the projected dictionary variable G
+
+    % Solve subproblem
+%     recon = sum(bsxfun(@times,AGf,Yf),3);
+%     Jdf1 = sum(vec(abs(recon-Sf).^2))
     if ~opt.Xfixed
-        withOF = k > opt.NoOFIters;
-        [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
-            opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu,withOF); 
-        cgIters2 = cgst.pit;
-        % [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, Sfpad, fft2(Y-U) ,...
-        %     opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
-        % cgIters2 = cgst.pit;
-        X = ifft2(Xf, 'symmetric');
-
-        %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % [JfnX, JfnY, Jxupdate, Jxupdate2] = checkObjective(X,Y,U,AGf,AGSf,M,S,opt,lambda,lambda2,K,rho,Uvel,Vvel);
-        % fprintf('Obj after CSC: %9.2e, %9.2e, %9.2e, %9.2e \n',JfnX, JfnY, Jxupdate, Jxupdate2)
-        %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        clear Xf;
-        
-        % See pg. 21 of boyd-2010-distributed
-        if opt.XRelaxParam == 1
-            Xr = X;
-        else
-            Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
-        end
-        
-        % Solve Y subproblem
-        switch opt.Penalty
-            case 'l1-norm'
-                Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
-            case 'log'
-                Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight,opt.a);
-        end
-        if opt.NonNegCoef
-            Y(Y < 0) = 0;
-        end
-        
-        if opt.NoBndryCross
-            %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
-            Y((end-size(D0,1)+2):end,:,:,:) = 0;
-            %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
-            Y(:,(end-size(D0,2)+2):end,:,:) = 0;
-        end
-        Yf = fft2(Y);
-
-        % Sparsity term
-        switch opt.Penalty
-            case 'l1-norm'
-                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-            case 'log'
-                Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
-        end
-    
-        % Update dual variable corresponding to X, Y, Z
-        U = U + Xr - Y;
-        clear DPXr Xr;
-    else
-        X = Y;
-        cgIters2 = 0;
+        cgIters2 = 1;
+        X = solveCMP(AG, S, opt);
+        clear Xf AGf AGSf;
+        Y = X; 
     end
+    
+    Yf = fft2(Y);
+    AGf = fft2(AG);
+    reconA = ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric');
 
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % [JfnX, JfnY, Jxupdate, Jxupdate2] = checkObjective(X,Y,U,AGf,AGSf,M,S,opt,lambda,lambda2,K,rho,Uvel,Vvel);
-    % fprintf('Obj after XYU: %9.2e, %9.2e, %9.2e, %9.2e \n',JfnX, JfnY, Jxupdate, Jxupdate2)
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    figure(1)
+    plot(squeeze(reconA(:,M:N2+M-1,:,10)))
+    hold on
+    plot(squeeze(S(:,:,:,10)))
+
+    figure(2)
+    imagesc(squeeze(sum(X,[1,2])))
 
     % Compute primal and dual residuals and stopping thresholds for X update
     nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
-    if opt.StdResiduals
+    if opt.StdResiduals,
         % See pp. 19-20 of boyd-2010-distributed
         rx = norm(vec(X - Y));
         sx = norm(vec(rho*(Yprv - Y)));
@@ -464,13 +341,68 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
     end
 
-    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2);
+    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2); ;
     
     % Update record of previous step Y
     Yprv = Y;
     
+    % Solve D subproblem. Similarly, it would be simpler and more efficient to
+    % solve for D using the main coefficient variable X as the coefficients,
+    % but it appears to be more stable to use the shrunk coefficient variable Y
+    Yf = fft2(Y);
+    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
+    if ~opt.Dfixed
+        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
+                          cgt, opt.MaxCGIter, D(:),N2,M,scales,NormVals,center,opt.useGpu);
+        cgIters1 = cgst.pit;
+        Df = fft2(D);
+        
+        clear YSf;
+        D = ifft2(Df, 'symmetric');
+        if strcmp(opt.LinSolve, 'SM'), clear Df; end
+        
+        % See pg. 21 of boyd-2010-distributed
+        if opt.DRelaxParam == 1,
+            Dr = D;
+        else
+            Dr = opt.DRelaxParam*D + (1-opt.DRelaxParam)*G;
+        end
+        
+        % Solve G subproblem
+        G = Pcn(Dr + H);
+    else
+        D = G;
+        Dr = G;
+        cgIters1 = 0;
+    end
+    
+    % Update alphas
+    [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
+    AG = padarray(AG,[0 M-1 0 0],0,'post');
+    AGf = fft2(AG);
+    
+    % Update dual variable corresponding to D, G
+    H = H + Dr - G;
+    clear Dr;
+    
+    % Compute primal and dual residuals and stopping thresholds for D update
+    nD = norm(D(:)); nG = norm(G(:)); nH = norm(H(:));
+    if opt.StdResiduals,
+        % See pp. 19-20 of boyd-2010-distributed
+        rd = norm(vec(D - G));
+        sd = norm(vec(sigma*(Gprv - G)));
+        eprid = sqrt(Nd)*opt.AbsStopTol+max(nD,nG)*opt.RelStopTol;
+        eduad = sqrt(Nd)*opt.AbsStopTol+sigma*nH*opt.RelStopTol;
+    else
+        % See wohlberg-2015-adaptive
+        rd = norm(vec(D - G))/max(nD,nG);
+        sd = norm(vec(Gprv - G))/nH;
+        eprid = sqrt(Nd)*opt.AbsStopTol/max(nD,nG)+opt.RelStopTol;
+        eduad = sqrt(Nd)*opt.AbsStopTol/(sigma*nH)+opt.RelStopTol;
+    end
+    
     % Apply CG auto tolerance policy if enabled
-    if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt
+    if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt,
         cgt = rd/opt.CGTolFactor;
     end
 
@@ -490,13 +422,8 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     Jdf = sum(vec(abs(recon-S).^2))/2;
     
     % Sparsity term
-    switch opt.Penalty
-        case 'l1-norm'
-            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-        case 'log'
-            Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
-    end
-
+    Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+    
     % Optical flow terms
     if lambda2 > 0
         [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,opt.Smoothness/lambda2);
@@ -506,7 +433,6 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     end
     
     Jlg2 = sigma/2*sum((D(:)-G(:)+H(:)).^2) - sigma/2*sum(H(:).^2);
-
     % Full objective
     Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
 
@@ -515,7 +441,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         reconA = sum(bsxfun(@times,AGf,Yf),3);
         
         figure(freconA)
-        plot(squeeze(S(:,:,:,10)))
+        plot(squeeze(Spad(:,:,:,10)))
         hold on
         plot(squeeze(ifft2(reconA(:,:,:,10),'symmetric')))
         hold off
@@ -528,11 +454,19 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             imagesc( squeeze(sum(Y(:,:,ii:Ui,:),3)) )
             ii = ii + Ui;
         end
+
+        ii = 1;
+        for kk = 1:K
+            subplot(1,2,kk)
+            Ui = size(scales{kk},2) + ii - 1;
+            imagesc( squeeze(sum(Y(:,:,ii:Ui,:),3)) )
+            ii = ii + Ui;
+        end
     end 
 
     if opt.plotDict
-        AG = reSampleCustomArrayCenter(N2,G,scales,centerM);
-        plotDictUsage(AG,K,1,fdict);
+        AGplot = reSampleCustomArrayCenter(N2,G,scales,center);
+        plotDictUsage(AGplot,K,1,fdict);
         pause(0.0001)
     end    
     
@@ -553,18 +487,12 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     optinf.itstat = [optinf.itstat;...
     [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
     if opt.Verbose
-        if opt.AutoRho && opt.AutoSigma
-            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, rho, sigma];
-        elseif opt.AutoSigma
-            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, sigma];
-        elseif opt.AutoRho
-            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, rho];
-        else
-            dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd];
+        dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, cgIters1,cgIters2, rx, sx, rd, sd];
+        if opt.AutoRho
+            dvc = [dvc rho];
+        end
+        if opt.AutoSigma
+            dvc = [dvc sigma];
         end
         fprintf(sfms, dvc);
     end
@@ -586,9 +514,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
       U = U/rsf;
     end
   end
-  if opt.AutoSigma
-    if k ~= 1 && mod(k, opt.AutoSigmaPeriod) == 0
-      if opt.AutoSigmaScaling
+  if opt.AutoSigma,
+    if k ~= 1 && mod(k, opt.AutoSigmaPeriod) == 0,
+      if opt.AutoSigmaScaling,
         sigmlt = sqrt(rd/sd);
         if sigmlt < 1, sigmlt = 1/sigmlt; end
         if sigmlt > opt.SigmaScaling, sigmlt = opt.SigmaScaling; end
@@ -621,9 +549,9 @@ optinf.lambda = lambda;
 optinf.rho = rho;
 optinf.sigma = sigma;
 optinf.cgt = cgt;
-if exist('cgst','var'), optinf.cgst = cgst; end
+if exist('cgst'), optinf.cgst = cgst; end
 
-if opt.Verbose && opt.MaxMainIter > 0
+if opt.Verbose && opt.MaxMainIter > 0,
   disp(char('-' * ones(1,nsep)));
 end
 
@@ -633,14 +561,17 @@ end
 
 return
 
+
 function u = vec(v)
 
   u = v(:);
 
 return
 
+
 function u = shrink(v, lambda)
-  if isscalar(lambda)
+
+  if isscalar(lambda),
     u = sign(v).*max(0, abs(v) - lambda);
   else
     u = sign(v).*max(0, bsxfun(@minus, abs(v), lambda));
@@ -648,28 +579,18 @@ function u = shrink(v, lambda)
 
 return
 
-function u = log_shrink(v, lambda, a)
-    low_v = v < lambda;
-    y1 = abs(v)/2 - 1/(2*a);
-    y2 = abs(v)/2 + 1/(2*a);
-    u = sign(v).*(y1 + sqrt( y2.^2 - lambda/a));
-    u(low_v) = 0;
+function u = zpad(v, sz)
+
+  u = zeros(sz(1), sz(2), size(v,3), size(v,4), class(v));
+  u(1:size(v,1), 1:size(v,2),:,:) = v;
+
 return
 
-% function u = atan_shrink(v, lambda)
-% a = 0.2;
-% u = 2/(a*sqrt(3))*(atan((1+2*a*(abs(v)-lambda))/sqrt(3))-pi/6);
-% return
-
-% function u = zpad(v, sz)
-%   u = zeros(sz(1), sz(2), size(v,3), size(v,4), class(v));
-%   u(1:size(v,1), 1:size(v,2),:,:) = v;
-% return
 
 function u = bcrop(v, sz)
 
-  if numel(sz) <= 2
-    if isscalar(sz)
+  if numel(sz) <= 2,
+    if numel(sz) == 1
       cs = [sz sz];
     else
       cs = sz;
@@ -678,7 +599,7 @@ function u = bcrop(v, sz)
   else
     cs = max(sz,[],2);
     u = zeros(cs(1), cs(2), size(v,3), class(v));
-    for k = 1:size(v,3)
+    for k = 1:size(v,3),
       u(1:sz(1,k), 1:sz(2,k), k) = v(1:sz(1,k), 1:sz(2,k), k);
     end
   end
@@ -695,168 +616,120 @@ function y = removeNan(x)
     y(isnan(x))=0;
 return
 
-function [D, shifts] = recenter_dictionary(D)
-% Recenter each atom in the dictionary D
-% D: Dictionary matrix (atoms in columns)
-% G: Coefficient matrix (optional, updated accordingly)
-
-[~, M, num_atoms] = size(D); % Number of atoms
-
-shifts = zeros(num_atoms,1);
-
-for i = 1:num_atoms
-    % Compute the center of mass of the atom
-    actual_center = round((M+1)/2);
-    t_center = computeCenterOfMass(D(1,:, i));
-    threshold = 0.1*max(D(1,:,i));
-    
-    % Compute the shift needed to center the atom
-    shift = round(actual_center - t_center);
-    
-    if abs(shift) > 0
-        D(1,:, i) = circshift(D(1,:, i), shift, 2);
-        shifts(i) = shift;
-        % if all(D(1,1:abs(shift),i)<threshold) || all(D(1,end-abs(shift):end,i)<threshold)
-        %     shifts(i) = shift;
-        %     % Circularly shift the atom
-        %     D(1,:, i) = circshift(D(1,:, i), shift, 2);
-        % else
-        %     shifts(i) = 0;
-        % end
-    else
-        shifts(i) = 0;
-    end
-    
-end
-
-function X = shift_array(X,shifts,J)
-    for i = 1:numel(shifts)
-        i1 = i + J*(i-1);
-        i2 = J*i;
-        X(:,:,i1:i2,:) = circshift(X(:,:,i1:i2,:), shifts(i), 2);
-    end
-return
-
-function t_center = computeCenterOfMass(atom)
-    % atom: 1D array representing learned atom
-    L = length(atom);
-    t = 1:L;
-    t_center = sum(t .* abs(atom)) / sum(abs(atom));
-return
-
 function opt = defaultopts(opt)
-  if ~isfield(opt,'Verbose')
+
+  if ~isfield(opt,'Verbose'),
     opt.Verbose = 0;
   end
-  if ~isfield(opt,'MaxMainIter')
+  if ~isfield(opt,'MaxMainIter'),
     opt.MaxMainIter = 1000;
   end
-  if ~isfield(opt,'AbsStopTol')
+  if ~isfield(opt,'AbsStopTol'),
     opt.AbsStopTol = 1e-5;
   end
-  if ~isfield(opt,'RelStopTol')
+  if ~isfield(opt,'RelStopTol'),
     opt.RelStopTol = 1e-3;
   end
-  if ~isfield(opt,'L1Weight')
+  if ~isfield(opt,'L1Weight'),
     opt.L1Weight = 1;
   end
-  if ~isfield(opt,'Y0')
+  if ~isfield(opt,'Y0'),
     opt.Y0 = [];
   end
-  if ~isfield(opt,'U0')
+  if ~isfield(opt,'U0'),
     opt.U0 = [];
   end
-  if ~isfield(opt,'Z0')
+  if ~isfield(opt,'Z0'),
     opt.Z0 = [];
   end
-  if ~isfield(opt,'V0')
+  if ~isfield(opt,'V0'),
     opt.V0 = [];
   end
-  if ~isfield(opt,'G0')
+  if ~isfield(opt,'G0'),
     opt.G0 = [];
   end
-  if ~isfield(opt,'H0')
+  if ~isfield(opt,'H0'),
     opt.H0 = [];
   end
-  if ~isfield(opt,'rho')
+  if ~isfield(opt,'rho'),
     opt.rho = [];
   end
-  if ~isfield(opt,'AutoRho')
+  if ~isfield(opt,'AutoRho'),
     opt.AutoRho = 0;
   end
-  if ~isfield(opt,'AutoRhoPeriod')
+  if ~isfield(opt,'AutoRhoPeriod'),
     opt.AutoRhoPeriod = 10;
   end
-  if ~isfield(opt,'RhoRsdlRatio')
+  if ~isfield(opt,'RhoRsdlRatio'),
     opt.RhoRsdlRatio = 10;
   end
-  if ~isfield(opt,'RhoScaling')
+  if ~isfield(opt,'RhoScaling'),
     opt.RhoScaling = 2;
   end
-  if ~isfield(opt,'AutoRhoScaling')
+  if ~isfield(opt,'AutoRhoScaling'),
     opt.AutoRhoScaling = 0;
   end
-  if ~isfield(opt,'sigma')
+  if ~isfield(opt,'sigma'),
     opt.sigma = [];
   end
-  if ~isfield(opt,'AutoSigma')
+  if ~isfield(opt,'AutoSigma'),
     opt.AutoSigma = 0;
   end
-  if ~isfield(opt,'AutoSigmaPeriod')
+  if ~isfield(opt,'AutoSigmaPeriod'),
     opt.AutoSigmaPeriod = 10;
   end
-  if ~isfield(opt,'SigmaRsdlRatio')
+  if ~isfield(opt,'SigmaRsdlRatio'),
     opt.SigmaRsdlRatio = 10;
   end
-  if ~isfield(opt,'SigmaScaling')
+  if ~isfield(opt,'SigmaScaling'),
     opt.SigmaScaling = 2;
   end
-  if ~isfield(opt,'AutoSigmaScaling')
+  if ~isfield(opt,'AutoSigmaScaling'),
     opt.AutoSigmaScaling = 0;
   end
-  if ~isfield(opt,'StdResiduals')
-    opt.StdResiduals = 1;
+  if ~isfield(opt,'StdResiduals'),
+    opt.StdResiduals = 0;
   end
-  if ~isfield(opt,'XRelaxParam')
+  if ~isfield(opt,'XRelaxParam'),
     opt.XRelaxParam = 1;
   end
-  if ~isfield(opt,'DRelaxParam')
+  if ~isfield(opt,'DRelaxParam'),
     opt.DRelaxParam = 1;
   end
-  if ~isfield(opt,'LinSolve')
+  if ~isfield(opt,'LinSolve'),
     opt.LinSolve = 'SM';
   end
-  if ~isfield(opt,'MaxCGIter')
+  if ~isfield(opt,'MaxCGIter'),
     opt.MaxCGIter = 1000;
   end
-  if ~isfield(opt,'CGTol')
+  if ~isfield(opt,'CGTol'),
     opt.CGTol = 1e-3;
   end
-  if ~isfield(opt,'CGTolX')
+  if ~isfield(opt,'CGTolX'),
     opt.CGTolX = 1e-3;
   end
-  if ~isfield(opt,'CGTolAuto')
+  if ~isfield(opt,'CGTolAuto'),
     opt.CGTolAuto = 0;
   end
-  if ~isfield(opt,'CGTolAutoFactor')
+  if ~isfield(opt,'CGTolAutoFactor'),
     opt.CGTolFactor = 50;
   end
-  if ~isfield(opt,'NoBndryCross')
+  if ~isfield(opt,'NoBndryCross'),
     opt.NoBndryCross = 0;
   end
-  if ~isfield(opt,'DictFilterSizes')
+  if ~isfield(opt,'DictFilterSizes'),
     opt.DictFilterSizes = [];
   end
-  if ~isfield(opt,'NonNegCoef')
+  if ~isfield(opt,'NonNegCoef'),
     opt.NonNegCoef = 0;
   end
-  if ~isfield(opt,'ZeroMean')
+  if ~isfield(opt,'ZeroMean'),
     opt.ZeroMean = 0;
   end
-  if ~isfield(opt,'NonnegativeDict')
+  if ~isfield(opt,'NonnegativeDict'),
     opt.NonnegativeDict = 0;
   end
-  if ~isfield(opt,'plotDict')
+  if ~isfield(opt,'plotDict'),
     opt.plotDict = 0;
   end
   if ~isfield(opt,'useGpu')
@@ -867,11 +740,5 @@ function opt = defaultopts(opt)
   end
   if ~isfield(opt,'Dfixed')
       opt.Dfixed = 0;
-  end
-  if ~isfield(opt,'Penalty')
-      opt.Penalty = 'l1-norm';
-  end
-  if ~isfield(opt,'Recenter')
-      opt.Recenter = 0;
   end
 return

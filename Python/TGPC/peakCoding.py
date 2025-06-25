@@ -8,6 +8,8 @@ Created on Tue Feb 20 11:48:32 2024
 import numpy as np
 import matrixOpsTGPC as mat
 
+# def auto_noise_estimation(B,)
+
 def conjGrad_TVphi_1D(A0, B, Bnorms, X_init, YV, ZU, params):
     """
     Solves linear system:
