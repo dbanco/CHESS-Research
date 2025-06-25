@@ -1,4 +1,4 @@
-function [x, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(ah, rho, b, tol, mit, isn,N2,M,scales,NormVals,center,useGpu)
+function [x, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(ah, rho, b, tol, mit, isn,N2,M,scales,NormVals,Shifts,center,useGpu)
 
 % solvemdbi_ism -- Solve a multiple diagonal block linear system with a
 %                  scaled identity term using CG
@@ -54,11 +54,11 @@ if useGpu
     a = conj(ah);
     b = gpuArray(complex(b));
     isn = gpuArray(complex(isn));
-    AhAvop = @(in) vec(wrapAhAgpu(reshape(in, asz),N2,scales,ah,a,M,NormVals,center));
+    AhAvop = @(in) vec(wrapAhAgpu(reshape(in, asz),N2,scales,ah,a,M,NormVals,Shifts,center));
 
 else
     a = conj(ah);
-    AhAvop = @(in) vec(wrapAhAcpu(reshape(in, asz),N2,scales,ah,a,M,NormVals,center));
+    AhAvop = @(in) vec(wrapAhAcpu(reshape(in, asz),N2,scales,ah,a,M,NormVals,Shifts,center));
 end
 
 % Aop = @(in) ifft2(sum(bsxfun(@times,ah,fft2( reSampleNu(N2,in,c1,c2,Ufactors) )),3),'symmetric');
@@ -78,19 +78,19 @@ x = reshape(xv, asz);
 
 end
 
-function out = wrapAhAgpu(in,N2,scales,ah,a,M,NormVals,center)
-    A1 = reSampleCustomArrayCenter(N2,in,scales,center,NormVals);
+function out = wrapAhAgpu(in,N2,scales,ah,a,M,NormVals,Shifts,center)
+    A1 = reSampleCustomArrayCenter3(N2,in,scales,center,NormVals);
     A2 = padarray(A1,[0 M-1 0 0],0,'post');
     Ain = ifft2(sum(pagefun(@times,ah,fft2( A2 )),3),'symmetric');
     Ain(:,1:M-1,:,:) = 0;
-    out = reSampleTransCustomArrayCenter(M,ifft2(sum(pagefun(@times, a, fft2(Ain)), 4),'symmetric'),scales,center,NormVals);
+    out = reSampleTransCustomArrayCenter3(M,ifft2(sum(pagefun(@times, a, fft2(Ain)), 4),'symmetric'),scales,center,NormVals,Shifts);
 end
 
-function out = wrapAhAcpu(in,N2,scales,ah,a,M,NormVals,center)
-    A1 = reSampleCustomArrayCenter(N2,in,scales,center,NormVals);
+function out = wrapAhAcpu(in,N2,scales,ah,a,M,NormVals,Shifts,center)
+    A1 = reSampleCustomArrayCenter3(N2,in,scales,center,NormVals);
     A2 = padarray(A1,[0 M-1 0 0],0,'post');
     Ain = ifft2(sum(bsxfun(@times,ah,fft2( A2 )),3),'symmetric');
     Ain(:,1:M-1,:,:) = 0;
-    out = reSampleTransCustomArrayCenter(M,,scales,center,NormVals);
+    out = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, a, fft2(Ain)), 4),'symmetric'),scales,center,NormVals,Shifts);
 end
 

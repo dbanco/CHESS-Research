@@ -142,12 +142,13 @@ for i = 1:numel(scales)
     KJ = KJ + size(scales{i},2);
 end
 J = KJ/K;
-centerM = round((M+1)/2);
+center = round((M+1)/2);
 xsz = [size(S,1) size(S,2) KJ T];
 % Insert singleton 3rd dimension (for number of filters) so that
 % 4th dimension is number of images in input s volume
 S = reshape(S, [size(S,1) size(S,2) 1 T]);
 Spad = padarray(S,[0 M-1 0 0],0,'pre');
+
 
 Nx = prod(xsz);
 Nd = prod(xsz(1:2))*size(D0,3);
@@ -258,7 +259,7 @@ end
 if opt.Recenter
     G = recenter_dictionary(G);
 end
-[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
+[AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
 AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
 AGf = fft2(AGpad);
@@ -297,7 +298,7 @@ Gmin = G;
 minJfn = Jfn;
 minCount = 0;
 
-optinf.itstat = [optinf.itstat;...reSampleTrans
+optinf.itstat = [optinf.itstat;...
        [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
   if opt.Verbose
     dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
@@ -319,11 +320,11 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Solve D subproblem. Similarly, it would be simpler and more efficient to
     % solve for D using the main coefficient variable X as the coefficients,
     % but it appears to be more stable to use the shrunk coefficient variable Y
-    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals);
+    AYS = reSampleTransCustomArrayCenter(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,center,NormVals);
     if ~opt.Dfixed && k > 1
         
-        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center(Yf, sigma, AYS + sigma*(G - H),...
-                          cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,centerM,opt.useGpu);
+        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_centerPenalty(Yf, sigma, AYS + sigma*(G - H),...
+                          cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,center,opt.useGpu);
         cgIters1 = cgst.pit;
         
         Df = fft2(D);
@@ -346,7 +347,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         end
 
         % Update alphas
-        [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,centerM);
+        [AG,NormVals] = reSampleCustomArrayCenter(N2,G,scales,center);
         AG = padarray(AG,[0 M-1 0 0],0,'post');
         AGf = fft2(AG);
         AGSf = bsxfun(@times, conj(AGf), Sfpad);
@@ -531,7 +532,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     end 
 
     if opt.plotDict
-        AG = reSampleCustomArrayCenter(N2,G,scales,centerM);
+        AG = reSampleCustomArrayCenter(N2,G,scales,center);
         plotDictUsage(AG,K,1,fdict);
         pause(0.0001)
     end    

@@ -23,8 +23,8 @@ switch opt.dictInit
     case 'flat'
         D0 = zeros(1,M,K);
         for k = 1:K
-            i1 = round(M*(0.5 - 0.5*k/K) + 1);
-            i2 = round(M*(0.5 + 0.5*k/K));
+            i1 = round(M*(0.5 - 0.9*0.5*k/K) + 1);
+            i2 = round(M*(0.5 + 0.9*0.5*k/K));
             D0(1,i1:i2,k) = k;
             D0(1,:,k) = Pnrm(D0(1,:,k));
         end

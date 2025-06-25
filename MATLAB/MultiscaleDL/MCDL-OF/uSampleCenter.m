@@ -15,10 +15,6 @@ else
         inds = [fliplr(center-m:-m:1),center:m:m*N1];
         du(inds,:) = d;
     end
-%     norm(du(:))
-%     figure(12)
-%     hold on
-%     plot(du(:,:,1))
     du = lowpassM(du,m,0);
     
 end
