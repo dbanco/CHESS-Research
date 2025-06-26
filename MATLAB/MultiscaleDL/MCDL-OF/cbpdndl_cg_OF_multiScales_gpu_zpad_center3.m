@@ -153,8 +153,7 @@ Nx = prod(xsz);
 Nd = prod(xsz(1:2))*size(D0,3);
 cgt = opt.CGTol;
 
-% Dictionary size may be specified when learning multiscale
-% dictionary
+% Dictionary size
 if isempty(opt.DictFilterSizes)
   dsz = [size(D0,1) size(D0,2)];
 else
@@ -221,7 +220,7 @@ else
 end
 Yprv = Y;
 X = Y;
-X2 = Y;
+
 if isempty(opt.U0)
   if isempty(opt.Y0)
     U = zeros(xsz, class(S));

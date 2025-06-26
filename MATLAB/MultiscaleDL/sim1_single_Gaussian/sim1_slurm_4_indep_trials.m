@@ -57,7 +57,7 @@ recenter = {0,1};
 sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
-selected_lam_s = [0,7,11,17,19,26];
+selected_lam_s = [5,8,18,26,40,49];
 
 % Regularization parameters
 % ind1 = 11:15;
@@ -87,7 +87,7 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_10trialsof_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_25of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_',num2str(trial)];
@@ -101,9 +101,9 @@ for s_recenter = 2
     % '_X',opt.coefInit,num2str(opt.Xfixed),...
     % '_recenter',num2str(opt.Recenter)];
     %%%
-    selected_lam_s_inds = [6,9,12,22,29,31];
-    selected_lam_of_inds = [6,9,13,3,8,11];
-    selected_lam_hs_inds = [2,2,2,5,5,3];
+    selected_lam_s_inds = [5,8,18,26,40,49];
+    % selected_lam_of_inds = [6,9,13,3,8,11];
+    % selected_lam_hs_inds = [2,2,2,5,5,3];
 
     for sig_i = 1:6
         %%% PARAMETER SELECTION

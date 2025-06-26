@@ -21,7 +21,7 @@ s1 = 2;
 s2 = 1;
 s3 = 2;
 s4 = 1;
-s5 = 2;
+s5 = 1;
 dataset = datasets{s0};
 opt.Penalty = penalties{s1};
 opt.coefInit = xinits{s2};
@@ -29,7 +29,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_6_10_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_6_25indep_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -49,7 +49,7 @@ useMin = 1;
 relax_param = 1.1;
 sig_ind = 1:6;
 for n = sig_ind
-    inDir = [topDir,'\results_sig_',num2str(n)];
+    inDir = [topDir,'\results_1_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
     selected_lam_s_vec(n) = lambda_all(1);
@@ -67,7 +67,7 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors
-dirStartS = 'results';
+dirStartS = 'results_1';
 [noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
 
 figure()
@@ -82,7 +82,7 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim1_lam_s_6_10',...
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim1_lam_s_6_25indep',...
            '_relax_',num2str(relax_param),...
            '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
 titleStr = ['Sim 1 Param Select,',dirStartS];

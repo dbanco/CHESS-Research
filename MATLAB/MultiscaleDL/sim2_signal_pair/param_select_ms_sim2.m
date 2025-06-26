@@ -25,7 +25,7 @@ s1 = 2;
 s2 = 1;
 s3 = 2;
 s4 = 1;
-s5 = 2;
+s5 = 1;
 dataset = datasets{s0};
 opt.Penalty = penalties{s1};
 opt.coefInit = xinits{s2};
@@ -34,7 +34,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_6_4_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_25indep_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -58,7 +58,7 @@ objectives = cell(NN,1);
 sig_ind = 1:6;
 
 for n = sig_ind
-    inDir = [topDir,'\results_sig_',num2str(n)];
+    inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
     [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param,true);
     selected_lam_s_vec(n) = lambda_all(1);
@@ -76,7 +76,7 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors ( Make this be part of the powerpoint that is outputted)
-dirStartS = 'results';
+dirStartS = 'results_trial_1';
 [noiseNorm,trueErr1,dataErr1,l0_norm1,trueErr2,dataErr2,l0_norm2] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
 
 figure()

@@ -91,6 +91,6 @@ function out = wrapAhAcpu(in,N2,scales,ah,a,M,NormVals,center)
     A2 = padarray(A1,[0 M-1 0 0],0,'post');
     Ain = ifft2(sum(bsxfun(@times,ah,fft2( A2 )),3),'symmetric');
     Ain(:,1:M-1,:,:) = 0;
-    out = reSampleTransCustomArrayCenter(M,,scales,center,NormVals);
+    out = reSampleTransCustomArrayCenter(M,scales,center,NormVals);
 end
 
