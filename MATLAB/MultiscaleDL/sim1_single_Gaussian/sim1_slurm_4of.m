@@ -87,13 +87,14 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_25of_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_26of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_',num2str(trial)];
     
 
-    selected_lam_s_inds = [5,8,18,26,40,49];
+    % selected_lam_s_inds = [5,8,18,26,40,49]; % for 6_25indep
+    selected_lam_s_inds = [5,7,14,27,35,44];
 
     for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
