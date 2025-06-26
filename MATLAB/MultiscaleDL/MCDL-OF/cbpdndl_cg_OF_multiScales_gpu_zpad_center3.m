@@ -263,7 +263,7 @@ AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 AGf = fft2(AGpad);
 AGSf = bsxfun(@times, conj(AGf), Sfpad);
 AGS = ifft2(AGSf,'symmetric');
-AGS(:,1:M-1,:,:) = 0;
+% AGS(:,1:M-1,:,:) = 0;
 AGSf = fft2(AGS);
 Yf = fft2(Y);
 
