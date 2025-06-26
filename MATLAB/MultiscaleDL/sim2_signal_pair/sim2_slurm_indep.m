@@ -48,7 +48,7 @@ scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
 J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper';
+funcName = 'sim_mcdlof_wrapper3';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
@@ -75,12 +75,12 @@ ind3 = 2:6;
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trial = 1:50
+for trial = 1
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
-for s_recenter = 2
+for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -91,23 +91,23 @@ for s_recenter = 2
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_6_4indep_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_25indep_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
-    selected_lam_s_inds = [43,44,55,58,65,69];
+    % selected_lam_s_inds = [43,44,55,58,65,69];
     % selected_lam_s_inds = [43,43,56,58,66,70];
     % selected_lam_of_inds = [3,3,5,13,7,20];
     % selected_lam_hs_inds = [6,5,3,4,2,6];
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-        j_s_select = selected_lam_s_inds(sig_i);
+        % j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = j_s_select
+        for j_s = ind1
         for j_of = 1
         for j_hs = 1
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
