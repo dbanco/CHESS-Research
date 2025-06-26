@@ -42,7 +42,7 @@ scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
 J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper';
+funcName = 'sim_mcdlof_wrapper3';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
@@ -65,7 +65,7 @@ selected_lam_s = [5,8,18,26,40,49];
 % ind3 = [5];
 
 % ind1 = 1:106;
-ind2 = 2:25;
+ind2 = 2:26;
 ind3 = 2:6;
 
 k = 1;
