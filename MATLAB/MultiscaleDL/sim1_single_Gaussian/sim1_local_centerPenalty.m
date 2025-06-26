@@ -10,7 +10,7 @@ sigmas = 0:0.01:0.1;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;%1000;
+opt.MaxMainIter = 50;%1000;
 opt.MaxCGIter = 100;
 opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
@@ -78,7 +78,7 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\\Outputs_6_25_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_6_26c_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),'\\',...
         dataset,'_',opt.Penalty,'_results'];

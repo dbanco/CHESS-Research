@@ -59,7 +59,7 @@ else
     Ahop = @(u) bsxfun(@times, ah, u);
 end
 
-AhAvop = @(u) vec(Ahop(fft2(maskPad(Aop(reshape(u, xsz)),M))));
+AhAvop = @(u) vec(Ahop(fft2(Aop(reshape(u, xsz))))); % This is where maskPad was
 AhAvop2 = @(u) vec(fft2(opticalFlowOp(real(ifft2(reshape(u,xsz),'symmetric')),U,V,K,1) ));
 
 wrn = warning('query','MATLAB:ignoreImagPart');
@@ -80,6 +80,6 @@ x = reshape(xv, xsz);
 
 end
 
-function u = maskPad(u,M)
-u(:,1:M-1,:,:) = 0;
-end
+% function u = maskPad(u,M)
+% u(:,1:M-1,:,:) = 0;
+% end
