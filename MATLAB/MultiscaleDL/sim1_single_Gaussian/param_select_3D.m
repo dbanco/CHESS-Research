@@ -134,7 +134,7 @@ switch criterion
             crit = abs(error/(N*T) - relax_param*sigma^2);
             [~,selInd] = min(crit);
             lambda_all = lambda_vec(selInd,:);
-            error('No solution in discrepancy range');
+            % error('No solution in discrepancy range');
         else 
             % crit3 = l0_norm;
             crit3 = log_penalty;

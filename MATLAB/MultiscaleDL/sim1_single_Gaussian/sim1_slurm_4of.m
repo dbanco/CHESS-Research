@@ -1,8 +1,8 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,50)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -57,7 +57,7 @@ recenter = {0,1};
 sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
-selected_lam_s = [0,7,11,17,19,26];
+selected_lam_s = [5,8,18,26,40,49];
 
 % Regularization parameters
 % ind1 = 11:15;
@@ -65,7 +65,7 @@ selected_lam_s = [0,7,11,17,19,26];
 % ind3 = [5];
 
 % ind1 = 1:106;
-ind2 = 2:50;
+ind2 = 2:25;
 ind3 = 2:6;
 
 k = 1;
@@ -76,7 +76,7 @@ for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
-for s_recenter = 2
+for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -87,45 +87,26 @@ for s_recenter = 2
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_10trialsof_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_6_25of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_',num2str(trial)];
     
-    %%% PARAMETER SELECTION SETUP
-    % criterion = 'relaxed discrepancy';
-    % useMin = 1;
-    % relax_param = 1.05;
-    % psDir = ['E:\MCDLOF_processing\Outputs_4_19_',dataset,'_',opt.Penalty,...
-    % '_D',opt.dictInit,num2str(opt.Dfixed),...
-    % '_X',opt.coefInit,num2str(opt.Xfixed),...
-    % '_recenter',num2str(opt.Recenter)];
-    %%%
-    selected_lam_s_inds = [6,9,12,22,29,31];
-    selected_lam_of_inds = [6,9,13,3,8,11];
-    selected_lam_hs_inds = [2,2,2,5,5,3];
 
-    for sig_i = 1:6
-        %%% PARAMETER SELECTION
-        % inDir = [psDir,'\results_sig_',num2str(sig_i)];
-        % [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(sig_i),dataset);
-        % [lambda_all,objective] = param_select_3D(inDir,0,criterion,sigmas(sig_i),y_true,useMin,relax_param);
-        % j_s_select = find(lambdaVals == lambda_all(1));
-        %%%
+    selected_lam_s_inds = [5,8,18,26,40,49];
+
+    for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
-        j_of_select = selected_lam_of_inds(sig_i);
-        j_hs_select = selected_lam_hs_inds(sig_i);
+        % j_of_select = selected_lam_of_inds(sig_i);
+        % j_hs_select = selected_lam_hs_inds(sig_i);
         for j_s = j_s_select
-        % for j_s = ind1
-        j_ofs = [1,j_of_select];
-        j_hss = [1,j_hs_select];
-        for iii = 2
-            j_of = j_ofs(iii);
-            j_hs = j_hss(iii);
+        for j_of = ind2
+        for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
             k = k + 1;
+        end
         end
         end
     end
