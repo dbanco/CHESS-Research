@@ -20,7 +20,7 @@ shift_error = zeros(NN,1);
 
 % Extract the file names and store them in a cell array
 for i = 1:num_trials
-    inDir = [topDir,'\results_trial_',num2str(i),'_sig_',num2str(n)];
+    inDir = [topDir,'\results_',num2str(i),'_sig_',num2str(n)];
     files = dir(fullfile(inDir, '*.mat'));
     matFileNames = {files.name};
   
