@@ -1,5 +1,5 @@
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
 lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
@@ -22,7 +22,7 @@ s1 = 2;
 s2 = 1;
 s3 = 2;
 s4 = 1;
-s5 = 2;
+s5 = 1;
 dataset = datasets{s0};
 opt.Penalty = penalties{s1};
 opt.coefInit = xinits{s2};
@@ -31,12 +31,12 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_6_10of_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_26of_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-test_name2 = ['Outputs_6_10of_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_6_26of_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -60,10 +60,10 @@ useMin = 1;
 relax_param = 1.2;
 sig_ind = 1:6;
 for n = sig_ind
-    inDir = [topDir,'\results_sig_',num2str(n)];
+    inDir = [topDir,'\results_1_sig_',num2str(n)];
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
-    selected_lam_s_vec(n) = lambda_all(1);
     selected_lam_all_vec(n,:) = lambda_all;
+    selected_lam_s_vec(n) = lambda_all(1);
     selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
     objectives{n} = objective;
 end
@@ -77,8 +77,8 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors
-dirStartS = 'results';
-selected_lam_all_vec2 = [0,0,0;9,1,1;12,1,1;21,1,1;30,1,1;37,1,1];
+dirStartS = 'results_1';
+% selected_lam_all_vec2 = [0,0,0;9,1,1;12,1,1;21,1,1;30,1,1;37,1,1];
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
 [noiseNorm,trueErr1,dataErr1,l0_norm1,trueErr2,dataErr2,l0_norm2] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
 
