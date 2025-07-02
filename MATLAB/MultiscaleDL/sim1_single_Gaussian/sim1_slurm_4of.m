@@ -57,7 +57,7 @@ recenter = {0,1};
 sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
-selected_lam_s = [5,8,18,26,40,49];
+selected_lam_s = [10,7,14,27,35,44];
 
 % Regularization parameters
 % ind1 = 11:15;
@@ -94,7 +94,7 @@ for s_recenter = 1
     
 
     % selected_lam_s_inds = [5,8,18,26,40,49]; % for 6_25indep
-    selected_lam_s_inds = [5,7,14,27,35,44];
+    selected_lam_s = [10,7,14,27,35,44];
 
     for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
