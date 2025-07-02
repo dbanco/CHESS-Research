@@ -61,13 +61,6 @@ else
     AhAvop = @(in) vec(wrapAhAcpu(reshape(in, asz),N2,scales,ah,a,M,NormVals,Shifts,center));
 end
 
-% Aop = @(in) ifft2(sum(bsxfun(@times,ah,fft2( reSampleNu(N2,in,c1,c2,Ufactors) )),3),'symmetric');
-% Ahop = @(in) reSampleNuTrans2(M,ifft2(sum(bsxfun(@times, conj(ah), fft2(in)), 4),'symmetric'),c1,c2,Ufactors);
-
-% Aop = @(u) ifft2(sum(bsxfun(@times, ah, fft2(u)), 3),'symmetric');
-% Ahop = @(u) ifft2(sum(bsxfun(@times, conj(ah), fft2(u)), 4),'symmetric');
-% AhAvop = @(u) vec(Ahop(Aop(reshape(u, asz))));
-
 wrn = warning('query','MATLAB:ignoreImagPart');
 warning('off', 'MATLAB:ignoreImagPart');
 [xv,flg,rlr,pit,resvec] = pcg(@(u) AhAvop(u)+rho*u, b(:), tol, mit, [], [], isn);

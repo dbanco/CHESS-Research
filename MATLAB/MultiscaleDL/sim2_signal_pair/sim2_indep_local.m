@@ -91,29 +91,27 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_6_26of_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_7_1_indep_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
-    selected_lam_s_inds = [33,36,51,57,62,66];
+    % selected_lam_s_inds = [43,44,55,58,65,69];
     % selected_lam_s_inds = [43,43,56,58,66,70];
     % selected_lam_of_inds = [3,3,5,13,7,20];
     % selected_lam_hs_inds = [6,5,3,4,2,6];
 
         % --- Noise level, regularization parameters ---
-        for sig_i = sig_ind
+        for sig_i = 2
         % j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = ind1
+        for j_s = 20
         for j_of = 1
         for j_hs = 1
-            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                    j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
-            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-            k = k + 1;
+            sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
+                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
         end
         end
         end
@@ -125,5 +123,3 @@ end
 end
 end
 end
-
-slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))

@@ -55,7 +55,7 @@ save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 % Generate figures
 generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
 
-AD = reSampleCustomArrayCenter(N,D,scales,center);
+AD = reSampleCustomArrayCenter3(N,D,scales,center);
 AD = padarray(AD,[0 M-1 0],0,'post');
 ADf = fft2(AD);
 Bhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');

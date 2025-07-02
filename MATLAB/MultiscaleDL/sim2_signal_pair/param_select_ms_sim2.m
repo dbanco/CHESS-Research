@@ -47,7 +47,7 @@ topDir = ['E:\MCDLOF_processing\',test_name];
 criterion = 'discrepancy range';
 
 useMin = 1;
-relax_param = 4;
+relax_param = 1.1;
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -91,7 +91,8 @@ legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h
 
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_indep_',test_name,'.pptx'];
+pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim2_indep_',test_name,...
+           '_relax_',num2str(relax_param),'.pptx'];
 titleStr = ['Sim 2 Param Select,',dirStartS];
 createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
 

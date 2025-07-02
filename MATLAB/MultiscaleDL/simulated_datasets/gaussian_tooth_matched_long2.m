@@ -27,9 +27,6 @@ opt.DictFilterSizes = [1,1;...
                        M,M];
 
 % Width in time
-% sig = 2*linspace(2,10,T);
-% width = 4*round(linspace(2,14,T));
-pFactor = 3.5;
 tt = linspace(0,3*pi,T);
 sig = round(   -(J-1)/2*cos(tt) + (J-1)/2+1 );
 width = round( (J-1)/2*cos(tt) + (J-1)/2+1 )+ J;
@@ -77,12 +74,6 @@ yn = reshape(yn,[N,T]);
 y = reshape(y,[N,T]);
 
 snr = norm(y(:))/norm(y(:)-yn(:));
-% Reduce data to a time subset
-% trange = 1:60;
-% yn = yn(:,:,trange);
-% y = y(:,:,trange);
-% Xtrue = Xtrue(:,:,:,trange);
-% T = numel(trange);
 
 if plotFlag
     figure(2)

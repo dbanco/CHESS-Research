@@ -57,7 +57,7 @@ for i = 1:numel(matFileNames)
     center = (M+1)/2;
 
     % Compute recons
-    AD = reSampleCustomArrayCenter(N,D,scales,center);
+    AD = reSampleCustomArrayCenter3(N,D,scales,center);
     AD = padarray(AD,[0 M-1 0],0,'post');
     ADf = fft2(AD);
     Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
@@ -122,7 +122,7 @@ switch criterion
         lambda_all = lambda_vec(selInd,:);
     case 'discrepancy range'
         if sigma == 0
-            crit1 = error/(N*T) < 0.002^2;
+            crit1 = error/(N*T) < 0.005^2;
             crit2 = crit1;
         else
             crit1 = error/(N*T) < relax_param*sigma^2;
