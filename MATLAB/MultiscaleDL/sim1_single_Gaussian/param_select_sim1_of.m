@@ -53,18 +53,20 @@ criterion = 'discrepancy range';
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 selected_lam_all_vec = zeros(NN,3);
-selected_inds = zeros(NN,1);
+selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.2;
+relax_param = 1.1;
 sig_ind = 1:6;
 for n = sig_ind
-    inDir = [topDir,'\results_1_sig_',num2str(n)];
+    inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_lam_s_vec(n) = lambda_all(1);
-    selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
+    selected_inds(n,1) = find(selected_lam_s_vec(n) == lambdaVals);
+    selected_inds(n,2) = find(selected_lam_all_vec(n,2) == lambdaOFVals);
+    selected_inds(n,3) = find(selected_lam_all_vec(n,3) == lambdaHSVals);
     objectives{n} = objective;
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
@@ -77,7 +79,7 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors
-dirStartS = 'results_1';
+dirStartS = 'results_trial_1';
 % selected_lam_all_vec2 = [0,0,0;9,1,1;12,1,1;21,1,1;30,1,1;37,1,1];
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
 [noiseNorm,trueErr1,dataErr1,l0_norm1,trueErr2,dataErr2,l0_norm2] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
