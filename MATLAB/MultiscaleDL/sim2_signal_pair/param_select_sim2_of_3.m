@@ -24,7 +24,7 @@ s1 = 2;
 s2 = 1;
 s3 = 2;
 s4 = 1;
-s5 = 2;
+s5 = 1;
 dataset = datasets{s0};
 opt.Penalty = penalties{s1};
 opt.coefInit = xinits{s2};
@@ -33,7 +33,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_6_6of_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_26of_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -50,18 +50,20 @@ criterion = 'discrepancy range';
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 selected_lam_all_vec = zeros(NN,3);
-selected_inds = zeros(NN,1);
+selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.2;
+relax_param = 1.1;
 sig_ind = 1:6;
 for n = sig_ind
-    inDir = [topDir,'\results_sig_',num2str(n)];
+    inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
     [lambda_all,objective] = param_select_3D(inDir,fig_num,criterion,sigmas(n),dataset,useMin,relax_param);
     selected_lam_s_vec(n) = lambda_all(1);
     selected_lam_all_vec(n,:) = lambda_all;
-    selected_inds(n) = find(selected_lam_s_vec(n) == lambdaVals);
+    selected_inds(n,1) = find(selected_lam_s_vec(n) == lambdaVals);
+    selected_inds(n,2) = find(selected_lam_all_vec(n,2) == lambdaOFVals);
+    selected_inds(n,3) = find(selected_lam_all_vec(n,3) == lambdaHSVals);
     objectives{n} = objective;
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
@@ -74,8 +76,8 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 %% Compute errors
-dirStartS = 'results';
-selected_lam_all_vec2 = [43,1,1;44,1,1;55,1,1;58,1,1;65,1,1;69,1,1];
+dirStartS = 'results_trial_1';
+% selected_lam_all_vec2 = [43,1,1;44,1,1;55,1,1;58,1,1;65,1,1;69,1,1];
 [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(n),dataset);
 [noiseNorm,trueErr1,dataErr1,l0_norm1,trueErr2,dataErr2,l0_norm2] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
 
