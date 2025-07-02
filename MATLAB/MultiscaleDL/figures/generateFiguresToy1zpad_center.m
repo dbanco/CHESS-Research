@@ -16,7 +16,7 @@ for i = 1:numel(scales)
 end
 Utotal = sum(Uarray);
 
-AD = reSampleCustomArrayCenter(N,D,scales,center);
+AD = reSampleCustomArrayCenter3(N,D,scales,center);
 AD = padarray(AD,[0 M-1 0],0,'post');
 ADf = fft2(AD);
 Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));

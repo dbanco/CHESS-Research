@@ -296,7 +296,7 @@ Gmin = G;
 minJfn = Jfn;
 minCount = 0;
 
-optinf.itstat = [optinf.itstat;...reSampleTrans
+optinf.itstat = [optinf.itstat;...
        [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
   if opt.Verbose
     dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];

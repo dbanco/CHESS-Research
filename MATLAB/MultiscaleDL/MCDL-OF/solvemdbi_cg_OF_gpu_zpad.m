@@ -46,7 +46,7 @@ if nargin < 4 || isempty(tol)
 end
 
 xsz = [1,N+M-1,K*J,T];
-% xszPad = [1,N+2*round(M/2),K*J,T];
+
 if useGpu
     a = gpuArray(complex(a));
     ah = gpuArray(complex(conj(a)));

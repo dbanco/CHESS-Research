@@ -67,7 +67,7 @@ recenters = {0,1};
 sig_ind = 1:6;
 
 ind1 = 1:numel(lambdaVals);
-ind2 = 2:20;
+ind2 = 2:26;
 ind3 = 2:6;
 % ind2 = 1;
 % ind3 = 1;
@@ -103,13 +103,13 @@ for s_recenter = 1
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-        % j_s_select = selected_lam_s_inds(sig_i);
+        j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = ind1
-        for j_of = 1
-        for j_hs = 1
+        for j_s = j_s_select
+        for j_of = ind2
+        for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
