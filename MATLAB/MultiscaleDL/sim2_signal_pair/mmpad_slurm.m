@@ -13,6 +13,7 @@ opt.plotDict = 0;
 opt.Verbose = 1;
 opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
+opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -32,11 +33,7 @@ opt.HSiters = 100;
 opt.useGpu = 0;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
-opt.Recenter = 1;
-% opt.Penalty = 'l1-norm';
-% opt.Penalty = 'log';
-% opt.coefInit = 'zeros';
-% opt.dictInit = 'flat';
+opt.Recenter = 0;
 opt.a = 1;
 
 % Multiscale dictionary setup
