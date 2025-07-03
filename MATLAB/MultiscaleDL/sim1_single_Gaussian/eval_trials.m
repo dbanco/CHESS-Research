@@ -1,4 +1,4 @@
-function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials)
+function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials,indepFlag)
 %param_select_3D 
 
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
@@ -20,7 +20,7 @@ shift_error = zeros(NN,1);
 
 % Extract the file names and store them in a cell array
 for i = 1:num_trials
-    inDir = [topDir,'\results_',num2str(i),'_sig_',num2str(n)];
+    inDir = [topDir,'\results_trial_',num2str(i),'_sig_',num2str(n)];
     files = dir(fullfile(inDir, '*.mat'));
     matFileNames = {files.name};
   
@@ -28,6 +28,12 @@ for i = 1:num_trials
         % Load outputs
         load(fullfile(inDir,matFileNames{j}))
     
+        if indepFlag && outputs.lambda2 > 0
+            continue
+        elseif ~indepFlag && outputs.lambda2 == 0
+            continue
+        end
+
         N = outputs.N;
         M = outputs.M;
         T = outputs.T;
