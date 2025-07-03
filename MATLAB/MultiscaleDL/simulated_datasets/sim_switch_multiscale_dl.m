@@ -57,7 +57,7 @@ switch dataset
         yn = yn(:,21:100);
         [N,T] = size(yn);
         y = yn;
-        M = 180;
+        M = 181;
         Xtrue = 0;
         Dtrue = 0;
     case 'pseudo-voigt_unmatched'
