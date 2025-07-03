@@ -26,7 +26,7 @@ s1 = 2;
 s2 = 1;
 s3 = 2;
 s4 = 1;
-s5 = 2;
+s5 = 1;
 dataset = datasets{s0};
 opt.Penalty = penalties{s1};
 opt.coefInit = xinits{s2};
@@ -35,12 +35,12 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_6_10trials_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_26trials_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-test_name2 = ['Outputs_6_10trialsof_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_6_26trials_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -62,36 +62,13 @@ for n = sig_ind
 end
 
 %% Plot Results
+fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
+data_name = 'sim1';
+
 sig_ind = 1:6;
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
 error_stats_of = compute_error_stats(objectives_of,sig_ind);
 
-% True Recon Error Figure
-figure
-hold on
-errorbar(meanSNR,error_stats_indep.avg_true_error,...
-                 error_stats_indep.std_true_error,'s-')
-errorbar(meanSNR,error_stats_of.avg_true_error,...
-                 error_stats_of.std_true_error,'s-')
-title('Average over 50 trials')
-xlabel('SNR','Fontsize',14)
-ylabel('$\|\hat{{\bf b}}-{\bf f}\|_2$','Fontsize',14,...
-       'interpreter','latex','Fontsize',14)
-legend('MCDL',...                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-       'MCDL-OF')
-
-% Dictionary Error Figure
-figure
-hold on
-errorbar(meanSNR,error_stats_indep.avg_Derror,...
-                 error_stats_indep.std_Derror,'s-')
-errorbar(meanSNR,error_stats_of.avg_Derror,...
-                 error_stats_of.std_Derror,'s-')
-title('Average over 50 trials')
-xlabel('SNR','Fontsize',14)
-ylabel('$\|\hat{{\bf D}}-{\bf D}\|_2/\|{\bf D}\|_2$','Fontsize',14,...
-       'interpreter','latex','Fontsize',14)
-legend('MCDL',...                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-       'MCDL-OF')
+trials_figures(fig_dir,data_name,meanSNR,error_stats_indep,error_stats_of)

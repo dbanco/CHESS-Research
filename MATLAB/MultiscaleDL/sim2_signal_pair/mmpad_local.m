@@ -11,7 +11,7 @@ sigmas = 0:0.01:0.1;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;
+opt.MaxMainIter = 10;
 opt.MaxCGIter = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
@@ -40,21 +40,10 @@ opt.Recenter = 1;
 opt.a = 1;
 
 % Multiscale dictionary setup
-K = 1;
-scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
-scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
-J = size(scales{1},2);
-
-scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper';
-jobDir = '/cluster/home/dbanco02/jobs/';
+funcName = 'sim_mcdlof_wrapper3_mmpad';
 k = 1;
 
-datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
-            'dissertation','dissertation_long',...
-            'dissertation_long_separate','voigt_tooth_matched','mmpad_ring1'};
+datasets = {'mmpad_ring1'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -62,7 +51,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 sig_ind = 1;
-ind1 = 1:numel(lambdaVals);
+ind1 = 20;%1:numel(lambdaVals);
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
@@ -71,43 +60,47 @@ ind3 = 1;%2:6;
 % j_s_select = find(lambdaVals == selected_lam_s_vec(sig_i));
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 9
+for s0 = 1
 dataset = datasets{s0};
 for trials = 1
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
-for s_recenter = 2
+for s_recenter = 1
+for K = 5:6
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
     opt.Dfixed = dfixes{s_dfix};
     opt.Recenter = recenters{s_recenter};
 
+    scales = cell(K,1);
+    for i = 1:K
+        scales{i} = genRationals([0;1],[1;1],8,8, 1/6);
+    end
+    J = size(scales{1},2);
+
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
     end
 
-    topDir = ['/cluster/home/dbanco02/Outputs_5_9_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_7_2_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),'\\',...
-        '_recenter',num2str(opt.Recenter),'/results'];
-
-        % --- Noise level, regularization parameters ---
-        for sig_i = sig_ind
+        '_X',opt.coefInit,num2str(opt.Xfixed),...
+        '_recenter',num2str(opt.Recenter),'\results'];
+        
+        % --- Regularization parameters ---
             % ind1 = selected_lam_s(sig_i);
         for j_s = ind1
         for j_of = ind2
         for j_hs = ind3
-            varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                    j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
-            save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
-            k = k + 1;
+            
+            sim_mcdlof_wrapper3_mmpad(lambdaVals,lambdaOFVals,lambdaHSVals,...
+                    j_s,j_of,j_hs,opt,topDir,dataset,K,scales);
         end
         end
         end
-        end
 end
 end
 end
@@ -115,5 +108,4 @@ end
 end
 end
 end
-
-slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
+end
