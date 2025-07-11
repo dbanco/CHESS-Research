@@ -72,7 +72,7 @@ for s0 = 2
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
-for s_xinit = 1
+for s_xinit = 2
 for s_dinit = 3
 for s_dfix = 2
 for s_recenter = 1
@@ -86,7 +86,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['E:\MCDLOF_processing\\Outputs_7_3_local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_7_10_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -102,10 +102,10 @@ for s_recenter = 1
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = 64
-        for j_of = 25
-        for j_hs = 3
-            sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
+        for j_s = 24
+        for j_of = 1
+        for j_hs = 1
+            sim_mcdlof_wrapper_dynamic(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
         end
         end

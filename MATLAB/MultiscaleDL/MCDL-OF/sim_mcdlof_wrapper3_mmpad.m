@@ -12,6 +12,8 @@ rng('shuffle');
 
 y = reshape(y,[1,N,T]);
 
+noise_est = estimate_noise(y,5)
+
 % Model Setup
 J = size(scales{1},2);
 opt.DictFilterSizes= []; 

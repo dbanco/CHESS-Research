@@ -298,17 +298,34 @@ minCount = 0;
 
 optinf.itstat = [optinf.itstat;...
        [k Jfn Jdf Jl1 Jof Jhs Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
-  if opt.Verbose
+if opt.Verbose
     dvc = [k, Jfn, Jdf, Jl1, Jof, Jhs, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
     if opt.AutoRho
-      dvc = [dvc rho];
+        dvc = [dvc rho];
     end
     if opt.AutoSigma
-      dvc = [dvc sigma];
+        dvc = [dvc sigma];
     end
     fprintf(sfms, dvc);
-  end
+end
 
+if opt.plotDict
+    figure(freconA)
+    plot(squeeze(S(:,:,:,10)))
+    hold on
+    plot(squeeze(recon(:,:,:,10)))
+    hold off
+    
+    figure(xFig)
+    ii = 1;
+    for kk = 1:K
+        subplot(1,K,kk)
+        Ui = size(scales{kk},2) + ii - 1;
+        imagesc( squeeze(sum(Y(:,:,ii:Ui,:),3)) )
+        ii = ii + Ui;
+    end
+    pause()
+end 
 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -511,8 +528,6 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
 
     % Plot dictionary progress
     if opt.plotDict
- 
-        
         figure(freconA)
         plot(squeeze(S(:,:,:,10)))
         hold on
