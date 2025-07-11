@@ -35,12 +35,12 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_6_26of_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_6_26trials_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-test_name2 = ['Outputs_6_26of_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_6_26trials_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -55,9 +55,9 @@ num_trials = 50;
 objectives_indep = cell(numel(sig_ind),1);
 objectives_of = cell(numel(sig_ind),1);
 for n = sig_ind
-    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials);
+    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,true);
     objectives_indep{n} = objective_indep;    
-    objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials);
+    objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,false);
     objectives_of{n} = objective_of;
 end
 

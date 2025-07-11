@@ -43,7 +43,7 @@ Dtrue(1,:,1) = voigt_basis_wrap_1D(M,center,voigt_max_width,mixing,scaling);
 i1 = round(center) - tooth_max_width/2;
 i2 = i1 + tooth_max_width-1;
 Dtrue(1,i1:i2,2) = linspace(0,10,tooth_max_width)/norm(linspace(0,10,tooth_max_width));
-ADtrue = padarray(reSampleCustomArrayCenter(N,Dtrue,scales,center),[0,M-1,0,0],0,'post');
+ADtrue = padarray(reSampleCustomArrayCenter3(N,Dtrue,scales,center),[0,M-1,0,0],0,'post');
 ADf = fft2(ADtrue);
 
 % Position in time

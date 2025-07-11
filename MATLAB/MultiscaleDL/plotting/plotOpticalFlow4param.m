@@ -8,55 +8,46 @@ end
 X = squeeze(X);
 [N,KJ,T] = size(X);
 J = KJ/K;
-% Compute opticalflow
-[u,v] = computeHornSchunkDict(X,K,1e-8,opt.HSiters);
-[u1,v1] = computeHornSchunkDict(X,K,1,opt.HSiters);
-[u2,v2] = computeHornSchunkDict(X,K,10,opt.HSiters);
-[u3,v3] = computeHornSchunkDict(X,K,100,opt.HSiters);
+window = 1:size(X,1);
 
-window = 1:300;
+% Compute opticalflow
+HS_params = [1e-8,1e-4,1e-2,1,10];
+L = numel(HS_params);
+u_array = cell(L,1);
+v_array = cell(L,1);
+for i = 1:L
+    [u,v] = computeHornSchunkDict(X,K,HS_params(i),opt.HSiters);
+    u_array{i} = u;
+    v_array{i} = v;
+end
 
 % View optical flow
 fig = figure;
-fig.Position = [1 1 1.6452e+03 554.8000];
+fig.Position = [1 1 1400 900];
 
-for t = 1:T
+for t = 1:4
     frameGray = squeeze(X(:,:,t));
 
     framePlot = frameGray(window,:)';
+    
+    for i = 1:L
+        u = u_array{i};
+        v = v_array{i};
+        
+        u = u.*X;
+        v = v.*X;
 
-    subplot(4,1,1)
-    imagesc(framePlot)
-    hold on
-    quiver(v(window,:,t)',u(window,:,t)')
-    q = findobj(gca,'type','Quiver');
-    q.Color = 'w';
-    hold off
-        
-    subplot(4,1,2)
-    imagesc(framePlot)
-    hold on
-    quiver(v1(window,:,t)',u1(window,:,t)')
-    q = findobj(gca,'type','Quiver');
-    q.Color = 'w';
-    hold off
-        
-    subplot(4,1,3)
-    imagesc(framePlot)
-    hold on
-    quiver(v2(window,:,t)',u2(window,:,t)')
-    q = findobj(gca,'type','Quiver');
-    q.Color = 'w';
-    hold off
-        
-    subplot(4,1,4)
-    imagesc(framePlot)
-    hold on
-    quiver(v3(window,:,t)',u3(window,:,t)')
-    q = findobj(gca,'type','Quiver');
-    q.Color = 'w';
-    hold off
+        u = u/max(u(:))*100;
+        v = v/max(v(:))*100;
 
+        subplot(L,1,i)
+        imagesc(framePlot)
+        hold on
+        quiver(v(window,:,t)',u(window,:,t)')
+        q = findobj(gca,'type','Quiver');
+        q.Color = 'r';
+        hold off
+    end
 
     % Save the image to a GIF file
     if nargin > 3

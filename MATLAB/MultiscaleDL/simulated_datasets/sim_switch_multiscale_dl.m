@@ -72,6 +72,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaussian_tooth_matched_long(sigma,plotFlag);
     case 'gaussian_tooth_matched_long2'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaussian_tooth_matched_long2(sigma,plotFlag);
+    case 'voigt_tooth_matched_long3'
+        [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched_long3(sigma,plotFlag);
     otherwise
         error('Invalid dataset name')
 end
