@@ -54,7 +54,7 @@ k = 1;
 
 datasets = {'gaussian_tooth_matched_long2',...
             'voigt_tooth_matched_long3',...
-            'dissertation'};
+            'dissertation_adjust'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -75,8 +75,8 @@ dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
-for s_dinit = 3
-for s_dfix = 2
+for s_dinit = 2
+for s_dfix = 1
 for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
@@ -88,7 +88,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['E:\MCDLOF_processing\\Outputs_7_3_local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_7_12_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -104,7 +104,7 @@ for s_recenter = 1
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = 64
+        for j_s = 60
         for j_of = 1
         for j_hs = 1
             sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
