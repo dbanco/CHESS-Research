@@ -43,6 +43,9 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = sim2_gaussian_tooth_unmatched2(sigma);
     case 'dissertation'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma);
+    case 'dissertation_adjust'
+        [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust(sigma);
+    case 'mmpad_ring1'
     case 'dissertation_long'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long(sigma,plotFlag);
     case 'dissertation_long_separate'
