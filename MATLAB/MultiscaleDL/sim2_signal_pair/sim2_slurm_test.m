@@ -73,7 +73,7 @@ ind3 = 2:9;
 % ind3 = 1;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 11
+for s0 = 5
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2

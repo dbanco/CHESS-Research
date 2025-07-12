@@ -52,7 +52,9 @@ funcName = 'sim_mcdlof_wrapper3';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-datasets = {'gaussian_tooth_matched_long2','voigt_tooth_matched_long3'};
+datasets = {'gaussian_tooth_matched_long2',...
+            'voigt_tooth_matched_long3',...
+            'dissertation'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -68,7 +70,7 @@ sig_ind = 1:6;
 % ind3 = 1;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 2
+for s0 = 3
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
@@ -103,8 +105,8 @@ for s_recenter = 1
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
         for j_s = 64
-        for j_of = 25
-        for j_hs = 3
+        for j_of = 1
+        for j_hs = 1
             sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
         end
