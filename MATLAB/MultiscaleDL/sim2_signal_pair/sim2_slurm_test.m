@@ -70,9 +70,9 @@ sig_ind = 2;
 % ind2 = 2:11;
 % ind3 = 2:9;
 
-ind1 = 1:120;
-ind2 = 1;
-ind3 = 1;
+ind1 = 30:39;
+ind2 = 2:11;
+ind3 = 2:9;
 
 % --- Dataset, Initialization, Parameters ---
 for s0 = 6
