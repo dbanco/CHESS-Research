@@ -1,4 +1,4 @@
-function [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust(sigma)
+function [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust(sigma,plotFlag)
 %% Construct 1D test problem Gaussian and linear 
 T = 30;
 N = 55; M = 35;
@@ -6,6 +6,9 @@ center = (M+1)/2;
 if nargin < 1
     sigma = 0.01;
 %     sigma = 0.015;
+end
+if nargin < 2
+    plotFlag = false;
 end
 
 % Model Setup
@@ -75,30 +78,31 @@ y = reshape(y,[N,T]);
 % y = y(:,:,trange);
 % Xtrue = Xtrue(:,:,:,trange);
 % T = numel(trange);
-
-figure(2)
-imagesc(yn)
-
-figure(3)
-subplot(3,1,1)
-plot(yn(:,1),'-o')
-subplot(3,1,2)
-plot(yn(:,12),'-o')
-subplot(3,1,3)
-plot(yn(:,30),'-o')
-
-figure(4)
-vdf = squeeze(sum(squeeze(Xtrue),1));
-imagesc(vdf)
-
-figure(5)
-i = 1;
-for k = 1:2
-    for j = 1:8
-        subplot(2,8,i)
-        plot(ADtrue(1,:,i))
-        axis([0,60,0,0.9])
-        i = i + 1;
+if plotFlag
+    figure(2)
+    imagesc(yn)
+    
+    figure(3)
+    subplot(3,1,1)
+    plot(yn(:,1),'-o')
+    subplot(3,1,2)
+    plot(yn(:,12),'-o')
+    subplot(3,1,3)
+    plot(yn(:,30),'-o')
+    
+    figure(4)
+    vdf = squeeze(sum(squeeze(Xtrue),1));
+    imagesc(vdf)
+    
+    figure(5)
+    i = 1;
+    for k = 1:2
+        for j = 1:8
+            subplot(2,8,i)
+            plot(ADtrue(1,:,i))
+            axis([0,60,0,0.9])
+            i = i + 1;
+        end
     end
 end
 
