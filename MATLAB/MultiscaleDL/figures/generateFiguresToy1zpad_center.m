@@ -1,9 +1,19 @@
-function generateFiguresToy1zpad_center(topDir,outputs,suffix,gridDim)
+function generateFiguresToy1zpad_center(topDir,outputs,suffix,gridDim,useMin)
 if ~isempty(topDir)
     mkdir(topDir)
 end
-D = outputs.D;
-X = outputs.X;
+if nargin < 5
+    useMin = true;
+end
+
+if useMin
+    D = outputs.Dmin;
+    X = outputs.Ymin;
+else
+    D = outputs.D;
+    X = outputs.Y;
+end
+
 scales = outputs.scales;
 N = outputs.N;
 M = outputs.M;

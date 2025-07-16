@@ -38,7 +38,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_7_12_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_7_15_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -46,6 +46,8 @@ test_name = ['Outputs_7_12_',dataset,'_',opt.Penalty,...
 topDir = ['E:\MCDLOF_processing\',test_name];
 
 topDir2 = ['E:\MCDLOF_processing\',test_name];
+
+figDir = [topDir,'_sig_',num2str(i)];
 
 % criterion = 'discrepancy';
 % criterion = 'truth_error';
@@ -60,15 +62,33 @@ objectives = cell(NN,1);
 
 useMin = 1;
 relax_param = 1.1;
-sig_ind = 2;
+sig_ind = 2:6;
+makeFigures = 1;
 for n = sig_ind
     inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
-    results = compute_metrics(inDir,sigmas(n),dataset,useMin,true);
+    resultFile = [topDir,'\results_sig_',num2str(n),'.mat'];
+    if exist(resultFile,'file')
+        load(resultFile)
+    else
+        results = compute_metrics(inDir,sigmas(n),dataset,useMin,true);
+        save(resultFile,'results')
+    end
+    
     [lambda_all,objective] = param_select_mcdl(results,criterion,sigmas(n),dataset,relax_param,fig_num);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_inds(n,1) = find(selected_lam_all_vec(n,1) == lambdaVals);
     selected_inds(n,2) = find(selected_lam_all_vec(n,2) == lambdaOFVals);
     selected_inds(n,3) = find(selected_lam_all_vec(n,3) == lambdaHSVals);
+    j_s = selected_inds(n,1);
+    j_of = selected_inds(n,2);
+    j_hs = selected_inds(n,3);
+    if makeFigures
+        outputs = loadOutputFile(inDir,selected_inds(n,:));
+        suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e',...
+                      j_s,j_of,j_hs,sigmas(n),outputs.lambda,outputs.lambda2,outputs.lambda3);
+        generateFiguresToy1zpad_center(topDir,outputs,suffix,[4,8],useMin);
+        close all
+    end
     objectives{n} = objective;
 end
 
