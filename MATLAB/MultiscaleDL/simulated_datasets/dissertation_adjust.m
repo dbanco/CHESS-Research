@@ -104,6 +104,11 @@ if plotFlag
             i = i + 1;
         end
     end
+
+    figure(6)
+    window = 25:65;
+    opt.HSiters = 100;
+    plotOpticalFlow_sumT(Xtrue,K,opt,window)
 end
 
 end
