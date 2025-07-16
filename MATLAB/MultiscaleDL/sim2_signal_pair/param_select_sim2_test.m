@@ -16,7 +16,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'dissertation','dissertation_long','dissertation_long_separate',...
             'pseudo-voigt_unmatched','voigt_tooth_matched',...
             'gaussian_tooth_matched','gaussian_tooth_matched_long',...
-            'gaussian_tooth_matched_long2','dissertation_adjust'};
+            'gaussian_tooth_matched_long2','dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -38,7 +38,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_7_15_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_7_16_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -52,7 +52,7 @@ figDir = [topDir,'_sig_',num2str(i)];
 % criterion = 'discrepancy';
 % criterion = 'truth_error';
 % criterion = 'relaxed discrepancy';
-criterion = 'discrepancy range';
+% criterion = 'discrepancy range';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -61,7 +61,7 @@ selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.1;
+relax_param = 1.5;
 sig_ind = 2:6;
 makeFigures = 1;
 for n = sig_ind
@@ -86,7 +86,8 @@ for n = sig_ind
         outputs = loadOutputFile(inDir,selected_inds(n,:));
         suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e',...
                       j_s,j_of,j_hs,sigmas(n),outputs.lambda,outputs.lambda2,outputs.lambda3);
-        generateFiguresToy1zpad_center(topDir,outputs,suffix,[4,8],useMin);
+        psFigDir = fullfile(topDir,['ps_',criterion,'_',num2str(relax_param)]);
+        generateFiguresToy1zpad_center(psFigDir,outputs,suffix,[4,8],useMin);
         close all
     end
     objectives{n} = objective;
