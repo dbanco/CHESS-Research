@@ -45,7 +45,6 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center(sigma);
     case 'dissertation_adjust'
         [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust(sigma,plotFlag);
-    case 'mmpad_ring1'
     case 'dissertation_long'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long(sigma,plotFlag);
     case 'dissertation_long_separate'
@@ -77,6 +76,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = gaussian_tooth_matched_long2(sigma,plotFlag);
     case 'voigt_tooth_matched_long3'
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched_long3(sigma,plotFlag);
+    case 'voigt_example_6peaks'
+        [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_6peaks(sigma,plotFlag);
     otherwise
         error('Invalid dataset name')
 end

@@ -54,7 +54,8 @@ k = 1;
 
 datasets = {'gaussian_tooth_matched_long2',...
             'voigt_tooth_matched_long3',...
-            'dissertation_adjust'};
+            'dissertation_adjust',...
+            'voigt_example_6peaks'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -70,7 +71,7 @@ sig_ind = 1:6;
 % ind3 = 1;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 3
+for s0 = 4
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
@@ -88,7 +89,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['E:\MCDLOF_processing\\Outputs_7_12_local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_7_15_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
