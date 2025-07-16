@@ -181,3 +181,33 @@ def generateExampleData(N, T):
         B_noise[:, t] = np.random.poisson(B[:, t])
 
     return B, B_noise, awmv_true
+
+def generateExampleData2(N, T):
+    """
+    Generate example Poisson measurements of Gaussian intensity peaks.
+    """
+    numSpots = 2
+    B = np.zeros((N[:], T))
+    B_noise = np.zeros((N[:], T))
+    amplitude = 80 * np.array([0.4, 0.7]) + 1
+    mean_param = N * np.array([[0.3,0.3], [0.7,0.7]])
+    widths = np.array([[5,5], [8,8]])
+
+    awmv_true = np.zeros(T,2)
+    for t in range(T):
+        for i in range(numSpots):
+            b1 = gaussian_basis_wrap_1D(N[0],
+                                        mean_param[0][i],
+                                        widths[0][i],
+                                        '2-norm')
+            b2 = gaussian_basis_wrap_1D(N[1],
+                                        mean_param[1][i],
+                                        widths[1][i],
+                                        '2-norm')
+            awmv_true[t,0] += amplitude[i] * widths[][0]
+            B[:, t] += amplitude[i] * conv(b1,np.transpose(b2))
+
+        awmv_true[t] /= np.sum(amplitude)
+        B_noise[:, t] = np.random.poisson(B[:, t])
+
+    return B, B_noise, awmv_true
