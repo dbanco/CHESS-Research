@@ -18,14 +18,18 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho and sigma params
-opt.rho = 300;
-opt.sigma = 50;
+opt.rho = 1000;%300;
+opt.sigma = 500;%50;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;
 opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -39,6 +43,8 @@ opt.Recenter = 1;
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
 
 % Multiscale dictionary setup
 K = 2;
@@ -54,7 +60,7 @@ k = 1;
 
 datasets = {'gaussian_tooth_matched_long2',...
             'voigt_tooth_matched_long3',...
-            'dissertation_adjust',...
+            'dissertation_adjust2',...
             'voigt_example_6peaks'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
@@ -71,7 +77,7 @@ sig_ind = 1:6;
 % ind3 = 1;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 4
+for s0 = 3
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
@@ -89,7 +95,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['E:\MCDLOF_processing\\Outputs_7_15_local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_7_23_local6_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -105,7 +111,7 @@ for s_recenter = 1
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = 60
+        for j_s = 41
         for j_of = 1
         for j_hs = 1
             sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...

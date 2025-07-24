@@ -18,14 +18,18 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho and sigma params
-opt.rho = 300;
-opt.sigma = 50;
+opt.rho = 1000;%300
+opt.sigma = 500;%50
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;
 opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -39,6 +43,8 @@ opt.Recenter = 1;
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
 
 % Multiscale dictionary setup
 K = 2;
@@ -97,7 +103,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_7_16_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_7_23_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];

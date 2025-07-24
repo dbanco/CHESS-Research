@@ -5,7 +5,7 @@ Created on Tue Feb 20 11:45:30 2024
 @author: dpqb1
 """
 import numpy as np
-
+from scipy.signal import convolve2d
 
 def gaussian_basis_wrap_1D(N, mu, sigma, scaling='standard'):
     """
@@ -53,45 +53,98 @@ def gaussian_basis_wrap_1D(N, mu, sigma, scaling='standard'):
 
     return b
 
-def peakDictionary(P):
+def gaussian_basis_wrap_2D(N1, N2, mu1, mu2, sigma, scaling='standard'):
     """
-    Generate zero-mean Gaussian basis function vectors with unit 2-norm.
+    Create a wrapped 2D Gaussian by outer-product of two 1D wrapped Gaussians.
 
     Inputs:
-    - P: Dictionary parameters dictionary containing:
-        - P.N: 1D signal length
-        - P.K: Number of dictionary entries
-        - P.sigmas: Vector of width parameters for dictionary
+    - N1, N2: Dimensions of the 2D grid
+    - mu1, mu2: Centers along each dimension (float, not int)
+    - sigma: Scalar or (sigma1, sigma2)
+    - scaling: '2-norm', '1-norm', 'max', 'rms', or 'standard'
 
-    Outputs:
-    - D: Dictionary atoms [N, K]
+    Output:
+    - G: 2D array of shape (N1, N2)
     """
+    if np.isscalar(sigma):
+        sigma1 = sigma2 = sigma
+    else:
+        sigma1, sigma2 = sigma
 
-    D = np.zeros((P['N'], P['K']))
-    for k in range(P['K']):
-        D[:, k] = gaussian_basis_wrap_1D(P['N'], np.floor(P['N'] / 2), P['sigmas'][k], '2-norm')
+    g1 = gaussian_basis_wrap_1D(N1, mu1, sigma1, scaling='standard')
+    g2 = gaussian_basis_wrap_1D(N2, mu2, sigma2, scaling='standard')
 
-    return D
+    G = np.outer(g1, g2)
+
+    if scaling == '2-norm':
+        G /= np.linalg.norm(G)
+    elif scaling == '1-norm':
+        G /= np.sum(np.abs(G))
+    elif scaling == 'max':
+        G /= np.max(G)
+    elif scaling == 'rms':
+        G /= np.sqrt(np.sum(G**2) / (N1 * N2))
+    else:  # 'standard': already scaled by scalar Gaussian
+        pass
+
+    return G
+
+def peakDictionary(P):
+    """
+    Unified 1D/2D dictionary builder.
+    - 1D if 'N' in P
+    - 2D if 'N1' and 'N2' in P with K1, K2, sigmas1, sigmas2
+    Returns:
+    - D: shape (N, K) for 1D, (N1, N2, K1*K2) for 2D
+    """
+    if 'N1' in P and 'N2' in P:
+        N1, N2 = P['N1'], P['N2']
+        K1, K2 = P['K1'], P['K2']
+        sigmas1 = P['sigmas1']
+        sigmas2 = P['sigmas2']
+
+        D = np.zeros((N1, N2, K1 * K2), dtype=np.float64)
+        for k1 in range(K1):
+            for k2 in range(K2):
+                k = k1 * K2 + k2  # Flattened index
+                D[..., k] = gaussian_basis_wrap_2D(
+                    N1, N2, mu1=N1 // 2, mu2=N2 // 2,
+                    sigma=(sigmas1[k1], sigmas2[k2]), scaling='2-norm'
+                )
+        return D
+
+    elif 'N' in P:
+        N, K = P['N'], P['K']
+        sigmas = P['sigmas']
+        D = np.zeros((N, K), dtype=np.float64)
+        for k in range(K):
+            D[:, k] = gaussian_basis_wrap_1D(N, N // 2, sigmas[k], '2-norm')
+        return D
+
+    else:
+        raise ValueError("peakDictionary: expected keys for 1D ('N') or 2D ('N1','N2','K1','K2').")
 
 def peakDictionaryFFT(P):
     """
-    Generate FFT of zero mean Gaussian basis function vectors with unit 2-norm.
-
-    Inputs:
-    - P: Dictionary parameters dictionary containing:
-        - P.N: 1D signal length
-        - P.K: Number of dictionary entries
-        - P.sigmas: Vector of width parameters for dictionary
-
-    Outputs:
-    - D: FFT of dictionary atoms [N, K]
+    Unified 1D/2D FFT dictionary builder.
+    Returns:
+    - Dft: shape (N, K) for 1D, (N1, N2, K1*K2) for 2D
     """
+    if 'N1' in P and 'N2' in P:
+        D = peakDictionary(P)  # shape (N1, N2, K1*K2)
+        N1, N2, K = D.shape
+        Dft = np.zeros((N1, N2, K), dtype=np.complex128)
+        for k in range(K):
+            Dft[..., k] = np.fft.fft2(D[..., k])
+        return Dft
 
-    D = np.zeros((P['N'], P['K']), dtype=np.complex128)
-    for k in range(P['K']):
-        D[:, k] = np.fft.fft(gaussian_basis_wrap_1D(P['N'], np.floor(P['N'] / 2), P['sigmas'][k], '2-norm'))
+    elif 'N' in P:
+        D = peakDictionary(P)  # shape (N, K)
+        return np.fft.fft(D, axis=0)
 
-    return D
+    else:
+        raise ValueError("peakDictionaryFFT: expected keys for 1D ('N') or 2D ('N1','N2','K1','K2').")
+
 
 def peakDictionarySeparable(P):
     """
@@ -135,46 +188,85 @@ def peakDictionarySeparableFFT(P):
 
     return D
 
-def computeAWMV_1D(x, sigmas):
-    # Inputs:
-    # x - (N x K) array of fitted coefficients
-    # sigmas - (K x 1) array of dictionary width parameters
-    
-    # Outputs:
-    # awmv - amplitude weighted mean variance (azimuthal)
-    
-    K = len(sigmas)
-    
-    # Ensure sigmas is a row vector
-    sigmas = np.array(sigmas).reshape(1, -1)
-    
-    sigma_signal = np.sum(x, axis=0)
-    sigma_signal = sigma_signal.T if sigma_signal.shape[0] == K else sigma_signal
-    total = np.sum(sigma_signal, axis=0)
-    
-    awmv = np.sum(sigmas * sigma_signal / total, axis=1)
-    
-    return awmv
+def computeAWMV(x, sigmas1, sigmas2=None):
+    """
+    Compute amplitude-weighted mean variance (AWMV) for 1D or 2D data.
+
+    Parameters:
+    - x: ndarray
+        Shape [N, K, T] for 1D
+        Shape [N1, N2, K1*K2, T] for 2D
+    - sigmas1: array of shape (K,) for 1D or (K1,) for 2D
+    - sigmas2: None for 1D or (K2,) for 2D
+
+    Returns:
+    - awmv: float for 1D, or (2,) array [awmv_x, awmv_y] for 2D
+    """
+    x = np.array(x)
+
+    if sigmas2 is None:
+        # 1D case
+        sigmas1 = np.array(sigmas1).reshape(1, -1)  # shape (1, K)
+        amp = np.sum(x, axis=tuple(range(x.ndim - 2)))  # sum over N, T -> shape (K,)
+        total = np.sum(amp)
+
+        if total == 0:
+            return 0.0
+
+        awmv = np.sum(sigmas1 * amp.reshape(1, -1) / total)
+        return awmv
+
+    else:
+        # 2D case
+        K1, K2 = len(sigmas1), len(sigmas2)
+        sigmas1 = np.array(sigmas1).reshape(1, K1)  # shape (1, K1)
+        sigmas2 = np.array(sigmas2).reshape(1, K2)  # shape (1, K2)
+
+        # Reshape x from [N1, N2, K1*K2, T] to [N1, N2, K1, K2, T]
+        x = x.reshape(*x.shape[:2], K1, K2, -1)
+
+        # Sum over N1, N2, T → axes 0, 1, 4
+        amp1 = np.sum(x, axis=(0, 1, 3))  # shape (K1,T)
+        amp2 = np.sum(x, axis=(0, 1, 2))  # shape (K2,T)
+        total = np.sum(amp1)
+
+        if total == 0:
+            return np.array([0.0, 0.0])
+
+        awmv1 = np.dot(sigmas1,amp1) / total  # weighted sum over K1
+        awmv2 = np.dot(sigmas2,amp2) / total  # weighted sum over K2
+
+        return np.array([awmv1, awmv2])
 
 def generateExampleData(N, T):
     """
-    Generate example Poisson measurements of Gaussian intensity peaks.
+    Generate example 1D Gaussian peaks with time-varying mean and width,
+    and Poisson noise.
     """
     numSpots = 2
     B = np.zeros((N, T))
     B_noise = np.zeros((N, T))
     amplitude = 80 * np.array([0.4, 0.7]) + 1
-    mean_param = N * np.array([0.3, 0.7])
-    widths = np.array([5, 8])
+
+    t_vals = np.linspace(0, 1, T)
+    # Evolving means, staying inside the domain
+    mean_base = N * np.array([0.3, 0.7])
+    mean_amp = N * 0.1
+    mean_param = np.array([mean_base[0] + mean_amp * t_vals**2,
+                           mean_base[1] + mean_amp * 2*t_vals**2])
+
+    # Evolving widths
+    widths = np.array([1.5 + (3*t_vals)**2,
+                       1 + 0.5 * (2*t_vals)**2])
 
     awmv_true = np.zeros(T)
     for t in range(T):
         for i in range(numSpots):
             b = gaussian_basis_wrap_1D(N,
-                                        mean_param[i],
-                                        widths[i],
-                                        '2-norm')
-            awmv_true[t] += amplitude[i] * widths[i]
+                                       mean_param[i, t],
+                                       widths[i, t],
+                                       '2-norm')
+            awmv_true[t] += amplitude[i] * widths[i, t]
             B[:, t] += amplitude[i] * b
 
         awmv_true[t] /= np.sum(amplitude)
@@ -182,32 +274,58 @@ def generateExampleData(N, T):
 
     return B, B_noise, awmv_true
 
-def generateExampleData2(N, T):
+
+def generateExampleData2(dims):
     """
-    Generate example Poisson measurements of Gaussian intensity peaks.
+    Generate 2D Gaussian peaks with time-varying mean and width, and Poisson noise.
     """
     numSpots = 2
-    B = np.zeros((N[:], T))
-    B_noise = np.zeros((N[:], T))
+    N1, N2, T = dims
+    B = np.zeros(dims)
+    B_noise = np.zeros(dims)
     amplitude = 80 * np.array([0.4, 0.7]) + 1
-    mean_param = N * np.array([[0.3,0.3], [0.7,0.7]])
-    widths = np.array([[5,5], [8,8]])
 
-    awmv_true = np.zeros(T,2)
+    t_vals = np.linspace(0, 1, T)
+
+    # Evolving means (bounded inside image)
+    mean_base = np.array([[N1 * 0.3, N1 * 0.6],   # Row direction
+                          [N2 * 0.3, N2 * 0.7]])  # Column direction
+
+    mean_amp = np.array([[N1 * 0.1, N1 * 0.05],   # Row direction
+                         [N2 * 0.1, N2 * 0.05]])  # Column direction
+
+    mean_param = np.zeros((2, numSpots, T))  # [axis, spot, time]
+    mean_param[0, 0, :] = mean_base[0, 0] + mean_amp[0, 0] * t_vals**2
+    mean_param[0, 1, :] = mean_base[0, 1] + mean_amp[0, 1] * 2 * t_vals**2
+    mean_param[1, 0, :] = mean_base[1, 0] + mean_amp[1, 0] * t_vals**2
+    mean_param[1, 1, :] = mean_base[1, 1] + mean_amp[1, 1] * 2 * t_vals**2
+
+    # Evolving widths
+    widths = np.zeros((2, numSpots, T))  # [axis, spot, time]
+    widths[0, 0, :] = 1.5 + (3 * t_vals)**2
+    widths[0, 1, :] = 1.0 + 0.5 * (2 * t_vals)**2
+    widths[1, 0, :] = 2.0 + (2.5 * t_vals)**2
+    widths[1, 1, :] = 1.2 + 0.4 * (2 * t_vals)**2
+
+    awmv_true = np.zeros((T, 2))  # [time, axis]
     for t in range(T):
         for i in range(numSpots):
-            b1 = gaussian_basis_wrap_1D(N[0],
-                                        mean_param[0][i],
-                                        widths[0][i],
+            b1 = gaussian_basis_wrap_1D(N1,
+                                        mean_param[0, i, t],
+                                        widths[0, i, t],
                                         '2-norm')
-            b2 = gaussian_basis_wrap_1D(N[1],
-                                        mean_param[1][i],
-                                        widths[1][i],
+            b2 = gaussian_basis_wrap_1D(N2,
+                                        mean_param[1, i, t],
+                                        widths[1, i, t],
                                         '2-norm')
-            awmv_true[t,0] += amplitude[i] * widths[][0]
-            B[:, t] += amplitude[i] * conv(b1,np.transpose(b2))
+            outer = amplitude[i] * convolve2d(b1[:, None], b2[None, :])
+            B[:, :, t] += outer
 
-        awmv_true[t] /= np.sum(amplitude)
-        B_noise[:, t] = np.random.poisson(B[:, t])
+            awmv_true[t, 0] += amplitude[i] * widths[0, i, t]
+            awmv_true[t, 1] += amplitude[i] * widths[1, i, t]
+
+        awmv_true[t, :] /= np.sum(amplitude)
+        B_noise[:, :, t] = np.random.poisson(B[:, :, t])
 
     return B, B_noise, awmv_true
+
