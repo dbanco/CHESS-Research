@@ -119,7 +119,7 @@ for s_recenter = 1
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = j_s_select
+        for j_s = [j_s_select-1,j_s_select+1]
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
