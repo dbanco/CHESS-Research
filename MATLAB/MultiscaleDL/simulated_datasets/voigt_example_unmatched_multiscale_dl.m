@@ -7,7 +7,7 @@ if nargin < 2
 end
 
 T = 50;
-N = 105; M = 105;
+N = 105; M = 65;
 J = 16;
 
 % Model Setup

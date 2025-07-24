@@ -32,7 +32,7 @@ switch criterion
         lambda_all = lambda_vec(selInd,:);
     case 'discrepancy range'
         if sigma == 0
-            crit1 = error/(N*T) < 0.005^2;
+            crit1 = error/(N*T) < 0.0025^2;
             crit2 = crit1;
         else
             crit1 = error/(N*T) < relax_param*sigma^2;
@@ -42,6 +42,29 @@ switch criterion
 
         if sum(include) == 0 % default to relaxed discrepancy
             crit = abs(error/(N*T) - relax_param*sigma^2);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+            % error('No solution in discrepancy range');
+        else 
+            % crit3 = l0_norm;
+            crit3 = log_penalty;
+            exclude = ~include;
+            crit3(exclude) = (N+M-1)*T;
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
+    case 'discrepancy range2'
+        if sigma == 0
+            crit1 = error/(N*T) < relax_param^2;
+            crit2 = crit1;
+        else
+            crit1 = error/(N*T) < relax_param^2+sigma^2;
+            crit2 = error/(N*T) > -relax_param^2+sigma^2;
+        end
+        include = crit1 & crit2;
+
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param^2+sigma^2);
             [~,selInd] = min(crit);
             lambda_all = lambda_vec(selInd,:);
             % error('No solution in discrepancy range');
