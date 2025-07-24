@@ -38,7 +38,7 @@ opt.Dfixed = dfixes{s_dfix};
 opt.Recenter = recenters{s_recenter};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_7_23_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_7_23a1_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -61,7 +61,7 @@ selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 0;
-relax_param = 1.1;
+relax_param = 1;
 sig_ind = 2:6;
 makeFigures = 1;
 for n = sig_ind

@@ -80,9 +80,9 @@ sig_ind = 2:6;
 % ind2 = 2:11;
 % ind3 = 2:9;
 
-ind1 = 1:120;
-ind2 = 1;
-ind3 = 1;
+ind1 = 1;
+ind2 = 2:11;
+ind3 = 2:9;
 
 % --- Dataset, Initialization, Parameters ---
 for s0 = 6
@@ -108,18 +108,18 @@ for s_recenter = 1
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
-    % selected_lam_s_inds = [33,36,51,57,62,66];
+    selected_lam_s_inds = [41,51,55,61,66];
     % selected_lam_s_inds = [43,43,56,58,66,70];
     % selected_lam_of_inds = [3,3,5,13,7,20];
     % selected_lam_hs_inds = [6,5,3,4,2,6];
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
-        % j_s_select = selected_lam_s_inds(sig_i);
+        j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
 
-        for j_s = ind1
+        for j_s = j_s_select
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
