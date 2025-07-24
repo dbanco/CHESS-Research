@@ -61,7 +61,7 @@ selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 0;
-relax_param = 1;
+relax_param = 1.1;
 sig_ind = 2:6;
 makeFigures = 1;
 for n = sig_ind

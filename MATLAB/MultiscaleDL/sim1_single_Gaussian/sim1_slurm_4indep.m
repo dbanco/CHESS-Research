@@ -23,6 +23,10 @@ opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -32,6 +36,8 @@ opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
 
 % Multiscale dictionary setup
 K = 1;
@@ -85,35 +91,12 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_26indep',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_7_24indep',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
-    
-    %%% PARAMETER SELECTION SETUP
-    % criterion = 'relaxed discrepancy';
-    % useMin = 1;
-    % relax_param = 1.05;
-    % psDir = ['E:\MCDLOF_processing\Outputs_4_19_',dataset,'_',opt.Penalty,...
-    % '_D',opt.dictInit,num2str(opt.Dfixed),...
-    % '_X',opt.coefInit,num2str(opt.Xfixed),...
-    % '_recenter',num2str(opt.Recenter)];
-    %%%
-    % selected_lam_s_inds = [6,9,12,22,29,31];
-    % selected_lam_of_inds = [6,9,13,3,8,11];
-    % selected_lam_hs_inds = [2,2,2,5,5,3];
 
     for sig_i = sig_ind
-        %%% PARAMETER SELECTION
-        % inDir = [psDir,'\results_sig_',num2str(sig_i)];
-        % [~,y_true,~,~,~] = sim_switch_multiscale_dl(sigmas(sig_i),dataset);
-        % [lambda_all,objective] = param_select_3D(inDir,0,criterion,sigmas(sig_i),y_true,useMin,relax_param);
-        % j_s_select = find(lambdaVals == lambda_all(1));
-        %%%
-        % j_s_select = selected_lam_s_inds(sig_i);
-        % j_of_select = selected_lam_of_inds(sig_i);
-        % j_hs_select = selected_lam_hs_inds(sig_i);
-        % for j_s = j_s_select
         for j_s = ind1
             j_of = 1;
             j_hs = 1;
