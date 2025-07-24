@@ -29,7 +29,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_7_24indep_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_7_24indep65_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -37,8 +37,8 @@ topDir = ['E:\MCDLOF_processing\Outputs_7_24indep_',dataset,'_',opt.Penalty,...
 % criterion = 'discrepancy';
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
-%criterion = 'discrepancy range';
-criterion = 'discrepancy range2';
+criterion = 'discrepancy range';
+% criterion = 'discrepancy range2';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -47,7 +47,8 @@ selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
 useMin = 0;
-relax_param = 0.004; % for discrep range2
+relax_param = 1.1; % for discrep range1
+% relax_param = 0.004; % for discrep range2
 sig_ind = 1:6;
 for n = sig_ind
     inDir = [topDir,'\results_trial_1_sig_',num2str(n)];

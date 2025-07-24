@@ -1,8 +1,10 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
+% lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
+% lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,5)];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 1e-1 1];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -17,14 +19,18 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho and sigma params
-opt.rho = 300;
-opt.sigma = 50;
+opt.rho = 600;
+opt.sigma = 100;
 opt.AutoRho = 1;
 opt.AutoRhoPeriod = 1;
 opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -34,6 +40,8 @@ opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
 
 % Multiscale dictionary setup
 K = 1;
@@ -57,7 +65,7 @@ recenter = {0,1};
 sig_ind = 1:6;
 
 % SELECTE PARAMETERS:
-selected_lam_s = [10,7,14,27,35,44];
+selected_lam_s = [8,10,16,19,40,44];
 
 % Regularization parameters
 % ind1 = 11:15;
@@ -65,8 +73,8 @@ selected_lam_s = [10,7,14,27,35,44];
 % ind3 = [5];
 
 % ind1 = 1:106;
-ind2 = 2:26;
-ind3 = 2:6;
+ind2 = 2:11;
+ind3 = 2:9;
 
 k = 1;
 for s_dataset = 1
@@ -87,14 +95,13 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_6_26of_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_7_24of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
     
-
     % selected_lam_s_inds = [5,8,18,26,40,49]; % for 6_25indep
-    selected_lam_s_inds = [10,7,14,27,35,44];
+    selected_lam_s_inds = [8,10,16,19,40,44];
 
     for sig_i = sig_ind
         j_s_select = selected_lam_s_inds(sig_i);
