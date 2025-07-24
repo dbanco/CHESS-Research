@@ -108,7 +108,7 @@ for s_recenter = 1
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
-    selected_lam_s_inds = [41,51,55,61,66];
+    selected_lam_s_inds = [0,41,51,55,61,66];
     % selected_lam_s_inds = [43,43,56,58,66,70];
     % selected_lam_of_inds = [3,3,5,13,7,20];
     % selected_lam_hs_inds = [6,5,3,4,2,6];
