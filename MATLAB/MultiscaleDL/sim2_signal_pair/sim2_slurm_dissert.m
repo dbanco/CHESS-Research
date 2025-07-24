@@ -42,7 +42,7 @@ opt.Recenter = 1;
 % opt.Penalty = 'log';
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
-opt.a = 10;
+opt.a = 1;
 opt.useMin = false;
 opt.AdaptIters = 100;
 
@@ -103,7 +103,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_7_23a10_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_7_23a1_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
