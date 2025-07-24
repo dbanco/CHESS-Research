@@ -401,6 +401,11 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % variable D as the dictionary, but this appears to be unstable. Instead,
     % use the projected dictionary variable G
     if ~opt.Xfixed
+        if opt.adapt_lambda && k <= opt.AdaptIters
+            lambda_n = opt.lambda_min*(lambda/opt.lambda_min)^(k/opt.AdaptIters);
+        else
+            lambda_n = lambda;
+        end
         withOF = k > opt.NoOFIters;
         [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
             opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu,withOF); 
@@ -427,9 +432,14 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         % Solve Y subproblem
         switch opt.Penalty
             case 'l1-norm'
-                Y = shrink(Xr + U, (lambda/rho)*opt.L1Weight);
+                Y = shrink(Xr + U, (lambda_n/rho)*opt.L1Weight);
             case 'log'
-                Y = log_shrink(Xr + U, (lambda/rho)*opt.L1Weight,opt.a);
+                if opt.adapt_a && k <= opt.AdaptIters
+                    a_n = opt.a_min*(opt.a/opt.a_min)^(k/opt.AdaptIters);
+                else
+                    a_n = opt.a;
+                end
+                Y = log_shrink(Xr + U, (lambda_n/rho)*opt.L1Weight,a_n);
         end
         if opt.NonNegCoef
             Y(Y < 0) = 0;
@@ -448,7 +458,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             case 'l1-norm'
                 Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
             case 'log'
-                Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
+                Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
         end
     
         % Update dual variable corresponding to X, Y, Z
@@ -510,7 +520,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         case 'l1-norm'
             Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
         case 'log'
-            Jl1 = sum(vec(log(1 + opt.a.*abs(Y))/opt.a));
+            Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
     end
 
     % Optical flow terms
@@ -524,7 +534,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     Jlg2 = sigma/2*sum((D(:)-G(:)+H(:)).^2) - sigma/2*sum(H(:).^2);
 
     % Full objective
-    Jfn = Jdf + lambda*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
+    Jfn = Jdf + lambda_n*Jl1 + lambda2*Jof + opt.Smoothness*Jhs;
 
     % Plot dictionary progress
     if opt.plotDict

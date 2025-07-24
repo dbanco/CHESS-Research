@@ -11,12 +11,12 @@ NN = numel(sigmas);
 
 fig_num = 22;
 
-datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
-            'dissertation','dissertation_long','dissertation_long_separate',...
-            'pseudo-voigt_unmatched','voigt_tooth_matched',...
-            'gaussian_tooth_matched','gaussian_tooth_matched_long',...
-            'gaussian_tooth_matched_long2','dissertation_adjust2'};
+datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',... %1,2 
+            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...%3,4
+            'dissertation','dissertation_long','dissertation_long_separate',...%5,6,7
+            'pseudo-voigt_unmatched','voigt_tooth_matched',...%8,9
+            'gaussian_tooth_matched','gaussian_tooth_matched_long',...%10,11
+            'gaussian_tooth_matched_long2','dissertation_adjust2'};%12,13
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -24,18 +24,18 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 13;
-s1 = 2;
-s2 = 1;
-s3 = 2;
-s4 = 1;
-s5 = 1;
-dataset = datasets{s0};
-opt.Penalty = penalties{s1};
-opt.coefInit = xinits{s2};
-opt.dictInit = dinits{s3};
-opt.Dfixed = dfixes{s4};
-opt.Recenter = recenters{s5};
+s_data = 13;
+s_pen = 2;
+s_xinit = 1;
+s_dinit = 2;
+s_dfix = 1;
+s_recenter = 1;
+dataset = datasets{s_data};
+opt.Penalty = penalties{s_pen};
+opt.coefInit = xinits{s_xinit};
+opt.dictInit = dinits{s_dinit};
+opt.Dfixed = dfixes{s_dfix};
+opt.Recenter = recenters{s_recenter};
 opt.Xfixed = 0;
 
 test_name = ['Outputs_7_16_',dataset,'_',opt.Penalty,...
@@ -52,7 +52,7 @@ figDir = [topDir,'_sig_',num2str(i)];
 % criterion = 'discrepancy';
 % criterion = 'truth_error';
 % criterion = 'relaxed discrepancy';
-% criterion = 'discrepancy range';
+criterion = 'discrepancy range';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -60,8 +60,8 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
-useMin = 1;
-relax_param = 1.5;
+useMin = 0;
+relax_param = 1.1;
 sig_ind = 2:6;
 makeFigures = 1;
 for n = sig_ind
@@ -73,7 +73,6 @@ for n = sig_ind
         results = compute_metrics(inDir,sigmas(n),dataset,useMin,true);
         save(resultFile,'results')
     end
-    
     [lambda_all,objective] = param_select_mcdl(results,criterion,sigmas(n),dataset,relax_param,fig_num);
     selected_lam_all_vec(n,:) = lambda_all;
     selected_inds(n,1) = find(selected_lam_all_vec(n,1) == lambdaVals);
@@ -86,7 +85,8 @@ for n = sig_ind
         outputs = loadOutputFile(inDir,selected_inds(n,:));
         suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e',...
                       j_s,j_of,j_hs,sigmas(n),outputs.lambda,outputs.lambda2,outputs.lambda3);
-        psFigDir = fullfile(topDir,['ps_',criterion,'_',num2str(relax_param)]);
+        psFigDir = fullfile(topDir,['ps_',criterion,'_',num2str(relax_param),...
+                                          '_useMin',num2str(useMin)]);
         generateFiguresToy1zpad_center(psFigDir,outputs,suffix,[4,8],useMin);
         close all
     end

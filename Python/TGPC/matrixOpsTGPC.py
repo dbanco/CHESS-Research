@@ -6,160 +6,190 @@ Created on Tue Feb 20 11:50:59 2024
 """
 import numpy as np
 
-def Ax_ft_1D(A0, x):
+def Ax_ft(A0, x):
     """
-    Computes matrix-vector product between A and x.
-    Element-wise multiplies each basis function of A0 with fft(x).
+    GPU version: Computes forward convolution Ax = sum_k ifftn(A0[...,k] * fftn(x[...,k]))
+    Supports both 1D (N x K) and 2D (N1 x N2 x K) data.
 
     Inputs:
-    - A0: N x K array
-    - x: N x K array
+    - A0: (..., K) np.array
+    - x:  (..., K) np.array
 
-    Outputs:
-    - Ax: N x 1 array
+    Output:
+    - Ax: (...,) np.array
     """
+    Ax = np.zeros(A0.shape[:-1], dtype=np.float64)
+    x_ft = np.fft.fftn(x, axes=range(x.ndim - 1))
 
-    Ax = np.zeros(A0.shape[0])
-
-    x_ft = np.fft.fft(x, axis=0)
-
-    for k in range(x.shape[1]):
-        Ax += np.real(np.fft.ifft(A0[:, k] * x_ft[:, k]))
+    for k in range(x.shape[-1]):
+        Ax += np.real(np.fft.ifftn(A0[..., k] * x_ft[..., k], axes=range(x.ndim - 1)))
 
     return Ax
 
-def AtR_ft_1D(A0, R):
+def AtR_ft(A0, R):
     """
-    Computes matrix-vector product between A transposed and R.
-    Element-wise multiplies each basis function of A0 with fft(R).
+    GPU version: Computes transpose operation AtR = [ifftn(conj(A0[...,k]) * fftn(R)) for k]
+    Supports both 1D (N,) and 2D (N1 x N2) residuals.
 
     Inputs:
-    - A0: N x K array
-    - R: N x 1 array
-
-    Outputs:
-    - AtR: N x K array
-    """
-
-    AtR = np.zeros_like(A0)
-
-    R_ft = np.fft.fft(R)
-
-    for k in range(A0.shape[1]):
-        y = np.fft.ifft(np.conj(A0[:, k]) * R_ft)
-        AtR[:, k] = y
-
-    return AtR
-
-def Ax_ft_1D_Time(A0, X, Bnorms=None):
-    """
-    Compute the product Ax where A is the convolution operator represented by A0
-    with each frame of X along the third dimension, and normalize each frame
-    by the corresponding value in Bnorms.
-
-    Inputs:
-    - A0: N x K FFT of dictionary
-    - X: N x K x T tensor
-    - Bnorms: T x 1 array of norm values for each frame in X
+    - A0: (..., K) np.array
+    - R:  (...,) np.array
 
     Output:
-    - Y: N x T tensor
+    - AtR: (..., K) np.array
     """
-    T = X.shape[2]
-    N, _ = A0.shape
+    AtR = np.zeros_like(A0, dtype=np.complex128)
+    R_ft = np.fft.fftn(R, axes=range(R.ndim))
 
-    Y = np.zeros((N, T))
+    for k in range(A0.shape[-1]):
+        AtR[..., k] = np.fft.ifftn(np.conj(A0[..., k]) * R_ft, axes=range(R.ndim))
 
-    if Bnorms is not None:
+    return np.real(AtR)
+
+def Ax_ft_Time(A0, X, Bnorms=None):
+    """
+    Compute A x where A is a stack of Fourier basis filters.
+    Works for both 1D and 2D inputs.
+
+    Inputs:
+    - A0: N x K or N1 x N2 x K (fft of dictionary)
+    - X: N x K x T or N1 x N2 x K x T
+    - Bnorms: T-length array
+
+    Output:
+    - Y: N x T or N1 x N2 x T
+    """
+    T = X.shape[-1]
+    is_2D = X.ndim == 4
+
+    if is_2D:
+        N1, N2, K = A0.shape
+        Y = np.zeros((N1, N2, T))
+
         for t in range(T):
-            Y[:, t] = Ax_ft_1D(A0 / Bnorms[t], X[:, :, t])
+            norm = Bnorms[t] if Bnorms is not None else 1.0
+            y_t = np.zeros((N1, N2), dtype=complex)
+
+            for k in range(K):
+                xk = np.fft.fft2(X[:, :, k, t])
+                y_t += A0[:, :, k] * xk / norm
+
+            Y[:, :, t] = np.real(np.fft.ifft2(y_t))
+
     else:
+        N, K = A0.shape
+        Y = np.zeros((N, T))
+
         for t in range(T):
-            Y[:, t] = Ax_ft_1D(A0, X[:, :, t])
+            norm = Bnorms[t] if Bnorms is not None else 1.0
+            y_t = np.zeros(N, dtype=complex)
+
+            for k in range(K):
+                xk = np.fft.fft(X[:, k, t])
+                y_t += A0[:, k] * xk / norm
+
+            Y[:, t] = np.real(np.fft.ifft(y_t))
 
     return Y
 
-def AtB_ft_1D_Time(A0, B, Bnorms):
+
+def AtB_ft_Time(A0, B, Bnorms):
     """
-    Compute the product AtB where A is the convolution operator represented by A0
-    with each frame of B along the second dimension, and normalize each frame
-    by the corresponding value in Bnorms.
+    Compute A^T B for both 1D and 2D.
 
     Inputs:
-    - A0: N x K FFT of dictionary
-    - B: N x T array
-    - Bnorms: T x 1 array of norm values for each frame in B
+    - A0: N x K or N1 x N2 x K
+    - B: N x T or N1 x N2 x T
+    - Bnorms: T-length array
 
     Output:
-    - AtB: N x K x T tensor
+    - AtB: N x K x T or N1 x N2 x K x T
     """
-    N, K = A0.shape
-    T = B.shape[1]
-    AtB = np.zeros((N, K, T))
+    T = B.shape[-1]
+    is_2D = B.ndim == 3
 
-    for t in range(T):
-        AtB[:, :, t] = AtR_ft_1D(A0 / Bnorms[t], B[:, t])
+    if is_2D:
+        N1, N2, K = A0.shape
+        AtB = np.zeros((N1, N2, K, T), dtype=complex)
 
-    return AtB
+        for t in range(T):
+            norm = Bnorms[t] if Bnorms is not None else 1.0
+            Bt_ft = np.fft.fft2(B[:, :, t]) / norm
 
-def DiffPhiX_1D(X, N=None, K=None, T=None):
-    """
-    Apply summing over space and temporal difference matrix.
+            for k in range(K):
+                AtB[:, :, k, t] = np.fft.ifft2(np.conj(A0[:, :, k]) * Bt_ft)
 
-    Inputs:
-    - X: N x K x T array
-    - N: Integer
-    - K: Integer (optional)
-    - T: Integer (optional)
+        return np.real(AtB)
 
-    Outputs:
-    - DiffPhi: N x (T-1) array
-    """
-
-    # Reshape X if it is a vector
-    if N is None:
-        N, K, T = X.shape
     else:
-        X = X.reshape((N, K, T))
+        N, K = A0.shape
+        AtB = np.zeros((N, K, T), dtype=complex)
 
-    PhiX = np.sum(X, axis=0)
-    DiffPhi = PhiX[:, 1:] - PhiX[:, :-1]
+        for t in range(T):
+            norm = Bnorms[t] if Bnorms is not None else 1.0
+            Bt_ft = np.fft.fft(B[:, t]) / norm
+
+            for k in range(K):
+                AtB[:, k, t] = np.fft.ifft(np.conj(A0[:, k]) * Bt_ft)
+
+        return np.real(AtB)
+
+def DiffPhiX(X, N=None, K=None, T=None):
+    """
+    Apply sum over spatial dimensions and temporal difference.
+    Works for both 1D (N x K x T) and 2D (N1 x N2 x K x T).
+
+    Output:
+    - DiffPhi: K x (T-1)
+    """
+
+    dims = X.ndim
+    if dims == 3:
+        # 1D case: N x K x T
+        N, K, T = X.shape if N is None else (N, K, T)
+        PhiX = np.sum(X, axis=0)  # sum over N
+    elif dims == 4:
+        # 2D case: N1 x N2 x K x T
+        N1, N2, K, T = X.shape
+        PhiX = np.sum(X, axis=(0, 1))  # sum over N1, N2
+    else:
+        raise ValueError("Unsupported input dimensionality for DiffPhiX.")
+
+    # Temporal difference
+    DiffPhi = PhiX[:, 1:] - PhiX[:, :-1]  # shape: K x (T-1)
 
     return DiffPhi
 
-def PhiTranDiffTran_1D(R, N, K=None, T=None):
+def PhiTranDiffTran(R, shape):
     """
-    Compute residual for conjugate gradient that includes difference matrix.
+    Adjoint of temporal difference and summing operator Phi.
+    Works for both 1D and 2D.
 
     Inputs:
-    - R: K x T array
-    - N: Integer
-    - K: Integer (optional)
-    - T: Integer (optional)
+    - R: K x (T-1) array (temporal residuals)
+    - shape: Tuple (N, K, T) or (N1, N2, K, T)
 
-    Outputs:
-    - PtDtR: N x K x T array
+    Output:
+    - PtDtR: shape-matched tensor with adjoint operation applied
     """
 
-    # Reshape R if it is a vector
-    if K is None:
-        K, T = R.shape
-        T += 1
-        reshapeFlag = 0
+    if len(shape) == 3:
+        N, K, T = shape
+        spatial_shape = (N,)
+    elif len(shape) == 4:
+        N1, N2, K, T = shape
+        spatial_shape = (N1, N2)
     else:
-        R = R.reshape((K, T))
-        T += 1
-        reshapeFlag = 1
+        raise ValueError("Shape must be 3D or 4D for PhiTranDiffTran.")
 
+    # Compute D^T R
     DtR = np.zeros((K, T))
     DtR[:, 0] = -R[:, 0]
     DtR[:, -1] = R[:, -1]
-    DtR[:, 1:-2] = R[:, :-2] - R[:, 1:-1]
+    DtR[:, 1:-1] = R[:, :-1] - R[:, 1:]
 
-    DtR = DtR.reshape((1, K, T))
-    PtDtR = np.tile(DtR, (N, 1, 1))
-
-    if reshapeFlag:
-        PtDtR = PtDtR.reshape((1,) + PtDtR.shape)
+    # Expand back across spatial domain
+    full_shape = spatial_shape + (K, T)
+    PtDtR = np.tile(DtR[np.newaxis, ...], spatial_shape + (1,) * 2)
 
     return PtDtR

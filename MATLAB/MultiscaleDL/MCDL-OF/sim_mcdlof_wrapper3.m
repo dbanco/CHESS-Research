@@ -53,7 +53,7 @@ suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e_lam3_%0.2e',...
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
 % Generate figures
-generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8]);
+generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8],outputs.opt.useMin);
 
 AD = reSampleCustomArrayCenter3(N,D,scales,center);
 AD = padarray(AD,[0 M-1 0],0,'post');
