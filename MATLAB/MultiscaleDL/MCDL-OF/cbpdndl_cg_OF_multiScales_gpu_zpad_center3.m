@@ -335,9 +335,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Solve D subproblem. Similarly, it would be simpler and more efficient to
     % solve for D using the main coefficient variable X as the coefficients,
     % but it appears to be more stable to use the shrunk coefficient variable Y
-    AYS = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals,Shifts);
+    
     if ~opt.Dfixed && k > 1
-        
+        AYS = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals,Shifts);
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,Shifts,centerM,opt.useGpu);
         cgIters1 = cgst.pit;

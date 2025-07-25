@@ -66,7 +66,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'gaussian_tooth_matched_long2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'rand','flat','true'};
+dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
@@ -90,7 +90,7 @@ dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
-for s_dinit = 2
+for s_dinit = 4
 for s_dfix = 1
 for s_recenter = 1
     opt.Penalty = penalties{s_pen};
@@ -118,7 +118,8 @@ for s_recenter = 1
         j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
-
+        files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
+        opt.mcdl_file = fullfile(initDir,files(1).name);
         for j_s = [j_s_select-1,j_s_select+1]
         for j_of = ind2
         for j_hs = ind3

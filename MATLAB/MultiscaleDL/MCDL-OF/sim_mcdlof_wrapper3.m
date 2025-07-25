@@ -9,7 +9,6 @@ mkdir(figDir)
 % Data  
 rng('shuffle');
 [y,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigmas(i),dataset);
-
 y = reshape(y,[1,N,T]);
 
 % Model Setup

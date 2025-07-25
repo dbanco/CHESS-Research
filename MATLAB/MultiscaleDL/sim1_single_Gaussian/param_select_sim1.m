@@ -29,7 +29,7 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_7_24indep65_',dataset,'_',opt.Penalty,...
+topDir = ['E:\MCDLOF_processing\Outputs_7_24of_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -56,7 +56,7 @@ for n = sig_ind
     if exist(resultFile,'file')
         load(resultFile)
     else
-        results = compute_metrics(inDir,sigmas(n),dataset,useMin,true);
+        results = compute_metrics(inDir,sigmas(n),dataset,useMin);
         save(resultFile,'results')
     end
     [lambda_all,objective] = param_select_mcdl(results,criterion,sigmas(n),dataset,relax_param,fig_num);

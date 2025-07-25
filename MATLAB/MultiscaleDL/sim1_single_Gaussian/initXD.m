@@ -34,5 +34,8 @@ switch opt.dictInit
         D0 = rand(1,M,K);
     case 'true'
         D0 = Dtrue;
+    case 'mcdl'
+        load(opt.mcdl_file)
+        D0 = outputs.D;
 end
 opt.G0 = D0;
