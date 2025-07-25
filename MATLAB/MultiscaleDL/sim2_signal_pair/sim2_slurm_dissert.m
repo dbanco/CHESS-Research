@@ -118,6 +118,10 @@ for s_recenter = 1
         j_s_select = selected_lam_s_inds(sig_i);
         % j_of_select = selected_lam_of_inds(sig_i);
         % j_hs_select = selected_lam_hs_inds(sig_i);
+        
+        initDir = ['E:\MCDLOF_processing\Outputs_7_23a1_',dataset,'_',opt.Penalty,...
+                '_Dflat0','_Xzeros0','_recenter0','\results_trial_1_sig_',num2str(sig_i)];
+
         files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
         opt.mcdl_file = fullfile(initDir,files(1).name);
         for j_s = [j_s_select-1,j_s_select+1]
