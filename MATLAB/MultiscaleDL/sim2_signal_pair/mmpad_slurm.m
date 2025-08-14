@@ -74,7 +74,7 @@ for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
 for s_recenter = 1
-for K = 1:6
+for K = 1:4
 for M = [51,101,151,201]
 
     opt.M = M;
@@ -96,6 +96,8 @@ for M = [51,101,151,201]
     end
 
     topDir = ['/cluster/home/dbanco02/Outputs_8_14_',dataset,'_',opt.Penalty,...
+        '_M',num2str(opt.M),...
+        '_K',num2str(K),...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];
