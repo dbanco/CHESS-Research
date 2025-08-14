@@ -75,6 +75,10 @@ for s_dinit = 2
 for s_dfix = 1
 for s_recenter = 1
 for K = 1:6
+for M = [51,101,151,201]
+
+    opt.M = M;
+
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -109,6 +113,7 @@ for K = 1:6
         end
         end
         end
+end
 end
 end
 end

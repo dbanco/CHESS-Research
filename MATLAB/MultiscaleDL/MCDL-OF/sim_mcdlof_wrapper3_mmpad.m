@@ -10,6 +10,10 @@ mkdir(figDir)
 rng('shuffle');
 [y,~,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
 
+if exist('opt.M')
+    M = opt.M;
+end
+
 y = reshape(y,[1,N,T]);
 
 noise_est = estimate_noise(y,5);
