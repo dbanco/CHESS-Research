@@ -57,7 +57,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 sig_ind = 1;
-ind1 = 1:numel(lambdaVals);
+ind1 = 20:5:70;%1:numel(lambdaVals);
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
