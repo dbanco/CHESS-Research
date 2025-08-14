@@ -1,4 +1,6 @@
 lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
+lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,5)];
+lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 1e-1 1];
 
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
@@ -29,7 +31,9 @@ opt.dictInit = dinits{s3};
 opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
-topDir = ['E:\MCDLOF_processing\Outputs_7_24of_',dataset,'_',opt.Penalty,...
+
+prefix = ['7_24of_',dataset];
+topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -49,6 +53,8 @@ objectives = cell(NN,1);
 useMin = 0;
 relax_param = 1.1; % for discrep range1
 % relax_param = 0.004; % for discrep range2
+makeFigures = true;
+
 sig_ind = 1:6;
 for n = sig_ind
     inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
@@ -74,38 +80,38 @@ for n = sig_ind
         psFigDir = fullfile(topDir,['ps_',criterion,'_',num2str(relax_param),...
                                           '_useMin',num2str(useMin)]);
         generateFiguresToy1zpad_center(psFigDir,outputs,suffix,[4,8],useMin);
-        close all
     end
     objectives{n} = objective;
 end
-% LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
-% fig = gcf;
-% fig.Position = [100 100 1400 800];
-% saveas(gcf, LcurveFile);
-% removeWhiteSpace(LcurveFile)
+LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
+fig = gcf;
+fig.Position = [100 100 1400 800];
+saveas(gcf, LcurveFile);
+removeWhiteSpace(LcurveFile)
 
-% %% Compute meanSNR
-% [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
-% 
-% %% Compute errors
-% dirStartS = 'results_1';
-% [noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
-% 
-% figure()
-% hold on
-% plot(meanSNR,noiseNorm,'s-')
-% plot(meanSNR,trueErrS,'o-')
-% xlabel('SNR','Fontsize',14)
-% ylabel('Error','Fontsize',14)
-% legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-%     '$\|\hat{{\bf b}}-{\bf f}\|_2$ (OF)',...
-%     'interpreter','latex','Fontsize',14)
-% 
-% 
-% %% Next copy figures associated with selected parameters to a folder
-% pptFile = ['C:\Users\dpqb1\Documents\MCDL Paper\sim1_lam_s_6_26indep',...
-%            '_relax_',num2str(relax_param),...
-%            '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx'];
-% titleStr = ['Sim 1 Param Select,',dirStartS];
-% % createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
-% createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
+%% Compute meanSNR
+[meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
+
+%% Compute errors
+dirStartS = 'results_1';
+[~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
+[noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
+
+figure()
+hold on
+plot(meanSNR,noiseNorm,'s-')
+plot(meanSNR,trueErrS,'o-')
+xlabel('SNR','Fontsize',14)
+ylabel('Error','Fontsize',14)
+legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    '$\|\hat{{\bf b}}-{\bf f}\|_2$ (OF)',...
+    'interpreter','latex','Fontsize',14)
+
+
+%% Next copy figures associated with selected parameters to a folder
+pptFile = fullfile(topDir,['sim1_',prefix,...
+           '_relax_',num2str(relax_param),...
+           '_useMin1_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx']);
+titleStr = ['Sim 1 Param Select,',dirStartS];
+% createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
+createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)

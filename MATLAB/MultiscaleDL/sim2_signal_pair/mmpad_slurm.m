@@ -26,6 +26,10 @@ opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -35,6 +39,9 @@ opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
+
 
 % Multiscale dictionary setup
 scriptFileName = 'mcdlof_bash.sh';
@@ -42,7 +49,7 @@ funcName = 'sim_mcdlof_wrapper3_mmpad';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-datasets = {'mmpad_ring1'};
+datasets = {'mmpad_ring3'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -84,7 +91,7 @@ for K = 1:6
         continue
     end
 
-    topDir = ['/cluster/home/dbanco02/Outputs_7_2_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_14_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results'];

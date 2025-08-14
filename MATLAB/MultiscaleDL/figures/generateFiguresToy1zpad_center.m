@@ -131,5 +131,9 @@ for i = 1:length(files)
     removeWhiteSpace(filePath)
 end
 
+close(f1); 
+close(f2); 
+close(f3);
+close(f5);
 
 end

@@ -54,9 +54,9 @@ switch dataset
     case 'mmpad_ring1'
         ring_num = 1;
         try
-            yn = loadMMPAD1D(ring_num,1,'/cluster/home/dbanco02/mmpad');
+            yn = loadMMPAD1D(ring_num,'interp','/cluster/home/dbanco02/mmpad');
         catch
-            yn = loadMMPAD1D(ring_num,1,'E:\Data\mmpad');
+            yn = loadMMPAD1D(ring_num,'interp','E:\Data\mmpad');
         end
         yn = yn(:,21:100);
         [N,T] = size(yn);
@@ -64,6 +64,19 @@ switch dataset
         M = 181;
         Xtrue = 0;
         Dtrue = 0;
+    case 'mmpad_ring3'
+        ring_num = 3;
+        try
+            yn = loadMMPAD1D(ring_num,'copy-shift','/cluster/home/dbanco02/mmpad');
+        catch
+            yn = loadMMPAD1D(ring_num,'copy-shift','E:\Data\mmpad');
+        end
+        [N,T] = size(yn);
+        y = yn;
+        M = 51;
+        Xtrue = 0;
+        Dtrue = 0;
+
     case 'pseudo-voigt_unmatched'
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_unmatched_multiscale_dl(sigma);
     case 'pseudo-voigt_matched'

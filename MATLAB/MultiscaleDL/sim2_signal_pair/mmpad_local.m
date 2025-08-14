@@ -11,8 +11,9 @@ sigmas = 0:0.01:0.1;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 10;
+opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
+opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
@@ -25,6 +26,10 @@ opt.AutoSigma = 1;
 opt.AutoSigmaPeriod = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
+opt.a_min = 1e-4;
+opt.lambda_min = 1e-4;
+opt.adapt_a = true;
+opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
@@ -38,12 +43,14 @@ opt.Recenter = 1;
 % opt.coefInit = 'zeros';
 % opt.dictInit = 'flat';
 opt.a = 1;
+opt.useMin = false;
+opt.AdaptIters = 100;
 
 % Multiscale dictionary setup
 funcName = 'sim_mcdlof_wrapper3_mmpad';
 k = 1;
 
-datasets = {'mmpad_ring1'};
+datasets = {'mmpad_ring3'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -51,7 +58,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 sig_ind = 1;
-ind1 = 20;%1:numel(lambdaVals);
+ind1 = 30;%1:numel(lambdaVals);
 ind2 = 1;%2:50;
 ind3 = 1;%2:6;
 
@@ -68,7 +75,7 @@ for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
 for s_recenter = 1
-for K = 5:6
+for K = 2
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -85,7 +92,7 @@ for K = 5:6
         continue
     end
 
-    topDir = ['E:\MCDLOF_processing\Outputs_7_3local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_8_13local_K3_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'\results'];

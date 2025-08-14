@@ -125,9 +125,49 @@ xticklabels({'200','100','0'});
 yticklabels({'0', '120'});
 colorbar()
 
+% Colorbar
+colorbar();
+
+
 saveas(ff1,'waterfall_recon.png')
 saveas(ff2,'waterfall_data.png')
 saveas(ff3,'waterfall_colorbar.png')
 
 
+ff4=figure;
+waterfall(log(squeeze(y)')+5)
+ff4.Position = fig_pos2;
+xlim([0,261])
+ylim([0,120])
+clim([log(0.01)+5,log(0.9)+5])
+view(azimuth, elevation);
+xticks([61 161,261]); 
+yticks([0, 120]); 
+xticklabels({'200','100','0'});
+yticklabels({'0', '120'});
+colorbar()
 
+%% Surface plot
+ff5 = figure;
+y = loadMMPAD1D(3,'copy-shift');
+Z = squeeze(y(:,110:210,:))';  % Size: [numY, numX]
+
+% Generate matching X and Y coordinates
+[numY, numX] = size(Z);
+[X, Y] = meshgrid(1:numX, 1:numY);  % match X and Y to Z
+
+% Plot as surface
+surf(X, Y, Z, 'EdgeColor', 'none');  % No mesh lines for a cleaner surface
+
+% Apply view settings
+ff5.Position = fig_pos2;
+% xlim([0, 261])
+% ylim([0, 120])
+clim([0, 0.9])
+view(azimuth, elevation);
+
+% Customize ticks
+% xticks([61 161 261]);
+% yticks([0 120]);
+% xticklabels({'200', '100', '0'});
+% yticklabels({'0', '120'});
