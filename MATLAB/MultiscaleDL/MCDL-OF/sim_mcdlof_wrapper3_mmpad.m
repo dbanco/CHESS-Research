@@ -10,7 +10,7 @@ mkdir(figDir)
 rng('shuffle');
 [y,~,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
 
-if exist('opt.M')
+if isfield(opt,'M')
     M = opt.M;
 end
 

@@ -57,6 +57,8 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
+opt.M = 101;
+
 sig_ind = 1;
 ind1 = 30;%1:numel(lambdaVals);
 ind2 = 1;%2:50;
@@ -92,7 +94,9 @@ for K = 2
         continue
     end
 
-    topDir = ['E:\MCDLOF_processing\Outputs_8_13local_K3_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_8_15local_',dataset,'_',opt.Penalty,...
+        '_M',num2str(opt.M),...
+        '_K',num2str(K),...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'\results'];
