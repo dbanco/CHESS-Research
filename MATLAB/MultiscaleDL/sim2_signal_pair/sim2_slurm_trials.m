@@ -64,7 +64,7 @@ dinits = {'rand','flat','true'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 1:6;
+sig_ind = 2:6;
 
 % ind1 = 1:numel(lambdaVals);
 % ind2 = 2:26;
@@ -75,7 +75,7 @@ sig_ind = 1:6;
 % --- Dataset, Initialization, Parameters ---
 for s0 = 11
 dataset = datasets{s0};
-for trial = 1:50
+for trial = 2:51
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -91,7 +91,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_6_26trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_7_23a1_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
