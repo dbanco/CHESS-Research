@@ -11,7 +11,7 @@ sigmas = 0:0.01:0.1;
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;
+opt.MaxMainIter = 10;
 opt.MaxCGIter = 100;
 opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
