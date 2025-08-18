@@ -2,8 +2,10 @@
 % Directory
 % lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaVals = logspace(-3,1,120);
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
+% lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,19)];
+% lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3];
+lambdaOFVals = [0 logspace(-4,0,20)];
+lambdaHSVals = [0 logspace(-4,0,10)];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -91,8 +93,6 @@ for s_recenter = 1
         continue
     end
     
-    
-        
     selected_lam_s_inds = [0,41,51,55,61,66];
     selected_lam_of_inds = [0,21,15,15,14,13];
     selected_lam_hs_inds = [0,3,5,3,5,5];
