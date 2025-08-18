@@ -60,7 +60,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'gaussian_tooth_matched_long2','dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'rand','flat','true'};
+dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
@@ -75,7 +75,7 @@ sig_ind = 2:6;
 % --- Dataset, Initialization, Parameters ---
 for s0 = 12
 dataset = datasets{s0};
-for trial = 2:51
+for trial = 1:50
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
@@ -91,17 +91,15 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_7_23a1_',dataset,'_',opt.Penalty,...
-        '_D',opt.dictInit,num2str(opt.Dfixed),...
-        '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+    
         
-    selected_lam_s_inds = [33,36,51,57,62,66];
-    selected_lam_of_inds = [3,4,5,5,9,19];
-    selected_lam_hs_inds = [2,3,3,5,3,3];
+    selected_lam_s_inds = [0,41,51,55,61,66];
+    selected_lam_of_inds = [0,21,15,15,14,13];
+    selected_lam_hs_inds = [0,3,5,3,5,5];
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
+
         j_s_select = selected_lam_s_inds(sig_i);
         j_of_select = selected_lam_of_inds(sig_i);
         j_hs_select = selected_lam_hs_inds(sig_i);
@@ -110,8 +108,32 @@ for s_recenter = 1
 
         for j_s = j_s_select
         for iiii = 1:2
+
             j_of = j_ofs(iiii);
             j_hs = j_hss(iiii);
+            
+            if j_of > 1
+                opt.dictInit = 'mcdl';
+                initDir = ['/cluster/home/dbanco02/Outputs_7_23a1_',dataset,'_',opt.Penalty,...
+                    '_Dflat0','_Xzeros0','_recenter0','/results_trial_1_sig_',num2str(sig_i)];
+    
+                files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
+                opt.mcdl_file = fullfile(initDir,files(1).name);
+
+                topDir = ['/cluster/home/dbanco02/Outputs_8_18_trials_of_',dataset,'_',opt.Penalty,...
+                    '_D',opt.dictInit,num2str(opt.Dfixed),...
+                    '_X',opt.coefInit,num2str(opt.Xfixed),...
+                    '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+
+            else
+                opt.dictInit = 'flat';
+                topDir = ['/cluster/home/dbanco02/Outputs_8_18_trials_indep_',dataset,'_',opt.Penalty,...
+                    '_D',opt.dictInit,num2str(opt.Dfixed),...
+                    '_X',opt.coefInit,num2str(opt.Xfixed),...
+                    '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+
+            end
+
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
                     j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')

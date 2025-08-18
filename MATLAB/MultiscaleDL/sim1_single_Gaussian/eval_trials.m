@@ -23,6 +23,20 @@ for i = 1:num_trials
     inDir = [topDir,'\results_trial_',num2str(i),'_sig_',num2str(n)];
     files = dir(fullfile(inDir, '*.mat'));
     matFileNames = {files.name};
+
+    % First load in nonIndep solution to get of,hs parameters
+    for j = 1:numel(matFileNames)
+        % Load outputs
+        load(fullfile(inDir,matFileNames{j}))
+        if outputs.lambda2 > 0
+            lambda_of = outputs.lambda2;
+            lambda_hs = outputs.opt.Smoothness;
+            HSiters = outputs.opt.HSiters;
+            break
+        else
+            continue
+        end
+    end
   
     for j = 1:numel(matFileNames)
         % Load outputs
@@ -41,6 +55,7 @@ for i = 1:num_trials
         KJ = size(Xtrue,3);
         J = KJ/K;
         y = outputs.y;
+        opt = outputs.opt;
         if useMin
             D = outputs.Dmin;
             X = outputs.Ymin;
@@ -96,10 +111,13 @@ for i = 1:num_trials
         Fx = diffxHS(Xpad);
         Fy = diffyHS(Xpad);
         Ft = difftHS(Xpad);
-        if sum(outputs.Uvel(:)) == 0
-            [Uvel, Vvel] = %%%% NEED TO MAKE SURE THESE COMPUTED FOR INDEP CASE
+        if true %%%%%%%%%%%%%%%%sum(outputs.Uvel(:)) == 0
+            [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(X,K,[],[],lambda_hs/lambda_of,HSiters);
+        else
+            Uvel = outputs.Uvel;
+            Vvel = outputs.Vvel;
         end
-        [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,outputs.Uvel,outputs.Vvel,K,outputs.opt.Smoothness/outputs.lambda2);
+        [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,Uvel,Vvel,K,outputs.opt.Smoothness/outputs.lambda2);
         of_penalty(i) = Jof;
         hs_penalty(i) = Jhs;
         % Get lambda parameters
