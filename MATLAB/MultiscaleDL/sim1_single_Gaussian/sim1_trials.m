@@ -71,4 +71,4 @@ sig_ind = 1:6;
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
 error_stats_of = compute_error_stats(objectives_of,sig_ind);
 
-trials_figures(fig_dir,data_name,meanSNR,error_stats_indep,error_stats_of)
+trials_figures(fig_dir,num_trials,data_name,meanSNR,error_stats_indep,error_stats_of)

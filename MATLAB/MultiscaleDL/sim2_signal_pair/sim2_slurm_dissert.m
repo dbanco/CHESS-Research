@@ -2,8 +2,11 @@
 % Directory
 % lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
 lambdaVals = logspace(-3,1,120);
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,5)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 1e-1 1];
+% lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,5)];
+% lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 1e-1 1];
+
+lambdaOFVals = [0 logspace(-4,0,20)];
+lambdaHSVals = [0 logspace(-4,0,10)];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -58,12 +61,7 @@ funcName = 'sim_mcdlof_wrapper3';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
-datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...
-            'dissertation','dissertation_adjust2','dissertation_long',...
-            'dissertation_long_separate','voigt_tooth_matched',...
-            'gaussian_tooth_matched','gaussian_tooth_matched_long',...
-            'gaussian_tooth_matched_long2'};
+datasets = {'dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true','mcdl'};
@@ -80,12 +78,12 @@ sig_ind = 2:6;
 % ind2 = 2:11;
 % ind3 = 2:9;
 
-ind1 = 1;
-ind2 = 2:11;
-ind3 = 2:9;
+ind1 = 1:numel(lambdaVals);
+ind2 = 2:21;
+ind3 = 2:11;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 6
+for s0 = 1
 dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
@@ -103,7 +101,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_7_24of_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_18of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -124,7 +122,7 @@ for s_recenter = 1
 
         files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
         opt.mcdl_file = fullfile(initDir,files(1).name);
-        for j_s = [j_s_select-1,j_s_select+1]
+        for j_s = j_s_select
         for j_of = ind2
         for j_hs = ind3
             varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...

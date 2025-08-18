@@ -57,7 +57,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'dissertation','dissertation_long',...
             'dissertation_long_separate','voigt_tooth_matched',...
             'gaussian_tooth_matched','gaussian_tooth_matched_long',...
-            'gaussian_tooth_matched_long2'};
+            'gaussian_tooth_matched_long2','dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
@@ -73,7 +73,7 @@ sig_ind = 2:6;
 % ind3 = 1;
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 11
+for s0 = 12
 dataset = datasets{s0};
 for trial = 2:51
 for s_pen = 2

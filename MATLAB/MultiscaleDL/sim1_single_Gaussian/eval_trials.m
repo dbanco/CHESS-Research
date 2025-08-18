@@ -96,6 +96,9 @@ for i = 1:num_trials
         Fx = diffxHS(Xpad);
         Fy = diffyHS(Xpad);
         Ft = difftHS(Xpad);
+        if sum(outputs.Uvel(:)) == 0
+            [Uvel, Vvel] = %%%% NEED TO MAKE SURE THESE COMPUTED FOR INDEP CASE
+        end
         [Jof, Jhs] = HSobjectivePaper(Fx,Fy,Ft,outputs.Uvel,outputs.Vvel,K,outputs.opt.Smoothness/outputs.lambda2);
         of_penalty(i) = Jof;
         hs_penalty(i) = Jhs;

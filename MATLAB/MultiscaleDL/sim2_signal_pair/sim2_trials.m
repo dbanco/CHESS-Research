@@ -21,7 +21,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 8;
+s0 = 12;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -35,11 +35,11 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_7_24of_trials_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_7_23a1_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
-test_name2 = ['Outputs_7_24of_trials_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_7_23a1_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -49,23 +49,25 @@ topDir2 = ['E:\MCDLOF_processing\',test_name2];
 
 
 useMin = 1;
-sig_ind = 1:6;
+sig_ind = 2:6;
 num_trials = 20;
 
 objectives_indep = cell(numel(sig_ind),1);
 objectives_of = cell(numel(sig_ind),1);
+i = 1;
 for n = sig_ind
-    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,false);
-    objectives_indep{n} = objective_indep;    
+    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,true);
+    objectives_indep{i} = objective_indep;    
     objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,false);
-    objectives_of{n} = objective_of;
+    objectives_of{i} = objective_of;
+    i = i + 1;
 end
 
 %% Plot Results
 fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
 data_name = 'sim2';
 
-sig_ind = 1:6;
+sig_ind = 2:6;
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
