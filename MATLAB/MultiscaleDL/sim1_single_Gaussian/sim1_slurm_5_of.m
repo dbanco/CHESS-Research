@@ -94,7 +94,7 @@ for s_recenter = 1
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
 
     for sig_i = sig_ind
-    initDir = ['/cluster/home/dbanco02/Outputs_8_19_of_',dataset,'_',opt.Penalty,...
+    initDir = ['/cluster/home/dbanco02/Outputs_8_19_indep_',dataset,'_',opt.Penalty,...
             '_Dflat0','_Xzeros0','_recenter0','/results_trial_1_sig_',num2str(sig_i)];
 
     files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
