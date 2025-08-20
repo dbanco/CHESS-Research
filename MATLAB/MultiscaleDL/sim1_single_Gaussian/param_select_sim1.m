@@ -1,6 +1,6 @@
-lambdaVals = [1e-4,5e-4,1e-3,5e-3,1e-2,2e-2,linspace(3e-2,8e-1,100)];
-lambdaOFVals = [0 1e-4,5e-4,1e-3,5e-3,1e-2,linspace(5e-2,1,5)];
-lambdaHSVals = [0 1e-4 5e-4 1e-3 2e-3 5e-3 1e-2 1e-1 1];
+lambdaVals = logspace(-2,0,150);
+lambdaOFVals = [0 logspace(-4,0,20)];
+lambdaHSVals = [0 logspace(-4,0,10)];
 
 sigmas = 0:0.01:0.1;
 NN = numel(sigmas);
@@ -32,7 +32,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-prefix = ['7_24of_',dataset];
+prefix = ['8_19_indep_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...

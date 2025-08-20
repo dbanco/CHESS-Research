@@ -16,9 +16,7 @@ of_penalty  = results.of_penalty;
 hs_penalty  = results.hs_penalty;
 lambda_vec  = results.lambda_vec;
 D_error     = results.D_error;
-X_error     = results.X_error;
 vdf_error   = results.vdf_error;
-shift_error = results.shift_error;
 
 % Normalized origin distance criterion
 switch criterion
@@ -123,10 +121,8 @@ objective.l0_norm = l0_norm(selInd);
 objective.log_penalty = log_penalty(selInd);
 objective.of_penalty = of_penalty(selInd);
 objective.hs_penalty = hs_penalty(selInd);
-objective.X_error = X_error(selInd);
 objective.D_error = D_error(selInd);
 objective.vdf_error = vdf_error(selInd);
-objective.shift_error = shift_error(selInd);
 
 
 end

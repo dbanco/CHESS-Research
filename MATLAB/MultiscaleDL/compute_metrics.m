@@ -66,26 +66,14 @@ for i = 1:numel(matFileNames)
 
     % Identify correct ordering and shift of learned dictionary and apply it
     if ~isscalar(Dtrue)
-        [D_perm, best_perm, shifts, ~] = align_third_dim_and_shift(D, Dtrue);
-        X_perm = apply_perm_to_X(X, J, best_perm, shifts);
+        [D_perm, ~] = align_third_dim_and_shift(D, Dtrue);
     
         % Compute errors on recovered X and D 
-        Xerr1 = sqrt(sum((X_perm-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
-        Xerr2 = sqrt(sum((X-Xtrue).^2,'all'))/sqrt(sum((Xtrue).^2,'all'));
-        X_error(i) = min(Xerr1,Xerr2);
         D_error(i) = sqrt(sum((D_perm-Dtrue).^2,'all'))/sqrt(sum((Dtrue).^2,'all'));
-        if Xerr1 < Xerr2
-            vdf = sum(X_perm,[1,2]);
-            shift = sum(X_perm,[1,3]);
-        else
-            vdf = sum(X,[1,2]);
-            shift = sum(X,[1,3]);  
-        end
+       
+        vdf = sum(X,[1,2]);
         vdf_true = sum(Xtrue,[1,2]);
         vdf_error(i) = sqrt(sum((vdf-vdf_true).^2,'all'))/sqrt(sum((vdf_true).^2,'all'));
-        
-        shift_true = sum(Xtrue,[1,3]);
-        shift_error(i) = sqrt(sum((shift-shift_true).^2,'all'))/sqrt(sum((shift_true).^2,'all'));
     end
 
     % Compute log penalty
@@ -119,6 +107,4 @@ results.of_penalty  = of_penalty;
 results.hs_penalty  = hs_penalty;
 results.lambda_vec  = lambda_vec;
 results.D_error     = D_error;
-results.X_error     = X_error;
 results.vdf_error   = vdf_error;
-results.shift_error = shift_error;
