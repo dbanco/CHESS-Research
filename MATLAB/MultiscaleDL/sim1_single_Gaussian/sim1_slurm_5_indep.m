@@ -1,6 +1,8 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-2,0,150);
+lambdaOFVals = [0 logspace(-4,0,20)];
+lambdaHSVals = [0 logspace(-4,0,10)];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -62,7 +64,7 @@ recenter = {0,1};
 % Noise level
 sig_ind = 1:6;
 
-ind1 = 1:106;
+ind1 = 1:numel(lambdaVals);
 % ind2 = 2:50;
 % ind3 = 2:6;
 
