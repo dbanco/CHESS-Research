@@ -1,27 +1,19 @@
-function [D_aligned, best_perm, shifts, min_error] = align_third_dim_and_shift(D, Dtrue)
+function [D_aligned, d_shifts] = align_third_dim_and_shift(D, Dtrue)
     % D and Dtrue must be of same size, e.g., [1, 45, N] with N <= 5
-    assert(isequal(size(D), size(Dtrue)), 'D and Dtrue must have the same size');
-    N = size(D, 3);
+    [~, N, K] = size(D);
+    assert(isequal(size(D), size(Dtrue)), 'D and Dtrue must be the same size');
     
-    perms_list = perms(1:N);     % All permutations of 1:N
-    num_perms = size(perms_list, 1);
-    
-    min_error = inf;
-    best_perm = [];
     D_aligned = D;
+    d_shifts = zeros(K,1);
     
-    for i = 1:num_perms
-        perm = perms_list(i,:);
-        D_perm = D(:,:,perm);
-        [err, shifts, shifted_D] = compute_shifted_dict_error(D_perm, Dtrue);
-        
-        if err < min_error
-            min_error = err;
-            best_perm = perm;
-            D_aligned = shifted_D;
-        end
+    for k = 1:K
+        d = squeeze(D(1,:,k));
+        d_true = squeeze(Dtrue(1,:,k));
+        corr = xcorr(d, d_true, 'coeff');
+        [~, max_idx] = max(corr);
+        shift = mod(max_idx - N - 1, N);   % shift to align d to d_true
+        d_shifted = circshift(d, [0, -shift-1]);
+        D_aligned(1,:,k) = d_shifted;
+        d_shifts(k) = -shift-1;
     end
-    
-    fprintf('Best permutation of 3rd dimension: [%s]\n', num2str(best_perm));
-    fprintf('Minimum error: %.6f\n', min_error);
 end

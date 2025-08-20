@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = logspace(1e-2,8e-1,100);
+lambdaVals = logspace(-2,0,150);
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -62,19 +62,10 @@ recenter = {0,1};
 % Noise level
 sig_ind = 1:6;
 
-% SELECTE PARAMETERS:
-% selected_lam_s = [0,7,11,17,19,26];
-
-% Regularization parameters
-% ind1 = 11:15;
-% ind2 = [1,30,31];
-% ind3 = [5];
-
 ind1 = 1:106;
 % ind2 = 2:50;
 % ind3 = 2:6;
 
-k = 1;
 for s_dataset = 1
 dataset = datasets{s_dataset};
 for trial = 1
@@ -107,7 +98,6 @@ for s_recenter = 1
             save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
             k = k + 1;
         end
-        % end
     end
 end
 end

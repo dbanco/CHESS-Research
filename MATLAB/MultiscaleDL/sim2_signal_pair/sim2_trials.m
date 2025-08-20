@@ -13,15 +13,16 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',... %1
             'voigt_tooth_matched',...%9
             'gaussian_tooth_matched',...%10
             'gaussian_tooth_matched_long',...%11
-            'gaussian_tooth_matched_long2'};%12
+            'gaussian_tooth_matched_long2',...%12
+            'dissertation_adjust2'};%13
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'rand','flat','true'};
+dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 12;
+s0 = 13;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -35,29 +36,37 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_7_23a1_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_8_18_trials_indep_',dataset,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
-test_name2 = ['Outputs_7_23a1_',dataset,'_',opt.Penalty,...
-    '_D',opt.dictInit,num2str(opt.Dfixed),...
+test_name2 = ['Outputs_8_18_trials_of_',dataset,'_',opt.Penalty,...
+    '_D','mcdl',num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
 topDir = ['E:\MCDLOF_processing\',test_name];
 topDir2 = ['E:\MCDLOF_processing\',test_name2];
 
+if ~isfolder(topDir)
+    disp('Directory does not exist');
+end
+if ~isfolder(topDir2)
+    disp('Directory does not exist');
+end
 
-useMin = 1;
-sig_ind = 2:6;
-num_trials = 20;
+useMin = 0;
+sig_ind = [2];
+num_trials = 5;
 
 objectives_indep = cell(numel(sig_ind),1);
 objectives_of = cell(numel(sig_ind),1);
 i = 1;
 for n = sig_ind
+    fprintf('Evaluating indep, \sigma = %i',n)
     objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,true);
-    objectives_indep{i} = objective_indep;    
+    objectives_indep{i} = objective_indep;  
+    fprintf('Evaluating of, \sigma = %i',n)
     objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,false);
     objectives_of{i} = objective_of;
     i = i + 1;
@@ -67,10 +76,9 @@ end
 fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
 data_name = 'sim2';
 
-sig_ind = 2:6;
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
 error_stats_of = compute_error_stats(objectives_of,sig_ind);
 
-trials_figures(fig_dir,data_name,meanSNR,error_stats_indep,error_stats_of)
+trials_figures(fig_dir,num_trials,data_name,meanSNR,error_stats_indep,error_stats_of)

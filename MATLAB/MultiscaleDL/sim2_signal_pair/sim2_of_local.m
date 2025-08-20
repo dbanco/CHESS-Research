@@ -97,7 +97,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['E:\MCDLOF_processing\\Outputs_7_23_local7_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\\Outputs_8_19_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -117,8 +117,8 @@ for s_recenter = 1
         files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
         opt.mcdl_file = fullfile(initDir,files(1).name);
         for j_s = j_s_select
-        for j_of = 4
-        for j_hs = 2
+        for j_of = 10
+        for j_hs = 5
             sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
                 j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales);
         end

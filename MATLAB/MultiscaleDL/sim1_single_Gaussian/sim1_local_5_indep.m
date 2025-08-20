@@ -60,7 +60,7 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
-sig_ind = 2;
+sig_ind = 6;
 
 % SELECTE PARAMETERS:
 % selected_lam_s = [0,7,11,17,19,26];
@@ -74,7 +74,6 @@ ind1 = 1:106;
 % ind2 = 2:50;
 % ind3 = 2:6;
 
-k = 1;
 for s_dataset = 1
 dataset = datasets{s_dataset};
 for trial = 1
@@ -93,13 +92,13 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['E:/MCDL_processing/Outputs_8_19_indep_local_',dataset,'_',opt.Penalty,...
+    topDir = ['E:/MCDLOF_processing/Outputs_8_19_indep_local_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
 
     for sig_i = sig_ind
-        for j_s = 10
+        for j_s = 100
             j_of = 1;
             j_hs = 1;
             sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,...
@@ -115,4 +114,3 @@ end
 end
 end
 end
-slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))

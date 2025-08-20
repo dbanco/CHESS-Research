@@ -16,7 +16,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',... %1
             'gaussian_tooth_matched_long2'};%12
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'rand','flat','true'};
+dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
@@ -48,15 +48,18 @@ test_name2 = ['Outputs_7_24of_trials_',dataset,'_',opt.Penalty,...
 topDir = ['E:\MCDLOF_processing\',test_name];
 topDir2 = ['E:\MCDLOF_processing\',test_name2];
 
-useMin = 1;
+useMin = 0;
 sig_ind = 1:6;
 num_trials = 20;
 
 objectives_indep = cell(numel(sig_ind),1);
 objectives_of = cell(numel(sig_ind),1);
 for n = sig_ind
+    fprintf('sig_ind = %i',n)
+    fprintf('Indep')
     objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,true);
-    objectives_indep{n} = objective_indep;    
+    objectives_indep{n} = objective_indep;  
+    fprintf('OF')
     objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,false);
     objectives_of{n} = objective_of;
 end
@@ -65,7 +68,6 @@ end
 fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
 data_name = 'sim1';
 
-sig_ind = 1:6;
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);

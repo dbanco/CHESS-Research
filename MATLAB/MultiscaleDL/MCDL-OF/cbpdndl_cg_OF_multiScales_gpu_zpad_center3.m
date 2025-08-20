@@ -160,6 +160,11 @@ else
   dsz = opt.DictFilterSizes;
 end
 
+% Set a paramter via lambda
+if opt.a_via_lam
+    opt.a = 0.95./lambda;
+end
+
 % Mean removal and normalisation projections
 Pzmn = @(x) bsxfun(@minus, x, mean(mean(x,1),2));
 Pnrm = @(x) bsxfun(@rdivide, x, sqrt(sum(sum(x.^2, 1), 2)));
@@ -277,7 +282,11 @@ switch opt.Penalty
     case 'l1-norm'
         Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
     case 'log'
-        Jl1 = sum(vec(log(1 + opt.a.*abs(Y))));
+        if k <= opt.l1_iters
+            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+        else
+            Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
+        end
 end
 if lambda2 > 0
     [~,~,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
@@ -434,12 +443,16 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             case 'l1-norm'
                 Y = shrink(Xr + U, (lambda_n/rho)*opt.L1Weight);
             case 'log'
-                if opt.adapt_a && k <= opt.AdaptIters
-                    a_n = opt.a_min*(opt.a/opt.a_min)^(k/opt.AdaptIters);
+                if k <= opt.l1_iters
+                    Y = shrink(Xr + U, (lambda_n/rho));
                 else
-                    a_n = opt.a;
+                    if opt.adapt_a && k <= (opt.AdaptIters + opt.l1_iters)
+                        a_n = opt.a_min*(opt.a/opt.a_min)^((k-opt.l1_iters)/opt.AdaptIters);
+                    else
+                        a_n = opt.a;
+                    end
+                    Y = log_shrink(Xr + U, (lambda_n/rho),a_n);
                 end
-                Y = log_shrink(Xr + U, (lambda_n/rho)*opt.L1Weight,a_n);
         end
         if opt.NonNegCoef
             Y(Y < 0) = 0;
@@ -458,7 +471,11 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             case 'l1-norm'
                 Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
             case 'log'
-                Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
+                if k <= opt.l1_iters
+                    Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+                else
+                    Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
+                end
         end
     
         % Update dual variable corresponding to X, Y, Z
@@ -520,7 +537,11 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         case 'l1-norm'
             Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
         case 'log'
-            Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
+            if k <= opt.l1_iters
+                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
+            else
+                Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
+            end
     end
 
     % Optical flow terms
