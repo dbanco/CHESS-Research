@@ -71,7 +71,7 @@ selected_lam_hs = [2,3,4,9,9,12];
 
 for s_dataset = 1
 dataset = datasets{s_dataset};
-for trial = 50
+for trial = 1:50
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 4
