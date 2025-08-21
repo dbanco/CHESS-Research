@@ -13,7 +13,7 @@ datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',...
             'pseudo-voigt_unmatched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
-dinits = {'rand','flat','true'};
+dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
@@ -21,7 +21,7 @@ recenters = {0,1};
 s0 = 8;
 s1 = 2;
 s2 = 1;
-s3 = 2;
+s3 = 4;
 s4 = 1;
 s5 = 1;
 dataset = datasets{s0};
@@ -32,7 +32,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-prefix = ['8_19_indep_',dataset];
+prefix = ['8_19_of_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
@@ -53,7 +53,7 @@ objectives = cell(NN,1);
 useMin = 0;
 relax_param = 1.1; % for discrep range1
 % relax_param = 0.004; % for discrep range2
-makeFigures = true;
+makeFigures = false;
 
 sig_ind = 1:6;
 for n = sig_ind
@@ -91,6 +91,10 @@ removeWhiteSpace(LcurveFile)
 
 %% Compute meanSNR
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
+
+
+
+
 
 %% Compute errors
 dirStartS = 'results_1';
