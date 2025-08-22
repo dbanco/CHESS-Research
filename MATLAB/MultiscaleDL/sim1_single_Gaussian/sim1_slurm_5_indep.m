@@ -65,9 +65,8 @@ recenter = {0,1};
 sig_ind = 1:6;
 
 ind1 = 1:numel(lambdaVals);
-% ind2 = 2:50;
-% ind3 = 2:6;
 
+% --- Dataset, Initialization, Parameters ---
 for s_dataset = 1
 dataset = datasets{s_dataset};
 for trial = 1

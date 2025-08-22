@@ -8,6 +8,7 @@ mkdir(figDir)
 
 % Data  
 if isfield(opt,'mcdl_file')
+    [~,~,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigmas(i),dataset);
     load(opt.mcdl_file)
     y = outputs.y;
 else
