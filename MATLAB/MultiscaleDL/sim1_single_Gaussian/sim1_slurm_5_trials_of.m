@@ -107,7 +107,7 @@ for s_recenter = 1
     for j_of = j_of_select
     for j_hs = j_hs_select
         varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales,prevFile};
+                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
     end
