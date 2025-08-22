@@ -1,4 +1,4 @@
-function [u,v,Fx,Fy,Ft] = computeHornSchunkSupportPaperLS(data,u0,v0,smoothness,maxIters,tol)
+function [u,v,Fx,Fy,Ft] = computeHornSchunkPaperLS(data,u0,v0,smoothness,maxIters,tol)
 %computeHornSchunk Summary of this function goes here
 %   Detailed explanation goes here
 

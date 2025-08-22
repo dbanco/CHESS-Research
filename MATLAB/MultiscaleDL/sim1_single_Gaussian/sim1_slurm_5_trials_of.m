@@ -66,7 +66,7 @@ sig_ind = 1:6;
 
 selected_lam_s = [90,96,108,112,117,119];
 selected_lam_of = [13,10,3,9,10,12];
-selected_lam_hs = [2,3,4,9,9,12];
+selected_lam_hs = [2,3,4,11,9,11];
 
 
 for s_dataset = 1
@@ -107,7 +107,7 @@ for s_recenter = 1
     for j_of = j_of_select
     for j_hs = j_hs_select
         varin = {lambdaVals,lambdaOFVals,lambdaHSVals,...
-                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales};
+                j_s,j_of,j_hs,sigmas,sig_i,opt,topDir,dataset,K,scales,prevFile};
         save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
         k = k + 1;
     end

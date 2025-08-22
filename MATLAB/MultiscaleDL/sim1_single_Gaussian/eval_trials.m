@@ -1,4 +1,4 @@
-function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials,indepFlag)
+function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials,indepFlag,lambda_all,HSiters)
 %param_select_3D 
 
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
@@ -16,24 +16,8 @@ lambda_vec = zeros(NN,3);
 D_error = zeros(NN,1);
 vdf_error = zeros(NN,1);
 
-
-inDir = [topDir,'\results_trial_',num2str(1),'_sig_',num2str(n)];
-files = dir(fullfile(inDir, '*.mat'));
-matFileNames = {files.name};
-
-% First load in nonIndep solution to get of,hs parameters
-for j = 1:numel(matFileNames)
-    % Load outputs
-    load(fullfile(inDir,matFileNames{j}))
-    if outputs.lambda2 > 0
-        lambda_of = outputs.lambda2;
-        lambda_hs = outputs.opt.Smoothness;
-        HSiters = outputs.opt.HSiters;
-        break
-    else
-        continue
-    end
-end
+lambda_of = lambda_all(2);
+lambda_hs = lambda_all(3);
 
 % Extract the file names and store them in a cell array
 for i = 1:num_trials
@@ -100,7 +84,8 @@ for i = 1:num_trials
         l0_norm(i) = sum(X(:)>0,'all');
         % Compute OF, HS penalties
         if true %%%%%%%%%%sum(outputs.Uvel(:)) == 0
-            [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(X,K,[],[],lambda_hs/lambda_of,HSiters);
+            [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(X,K,...
+                outputs.Uvel,outputs.Vvel,lambda_hs/lambda_of,HSiters);
         else
             Uvel = outputs.Uvel;
             Vvel = outputs.Vvel;

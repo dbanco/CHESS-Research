@@ -66,7 +66,7 @@ sig_ind = 1:6;
 
 selected_lam_s = [90,96,108,112,117,119];
 selected_lam_of = [13,10,3,9,10,12];
-selected_lam_hs = [2,3,4,9,9,12];
+selected_lam_hs = [2,3,4,11,9,11];
 
 for s_dataset = 1
 dataset = datasets{s_dataset};
@@ -86,7 +86,7 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_8_19_indep_trials',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_19_indep_trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
