@@ -93,9 +93,6 @@ removeWhiteSpace(LcurveFile)
 [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
 
 
-
-
-
 %% Compute errors
 dirStartS = 'results_1';
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
