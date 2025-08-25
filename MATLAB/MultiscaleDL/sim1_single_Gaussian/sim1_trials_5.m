@@ -6,7 +6,7 @@ lambdaHSVals = [0 logspace(-4,0,10)];
 
 selected_lam_s = [90,96,108,112,117,119];
 selected_lam_of = [13,10,3,9,10,12];
-selected_lam_hs = [2,3,4,9,9,12];
+selected_lam_hs = [2,3,4,11,9,11];
 
 % Experiment Setup
 sigmas = 0:0.01:0.1;
@@ -57,7 +57,7 @@ topDir = ['E:\MCDLOF_processing\',test_name];
 topDir2 = ['E:\MCDLOF_processing\',test_name2];
 
 useMin = 0;
-sig_ind = 1:5;
+sig_ind = 1:6;
 num_trials = 50;
 
 objectives_indep = cell(numel(sig_ind),1);
@@ -67,18 +67,24 @@ for n = sig_ind
     j_s_select = selected_lam_s(n);
     j_of_select = selected_lam_of(n);
     j_hs_select = selected_lam_hs(n);
-
+    
     lambda_all = [lambdaVals(j_s_select),...
                   lambdaOFVals(j_of_select),...
                   lambdaHSVals(j_hs_select)];
     HSiters = 100;
 
     fprintf('sig_ind = %i, ',n)
+
     fprintf('Indep, ')
-    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,true,lambda_all,HSiters);
+    lambda_inds = [j_s_select,1,1];
+    objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,...
+        true,lambda_inds,lambda_all,HSiters);
     objectives_indep{n} = objective_indep;  
+    
     fprintf('OF\n')
-    objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,false,lambda_all,HSiters);
+    lambda_inds = [j_s_select,j_of_select,j_hs_select];
+    objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,...
+        false,lambda_inds,lambda_all,HSiters);
     objectives_of{n} = objective_of;
 end
 
