@@ -87,12 +87,16 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_8_25_of_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_26_of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
         
-    selected_lam_s_inds = [9,39,65,78,95,96];
+    % Relax Param 1.1
+    % selected_lam_s_inds = [9,39,65,78,95,96];
+
+    % Relax Param 1.2
+    selected_lam_s_inds = [41,48,73,90,97,102];
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind

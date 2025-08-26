@@ -1,10 +1,10 @@
-function [lambda_all,objective] = param_select_mcdl(results,criterion,sigma,dataset,relax_param,fig_num,indep_only)
+function [lambda_all,objective] = param_select_mcdl(results,criterion,sigma,dataset,relax_param,fig_num)
 %param_select_3D 
 if nargin < 5
     relax_param = 1.05;
 end
 
-[~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
+[~,~,N,M,T,~,~] = sim_switch_multiscale_dl(sigma,dataset);
 
 error       = results.error;
 rel_error   = results.rel_error;
@@ -20,6 +20,9 @@ vdf_error   = results.vdf_error;
 
 % Normalized origin distance criterion
 switch criterion
+    case 'l-curve'
+        selInd = find_Lcurve_kink(error,log_penalty,lambda_vec(:,1));
+        lambda_all = lambda_vec(selInd,:);
     case 'discrepancy'
         crit = abs(error/(N*T) - sigma^2);
         [~,selInd] = min(crit);

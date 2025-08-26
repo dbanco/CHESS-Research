@@ -19,7 +19,7 @@ recenters = {0,1};
 s0 = 1;
 s1 = 2;
 s2 = 1;
-s3 = 4;
+s3 = 2;
 s4 = 1;
 s5 = 1;
 dataset = datasets{s0};
@@ -30,7 +30,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-prefix = ['8_25_of_',dataset];
+prefix = ['8_25_indep_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
@@ -39,6 +39,7 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'discrepancy';
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
+% criterion = 'l-curve';
 criterion = 'discrepancy range';
 
 selected_lam_s_vec = zeros(NN,1);
@@ -48,7 +49,7 @@ selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 0;
-relax_param = 1.1;
+relax_param = 1.2;
 sig_ind = 1:6;
 makeFigures = true;
 
@@ -80,33 +81,33 @@ for n = sig_ind
     objectives{n} = objective;
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
-fig = gcf;
+fig = figure(fig_num);
 fig.Position = [100 100 1400 800];
 saveas(gcf, LcurveFile);
 removeWhiteSpace(LcurveFile)
 
 %% Compute meanSNR
-[meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
-
+% [meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
+% 
 %% Compute errors
-dirStartS = 'results_1';
-[~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
-[noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
-
-figure()
-hold on
-plot(meanSNR,noiseNorm,'s-')
-plot(meanSNR,trueErrS,'o-')
-xlabel('SNR','Fontsize',14)
-ylabel('Error','Fontsize',14)
-legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-    '$\|\hat{{\bf b}}-{\bf f}\|_2$ (OF)',...
-    'interpreter','latex','Fontsize',14)
+% dirStartS = 'results_1';
+% [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(0,dataset);
+% [noiseNorm,trueErrS,dataErrS,~,~] = simError(y_true,sigmas,sig_ind,topDir,dirStartS,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals);
+% 
+% figure()
+% hold on
+% plot(meanSNR,noiseNorm,'s-')
+% plot(meanSNR,trueErrS,'o-')
+% xlabel('SNR','Fontsize',14)
+% ylabel('Error','Fontsize',14)
+% legend('$\|{\bf w}\|_2$','$\|\hat{{\bf b}}-{\bf f}\|_2$',...ub hbh h                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+%     '$\|\hat{{\bf b}}-{\bf f}\|_2$ (OF)',...
+%     'interpreter','latex','Fontsize',14)
 
 %% Next copy figures associated with selected parameters to a folder
-pptFile = fullfile(topDir,['sim2_',prefix,...
-           '_relax_',num2str(relax_param),...
-           '_useMin0_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx']);
-titleStr = ['Sim 2 Param Select,',dirStartS];
-% createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
-createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
+% pptFile = fullfile(topDir,['sim2_',prefix,...
+%            '_relax_',num2str(relax_param),...
+%            '_useMin0_',criterion,'_',opt.Penalty,'_',dirStartS,'.pptx']);
+% titleStr = ['Sim 2 Param Select,',dirStartS];
+% % createPowerpointSimS(pptFile,titleStr,meanSNR,topDir,sigmas,dirStartS,selected_lam_s_vec,lambdaVals,LcurveFile,criterion,sig_ind)
+% createPowerpointSimAll(pptFile,titleStr,meanSNR,topDir,sigmas,selected_lam_all_vec,lambdaVals,lambdaOFVals,lambdaHSVals,LcurveFile,criterion,sig_ind,objectives)
