@@ -14,14 +14,7 @@ NN = numel(sigmas);
 
 fig_num = 22;
 
-datasets = {'sim2_gaussian_tooth_matched','sim2_gaussian_tooth_unmatched',... %1,2
-            'sim2_gaussian_tooth_matched2','sim2_gaussian_tooth_unmatched2',...%3,4
-            'dissertation','dissertation_long',...%5,6
-            'dissertation_long_separate','pseudo-voigt_unmatched',...%7,8
-            'voigt_tooth_matched',...%9
-            'gaussian_tooth_matched',...%10
-            'gaussian_tooth_matched_long',...%11
-            'gaussian_tooth_matched_long2'};%12
+datasets = {'pseudo-voigt_unmatched'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true','mcdl'};
@@ -29,7 +22,7 @@ dfixes = {0,1};
 recenters = {0,1};
 
 % Setup Dataset
-s0 = 8;
+s0 = 1;
 s1 = 2;
 s2 = 1;
 s3 = 2;
@@ -43,12 +36,12 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_8_19_indep_trials_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_8_26_indep_trials_',dataset,'_',opt.Penalty,...
     '_Dflat',num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-test_name2 = ['Outputs_8_19_of_trials_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_8_26_of_trials_',dataset,'_',opt.Penalty,...
     '_Dmcdl',num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];

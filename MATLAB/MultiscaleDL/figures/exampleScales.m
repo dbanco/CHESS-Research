@@ -16,6 +16,9 @@ ADf = fft2(AD);
 
 f12j = cell(6,1);
 f13j = cell(6,1);
+
+ set(groot, 'DefaultTextInterpreter', 'latex');
+
 for i = 0:5
     f12j{i+1} = figure(120+i);
     plot(AD(:,:,6-i),'Linewidth',2)
@@ -23,8 +26,10 @@ for i = 0:5
     ylim([0 0.5])
     f12j{i+1}.Position = [150  500-50*i  200 100];
     set(gca,'FontSize',12)
-    % xt = [0,50,80,100];
-    % xtlabels = string(xt);
-    % xticks(xt)
+    set(gca, 'TickLabelInterpreter', 'latex');
+    xt = [1,50,100];
+    xtlabels = ["$N_-$","0","$N_+$"];
+    xticks(xt)
+    xticklabels(xtlabels)
     saveas(f12j{i+1},fullfile(figDir,['atom_K1_J',num2str(i+1),'.png']))
 end
