@@ -64,7 +64,7 @@ recenters = {0,1};
 
 sig_ind = 1:6;
 
-selected_lam_s_inds = [9,39,65,78,95,96];
+selected_lam_s_inds = [41,48,73,90,97,102];
 selected_lam_of_inds = [10,21,14,16,12,12];
 selected_lam_hs_inds = [5,3,3,6,9,6];
 
@@ -88,7 +88,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_8_26_of_trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_27_of_trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -99,7 +99,7 @@ for s_recenter = 1
         j_of_select = selected_lam_of_inds(sig_i);
         j_hs_select = selected_lam_hs_inds(sig_i);
 
-        initDir = ['/cluster/home/dbanco02/Outputs_8_26_indep_trials_',dataset,'_',opt.Penalty,...
+        initDir = ['/cluster/home/dbanco02/Outputs_8_27_indep_trials_',dataset,'_',opt.Penalty,...
                 '_Dflat0','_Xzeros0','_recenter0','/results_trial_',num2str(trial),'_sig_',num2str(sig_i)];
     
         files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
