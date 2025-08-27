@@ -20,6 +20,9 @@ vdf_error   = results.vdf_error;
 
 % Normalized origin distance criterion
 switch criterion
+    case 'triangle'
+        selInd = find_Lcurve_kink_triangle(error,log_penalty,lambda_vec(:,1));
+        lambda_all = lambda_vec(selInd,:);
     case 'l-curve'
         selInd = find_Lcurve_kink(error,log_penalty,lambda_vec(:,1));
         lambda_all = lambda_vec(selInd,:);

@@ -19,7 +19,7 @@ recenters = {0,1};
 s0 = 1;
 s1 = 2;
 s2 = 1;
-s3 = 4;
+s3 = 2;
 s4 = 1;
 s5 = 1;
 dataset = datasets{s0};
@@ -30,7 +30,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-prefix = ['8_26_of_',dataset];
+prefix = ['8_25_indep_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
@@ -41,6 +41,7 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'relaxed discrepancy';
 % criterion = 'l-curve';
 criterion = 'discrepancy range';
+% criterion = 'triangle';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
@@ -48,9 +49,9 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
-useMin = 0;
-relax_param = 1.2;
-sig_ind = 1:6;
+useMin = 1;
+relax_param = 1.15;
+sig_ind = 2:6;
 makeFigures = true;
 
 for n = sig_ind

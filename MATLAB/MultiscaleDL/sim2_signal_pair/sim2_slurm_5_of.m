@@ -96,7 +96,10 @@ for s_recenter = 1
     % selected_lam_s_inds = [9,39,65,78,95,96];
 
     % Relax Param 1.2
-    selected_lam_s_inds = [41,48,73,90,97,102];
+    % selected_lam_s_inds = [41,48,73,90,97,102];
+
+    % Relax Param 1.15
+    selected_lam_s_inds = [41,41,66,84,92,96];
 
         % --- Noise level, regularization parameters ---
         for sig_i = sig_ind
