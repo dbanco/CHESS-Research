@@ -65,8 +65,8 @@ recenters = {0,1};
 sig_ind = 2:6;
 
 selected_lam_s_inds = [41,41,66,84,92,96];
-selected_lam_of_inds = [21,21,10,9,11,12];
-selected_lam_hs_inds = [3,3,6,7,10,6];
+selected_lam_of_inds = [1,1,1,1,1,1];
+selected_lam_hs_inds = [1,1,1,1,1,1];
 
 
 % --- Dataset, Initialization, Parameters ---
@@ -88,7 +88,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_8_27_1.15_of_trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_8_27_test_of_trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
