@@ -43,6 +43,8 @@ function error_stats = compute_error_stats(objectives, sig_ind)
         error_stats.std_hs_penalty(i)     = std(objectives{i}.hs_penalty,'omitnan'); 
         error_stats.avg_ofhs_penalty(i)     = mean(objectives{i}.of_penalty+objectives{i}.hs_penalty,'omitnan'); 
         error_stats.std_ofhs_penalty(i)     = std(objectives{i}.of_penalty+objectives{i}.hs_penalty,'omitnan'); 
+        error_stats.avg_log_penalty(i)     = mean(objectives{i}.log_penalty,'omitnan'); 
+        error_stats.std_log_penalty(i)     = std(objectives{i}.log_penalty,'omitnan'); 
         i = i + 1;
     end
 end

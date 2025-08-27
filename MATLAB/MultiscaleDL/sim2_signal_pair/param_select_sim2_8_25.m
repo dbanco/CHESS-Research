@@ -19,7 +19,7 @@ recenters = {0,1};
 s0 = 1;
 s1 = 2;
 s2 = 1;
-s3 = 2;
+s3 = 4;
 s4 = 1;
 s5 = 1;
 dataset = datasets{s0};
@@ -30,7 +30,7 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-prefix = ['8_25_indep_',dataset];
+prefix = ['8_27_1.15_of_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
