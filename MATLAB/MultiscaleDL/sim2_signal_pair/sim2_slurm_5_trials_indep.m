@@ -90,7 +90,7 @@ for s_recenter = 1
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
 
-    selected_lam_s_inds = [9,39,65,78,95,96];
+    selected_lam_s_inds = [9,48,73,90,97,102];
 
     % --- Noise level, regularization parameters ---
     for sig_i = sig_ind
