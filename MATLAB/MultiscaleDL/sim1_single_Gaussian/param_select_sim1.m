@@ -50,7 +50,7 @@ selected_lam_all_vec = zeros(NN,3);
 selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
-useMin = 0;
+useMin = 1;
 relax_param = 1.1; % for discrep range1
 % relax_param = 0.004; % for discrep range2
 makeFigures = false;
