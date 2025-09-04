@@ -4,9 +4,6 @@ lambdaVals = logspace(-2,0,150);
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
-% Experiment Setup
-sigmas = 0:0.01:0.1;
-
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
@@ -42,6 +39,7 @@ opt.useMin = false;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
+opt.mcdl_init = true;
 
 % Multiscale dictionary setup
 K = 2;
@@ -51,7 +49,7 @@ scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
 J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper3';
+funcName = 'sim_mcdlof_wrapper4';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
@@ -62,13 +60,18 @@ dinits = {'rand','flat','true','mcdl'};
 dfixes = {0,1};
 recenters = {0,1};
 
-sig_ind = 1:6;
+% Noise level
+dataset = datasets{1};
+sig_ind = 1:5;
+SNRs = [20,16,12,8,4];
+sigmas = zeros(numel(SNRs),1);
+for i = sig_ind
+    sigmas(i) = SNRtoSigma(SNRs(i),dataset);
+end
 
 ind1 = 1:numel(lambdaVals);
 
 % --- Dataset, Initialization, Parameters ---
-for s0 = 1
-dataset = datasets{s0};
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
@@ -85,7 +88,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_8_25_indep_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_9_4_indep_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -101,7 +104,6 @@ for s_recenter = 1
             k = k + 1;
         end
     end
-end
 end
 end
 end
