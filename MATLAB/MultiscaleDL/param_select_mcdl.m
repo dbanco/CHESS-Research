@@ -57,6 +57,75 @@ switch criterion
             [~,selInd] = min(crit3);
             lambda_all = lambda_vec(selInd,:);
         end
+    case 'discrepancy range of'
+        if sigma == 0
+            crit1 = error/(N*T) < 0.0025^2;
+            crit2 = crit1;
+        else
+            crit1 = error/(N*T) < relax_param*sigma^2;
+            crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        end
+        include = crit1 & crit2;
+
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param*sigma^2);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+            % error('No solution in discrepancy range');
+        else 
+            % crit3 = l0_norm;
+            crit3 = of_penalty;
+            exclude = ~include;
+            crit3(exclude) = (N+M-1)*T;
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
+    case 'discrepancy range of-log'
+        if sigma == 0
+            crit1 = error/(N*T) < 0.0025^2;
+            crit2 = crit1;
+        else
+            crit1 = error/(N*T) < relax_param*sigma^2;
+            crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        end
+        include = crit1 & crit2;
+
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param*sigma^2);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+            % error('No solution in discrepancy range');
+        else 
+            % crit3 = l0_norm;
+            crit3 = log(of_penalty)+log(log_penalty);
+            exclude = ~include;
+            crit3(exclude) = (N+M-1)*T;
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
+    case 'discrepancy range of-hs-log'
+        if sigma == 0
+            crit1 = error/(N*T) < 0.0025^2;
+            crit2 = crit1;
+        else
+            crit1 = error/(N*T) < relax_param*sigma^2;
+            crit2 = error/(N*T) > (2-relax_param)*sigma^2;
+        end
+        include = crit1 & crit2;
+
+        if sum(include) == 0 % default to relaxed discrepancy
+            crit = abs(error/(N*T) - relax_param*sigma^2);
+            [~,selInd] = min(crit);
+            lambda_all = lambda_vec(selInd,:);
+            % error('No solution in discrepancy range');
+        else 
+            % crit3 = l0_norm;
+            crit3 = log(of_penalty)+log(log_penalty)+log(0.1*hs_penalty);
+            exclude = ~include;
+            crit3(exclude) = (N+M-1)*T;
+            [~,selInd] = min(crit3);
+            lambda_all = lambda_vec(selInd,:);
+        end
     case 'discrepancy range2'
         if sigma == 0
             crit1 = error/(N*T) < relax_param^2;
@@ -103,6 +172,9 @@ switch criterion
     case 'truth_error'
         [~,selInd] = min(true_error);
         lambda_all = lambda_vec(selInd,:);
+    case 'plot_grid'
+        
+
 end
 
 if isempty(lambda_all)
@@ -111,11 +183,11 @@ end
 
 if fig_num > 0
     figure(fig_num)
-    loglog(log_penalty(1:end),error(1:end),'o')
+    loglog(of_penalty(1:end),error(1:end),'o')
     ylabel('Error')
-    xlabel('log penalty')
+    xlabel('of penalty')
     hold on
-    loglog(log_penalty(selInd),error(selInd),'sr','MarkerSize',10)
+    loglog(of_penalty(selInd),error(selInd),'sr','MarkerSize',10)
 end
 
 objective = struct();

@@ -40,7 +40,7 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
 % criterion = 'l-curve';
-criterion = 'discrepancy range';
+criterion = 'discrepancy range of-hs-log';
 % criterion = 'triangle';
 
 selected_lam_s_vec = zeros(NN,1);

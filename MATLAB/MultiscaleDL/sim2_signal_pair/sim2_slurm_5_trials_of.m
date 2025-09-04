@@ -65,8 +65,11 @@ recenters = {0,1};
 sig_ind = 2:6;
 
 selected_lam_s_inds = [41,41,66,84,92,96];
-selected_lam_of_inds = [1,1,1,1,1,1];
-selected_lam_hs_inds = [1,1,1,1,1,1];
+
+selected_lam_of_inds = [1,21,21,15,21,19]; 
+selected_lam_hs_inds = [1,3,2,3,4,7];
+% selected_lam_of_inds = [1,1,1,1,1,1];
+% selected_lam_hs_inds = [1,1,1,1,1,1];
 
 
 % --- Dataset, Initialization, Parameters ---
