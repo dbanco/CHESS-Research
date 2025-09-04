@@ -63,6 +63,7 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
+dataset = datasets{1};
 sig_ind = 1:5;
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
@@ -74,8 +75,6 @@ end
 ind1 = 1:numel(lambdaVals);
 
 % --- Dataset, Initialization, Parameters ---
-for s_dataset = 1
-dataset = datasets{s_dataset};
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
@@ -107,7 +106,6 @@ for s_recenter = 1
             k = k + 1;
         end
     end
-end
 end
 end
 end
