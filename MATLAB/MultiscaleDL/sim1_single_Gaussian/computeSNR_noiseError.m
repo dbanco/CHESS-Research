@@ -11,15 +11,7 @@ noiseTheor = zeros(numel(sigmas),1);
 for n = sig_ind
     [y,y_true,N,M,T] = sim_switch_multiscale_dl(sigmas(n),dataset);
     
-    % SNR_time = zeros(T,1);
-    % nPwr = zeros(T,1);
-    % sigPwr = zeros(T,1);
-    % for t = 1:T
-    %     SNR_time(t) = norm(y_true(:,t))^2/norm(y(:,t)-y_true(:,t))^2;
-    %     nPwr(t) = norm(y(:,t)-y_true(:,t))^2;
-    %     sigPwr(t) = norm(y_true(:,t))^2;
-    % end
-    sigPwr(n) = mean(y(:).^2);
+    sigPwr(n) = mean(y_true(:).^2);
     noisePwr(n) = mean((y(:)-y_true(:)).^2);
     SNR(n) = 10*log10(sigPwr(n)/noisePwr(n));
     noiseTheor(n) = sigmas(n)^2;

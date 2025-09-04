@@ -33,9 +33,8 @@ if opt.mcdl_init
     [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt2.Y0,K,[],[],opt2.Smoothness/lambda2,opt2.HSiters);
     opt2.UpdateVelocity = 1;
     opt2.Smoothness = 0;
-    opt2.MaxMainIter = 400;
-    [D,Y,X,Dmin,Ymin,Uvel,Vvel,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center3(opt2.G0, y, lambda,lambda2, opt2, scales,Uvel,Vvel);
-
+    opt2.MaxMainIter = 500;
+    [D,Y,X,Dmin,Ymin,~,~,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center3(opt2.G0, y, lambda,lambda2, opt2, scales,Uvel,Vvel);
     opt.G0 = Dmin;
 end
 
