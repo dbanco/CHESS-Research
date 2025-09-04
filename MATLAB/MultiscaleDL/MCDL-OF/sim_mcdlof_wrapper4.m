@@ -35,7 +35,7 @@ if opt.mcdl_init
     opt2.UpdateVelocity = 1;
     opt2.Smoothness = 0;
     opt2.MaxMainIter = 500;
-    [D,Y,X,Dmin,Ymin,~,~,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center3(opt2.G0, y, lambda,lambda2, opt2, scales,Uvel,Vvel);
+    [D,Y,X,Dmin,Ymin,~,~,~,~,~] = cbpdndl_cg_OF_multiScales_gpu_zpad_center3(opt2.G0, y, lambda,0, opt2, scales,Uvel,Vvel);
     opt.G0 = Dmin;
 end
 
