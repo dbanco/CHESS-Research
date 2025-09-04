@@ -1,4 +1,4 @@
-function sim_mcdlof_wrapper3(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,topDir,dataset,K,scales)
+function sim_mcdlof_wrapper4(lambdaVals,lambdaOFVals,lambdaHSVals,j_s,j_of,j_hs,sigmas,i,opt,topDir,dataset,K,scales)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Optical flow coupled solution
@@ -30,6 +30,7 @@ opt.Smoothness = lambdaHSVals(j_hs);
 opt = initXD(opt,N,M,K,J,T,Xtrue,Dtrue);
 
 if opt.mcdl_init
+    opt2 = opt;
     [Uvel,Vvel,~,~,~] = computeHornSchunkDictPaperLS(opt2.Y0,K,[],[],opt2.Smoothness/lambda2,opt2.HSiters);
     opt2.UpdateVelocity = 1;
     opt2.Smoothness = 0;

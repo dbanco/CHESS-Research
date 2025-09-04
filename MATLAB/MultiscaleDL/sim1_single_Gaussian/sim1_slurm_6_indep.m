@@ -51,7 +51,7 @@ scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
 J = size(scales{1},2);
 
 scriptFileName = 'mcdlof_bash.sh';
-funcName = 'sim_mcdlof_wrapper3';
+funcName = 'sim_mcdlof_wrapper4';
 jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
