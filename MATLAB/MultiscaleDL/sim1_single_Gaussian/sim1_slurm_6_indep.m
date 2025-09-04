@@ -63,8 +63,13 @@ dfixes = {0,1};
 recenter = {0,1};
 
 % Noise level
-SNRs = [20,16,12,8,4];
 sig_ind = 1:5;
+SNRs = [20,16,12,8,4];
+sigmas = zeros(numel(SNRs),1);
+for i = sig_ind
+    sigmas(i) = SNRtoSigma(SNRs(i),dataset);
+end
+
 
 ind1 = 1:numel(lambdaVals);
 
