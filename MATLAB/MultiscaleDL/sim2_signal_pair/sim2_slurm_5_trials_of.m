@@ -66,8 +66,14 @@ sig_ind = 2:6;
 
 selected_lam_s_inds = [41,41,66,84,92,96];
 
-selected_lam_of_inds = [1,21,21,15,21,19]; 
-selected_lam_hs_inds = [1,3,2,3,4,7];
+% log-of selected parameters
+% selected_lam_of_inds = [1,21,21,15,21,19]; 
+% selected_lam_hs_inds = [1,3,2,3,4,7];
+
+%fixed parameters
+selected_lam_of_inds = [1,10,10,10,10,10]; 
+selected_lam_hs_inds = [1,6,6,6,6,6];
+
 % selected_lam_of_inds = [1,1,1,1,1,1];
 % selected_lam_hs_inds = [1,1,1,1,1,1];
 
@@ -91,7 +97,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_8_27_test_of_trials_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_9_4_fixed_of_trials_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
