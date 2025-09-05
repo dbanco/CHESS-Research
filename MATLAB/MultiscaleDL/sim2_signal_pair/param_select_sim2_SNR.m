@@ -2,9 +2,10 @@ lambdaVals = logspace(-2,0,150);
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
-
+dataset = 'dissertation_adjust2';
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
+sig_ind = 1:5;
 for i = sig_ind
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);
 end
@@ -13,7 +14,6 @@ NN = numel(sigmas);
 
 fig_num = 22;
 
-datasets = {'dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true','mcdl'};
@@ -22,7 +22,6 @@ recenters = {0,1};
 
 % Setup Dataset
 s = [1,2,1,2,1,1];
-dataset = datasets{s(1)};
 opt.Penalty = penalties{s(2)};
 opt.coefInit = xinits{s(3)};
 opt.dictInit = dinits{s(4)};
@@ -30,7 +29,7 @@ opt.Dfixed = dfixes{s(5)};
 opt.Recenter = recenters{s(6)};
 opt.Xfixed = 0;
 
-prefix = ['9_4_of_',dataset];
+prefix = ['9_5_indep_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
@@ -40,8 +39,8 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
 % criterion = 'l-curve';
-% criterion = 'discrepancy range';
-criterion = 'discrepancy range of-log';
+criterion = 'discrepancy range';
+% criterion = 'discrepancy range of-log';
 % criterion = 'triangle';
 
 selected_lam_s_vec = zeros(NN,1);

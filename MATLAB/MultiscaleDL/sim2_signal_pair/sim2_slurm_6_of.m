@@ -73,7 +73,7 @@ ind1 = 1:numel(lambdaVals);
 ind2 = 2:numel(lambdaOFVals);
 ind3 = 2:numel(lambdaHSVals);
 
-selected_lam_s = [97,106,112,116,126];
+selected_lam_s = [89,95,103,112,126];
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
@@ -92,7 +92,7 @@ for s_recenter = 1
         continue
     end
     
-    topDir = ['/cluster/home/dbanco02/Outputs_9_4_of_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_9_5_of_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
@@ -101,7 +101,7 @@ for s_recenter = 1
         for sig_i = sig_ind
         j_s_select = selected_lam_s(sig_i);
         
-        initDir = ['/cluster/home/dbanco02/Outputs_9_4_indep_',dataset,'_',opt.Penalty,...
+        initDir = ['/cluster/home/dbanco02/Outputs_9_5_indep_',dataset,'_',opt.Penalty,...
                 '_Dflat0','_Xzeros0','_recenter0','/results_trial_1_sig_',num2str(sig_i)];
 
         files = dir(fullfile(initDir,['output_j',num2str(j_s_select),'_1_1*.mat']));
