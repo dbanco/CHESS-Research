@@ -2,10 +2,9 @@ lambdaVals = logspace(-2,0,150);
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
+
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
-dataset = 'pseudo-voigt_unmatched';
-sig_ind = 1:5;
 for i = sig_ind
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);
 end
@@ -14,7 +13,7 @@ NN = numel(sigmas);
 
 fig_num = 22;
 
-datasets = {'pseudo-voigt_unmatched'};
+datasets = {'dissertation_adjust2'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true','mcdl'};
@@ -40,17 +39,19 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'discrepancy';
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
+% criterion = 'l-curve';
 % criterion = 'discrepancy range';
-criterion = 'discrepancy range of-hs-log';
+criterion = 'discrepancy range of-log';
+% criterion = 'triangle';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);
 selected_lam_all_vec = zeros(NN,3);
-selected_inds = zeros(NN,1);
+selected_inds = zeros(NN,3);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.1; % for discrepancy range
+relax_param = 1.15;
 makeFigures = true;
 
 for n = sig_ind
@@ -81,7 +82,7 @@ for n = sig_ind
     objectives{n} = objective;
 end
 LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
-fig = gcf;
+fig = figure(fig_num);
 fig.Position = [100 100 1400 800];
 saveas(gcf, LcurveFile);
 removeWhiteSpace(LcurveFile)
