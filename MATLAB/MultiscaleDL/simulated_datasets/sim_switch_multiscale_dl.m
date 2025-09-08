@@ -95,6 +95,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_tooth_matched_long3(sigma,plotFlag);
     case 'voigt_example_6peaks'
         [yn,y,N,M,T,Xtrue,Dtrue] = voigt_example_6peaks(sigma,plotFlag);
+    case 'gaus_loren_nooverlap'
+        [yn,y,N,M,T,Xtrue,Dtrue] = gaus_loren_nooverlap(sigma,plotFlag);
     otherwise
         error('Invalid dataset name')
 end
