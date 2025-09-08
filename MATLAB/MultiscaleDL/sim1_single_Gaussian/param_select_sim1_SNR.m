@@ -40,8 +40,8 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'discrepancy';
 % criterion = 'truth_errorr';
 % criterion = 'relaxed discrepancy';
-% criterion = 'discrepancy range';
-criterion = 'discrepancy range of-hs-log';
+criterion = 'discrepancy range';
+% criterion = 'discrepancy range of-hs-log';
 
 selected_lam_s_vec = zeros(NN,1);
 selected_lam_of_vec = zeros(NN,1);

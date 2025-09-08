@@ -1,4 +1,4 @@
-function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials,indepFlag,lambda_inds,lambda_all,HSiters)
+function objective = eval_trials(topDir,n,sigma,dataset,useMin,num_trials,indepFlag,lambda_inds,lambda_all,HSiters,lambda_eval)
 %param_select_3D 
 
 [~,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
@@ -16,9 +16,15 @@ hs_penalty = zeros(NN,1);
 lambda_vec = zeros(NN,3);
 D_error = zeros(NN,1);
 vdf_error = zeros(NN,1);
+x_metric = zeros(NN,1);
 
-lambda_of = lambda_all(2);
-lambda_hs = lambda_all(3);
+if isempty(lambda_eval)
+    lambda_of = lambda_all(2);
+    lambda_hs = lambda_all(3);
+else
+    lambda_of = lambda_eval(1);
+    lambda_hs = lambda_eval(2);
+end
 
 % Extract the file names and store them in a cell array
 for i = 1:num_trials
@@ -94,6 +100,8 @@ for i = 1:num_trials
     lambda_vec(i,1) = outputs.lambda;
     lambda_vec(i,2) = outputs.lambda2;
     lambda_vec(i,3) = outputs.opt.Smoothness;
+
+    x_metric(i) = sum(compute_x_metric(Xtrue,X,K,J));
 end
 
 objective = struct();
@@ -107,5 +115,6 @@ objective.of_penalty = of_penalty;
 objective.hs_penalty = hs_penalty;
 objective.D_error = D_error;
 objective.vdf_error = vdf_error;
+objective.x_metric = x_metric;
 
 end

@@ -1,4 +1,4 @@
-function [objectives_of,objectives_indep] = compute_objectives_trials(sig_ind,sigmas,dataset,useMin,num_trials,topDir,topDir2,selected_lam_s,selected_lam_of,selected_lam_hs,lambdaVals,lambdaOFVals,lambdaHSVals)
+function [objectives_of,objectives_indep] = compute_objectives_trials(sig_ind,sigmas,dataset,useMin,num_trials,topDir,topDir2,selected_lam_s,selected_lam_of,selected_lam_hs,lambdaVals,lambdaOFVals,lambdaHSVals,lambda_eval)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -19,27 +19,27 @@ for n = sig_ind
 
     fprintf('Indep, ')
     objFile = [topDir,'\obj_indep_sig_',num2str(n),'.mat'];
-    if exist(objFile,'file')
-        load(objFile)
-    else    
+    % if exist(objFile,'file')
+    %     load(objFile)
+    % else    
         lambda_inds = [j_s_select,1,1];
         objective_indep = eval_trials(topDir,n,sigmas(n),dataset,useMin,num_trials,...
-            true,lambda_inds,lambda_all,HSiters);
+            true,lambda_inds,lambda_all,HSiters,lambda_eval);
         objectives_indep{n} = objective_indep;  
         save(objFile,'objectives_indep')
-    end
+    % end
     
     fprintf('OF\n')
     objFile = [topDir2,'\obj_of_sig_',num2str(n),'.mat'];
-    if exist(objFile,'file')
-        load(objFile)
-    else    
+    % if exist(objFile,'file')
+    %     load(objFile)
+    % else    
         lambda_inds = [j_s_select,j_of_select,j_hs_select];
         objective_of = eval_trials(topDir2,n,sigmas(n),dataset,useMin,num_trials,...
-            false,lambda_inds,lambda_all,HSiters);
+            false,lambda_inds,lambda_all,HSiters,lambda_eval);
         objectives_of{n} = objective_of;  
-        save(objFile,'objectives_of')
-    end
+    %     save(objFile,'objectives_of')
+    % end
 end
 
 end

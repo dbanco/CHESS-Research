@@ -25,6 +25,8 @@ function error_stats = compute_error_stats(objectives, sig_ind)
     error_stats.std_Derror     = zeros(max_ind, 1);
     error_stats.avg_of_penalty = zeros(max_ind, 1);
     error_stats.std_of_penalty = zeros(max_ind, 1);
+    error_stats.avg_x_metric = zeros(max_ind, 1);
+    error_stats.std_x_metric = zeros(max_ind, 1);
 
     % Compute statistics
     i = 1;
@@ -45,6 +47,8 @@ function error_stats = compute_error_stats(objectives, sig_ind)
         error_stats.std_ofhs_penalty(i)     = std(objectives{n}.of_penalty+objectives{n}.hs_penalty,'omitnan'); 
         error_stats.avg_log_penalty(i)     = mean(objectives{n}.log_penalty,'omitnan'); 
         error_stats.std_log_penalty(i)     = std(objectives{n}.log_penalty,'omitnan'); 
+        error_stats.avg_x_metric(i)     = mean(objectives{n}.x_metric,'omitnan'); 
+        error_stats.std_x_metric(i)     = std(objectives{n}.x_metric,'omitnan');
         i = i + 1;
     end
 end
