@@ -47,6 +47,8 @@ switch dataset
         [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust(sigma,plotFlag);
     case 'dissertation_adjust2'
         [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust2(sigma,plotFlag);
+    case 'dissertation_adjust_nooverlap'
+        [yn,y,N,M,T,Xtrue,Dtrue] = dissertation_adjust_nooverlap(sigma,plotFlag);
     case 'dissertation_long'
         [yn,y,N,M,T,Xtrue,Dtrue] = gaus_linear_osc_signal_matched_small_zpad2_center_long(sigma,plotFlag);
     case 'dissertation_long_separate'
