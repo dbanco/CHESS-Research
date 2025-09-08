@@ -23,8 +23,8 @@ function dists = compute_x_metric(Xtrue, X, K, J)
     T = size(Xtrue,3);
 
     % Reshape into [K x J x M x T]
-    Xtrue = reshape(permute(Xtrue,[2 1 3]), [K, J, N, T]);
-    X  = reshape(permute(X, [2 1 3]), [K, J, N, T]);
+    Xtrue = permute(reshape(permute(Xtrue,[2 1 3]), [J, K, N, T]),[2 1 3 4]);
+    X  = permute(reshape(permute(X, [2 1 3]), [J, K, N, T]),[2 1 3 4]);
     
     truthCoords = zeros(2,K,T); %scale, shift
     distMaps = zeros(K,J,N,T);
