@@ -80,7 +80,6 @@ errorbar(meanSNR,error_stats_indep.avg_hs_penalty,...
 errorbar(meanSNR,error_stats_of.avg_hs_penalty,...
                  error_stats_of.std_hs_penalty,'o-')
 
-xlabel('SNR (dB)','Fontsize',14)
 ylabel('$ \Omega_{T,2}$','Fontsize',14,...
        'interpreter','latex','Fontsize',14)
 
@@ -93,13 +92,12 @@ errorbar(meanSNR,error_stats_indep.avg_x_metric,...
                  error_stats_indep.std_x_metric,'s--')
 errorbar(meanSNR,error_stats_of.avg_x_metric,...
                  error_stats_of.std_x_metric,'o-')
-
+xlabel('SNR (dB)','Fontsize',14)
 ylabel('${\bf X}$ NN-E','Fontsize',14,...
        'interpreter','latex','Fontsize',14)
 grid on
 
 fig1.Position(3:4) = [400 700];
-
 saveas(gcf, fullfile(fig_dir,[data_name,'_subplot.png']));
 
 end
