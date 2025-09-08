@@ -44,26 +44,11 @@ errorbar(meanSNR,error_stats_of.avg_log_penalty,...
 
 ylabel('LogP','Fontsize',14,...
        'interpreter','latex','Fontsize',14)
-
 grid on
 fig1.Position(3:4) = [400 700];
 
-% X Metric Figure
-subplot(7,1,4)
-hold on
-errorbar(meanSNR,error_stats_indep.avg_x_metric,...
-                 error_stats_indep.std_x_metric,'s--')
-errorbar(meanSNR,error_stats_of.avg_x_metric,...
-                 error_stats_of.std_x_metric,'o-')
-
-ylabel('${\bf X} Metric$','Fontsize',14,...
-       'interpreter','latex','Fontsize',14)
-
-grid on
-
-
 % OF+HS Penalty Figure
-subplot(7,1,5)
+subplot(7,1,4)
 hold on
 errorbar(meanSNR,error_stats_indep.avg_ofhs_penalty,...
                  error_stats_indep.std_ofhs_penalty,'s--')
@@ -76,7 +61,7 @@ ylabel('$ \Omega_{T} $','Fontsize',14,...
 grid on
 
 % OF Penalty Figure
-subplot(7,1,6)
+subplot(7,1,5)
 hold on
 errorbar(meanSNR,error_stats_indep.avg_of_penalty,...
                  error_stats_indep.std_of_penalty,'s--')
@@ -88,7 +73,7 @@ ylabel('$\Omega_{T,1}$','Fontsize',14,...
 grid on
 
 % HS Penalty Figure
-subplot(7,1,7)
+subplot(7,1,6)
 hold on
 errorbar(meanSNR,error_stats_indep.avg_hs_penalty,...
                  error_stats_indep.std_hs_penalty,'s--')
@@ -99,6 +84,18 @@ xlabel('SNR (dB)','Fontsize',14)
 ylabel('$ \Omega_{T,2}$','Fontsize',14,...
        'interpreter','latex','Fontsize',14)
 
+grid on
+
+% X Metric Figure
+subplot(7,1,7)
+hold on
+errorbar(meanSNR,error_stats_indep.avg_x_metric,...
+                 error_stats_indep.std_x_metric,'s--')
+errorbar(meanSNR,error_stats_of.avg_x_metric,...
+                 error_stats_of.std_x_metric,'o-')
+
+ylabel('${\bf X}$ NN-E','Fontsize',14,...
+       'interpreter','latex','Fontsize',14)
 grid on
 
 fig1.Position(3:4) = [400 700];

@@ -2,7 +2,7 @@ lambdaVals = logspace(-2,0,150);
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
-dataset = 'dissertation_adjust2';
+dataset = 'dissertation_adjust_nooverlap';
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
 sig_ind = 1:5;
@@ -29,7 +29,7 @@ opt.Dfixed = dfixes{s(5)};
 opt.Recenter = recenters{s(6)};
 opt.Xfixed = 0;
 
-prefix = ['9_5_of_',dataset];
+prefix = ['9_8_indep_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
