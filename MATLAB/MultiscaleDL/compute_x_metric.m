@@ -1,4 +1,4 @@
-function dists = compute_x_metric(Xtrue, X, K, J)
+function dist = compute_x_metric(Xtrue, X, K, J)
 % compute_x_metric
 %   Compute distances between active coefficients in Yhat and Xtrue
 %   across time steps, partitioning scale/shift space.
@@ -22,10 +22,18 @@ function dists = compute_x_metric(Xtrue, X, K, J)
     N = size(Xtrue,1);       % number of "shifts" (M should equal N?)
     T = size(Xtrue,3);
 
-    % Reshape into [K x J x M x T]
-    Xtrue = permute(reshape(permute(Xtrue,[2 1 3]), [J, K, N, T]),[2 1 3 4]);
-    X  = permute(reshape(permute(X, [2 1 3]), [J, K, N, T]),[2 1 3 4]);
-    
+    % Reshape into [K x J x N x T]
+    tmp1 = zeros(K,J,N,T);
+    tmp2 = zeros(K,J,N,T);
+    for k = 1:K
+        i1 = 1 + (k-1)*J;
+        i2 = J + (k-1)*J;
+        tmp1(k,:,:,:) = permute(Xtrue(:,i1:i2,:),[2,1,3]);
+        tmp2(k,:,:,:) = permute(X(:,i1:i2,:),[2,1,3]);
+    end
+    Xtrue = tmp1;
+    X  = tmp2;
+
     truthCoords = zeros(2,K,T); %scale, shift
     distMaps = zeros(K,J,N,T);
     maskMaps = zeros(K,J,N,T);
@@ -41,12 +49,8 @@ function dists = compute_x_metric(Xtrue, X, K, J)
 
     % Mask distance maps
     minDistMap = min(distMaps,[],1);
-    maskMaps(k,:,:,:) = distMaps(k,:,:,:) == minDistMap;
 
     % Compute metric for each k
     Xsum = sum(X,1);
-    dists = zeros(K,1);
-    for k = 1:K
-        dists(k) = sum(maskMaps.*distMaps.*Xsum,'all');
-    end
+    dist = sum(minDistMap.*Xsum,'all');
 end

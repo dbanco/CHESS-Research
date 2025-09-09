@@ -4,16 +4,16 @@ lambdaVals = logspace(-2,0,150);
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
-selected_lam_s = [89,95,103,112,126];
-selected_lam_of = [7,13,8,16,21];
-selected_lam_hs = [9,5,11,3,6];
+selected_lam_s = [66,99,113,124,133];
+selected_lam_of = [19,5,10,7,10];
+selected_lam_hs = [3,7,8,11,11];
 
 lambda_eval = [9,6];
 % lambda_eval = [];
 
 % Experiment Setup
 % Noise level
-dataset = 'dissertation_adjust2';
+dataset = 'dissertation_adjust_nooverlap';
 sig_ind = 1:5;
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
@@ -24,7 +24,7 @@ end
 NN = numel(sigmas);
 fig_num = 22;
 
-datasets = {'dissertation_adjust2'};
+datasets = {'dissertation_adjust_nooverlap'};
 penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true','mcdl'};
@@ -46,12 +46,12 @@ opt.Dfixed = dfixes{s4};
 opt.Recenter = recenters{s5};
 opt.Xfixed = 0;
 
-test_name = ['Outputs_9_5_indep_',dataset,'_',opt.Penalty,...
+test_name = ['Outputs_9_8_indep_',dataset,'_',opt.Penalty,...
     '_Dflat',num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
-test_name2 = ['Outputs_9_5_of_',dataset,'_',opt.Penalty,...
+test_name2 = ['Outputs_9_8_of_',dataset,'_',opt.Penalty,...
     '_Dflat',num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
@@ -69,7 +69,7 @@ num_trials = 1;
 
 %% Plot Results
 fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
-data_name = 'sim2';
+data_name = 'sim3';
 
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
 error_stats_of = compute_error_stats(objectives_of,sig_ind);
