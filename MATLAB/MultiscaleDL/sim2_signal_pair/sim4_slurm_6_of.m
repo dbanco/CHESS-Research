@@ -73,7 +73,7 @@ ind1 = 1:numel(lambdaVals);
 ind2 = 2:numel(lambdaOFVals);
 ind3 = 2:numel(lambdaHSVals);
 
-selected_lam_s = [66,99,113,124,133];
+selected_lam_s = [66,88,115,123,132];
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
