@@ -5,9 +5,11 @@ lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
 selected_lam_s = [89,95,103,112,126];
-selected_lam_of = [7,13,8,16,21];
-selected_lam_hs = [9,5,11,3,6];
+% selected_lam_of = [7,13,8,16,21];
+% selected_lam_hs = [9,5,11,3,6];
 
+selected_lam_of = [9,9,9,9,9];
+selected_lam_hs = [6,6,6,6,6];
 lambda_eval = [9,6];
 % lambda_eval = [];
 

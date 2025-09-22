@@ -32,17 +32,6 @@ ADf = fft2(AD);
 Yhat = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric'));
 Yhat = unpad(Yhat,M-1,'pre');
 
-% X2=X;
-% X3 = X;
-% X2(:,1:65,:,:) = 0;
-% X3(:,65:end,:,:) = 0;
-% 
-% Yhat2 = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X2)),3),'symmetric'));
-% Yhat2 = unpad(Yhat2,M-1,'pre');
-% 
-% Yhat3 = squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X3)),3),'symmetric'));
-% Yhat3 = unpad(Yhat3,M-1,'pre');
-
 % Show dictionary
 f1 = figure;
 for i = 1:Utotal
@@ -99,7 +88,7 @@ for k = 1:K
 end
 
 % Recovered X at times [1,21,31,40]
-f5 = figure;
+f4 = figure;
 jj = 1;
 T = size(X,4);
 for t = [1,round(T/4),round(T/2),round(3*T/4)]
@@ -113,9 +102,9 @@ for t = [1,round(T/4),round(T/2),round(3*T/4)]
     jj = jj + 1;
 end
 
-f5.Position = [1 100 1200 500];
+f4.Position = [1 100 1200 500];
 if ~isempty(topDir)
-    saveas(f5,fullfile(topDir,['X_times',suffix,'.png']))
+    saveas(f4,fullfile(topDir,['X_times',suffix,'.png']))
 end
 
 %% Remove whitespace from pngs
@@ -134,6 +123,6 @@ end
 close(f1); 
 close(f2); 
 close(f3);
-close(f5);
+close(f4);
 
 end

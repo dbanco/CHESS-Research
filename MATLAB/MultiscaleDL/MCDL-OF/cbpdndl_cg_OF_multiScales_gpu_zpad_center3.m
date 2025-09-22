@@ -267,9 +267,6 @@ AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
 AGf = fft2(AGpad);
 AGSf = bsxfun(@times, conj(AGf), Sfpad);
-AGS = ifft2(AGSf,'symmetric');
-% AGS(:,1:M-1,:,:) = 0;
-AGSf = fft2(AGS);
 Yf = fft2(Y);
 
 % Initial solution
@@ -278,6 +275,7 @@ tk = toc(tstart);
 Jcn = norm(vec(Pcn(D) - D));
 recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
 Jdf = sum(vec(abs(recon-S).^2))/2;
+a_n = opt.a;
 switch opt.Penalty
     case 'l1-norm'
         Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
@@ -349,13 +347,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         AYS = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals,Shifts);
         [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(Yf, sigma, AYS + sigma*(G - H),...
                           cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,Shifts,centerM,opt.useGpu);
-        cgIters1 = cgst.pit;
-        
-        Df = fft2(D);
-        
-        clear YSf;
-        D = ifft2(Df, 'symmetric');
-        if strcmp(opt.LinSolve, 'SM'), clear Df; end
+        cgIters1 = cgst.pit;     
         
         % See pg. 21 of boyd-2010-distributed
         if opt.DRelaxParam == 1
@@ -419,9 +411,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         [Xf, cgst] = solvemdbi_cg_OF_gpu_zpad(AGf, rho, AGSf+ rho*fft2(Y-U) ,...
             opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel,opt.useGpu,withOF); 
         cgIters2 = cgst.pit;
-        % [Xf, cgst] = solvemdbi_cgls_OF_gpu_zpad(AGf, rho, Sfpad, fft2(Y-U) ,...
-        %     opt.CGTolX, opt.MaxCGIterX, Yf(:),N2,M,K,J,T,lambda2,Uvel,Vvel); 
-        % cgIters2 = cgst.pit;
+
         X = ifft2(Xf, 'symmetric');
 
         %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -531,18 +521,6 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Data fidelity term in Fourier domain
     recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
     Jdf = sum(vec(abs(recon-S).^2))/2;
-    
-    % Sparsity term
-    switch opt.Penalty
-        case 'l1-norm'
-            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-        case 'log'
-            if k <= opt.l1_iters
-                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-            else
-                Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
-            end
-    end
 
     % Optical flow terms
     if lambda2 > 0
@@ -702,16 +680,6 @@ function u = log_shrink(v, lambda, a)
     u(low_v) = 0;
 return
 
-% function u = atan_shrink(v, lambda)
-% a = 0.2;
-% u = 2/(a*sqrt(3))*(atan((1+2*a*(abs(v)-lambda))/sqrt(3))-pi/6);
-% return
-
-% function u = zpad(v, sz)
-%   u = zeros(sz(1), sz(2), size(v,3), size(v,4), class(v));
-%   u(1:size(v,1), 1:size(v,2),:,:) = v;
-% return
-
 function u = bcrop(v, sz)
 
   if numel(sz) <= 2
@@ -773,21 +741,6 @@ for i = 1:num_atoms
     end
     
 end
-
-function X = shift_array(X,shifts,J)
-    for i = 1:numel(shifts)
-        i1 = i + J*(i-1);
-        i2 = J*i;
-        X(:,:,i1:i2,:) = circshift(X(:,:,i1:i2,:), shifts(i), 2);
-    end
-return
-
-function t_center = computeCenterOfMass(atom)
-    % atom: 1D array representing learned atom
-    L = length(atom);
-    t = 1:L;
-    t_center = sum(t .* abs(atom)) / sum(abs(atom));
-return
 
 function opt = defaultopts(opt)
   if ~isfield(opt,'Verbose')

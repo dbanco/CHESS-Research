@@ -36,7 +36,6 @@ function dist = compute_x_metric(Xtrue, X, K, J)
 
     truthCoords = zeros(2,K,T); %scale, shift
     distMaps = zeros(K,J,N,T);
-    maskMaps = zeros(K,J,N,T);
     % 1: Identify truth coordinates and compute distance maps
     for t = 1:T
         for k = 1:K
@@ -52,5 +51,9 @@ function dist = compute_x_metric(Xtrue, X, K, J)
 
     % Compute metric for each k
     Xsum = sum(X,1);
-    dist = sum(minDistMap.*Xsum,'all');
+    mask = sum(Xtrue,1) > 0;
+    Xmask = Xsum.*mask;
+
+    % Metric is sum of contributions away from truth and at truth
+    dist = sum(minDistMap.*Xsum,'all') + norm(Xmask-sum(Xtrue,1),'fro');  
 end

@@ -1,9 +1,9 @@
-function [R, dR_flat] = compute_time_reg_softmin_flat(X_flat, K, J, tau, padMode, normalize)
-% compute_time_reg_softmin_flat
-% Soft-min temporal shift penalty for flattened coefficients.
+function [R, dR] = compute_softmin(X, K, J, tau, padMode, normalize)
+% compute_softmin
+% Soft-min temporal shift penalty
 %
 % Inputs
-%   X_flat  : [1 x N x (K*J) x T] coefficient tensor (double)
+%   X       : [1 x N x (K*J) x T] coefficient tensor (double)
 %   K       : number of atoms
 %   J       : number of scales (so K*J is the 3rd dim block size)
 %   tau     : soft-min temperature (suggest 1e-3 .. 1e-1). Default 1e-3.
@@ -22,7 +22,7 @@ if nargin < 5 || isempty(padMode), padMode = 'zero'; end
 if nargin < 6 || isempty(normalize), normalize = false; end
 
 % squeeze singleton leading dim
-Xs = squeeze(X_flat);         % [N x (K*J) x T]
+Xs = squeeze(X);         % [N x (K*J) x T]
 [N, KJ, T] = size(Xs);
 if KJ ~= K * J
     error('Third dim mismatch: expected K*J columns.');
@@ -39,20 +39,20 @@ for k = 1:K
 end
 
 % compute soft-min on [K x J x N x T] core
-[R_core, dR_core] = compute_time_reg_core(Xtemp, tau, padMode, normalize);
+[R_core, dR_core] = compute_softmin_core(Xtemp, tau, padMode, normalize);
 
 % map gradient back to flattened shape if requested
 if nargout > 1 && ~isempty(dR_core)
-    dR_flat = zeros(1, N, KJ, T);
+    dR = zeros(1, N, KJ, T);
     for k = 1:K
         i1 = 1 + (k-1)*J;
         i2 = J + (k-1)*J;
         block = squeeze(dR_core(k,:,:,:)); % [J x N x T]
         block = permute(block, [2 1 3]);    % [N x J x T]
-        dR_flat(1, :, i1:i2, :) = block;
+        dR(1, :, i1:i2, :) = block;
     end
 else
-    dR_flat = [];
+    dR = [];
 end
 
 R = R_core;
@@ -61,7 +61,7 @@ end
 
 
 %% ---------- CORE (works on [K x J x N x T]) ----------
-function [R, dR] = compute_time_reg_core(X, tau, padMode, normalize)
+function [R, dR] = compute_softmin_core(X, tau, padMode, normalize)
 % X : [K x J x N x T]
 
 if nargin < 2 || isempty(tau), tau = 1e-3; end

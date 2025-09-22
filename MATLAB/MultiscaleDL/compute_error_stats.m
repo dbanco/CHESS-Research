@@ -27,6 +27,12 @@ function error_stats = compute_error_stats(objectives, sig_ind)
     error_stats.std_of_penalty = zeros(max_ind, 1);
     error_stats.avg_x_metric = zeros(max_ind, 1);
     error_stats.std_x_metric = zeros(max_ind, 1);
+    error_stats.avg_x_metric2 = zeros(max_ind, 1);
+    error_stats.std_x_metric2 = zeros(max_ind, 1);
+    error_stats.avg_wass_dist = zeros(max_ind, 1);
+    error_stats.std_wass_dist = zeros(max_ind, 1);
+    error_stats.avg_l0_norm = zeros(max_ind, 1);
+    error_stats.std_l0_norm = zeros(max_ind, 1);
 
     % Compute statistics
     i = 1;
@@ -49,6 +55,12 @@ function error_stats = compute_error_stats(objectives, sig_ind)
         error_stats.std_log_penalty(i)     = std(objectives{n}.log_penalty,'omitnan'); 
         error_stats.avg_x_metric(i)     = mean(objectives{n}.x_metric,'omitnan'); 
         error_stats.std_x_metric(i)     = std(objectives{n}.x_metric,'omitnan');
+        error_stats.avg_x_metric2(i)     = mean(objectives{n}.x_metric2,'omitnan'); 
+        error_stats.std_x_metric2(i)     = std(objectives{n}.x_metric2,'omitnan');
+        error_stats.avg_wass_dist(i)     = mean(objectives{n}.wass_dist,'omitnan'); 
+        error_stats.std_wass_dist(i)     = std(objectives{n}.wass_dist,'omitnan');
+        error_stats.avg_l0_norm(i)     = mean(objectives{n}.l0_norm,'omitnan'); 
+        error_stats.std_l0_norm(i)     = std(objectives{n}.l0_norm,'omitnan');
         i = i + 1;
     end
 end

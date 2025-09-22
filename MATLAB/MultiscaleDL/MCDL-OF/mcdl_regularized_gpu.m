@@ -1,4 +1,4 @@
-function [D, Y, X, Dmin, Ymin,optinf, Jfn, relErr] = mcdl_regularized_gpu(D0, S, lambda, lambda2, opt, scales)
+function [D, Y, X, Dmin, Ymin,optinf, Jfn, relErr] = mcdl_regularized_gpu(D0, S, opt, scales)
 % cbpdndl -- Convolutional BPDN Dictionary Learning
 %
 %         argmin_{x_m,d_m} (1/2) \sum_k ||\sum_m d_m * x_k,m - s_k||_2^2 +
@@ -28,7 +28,7 @@ function [D, Y, X, Dmin, Ymin,optinf, Jfn, relErr] = mcdl_regularized_gpu(D0, S,
 %                    Fields are iteration number, functional value,
 %                    data fidelity term, l1 regularisation term, and
 %                    primal and dual residuals (see Sec. 3.3 of
-%                    boyd-2010-distributed). The values of rho and sigma
+%                    boyd-2010-distributed). The values of rho1 and rho2
 %                    are also displayed if options request that they are
 %                    automatically adjusted.
 %   MaxMainIter      Maximum main iterations
@@ -41,25 +41,25 @@ function [D, Y, X, Dmin, Ymin,optinf, Jfn, relErr] = mcdl_regularized_gpu(D0, S,
 %   U0               Initial value for U
 %   G0               Initial value for G (overrides D0 if specified)
 %   H0               Initial value for H
-%   rho              Augmented Lagrangian penalty parameter
-%   AutoRho          Flag determining whether rho is automatically updated
+%   rho1              Augmented Lagrangian penalty parameter
+%   AutoRho1          Flag determining whether rho1 is automatically updated
 %                    (see Sec. 3.4.1 of boyd-2010-distributed)
-%   AutoRhoPeriod    Iteration period on which rho is updated
-%   RhoRsdlRatio     Primal/dual residual ratio in rho update test
-%   RhoScaling       Multiplier applied to rho when updated
-%   AutoRhoScaling   Flag determining whether RhoScaling value is
+%   AutoRho1Period    Iteration period on which rho1 is updated
+%   Rho1RsdlRatio     Primal/dual residual ratio in rho1 update test
+%   Rho1Scaling       Multiplier applied to rho1 when updated
+%   AutoRho1Scaling   Flag determining whether Rho1Scaling value is
 %                    adaptively determined (see wohlberg-2015-adaptive). If
-%                    enabled, RhoScaling specifies a maximum allowed
+%                    enabled, Rho1Scaling specifies a maximum allowed
 %                    multiplier instead of a fixed multiplier
-%   sigma            Augmented Lagrangian penalty parameter
-%   AutoSigma        Flag determining whether sigma is automatically
+%   rho2            Augmented Lagrangian penalty parameter
+%   AutoRho2        Flag determining whether rho2 is automatically
 %                    updated (see Sec. 3.4.1 of boyd-2010-distributed)
-%   AutoSigmaPeriod  Iteration period on which sigma is updated
-%   SigmaRsdlRatio   Primal/dual residual ratio in sigma update test
-%   SigmaScaling     Multiplier applied to sigma when updated
-%   AutoSigmaScaling Flag determining whether SigmaScaling value is
+%   AutoRho2Period  Iteration period on which rho2 is updated
+%   Rho2RsdlRatio   Primal/dual residual ratio in rho2 update test
+%   Rho2Scaling     Multiplier applied to rho2 when updated
+%   AutoRho2Scaling Flag determining whether Rho2Scaling value is
 %                    adaptively determined (see wohlberg-2015-adaptive). If
-%                    enabled, SigmaScaling specifies a maximum allowed
+%                    enabled, Rho2Scaling specifies a maximum allowed
 %                    multiplier instead of a fixed multiplier.
 %   StdResiduals     Flag determining whether standard residual definitions
 %                    (see Sec 3.3 of boyd-2010-distributed) are used instead
@@ -100,17 +100,17 @@ checkopt(opt, defaultopts([]));
 opt = defaultopts(opt);
 
 % Set up status display for verbose operation
-hstr = ['Itn   Fnc       DFid      l1        Reg       XYU       DGH       Cnstr     CGIters      '...
+hstr = ['Itn   Fnc       DFid      l1        Reg      Jrho1     Jrho2     Cnstr     CGIters      '...
         'r(X)      s(X)      r(D)      s(D) '];
 sfms = '%4d %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %9.2e %4d %4d %9.2e %9.2e %9.2e %9.2e';
 nsep = 84;
-if opt.AutoRho
-  hstr = [hstr '     rho'];
+if opt.AutoRho1
+  hstr = [hstr '     rho1'];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
-if opt.AutoSigma
-  hstr = [hstr '     sigma  '];
+if opt.AutoRho2
+  hstr = [hstr '     rho2  '];
   sfms = [sfms ' %9.2e'];
   nsep = nsep + 10;
 end
@@ -160,6 +160,8 @@ else
   dsz = opt.DictFilterSizes;
 end
 
+lambda = opt.lambda;
+lambda2 = opt.lambda2;
 % Set a paramter via lambda
 if opt.a_via_lam
     opt.a = 0.95./lambda;
@@ -190,22 +192,22 @@ tstart = tic;
 % Project initial dictionary onto constraint set
 D = Pnrm(D0);
 
+
 % Compute signal in DFT domain
-Sf = fft2(S);
 Sfpad = fft2(Spad);
 
 % Set up algorithm parameters and initialise variables
-rho = opt.rho;
-if isempty(rho), rho = 50*lambda+1; end
-% if opt.AutoRho
-%   asgr = opt.RhoRsdlRatio;
-%   asgm = opt.RhoScaling;
+rho1 = opt.rho1;
+if isempty(rho1), rho1 = 50*lambda+1; end
+% if opt.AutoRho1
+%   asgr = opt.Rho1RsdlRatio;
+%   asgm = opt.Rho1Scaling;
 % end
-sigma = opt.sigma;
-if isempty(sigma), sigma = size(S,3); end
-% if opt.AutoSigma
-%   asdr = opt.SigmaRsdlRatio;
-%   asdm = opt.SigmaScaling;
+rho2 = opt.rho2;
+if isempty(rho2), rho2 = size(S,3); end
+% if opt.AutoRho2
+%   asdr = opt.Rho2RsdlRatio;
+%   asdm = opt.Rho2Scaling;
 % end
 optinf = struct('itstat', [], 'opt', opt);
 rx = Inf;
@@ -230,7 +232,7 @@ if isempty(opt.U0)
   if isempty(opt.Y0)
     U = zeros(xsz, class(S));
   else
-    U = (lambda/rho)*sign(Y);
+    U = (lambda/rho1)*sign(Y);
   end
 else
   U = opt.U0;
@@ -243,14 +245,13 @@ else
 end
 Gprv = G;
 if isempty(opt.H0)
-%   if isempty(opt.G0),
     H = zeros(size(G), class(S));
-%   else
-%     H = G;rece
-%   end
 else
   H = opt.H0;
 end
+
+Dr = D;
+Xr = X;
 
 if opt.plotDict
     fdict = figure;
@@ -259,41 +260,38 @@ if opt.plotDict
     xFig = figure;
 end
 
-
 [AG,NormVals,Shifts] = reSampleCustomArrayCenter3(N2,G,scales,centerM);
 AGpad = padarray(AG,[0 M-1 0 0],0,'post');
 
 AGf = fft2(AGpad);
 AGSf = bsxfun(@times, conj(AGf), Sfpad);
-AGS = ifft2(AGSf,'symmetric');
-% AGS(:,1:M-1,:,:) = 0;
-AGSf = fft2(AGS);
 Yf = fft2(Y);
+
+if opt.useGpu
+    Atop = @(r) ifft2(pagefun(@times, conj(AGf), r),'symmetric');
+else
+    Atop = @(r) ifft2(bsxfun(@times, conj(AGf), r),'symmetric');
+end
 
 % Initial solution
 k=0;
 tk = toc(tstart);
 Jcn = norm(vec(Pcn(D) - D));
 recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
-Jdf = sum(vec(abs(recon-S).^2))/2;
-switch opt.Penalty
-    case 'l1-norm'
-        Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-    case 'log'
-        if k <= opt.l1_iters
-            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-        else
-            Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
-        end
-end
+Jdf = 0.5*norm(recon-S,'fro').^2;
+
+a_n = opt.a;
+Jl1 = lambda*compute_sparse_penalty(Y,a_n,opt,k);
+Jrho1 = 0.5*rho1*norm(U,'fro').^2;
+Jrho2 = 0.5*rho2*norm(H,'fro').^2;
+
 if lambda2 > 0
-    Jreg = compute_penalty(Y,K,J,opt.regularizer);
+    Jreg = lambda2*compute_penalty(Y,K,J,opt.regularizer);
 else
     Jreg = 0;
 end
-Jlg1 = rho*sum((U(:)).^2);
-Jlg2 = sigma*sum((H(:)).^2);
-Jfn = Jdf + lambda*Jl1 + lambda2*Jreg;% + Jlg1 + Jlg2;
+
+Jfn = Jdf + Jl1 + Jreg + Jrho1 + Jrho2 ;
 
 % Initial min solution
 Ymin = Y;
@@ -302,14 +300,14 @@ minJfn = Jfn;
 minCount = 0;
 
 optinf.itstat = [optinf.itstat;...
-       [k Jfn Jdf Jl1 Jreg Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
+       [k Jfn Jdf Jl1 Jreg Jrho1 Jrho2 rx sx rd sd eprix eduax eprid eduad rho1 rho2 tk]];
 if opt.Verbose
-    dvc = [k, Jfn, Jdf, Jl1, Jreg, Jlg1, Jlg2, Jcn, 0,0, rx, sx, rd, sd];
-    if opt.AutoRho
-        dvc = [dvc rho];
+    dvc = [k, Jfn, Jdf, Jl1, Jreg, Jrho1, Jrho2, Jcn, 0,0, rx, sx, rd, sd];
+    if opt.AutoRho1
+        dvc = [dvc rho1];
     end
-    if opt.AutoSigma
-        dvc = [dvc sigma];
+    if opt.AutoRho2
+        dvc = [dvc rho2];
     end
     fprintf(sfms, dvc);
 end
@@ -342,15 +340,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     
     if ~opt.Dfixed && k > 1
         AYS = reSampleTransCustomArrayCenter3(M,ifft2(sum(bsxfun(@times, conj(Yf), Sfpad), 4),'symmetric'),scales,centerM,NormVals,Shifts);
-        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(Yf, sigma, AYS + sigma*(G - H),...
+        [D, cgst] = solvemdbi_cg_multirate_custom_gpu_zpad_center3(Yf, rho2, AYS + rho2*(G - H),...
                           cgt, opt.MaxCGIter, G(:),N2,M,scales,NormVals,Shifts,centerM,opt.useGpu);
         cgIters1 = cgst.pit;
-        
-        Df = fft2(D);
-        
-        clear YSf;
-        D = ifft2(Df, 'symmetric');
-        if strcmp(opt.LinSolve, 'SM'), clear Df; end
         
         % See pg. 21 of boyd-2010-distributed
         if opt.DRelaxParam == 1
@@ -368,9 +360,14 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         AGf = fft2(AG);
         AGSf = bsxfun(@times, conj(AGf), Sfpad);
         
+        if opt.useGpu
+            Atop = @(r) ifft2(pagefun(@times, conj(AGf), r),'symmetric');
+        else
+            Atop = @(r) ifft2(bsxfun(@times, conj(AGf), r),'symmetric');
+        end
+        
         % Update dual variable corresponding to D, G
         H = H + Dr - G;
-        clear Dr;
     else
         cgIters1 = 0;
     end
@@ -380,15 +377,15 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     if opt.StdResiduals
         % See pp. 19-20 of boyd-2010-distributed
         rd = norm(vec(D - G));
-        sd = norm(vec(sigma*(Gprv - G)));
+        sd = norm(vec(rho2*(Gprv - G)));
         eprid = sqrt(Nd)*opt.AbsStopTol+max(nD,nG)*opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol+sigma*nH*opt.RelStopTol;
+        eduad = sqrt(Nd)*opt.AbsStopTol+rho2*nH*opt.RelStopTol;
     else
         % See wohlberg-2015-adaptive
         rd = norm(vec(D - G))/max(nD,nG);
         sd = norm(vec(Gprv - G))/nH;
         eprid = sqrt(Nd)*opt.AbsStopTol/max(nD,nG)+opt.RelStopTol;
-        eduad = sqrt(Nd)*opt.AbsStopTol/(sigma*nH)+opt.RelStopTol;
+        eduad = sqrt(Nd)*opt.AbsStopTol/(rho2*nH)+opt.RelStopTol;
     end
 
     % Solve X subproblem. It would be simpler and more efficient (since the
@@ -396,13 +393,8 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % variable D as the dictionary, but this appears to be unstable. Instead,
     % use the projected dictionary variable G
     if ~opt.Xfixed
-        if opt.adapt_lambda && k <= opt.AdaptIters
-            lambda_n = opt.lambda_min*(lambda/opt.lambda_min)^(k/opt.AdaptIters);
-        else
-            lambda_n = lambda;
-        end
-        b = AGSf+ rho*fft2(Y-U);
-        [Xf, cgst] = x_update_switch(Yf(:),AGf,rho,b,opt,N2,M,K,J,T,lambda2);
+        bf = AGSf + rho1*fft2(Y-U);
+        [Xf, cgst, opt] = x_update_switch(Y,Yf,AGf,bf,Spad,Y,U,opt,N2,M,K,J,T,Atop);
 
         cgIters2 = cgst.pit;
 
@@ -417,88 +409,45 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
         end
         
+        if opt.adapt_a && k <= (opt.AdaptIters + opt.l1_iters)
+            a_n = opt.a_min*(opt.a/opt.a_min)^((k-opt.l1_iters)/opt.AdaptIters);
+        else
+            a_n = opt.a;
+        end
+
         % Solve Y subproblem
-        switch opt.Penalty
-            case 'l1-norm'
-                Y = shrink(Xr + U, (lambda_n/rho)*opt.L1Weight);
-            case 'log'
-                if k <= opt.l1_iters
-                    Y = shrink(Xr + U, (lambda_n/rho));
-                else
-                    if opt.adapt_a && k <= (opt.AdaptIters + opt.l1_iters)
-                        a_n = opt.a_min*(opt.a/opt.a_min)^((k-opt.l1_iters)/opt.AdaptIters);
-                    else
-                        a_n = opt.a;
-                    end
-                    Y = log_shrink(Xr + U, (lambda_n/rho),a_n);
-                end
-        end
-        if opt.NonNegCoef
-            Y(Y < 0) = 0;
-        end
-        
-        if opt.NoBndryCross
-            %Y((end-max(dsz(1,:))+2):end,:,:,:) = 0;
-            Y((end-size(D0,1)+2):end,:,:,:) = 0;
-            %Y(:,(end-max(dsz(2,:))+2):end,:,:) = 0;
-            Y(:,(end-size(D0,2)+2):end,:,:) = 0;
-        end
+        Y = apply_sparse_penalty(Xr + U,lambda,k,opt,a_n);
         Yf = fft2(Y);
 
-        % Sparsity term
-        switch opt.Penalty
-            case 'l1-norm'
-                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-            case 'log'
-                if k <= opt.l1_iters
-                    Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-                else
-                    Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
-                end
-        end
-    
         % Update dual variable corresponding to X, Y, Z
         U = U + Xr - Y;
-        clear DPXr Xr;
     else
         X = Y;
         cgIters2 = 0;
     end
-
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % [JfnX, JfnY, Jxupdate, Jxupdate2] = checkObjective(X,Y,U,AGf,AGSf,M,S,opt,lambda,lambda2,K,rho,Uvel,Vvel);
-    % fprintf('Obj after XYU: %9.2e, %9.2e, %9.2e, %9.2e \n',JfnX, JfnY, Jxupdate, Jxupdate2)
-    %%%%%%%%%%%%%% CHECK OBJECTIVE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Compute primal and dual residuals and stopping thresholds for X update
     nX = norm(X(:)); nY = norm(Y(:)); nU = norm(U(:)); 
     if opt.StdResiduals
         % See pp. 19-20 of boyd-2010-distributed
         rx = norm(vec(X - Y));
-        sx = norm(vec(rho*(Yprv - Y)));
+        sx = norm(vec(rho1*(Yprv - Y)));
         eprix = sqrt(Nx)*opt.AbsStopTol+max(nX,nY)*opt.RelStopTol;
-        eduax = sqrt(Nx)*opt.AbsStopTol+rho*nU*opt.RelStopTol;
+        eduax = sqrt(Nx)*opt.AbsStopTol+rho1*nU*opt.RelStopTol;
     else
         % See wohlberg-2015-adaptive
         rx = norm(vec(X - Y))/max(nX,nY);
         sx = norm(vec(Yprv - Y))/nU;
         eprix = sqrt(Nx)*opt.AbsStopTol/max(nX,nY)+opt.RelStopTol;
-        eduax = sqrt(Nx)*opt.AbsStopTol/(rho*nU)+opt.RelStopTol;
+        eduax = sqrt(Nx)*opt.AbsStopTol/(rho1*nU)+opt.RelStopTol;
     end
 
-    Jlg1 = rho/2*sum((X(:)-Y(:)+U(:)).^2) - rho/2*sum(U(:).^2);
-    
     % Update record of previous step Y
     Yprv = Y;
     
     % Apply CG auto tolerance policy if enabled
     if opt.CGTolAuto && (rd/opt.CGTolFactor) < cgt
         cgt = rd/opt.CGTolFactor;
-    end
-
-    % Update optical flow velocities
-    if (opt.UpdateVelocity && (lambda2 > 0)) || nargin < 6
-        [Uvel,Vvel,Fx,Fy,Ft] = computeHornSchunkDictPaperLS(Y,K,Uvel,Vvel,opt.Smoothness/lambda2,opt.HSiters);
     end
     
     % Compute measure of D constraint violation
@@ -507,33 +456,26 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Update record of previous step G
     Gprv = G;
     
-    % Data fidelity term in Fourier domain
+    % Data fidelity term 
     recon = unpad(ifft2(sum(bsxfun(@times,AGf,Yf),3),'symmetric'),M-1,'pre');
-    Jdf = sum(vec(abs(recon-S).^2))/2;
-    
-    % Sparsity term
-    switch opt.Penalty
-        case 'l1-norm'
-            Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-        case 'log'
-            if k <= opt.l1_iters
-                Jl1 = sum(abs(vec(bsxfun(@times, opt.L1Weight, Y))));
-            else
-                Jl1 = sum(vec(log(1 + a_n.*abs(Y))/a_n));
-            end
-    end
+    Jdf = 0.5*norm(recon-S,'fro').^2;
 
-    % Optical flow terms
+    % Sparsity term
+    Jl1 = lambda*compute_sparse_penalty(Y,a_n,opt,k);
+
+    % Regularization term
     if lambda2 > 0
-        Jreg = compute_penalty(Y,K,J,opt.regularizer);
+        Jreg = lambda2*compute_penalty(Y,K,J,opt.regularizer);
     else
         Jreg = 0;
     end
-    
-    Jlg2 = sigma/2*sum((D(:)-G(:)+H(:)).^2) - sigma/2*sum(H(:).^2);
 
+    % Constraint terms
+    Jrho1 = 0.5*rho1*norm(Xr-Y,'fro').^2;
+    Jrho2 = 0.5*rho2*norm(Dr-G,'fro').^2;
+    
     % Full objective
-    Jfn = Jdf + lambda_n*Jl1 + lambda2*Jreg;
+    Jfn = Jdf + Jl1 + Jreg + Jrho1 + Jrho2;
 
     % Plot dictionary progress
     if opt.plotDict
@@ -575,54 +517,56 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % Record and display iteration details
     tk = toc(tstart);
     optinf.itstat = [optinf.itstat;...
-    [k Jfn Jdf Jl1 Jreg Jlg1 Jlg2 rx sx rd sd eprix eduax eprid eduad rho sigma tk]];
+    [k Jfn Jdf Jl1 Jreg Jrho1 Jrho2 rx sx rd sd eprix eduax eprid eduad rho1 rho2 tk]];
     if opt.Verbose
-        if opt.AutoRho && opt.AutoSigma
-            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, rho, sigma];
-        elseif opt.AutoSigma
-            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, sigma];
-        elseif opt.AutoRho
-            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jlg1, Jlg2, Jcn,...
-                   cgIters1,cgIters2, rx, sx, rd, sd, rho];
+        if opt.AutoRho1 && opt.AutoRho2
+            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jrho1, Jrho2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, rho1, rho2];
+        elseif opt.AutoRho2
+            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jrho1, Jrho2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, rho2];
+        elseif opt.AutoRho1
+            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jrho1, Jrho2, Jcn,...
+                   cgIters1,cgIters2, rx, sx, rd, sd, rho1];
         else
-            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jlg1, Jlg2, Jcn,...
+            dvc = [k, Jfn, Jdf, Jl1, Jreg, Jrho1, Jrho2, Jcn,...
                    cgIters1,cgIters2, rx, sx, rd, sd];
         end
         fprintf(sfms, dvc);
     end
 
   % See wohlberg-2015-adaptive and pp. 20-21 of boyd-2010-distributed
-  if opt.AutoRho
-    if k ~= 1 && mod(k, opt.AutoRhoPeriod) == 0
-      if opt.AutoRhoScaling
+  if opt.AutoRho1
+    if k ~= 1 && mod(k, opt.AutoRho1Period) == 0
+      if opt.AutoRho1Scaling
         rhomlt = sqrt(rx/sx);
         if rhomlt < 1, rhomlt = 1/rhomlt; end
-        if rhomlt > opt.RhoScaling, rhomlt = opt.RhoScaling; end
+        if rhomlt > opt.Rho1Scaling, rhomlt = opt.Rho1Scaling; end
       else
-        rhomlt = opt.RhoScaling;
+        rhomlt = opt.Rho1Scaling;
       end
       rsf = 1;
-      if rx > opt.RhoRsdlRatio*sx, rsf = rhomlt; end
-      if sx > opt.RhoRsdlRatio*rx, rsf = 1/rhomlt; end
-      rho = rsf*rho;
+      if rx > opt.Rho1RsdlRatio*sx, rsf = rhomlt; end
+      if sx > opt.Rho1RsdlRatio*rx, rsf = 1/rhomlt; end
+      rho1 = rsf*rho1;
+      opt.rho1 = rho1;
       U = U/rsf;
     end
   end
-  if opt.AutoSigma
-    if k ~= 1 && mod(k, opt.AutoSigmaPeriod) == 0
-      if opt.AutoSigmaScaling
+  if opt.AutoRho2
+    if k ~= 1 && mod(k, opt.AutoRho2Period) == 0
+      if opt.AutoRho2Scaling
         sigmlt = sqrt(rd/sd);
         if sigmlt < 1, sigmlt = 1/sigmlt; end
-        if sigmlt > opt.SigmaScaling, sigmlt = opt.SigmaScaling; end
+        if sigmlt > opt.Rho2Scaling, sigmlt = opt.Rho2Scaling; end
       else
-        sigmlt = opt.SigmaScaling;
+        sigmlt = opt.Rho2Scaling;
       end
       ssf = 1;
-      if rd > opt.SigmaRsdlRatio*sd, ssf = sigmlt; end
-      if sd > opt.SigmaRsdlRatio*rd, ssf = 1/sigmlt; end
-      sigma = ssf*sigma;
+      if rd > opt.Rho2RsdlRatio*sd, ssf = sigmlt; end
+      if sd > opt.Rho2RsdlRatio*rd, ssf = 1/sigmlt; end
+      rho2 = ssf*rho2;
+      opt.rho2 = rho2;
       H = H/ssf;
     end
   end
@@ -633,7 +577,7 @@ end
 
 D = PzpT(G);
 Dmin = PzpT(Gmin);
-relErr = Jdf/sum(vec((Sf).^2));
+relErr = Jdf/sum(vec((Sfpad).^2));
 
 % Record run time and working variables
 optinf.runtime = toc(tstart);
@@ -642,8 +586,8 @@ optinf.U = U;
 optinf.G = G;
 optinf.H = H;
 optinf.lambda = lambda;
-optinf.rho = rho;
-optinf.sigma = sigma;
+optinf.rho1 = rho1;
+optinf.rho2 = rho2;
 optinf.cgt = cgt;
 if exist('cgst','var'), optinf.cgst = cgst; end
 
@@ -661,23 +605,6 @@ function u = vec(v)
 
   u = v(:);
 
-return
-
-function u = shrink(v, lambda)
-  if isscalar(lambda)
-    u = sign(v).*max(0, abs(v) - lambda);
-  else
-    u = sign(v).*max(0, bsxfun(@minus, abs(v), lambda));
-  end
-
-return
-
-function u = log_shrink(v, lambda, a)
-    low_v = v < lambda;
-    y1 = abs(v)/2 - 1/(2*a);
-    y2 = abs(v)/2 + 1/(2*a);
-    u = sign(v).*(y1 + sqrt( y2.^2 - lambda/a));
-    u(low_v) = 0;
 return
 
 function u = bcrop(v, sz)
@@ -743,41 +670,41 @@ function opt = defaultopts(opt)
   if ~isfield(opt,'H0')
     opt.H0 = [];
   end
-  if ~isfield(opt,'rho')
-    opt.rho = [];
+  if ~isfield(opt,'rho1')
+    opt.rho1 = [];
   end
-  if ~isfield(opt,'AutoRho')
-    opt.AutoRho = 0;
+  if ~isfield(opt,'AutoRho1')
+    opt.AutoRho1 = 0;
   end
-  if ~isfield(opt,'AutoRhoPeriod')
-    opt.AutoRhoPeriod = 10;
+  if ~isfield(opt,'AutoRho1Period')
+    opt.AutoRho1Period = 10;
   end
-  if ~isfield(opt,'RhoRsdlRatio')
-    opt.RhoRsdlRatio = 10;
+  if ~isfield(opt,'Rho1RsdlRatio')
+    opt.Rho1RsdlRatio = 10;
   end
-  if ~isfield(opt,'RhoScaling')
-    opt.RhoScaling = 2;
+  if ~isfield(opt,'Rho1Scaling')
+    opt.Rho1Scaling = 2;
   end
-  if ~isfield(opt,'AutoRhoScaling')
-    opt.AutoRhoScaling = 0;
+  if ~isfield(opt,'AutoRho1Scaling')
+    opt.AutoRho1Scaling = 0;
   end
-  if ~isfield(opt,'sigma')
-    opt.sigma = [];
+  if ~isfield(opt,'rho2')
+    opt.rho2 = [];
   end
-  if ~isfield(opt,'AutoSigma')
-    opt.AutoSigma = 0;
+  if ~isfield(opt,'AutoRho2')
+    opt.AutoRho2 = 0;
   end
-  if ~isfield(opt,'AutoSigmaPeriod')
-    opt.AutoSigmaPeriod = 10;
+  if ~isfield(opt,'AutoRho2Period')
+    opt.AutoRho2Period = 10;
   end
-  if ~isfield(opt,'SigmaRsdlRatio')
-    opt.SigmaRsdlRatio = 10;
+  if ~isfield(opt,'Rho2RsdlRatio')
+    opt.Rho2RsdlRatio = 10;
   end
-  if ~isfield(opt,'SigmaScaling')
-    opt.SigmaScaling = 2;
+  if ~isfield(opt,'Rho2Scaling')
+    opt.Rho2Scaling = 2;
   end
-  if ~isfield(opt,'AutoSigmaScaling')
-    opt.AutoSigmaScaling = 0;
+  if ~isfield(opt,'AutoRho2Scaling')
+    opt.AutoRho2Scaling = 0;
   end
   if ~isfield(opt,'StdResiduals')
     opt.StdResiduals = 1;

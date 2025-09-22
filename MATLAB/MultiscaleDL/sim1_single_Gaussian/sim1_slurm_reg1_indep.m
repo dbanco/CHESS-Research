@@ -75,8 +75,8 @@ opt.regularizer = 'filter3';
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
-for s_dinit = 3
-for s_dfix = 2
+for s_dinit = [2,3]
+for s_dfix = [1,2]
 for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
@@ -85,6 +85,10 @@ for s_recenter = 1
     opt.Recenter = recenter{s_recenter};
     
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
+        continue
+    end
+
+    if (opt.Dfixed == 0) && strcmp(opt.dictInit, 'true')
         continue
     end
    
@@ -96,8 +100,10 @@ for s_recenter = 1
     for sig_i = 3:5
         for j_s = 90
             for j_reg = [1,5:5:55]
-                sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,...
-                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales);
+                varin = {lambdaVals,lambdaRegVals,...
+                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales};
+                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+                k = k + 1;
             end
         end
     end

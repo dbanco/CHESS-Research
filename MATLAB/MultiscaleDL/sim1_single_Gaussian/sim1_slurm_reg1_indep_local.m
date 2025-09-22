@@ -1,35 +1,32 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-2,0,150);
-lambdaOFVals = [0 logspace(-4,0,100)];
+lambdaRegVals = [0 logspace(-2,2,99)];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;
+opt.MaxMainIter = 300;
 opt.MaxCGIter = 100;
-opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
-% Rho and sigma params
-opt.rho = 1000;
-opt.sigma = 500;
-opt.AutoRho = 1;
-opt.AutoRhoPeriod = 1;
-opt.AutoSigma = 1;
-opt.AutoSigmaPeriod = 1;
+% Rho1 and Rho2 params  
+opt.rho1 = 100;
+opt.rho2 = 5;
+opt.AutoRho1 = 1;
+opt.AutoRho1Period = 1;
+opt.AutoRho2 = 1;
+opt.AutoRho2Period = 1;
 opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 opt.a_min = 1e-4;
 opt.lambda_min = 1e-4;
-opt.adapt_a = true;
+opt.adapt_a = false;
 opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
-opt.UpdateVelocity = 1;
-opt.HSiters = 100;
-opt.useGpu = true;
+opt.useGpu = false;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
@@ -38,10 +35,9 @@ opt.useMin = false;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = true;
-
-% Regularizer
-opt.regularizer = 'filter1';
+opt.mcdl_init = false;
+opt.ism_init = true;
+opt.L = 1;
 
 % Multiscale dictionary setup
 K = 1;
@@ -49,9 +45,7 @@ scales = cell(K,1);
 scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
 J = size(scales{1},2);
 
-scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdl_reg_wrapper';
-jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 datasets = {'pseudo-voigt_unmatched'};
@@ -72,12 +66,15 @@ end
 
 ind1 = 1:numel(lambdaVals);
 
+% Regularizer
+opt.regularizer = 'filter3';
+
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
-for s_dinit = 2
-for s_dfix = 1
+for s_dinit = 3
+for s_dfix = 2
 for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
@@ -89,17 +86,17 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_9_4_indep_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_9_22_',opt.regularizer,'_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+        '_recenter',num2str(opt.Recenter),'\results_trial_',num2str(trial)];
 
-    for sig_i = 1
-        for j_s = 60
-            j_of = 1;
-            j_hs = 1;
-            sim_mcdl_reg_wrapper(lambdaVals,lambdaOFVals,...
-                    j_s,j_of,sigmas,sig_i,opt,topDir,dataset,K,scales);
+    for sig_i = 4
+        for j_s = 90
+            for j_reg = [12,17,22,27,32]
+                sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,...
+                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales);
+            end
         end
     end
 end

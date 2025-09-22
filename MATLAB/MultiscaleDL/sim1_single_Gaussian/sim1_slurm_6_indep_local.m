@@ -1,13 +1,13 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = logspace(-2,0,150);
+lambdaVals = [0.1 logspace(-2,0,150)];
 lambdaOFVals = [0 logspace(-4,0,20)];
 lambdaHSVals = [0 logspace(-4,0,10)];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 1000;
+opt.MaxMainIter = 300;
 opt.MaxCGIter = 100;
 opt.NoOFIters = 0;
 opt.CGTol = 1e-6;
@@ -24,13 +24,13 @@ opt.XRelaxParam = 1.8;
 opt.DRelaxParam = 1.8;
 opt.a_min = 1e-4;
 opt.lambda_min = 1e-4;
-opt.adapt_a = true;
+opt.adapt_a = false;
 opt.adapt_lambda = false;
 opt.NonNegCoef = 1;
 opt.NonnegativeDict = 1;
 opt.UpdateVelocity = 1;
 opt.HSiters = 100;
-opt.useGpu = 0;
+opt.useGpu = false;
 opt.Xfixed = 0;
 opt.Dfixed = 0;
 opt.Recenter = 0;
@@ -39,7 +39,7 @@ opt.useMin = false;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = true;
+opt.mcdl_init = false;
 
 % Multiscale dictionary setup
 K = 1;
@@ -87,13 +87,13 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_9_4_indep_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_9_15_indep_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
 
-    for sig_i = 1
-        for j_s = 60
+    for sig_i = 2
+        for j_s = 1
             j_of = 1;
             j_hs = 1;
             sim_mcdlof_wrapper4(lambdaVals,lambdaOFVals,lambdaHSVals,...

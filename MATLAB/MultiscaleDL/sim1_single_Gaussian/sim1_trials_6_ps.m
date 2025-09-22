@@ -6,11 +6,11 @@ lambdaHSVals = [0 logspace(-4,0,10)];
 
 selected_lam_s = [97,106,112,116,126];
 % log discrep selection
-selected_lam_of = [4,6,9,10,21];
-selected_lam_hs = [6,11,11,11,3];
+% selected_lam_of = [4,6,9,10,21];
+% selected_lam_hs = [6,11,11,11,3];
 % Fixed selection
-% selected_lam_of = [9,9,9,9,9];
-% selected_lam_hs = [6,6,6,6,6];
+selected_lam_of = [9,9,9,9,9];
+selected_lam_hs = [6,6,6,6,6];
 
 lambda_eval = [9,6];
 
@@ -75,9 +75,7 @@ num_trials = 1;
 fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
 data_name = 'sim1';
 
-[meanSNR,noiseError] = computeSNR_noiseError(dataset,sig_ind);
-
 error_stats_indep = compute_error_stats(objectives_indep,sig_ind);
 error_stats_of = compute_error_stats(objectives_of,sig_ind);
 
-trials_figures_subplot_sim1(fig_dir,num_trials,data_name,meanSNR,error_stats_indep,error_stats_of)
+trials_figures_subplot_sim2(fig_dir,num_trials,data_name,SNRs,error_stats_indep,error_stats_of)

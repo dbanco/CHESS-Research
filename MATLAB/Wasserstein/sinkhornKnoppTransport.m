@@ -19,7 +19,7 @@ while numel(r) > (k < 1000)
     x = diag(1./r)*K*e;
 
     check = e.*K'*(1./x) - c;
-    if sum(abs(check ))<1e-8
+    if sum(abs(check ))<1e-6
         break
     end
     k = k + 1;
@@ -28,6 +28,7 @@ end
 
 u = 1./x; 
 v = c.*(1./(K'*u));
+v(isnan(v)) = 0;
 T = diag(u)*K*diag(v);
 Wd = sum(u.*((K.*D)*v));
 

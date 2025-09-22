@@ -17,6 +17,8 @@ lambda_vec = zeros(NN,3);
 D_error = zeros(NN,1);
 vdf_error = zeros(NN,1);
 x_metric = zeros(NN,1);
+x_metric2 = zeros(NN,1);
+wass_dist = zeros(NN,1);
 
 if isempty(lambda_eval)
     lambda_of = lambda_all(2);
@@ -101,7 +103,37 @@ for i = 1:num_trials
     lambda_vec(i,2) = outputs.lambda2;
     lambda_vec(i,3) = outputs.opt.Smoothness;
 
-    x_metric(i) = sum(compute_x_metric(Xtrue,X,K,J));
+    x_metric(i) = compute_x_metric(Xtrue,X,K,J);
+    x_metric2(i) = norm(X(:)-Xtrue(:));
+    wass_dist(i) = wass_distance(Xtrue,X,K,J);
+
+    % % figure
+    % % subplot(2,1,1)
+    % Xtrue_scale = squeeze(sum(Xtrue,[1,2]));
+    % % imagesc(Xtrue_scale)
+    % % subplot(2,1,2)
+    % X_scale = squeeze(sum(X,[1,2]));
+    % % imagesc(X_scale)
+    % % title('Compare Scale')
+    % % 
+    % % figure
+    % % subplot(2,1,1)
+    % Xtrue_shift = squeeze(sum(Xtrue,[1,3]));
+    % % imagesc(Xtrue_shift)
+    % % subplot(2,1,2)
+    % X_shift = squeeze(sum(X,[1,3]));
+    % % imagesc(X_shift)
+    % % title('Compare Shift')
+
+    % figure
+    % subplot(2,1,1)
+    % imagesc(Xtrue_shift-X_shift)
+    % title(num2str(x_metric(i)))
+    % subplot(2,1,2)
+    % X_shift = squeeze(sum(X,[1,3]));
+    % imagesc(Xtrue_scale - X_scale)
+    % title('Compare Shift')
+
 end
 
 objective = struct();
@@ -116,5 +148,7 @@ objective.hs_penalty = hs_penalty;
 objective.D_error = D_error;
 objective.vdf_error = vdf_error;
 objective.x_metric = x_metric;
+objective.x_metric2 = x_metric2;
+objective.wass_dist = wass_dist;
 
 end

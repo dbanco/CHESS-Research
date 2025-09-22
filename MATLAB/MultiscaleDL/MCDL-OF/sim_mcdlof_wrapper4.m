@@ -13,6 +13,7 @@ if isfield(opt,'mcdl_file')
     y = outputs.y;
 else
     rng('shuffle');
+    rng(1);
     [y,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigmas(i),dataset);
     y = reshape(y,[1,N,T]);
 end

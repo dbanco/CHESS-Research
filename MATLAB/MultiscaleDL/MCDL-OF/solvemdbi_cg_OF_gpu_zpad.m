@@ -79,7 +79,3 @@ cgst = struct('flg', flg, 'rlr', rlr, 'pit', pit);
 x = reshape(xv, xsz);
 
 end
-
-% function u = maskPad(u,M)
-% u(:,1:M-1,:,:) = 0;
-% end
