@@ -100,8 +100,8 @@ for s_recenter = 1
     for sig_i = 3:5
         for j_s = [95,100,105,110]
             for j_reg = [1,5:5:55]
-                varin = {lambdaVals,lambdaRegVals,...
-                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales};
+                varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
+                         sig_i,opt,topDir,dataset,K,scales};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
                 k = k + 1;
             end
