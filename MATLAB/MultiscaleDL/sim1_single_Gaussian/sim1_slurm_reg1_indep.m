@@ -98,7 +98,7 @@ for s_recenter = 1
         '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
 
     for sig_i = 3:5
-        for j_s = 90
+        for j_s = [95,100,105,110]
             for j_reg = [1,5:5:55]
                 varin = {lambdaVals,lambdaRegVals,...
                         j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales};
