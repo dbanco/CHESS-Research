@@ -1,9 +1,9 @@
-function outputs = loadOutputFile(inDir,inds)
+function outputs = loadOutputFileReg(inDir,inds)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 % === Build prefix ===
-prefix = sprintf('output_j%d_%d_%d_', inds(1), inds(2), inds(3));
+prefix = sprintf('output_j%d_%d_', inds(1), inds(2));
 
 % === Get list of all PNG files ===
 files = dir(fullfile(inDir, '*.mat'));

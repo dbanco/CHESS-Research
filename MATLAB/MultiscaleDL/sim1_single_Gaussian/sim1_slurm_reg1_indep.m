@@ -69,7 +69,7 @@ end
 ind1 = 1:numel(lambdaVals);
 
 % Regularizer
-opt.regularizer = 'filter3';
+opt.regularizer = 'softmin';
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1

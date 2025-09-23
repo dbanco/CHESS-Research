@@ -31,16 +31,16 @@ opt.Dfixed = dfixes{s(5)};
 opt.Recenter = recenters{s(6)};
 opt.Xfixed = 0;
 
-prefix = ['9_4_of_',dataset];
+prefix = ['9_22_filter3_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed),...
     '_recenter',num2str(opt.Recenter)];
 
 % criterion = 'discrepancy';
-% criterion = 'truth_errorr';
+criterion = 'truth_error';
 % criterion = 'relaxed discrepancy';
-criterion = 'discrepancy range';
+% criterion = 'discrepancy range';
 % criterion = 'discrepancy range of-hs-log';
 
 selected_lam_s_vec = zeros(NN,1);

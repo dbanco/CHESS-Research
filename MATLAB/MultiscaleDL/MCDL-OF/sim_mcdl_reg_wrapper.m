@@ -60,7 +60,7 @@ outputs.J = J;
 outputs.opt = opt;
 outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
-suffix = sprintf('_j%i_%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
+suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
                   j_s,j_reg,sigmas(i),outputs.lambda,outputs.lambda2);
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 
