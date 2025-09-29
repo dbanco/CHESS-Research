@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-2,0,150);
-lambdaRegVals = [0 logspace(-2,2,99)];
+lambdaRegVals = [0 logspace(-2,2,99), 500, 1000, 10000];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
@@ -12,7 +12,7 @@ opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-6;
 % Rho1 and Rho2 params  
-opt.rho1 = 100;
+opt.rho1 = 10;
 opt.rho2 = 5;
 opt.AutoRho1 = 1;
 opt.AutoRho1Period = 1;
@@ -35,16 +35,11 @@ opt.useMin = false;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = false;
+opt.mcdl_init = 50;
 opt.ism_init = true;
 opt.L = 1;
 
 % Multiscale dictionary setup
-K = 1;
-scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],16,16, 1/8);
-J = size(scales{1},2);
-
 funcName = 'sim_mcdl_reg_wrapper';
 k = 1;
 
@@ -67,14 +62,14 @@ end
 ind1 = 1:numel(lambdaVals);
 
 % Regularizer
-opt.regularizer = 'filter3';
+opt.regularizer = 'softmin';
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
 for s_dinit = 3
-for s_dfix = 2
+for s_dfix = 1
 for s_recenter = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
@@ -86,14 +81,14 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\Outputs_9_22_',opt.regularizer,'_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_9_26_',opt.regularizer,'_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'\results_trial_',num2str(trial)];
 
     for sig_i = 4
         for j_s = 90
-            for j_reg = [12,17,22,27,32]
+            for j_reg = [20,30]
                 sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,...
                         j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales);
             end

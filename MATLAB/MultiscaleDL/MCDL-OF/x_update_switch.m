@@ -1,4 +1,4 @@
-function [Xf, cgst, opt] = x_update_switch(X,Xf,Df,bf,S,Y,U,opt,N,M,K,J,T,Atop)
+function [Xf, cgst, opt] = x_update_switch(X0,X0f,Df,bf,Sf,Y,U,opt,N,M,K,J,T)
 %x_update_switch  Update sparse codes with different regularization options.
 %
 %   [Xf, cgst, opt] = x_update_switch(X,Xf,Df,bf,S,Y,U,opt,N,M,K,J,T,Atop)
@@ -13,7 +13,7 @@ function [Xf, cgst, opt] = x_update_switch(X,Xf,Df,bf,S,Y,U,opt,N,M,K,J,T,Atop)
 %     Xf      - Current estimate of the coefficient maps in the frequency domain.
 %     Df      - Dictionary filters in the frequency domain.
 %     bf      - Right-hand side term in the normal equations (frequency domain).
-%     S       - Observed signal/data (spatial domain).
+%     Sf       - Observed signal/data (frequency domain).
 %     Y, U    - ADMM auxiliary and dual variables, respectively.
 %     opt     - Options struct with fields:
 %                  .regularizer : String specifying the regularization type.
@@ -46,13 +46,14 @@ function [Xf, cgst, opt] = x_update_switch(X,Xf,Df,bf,S,Y,U,opt,N,M,K,J,T,Atop)
 
 switch opt.regularizer
     case 'filter1'
-        [Xf, cgst, opt] = x_update_filter_reg_gpu(Xf,Df,bf,opt,N,M,K,J,T);
+        [Xf, cgst, opt] = x_update_filter_reg_gpu(X0f,Df,bf,opt,N,M,K,J,T);
     case 'filter2'
-        [Xf, cgst, opt] = x_update_filter_reg_gpu(Xf,Df,bf,opt,N,M,K,J,T);
+        [Xf, cgst, opt] = x_update_filter_reg_gpu(X0f,Df,bf,opt,N,M,K,J,T);
     case 'filter3'
-        [Xf, cgst, opt] = x_update_filter_reg_gpu(Xf,Df,bf,opt,N,M,K,J,T);
+        [Xf, cgst, opt] = x_update_filter_reg_gpu(X0f,Df,bf,opt,N,M,K,J,T);
     case 'softmin'
-        [Xf, cgst, opt] = x_update_softmin_reg_gpu(X,Df,bf,S,Y,U,opt,N,M,K,J,T,Atop);
+        [Xf, cgst, opt] = x_update_softmin_reg_gpu(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
+        % [Xf, cgst, opt] = x_update_softmin_mm_ism(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
         
 end
 

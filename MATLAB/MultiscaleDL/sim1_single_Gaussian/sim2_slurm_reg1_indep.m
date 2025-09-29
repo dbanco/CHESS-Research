@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = logspace(-2,0,150);
-lambdaRegVals = [0 logspace(-2,2,99)];
+coarseVals = logspace(-2,0,10);
+coarseRegVals = logspace(-2,2,10);
 
 % Set up algorithm parameters
 opt.plotDict = 0;
@@ -40,12 +40,6 @@ opt.ism_init = true;
 opt.L = 1;
 
 % Multiscale dictionary setup
-K = 2;
-scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
-scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
-J = size(scales{1},2);
-
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdl_reg_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
@@ -56,7 +50,6 @@ penalties = {'l1-norm','log'};
 xinits = {'zeros','true'};
 dinits = {'rand','flat','true'};
 dfixes = {0,1};
-recenter = {0,1};
 
 % Noise level
 dataset = datasets{1};
@@ -76,14 +69,12 @@ opt.regularizer = 'filter3';
 for trial = 1
 for s_pen = 2
 for s_xinit = 1
-for s_dinit = [2,3]
-for s_dfix = [1,2]
-for s_recenter = 1
+for s_dinit = 2
+for s_dfix = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
     opt.Dfixed = dfixes{s_dfix};
-    opt.Recenter = recenter{s_recenter};
     
     if (opt.Dfixed == 1) && strcmp(opt.dictInit, 'flat')
         continue
@@ -93,14 +84,15 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_9_22_',opt.regularizer,'_',dataset,'_',opt.Penalty,...
+    topDir = ['/cluster/home/dbanco02/Outputs_9_29_',opt.regularizer,...
+        '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'/results_trial_',num2str(trial)];
+        '/results_trial_',num2str(trial)];
 
     for sig_i = 3:5
-        for j_s = [95,100,105,110]
-            for j_reg = [1,5:5:55]
+        for j_s = coarseVals
+            for j_reg = coarseRegVals
                 varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset,K,scales};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
@@ -108,7 +100,6 @@ for s_recenter = 1
             end
         end
     end
-end
 end
 end
 end

@@ -148,6 +148,7 @@ xsz = [size(S,1) size(S,2) KJ T];
 % 4th dimension is number of images in input s volume
 S = reshape(S, [size(S,1) size(S,2) 1 T]);
 Spad = padarray(S,[0 M-1 0 0],0,'pre');
+Spadf = fft2(Spad);
 
 Nx = prod(xsz);
 Nd = prod(xsz(1:2))*size(D0,3);
@@ -267,12 +268,6 @@ AGf = fft2(AGpad);
 AGSf = bsxfun(@times, conj(AGf), Sfpad);
 Yf = fft2(Y);
 
-if opt.useGpu
-    Atop = @(r) ifft2(pagefun(@times, conj(AGf), r),'symmetric');
-else
-    Atop = @(r) ifft2(bsxfun(@times, conj(AGf), r),'symmetric');
-end
-
 % Initial solution
 k=0;
 tk = toc(tstart);
@@ -360,12 +355,6 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
         AGf = fft2(AG);
         AGSf = bsxfun(@times, conj(AGf), Sfpad);
         
-        if opt.useGpu
-            Atop = @(r) ifft2(pagefun(@times, conj(AGf), r),'symmetric');
-        else
-            Atop = @(r) ifft2(bsxfun(@times, conj(AGf), r),'symmetric');
-        end
-        
         % Update dual variable corresponding to D, G
         H = H + Dr - G;
     else
@@ -394,7 +383,7 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % use the projected dictionary variable G
     if ~opt.Xfixed
         bf = AGSf + rho1*fft2(Y-U);
-        [Xf, cgst, opt] = x_update_switch(Y,Yf,AGf,bf,Spad,Y,U,opt,N2,M,K,J,T,Atop);
+        [Xf, cgst, opt] = x_update_switch(Y,Yf,AGf,bf,Spadf,Y,U,opt,N2,M,K,J,T);
 
         cgIters2 = cgst.pit;
 
@@ -539,15 +528,15 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
   if opt.AutoRho1
     if k ~= 1 && mod(k, opt.AutoRho1Period) == 0
       if opt.AutoRho1Scaling
-        rhomlt = sqrt(rx/sx);
-        if rhomlt < 1, rhomlt = 1/rhomlt; end
-        if rhomlt > opt.Rho1Scaling, rhomlt = opt.Rho1Scaling; end
+        rho1mlt = sqrt(rx/sx);
+        if rho1mlt < 1, rho1mlt = 1/rho1mlt; end
+        if rho1mlt > opt.Rho1Scaling, rho1mlt = opt.Rho1Scaling; end
       else
-        rhomlt = opt.Rho1Scaling;
+        rho1mlt = opt.Rho1Scaling;
       end
       rsf = 1;
-      if rx > opt.Rho1RsdlRatio*sx, rsf = rhomlt; end
-      if sx > opt.Rho1RsdlRatio*rx, rsf = 1/rhomlt; end
+      if rx > opt.Rho1RsdlRatio*sx, rsf = rho1mlt; end
+      if sx > opt.Rho1RsdlRatio*rx, rsf = 1/rho1mlt; end
       rho1 = rsf*rho1;
       opt.rho1 = rho1;
       U = U/rsf;
@@ -556,15 +545,15 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
   if opt.AutoRho2
     if k ~= 1 && mod(k, opt.AutoRho2Period) == 0
       if opt.AutoRho2Scaling
-        sigmlt = sqrt(rd/sd);
-        if sigmlt < 1, sigmlt = 1/sigmlt; end
-        if sigmlt > opt.Rho2Scaling, sigmlt = opt.Rho2Scaling; end
+        rho2mlt = sqrt(rd/sd);
+        if rho2mlt < 1, rho2mlt = 1/rho2mlt; end
+        if rho2mlt > opt.Rho2Scaling, rho2mlt = opt.Rho2Scaling; end
       else
-        sigmlt = opt.Rho2Scaling;
+        rho2mlt = opt.Rho2Scaling;
       end
       ssf = 1;
-      if rd > opt.Rho2RsdlRatio*sd, ssf = sigmlt; end
-      if sd > opt.Rho2RsdlRatio*rd, ssf = 1/sigmlt; end
+      if rd > opt.Rho2RsdlRatio*sd, ssf = rho2mlt; end
+      if sd > opt.Rho2RsdlRatio*rd, ssf = 1/rho2mlt; end
       rho2 = ssf*rho2;
       opt.rho2 = rho2;
       H = H/ssf;
@@ -644,10 +633,10 @@ function opt = defaultopts(opt)
     opt.MaxMainIter = 1000;
   end
   if ~isfield(opt,'AbsStopTol')
-    opt.AbsStopTol = 1e-5;
+    opt.AbsStopTol = 1e-8;
   end
   if ~isfield(opt,'RelStopTol')
-    opt.RelStopTol = 1e-3;
+    opt.RelStopTol = 1e-8;
   end
   if ~isfield(opt,'L1Weight')
     opt.L1Weight = 1;

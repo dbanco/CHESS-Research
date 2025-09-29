@@ -1,7 +1,4 @@
 function sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,i,opt,topDir,dataset,K,scales)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
-% Optical flow coupled solution
 
 figDir = [topDir,'_sig_',num2str(i)];
 mkdir(figDir)
@@ -19,7 +16,7 @@ else
 end
 
 % Model Setup
-J = size(scales{1},2);
+[K,J,scales] = datasetScales(dataset);
 opt.DictFilterSizes = [1; M];
 center = (M+1)/2;
 
@@ -60,6 +57,21 @@ outputs.J = J;
 outputs.opt = opt;
 outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
+
+AD = reSampleCustomArrayCenter3(N,D,scales,center);
+AD = padarray(AD,[0 M-1 0],0,'post');
+ADf = fft2(AD);
+
+if opt.a_via_lam
+    a = 0.95./outputs.lambda;
+else
+    a = opt.a;
+end
+metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,,K,J,opt);
+metrics.lambda = lambda;
+metrics.lambda2 = lambda2;
+outputs.metrics = metrics;
+
 suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
                   j_s,j_reg,sigmas(i),outputs.lambda,outputs.lambda2);
 save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
@@ -67,9 +79,6 @@ save(fullfile(figDir,['output',suffix,'.mat']),'outputs');
 % Generate figures
 generateFiguresToy1zpad_center(figDir,outputs,suffix,[4,8],outputs.opt.useMin);
 
-AD = reSampleCustomArrayCenter3(N,D,scales,center);
-AD = padarray(AD,[0 M-1 0],0,'post');
-ADf = fft2(AD);
 Bhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
 plotDataRecon(y,Bhat,figDir,['y_recon',suffix,'.gif'])
 
