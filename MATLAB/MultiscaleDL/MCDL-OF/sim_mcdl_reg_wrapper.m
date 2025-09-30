@@ -67,7 +67,7 @@ if opt.a_via_lam
 else
     a = opt.a;
 end
-metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,,K,J,opt);
+metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,K,J,opt);
 metrics.lambda = lambda;
 metrics.lambda2 = lambda2;
 outputs.metrics = metrics;
