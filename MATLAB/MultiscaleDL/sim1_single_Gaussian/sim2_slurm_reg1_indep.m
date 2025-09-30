@@ -60,8 +60,6 @@ for i = sig_ind
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);
 end
 
-ind1 = 1:numel(lambdaVals);
-
 % Regularizer
 opt.regularizer = 'filter3';
 
