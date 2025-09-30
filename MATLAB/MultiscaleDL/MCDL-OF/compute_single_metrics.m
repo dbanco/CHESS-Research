@@ -1,4 +1,4 @@
-function metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,K,J,opt)
+function metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,K,J,M,opt)
 
 % Compute recons
 Yhat = unpad(squeeze(ifft2(sum(bsxfun(@times,ADf,fft2(X)),3),'symmetric')),M-1,'pre');
