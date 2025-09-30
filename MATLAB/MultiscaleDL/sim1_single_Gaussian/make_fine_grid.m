@@ -8,7 +8,8 @@ end
 for sig_i = 1:5
     sigma = sigmas(sig_i);
     coarseDir = ['/cluster/home/dbanco02/Outputs_9_29_filter3_dissertation_adjust2_log_Dflat0_Xzeros0\results_trial_1_sig_',num2str(sig_i)];
-    fineJobDir = '/cluster/home/dbanco02/fine_jobs/';
+    fineDir = ['/cluster/home/dbanco02/Outputs_9_29_fine_filter3_dissertation_adjust2_log_Dflat0_Xzeros0\results_trial_1_sig_',num2str(sig_i)];
+    fineJobDir = '/cluster/home/dbanco02/jobs/';
     scriptFileName = 'mcdlof_fine_bash.sh';
     funcName = 'sim_mcdl_reg_wrapper';
     K_select = 4;           % number of coarse candidates to refine
@@ -77,7 +78,7 @@ for sig_i = 1:5
         for j_s = fineLambda
             for j_reg = fineLambda2
                 varin = {fineLambda,fineLambda2,j_s,j_reg,sigmas,sig_i,opt,fineDir,dataset};
-                save(fullfile(fineJobDir,sprintf('varin_%04d.mat',k)),'varin','funcName');
+                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
                 k = k + 1;
             end
         end
