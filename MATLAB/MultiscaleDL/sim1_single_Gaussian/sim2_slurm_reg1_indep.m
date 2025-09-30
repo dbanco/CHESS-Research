@@ -89,8 +89,8 @@ for s_dfix = 1
         '/results_trial_',num2str(trial)];
 
     for sig_i = 1:5
-        for j_s = coarseVals
-            for j_reg = coarseRegVals
+        for j_s = 1:numel(coarseVals)
+            for j_reg = 1:numel(coarseRegVals)
                 varin = {coarseVals,coarseRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
