@@ -382,6 +382,9 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % variable D as the dictionary, but this appears to be unstable. Instead,
     % use the projected dictionary variable G
     if ~opt.Xfixed
+        
+        
+
         bf = AGSf + rho1*fft2(Y-U);
         [Xf, cgst, opt] = x_update_switch(Y,Yf,AGf,bf,Spadf,Y,U,opt,N2,M,K,J,T);
 

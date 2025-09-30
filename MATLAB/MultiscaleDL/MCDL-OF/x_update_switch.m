@@ -52,8 +52,9 @@ switch opt.regularizer
     case 'filter3'
         [Xf, cgst, opt] = x_update_filter_reg_gpu(X0f,Df,bf,opt,N,M,K,J,T);
     case 'softmin'
-        [Xf, cgst, opt] = x_update_softmin_reg_gpu(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
+        % [Xf, cgst, opt] = x_update_softmin_lbfgs_gpu(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
         % [Xf, cgst, opt] = x_update_softmin_mm_ism(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
+        [Xf, cgst, opt] = x_update_softmin_mm_pcg_gpu(X0,Df,bf,Sf,Y,U,opt,N,M,K,J,T);
         
 end
 

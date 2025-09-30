@@ -10,7 +10,7 @@ opt.MaxMainIter = 300;
 opt.MaxCGIter = 100;
 opt.CGTol = 1e-6;
 opt.MaxCGIterX = 100;
-opt.CGTolX = 1e-6;
+opt.CGTolX = 1e-10;
 % Rho and sigma params
 opt.rho1 = 10;
 opt.rho2 = 5;
@@ -35,9 +35,10 @@ opt.useMin = false;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = 100;
+opt.mcdl_init = 60;
 opt.ism_init = true;
 opt.L = 1;
+opt.tau = 1e-2;
 
 % Multiscale dictionary setup
 K = 2;
@@ -87,16 +88,16 @@ for s_recenter = 1
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\Outputs_9_26b_softmin_',dataset,'_',opt.Penalty,...
+    topDir = ['E:\MCDLOF_processing\Outputs_9_30_softmin_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '_recenter',num2str(opt.Recenter),'\results_trial_',num2str(trial)];
 
     for sig_i = 3
         for j_s = 90
-            for j_reg = [50]
+            for j_reg = 2
                 sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,...
-                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset,K,scales);
+                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset);
             end
         end
     end
