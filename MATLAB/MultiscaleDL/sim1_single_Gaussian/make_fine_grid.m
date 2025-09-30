@@ -7,6 +7,8 @@ for i = sig_ind
 end
 for sig_i = 1:5
     sigma = sigmas(sig_i);
+    rng(1);
+    [y,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigmas(i),dataset);
     coarseDir = ['/cluster/home/dbanco02/Outputs_9_29_filter3_dissertation_adjust2_log_Dflat0_Xzeros0\results_trial_1_sig_',num2str(sig_i)];
     fineDir = ['/cluster/home/dbanco02/Outputs_9_29_fine_filter3_dissertation_adjust2_log_Dflat0_Xzeros0\results_trial_1_sig_',num2str(sig_i)];
     fineJobDir = '/cluster/home/dbanco02/jobs/';
@@ -27,7 +29,6 @@ for sig_i = 1:5
     relErrAll = [];
     logPenAll = [];
     regPenAll = [];
-    sigmasAll = [];
     
     for f = 1:numel(metricFiles)
         data = load(fullfile(coarseDir,metricFiles(f).name));
