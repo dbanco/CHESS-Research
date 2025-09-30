@@ -90,11 +90,11 @@ for s_dfix = 1
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '/results_trial_',num2str(trial)];
 
-    for sig_i = 3:5
+    for sig_i = 1:5
         for j_s = coarseVals
             for j_reg = coarseRegVals
-                varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
-                         sig_i,opt,topDir,dataset,K,scales};
+                varin = {coarseVals,coarseRegVals,j_s,j_reg,sigmas,...
+                         sig_i,opt,topDir,dataset};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
                 k = k + 1;
             end

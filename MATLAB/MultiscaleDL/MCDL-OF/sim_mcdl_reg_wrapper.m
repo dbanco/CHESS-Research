@@ -1,4 +1,4 @@
-function sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,i,opt,topDir,dataset,K,scales)
+function sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,i,opt,topDir,dataset)
 
 figDir = [topDir,'_sig_',num2str(i)];
 mkdir(figDir)
