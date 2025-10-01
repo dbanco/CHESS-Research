@@ -17,7 +17,7 @@ for sig_i = 1:numel(SNRs)
     funcName = 'sim_mcdl_reg_wrapper';
     K_select = 2;           % number of coarse candidates to refine
     tolerance = 0.2;        % discrepancy ±20%
-    nFine = 10;             % points per axis in fine grid
+    nFine = 9;             % points per axis in fine grid
     zoomFactor = 2;         % factor around coarse center
     
     if ~exist(jobDir,'dir'), mkdir(jobDir); end
