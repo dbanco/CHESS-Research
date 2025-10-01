@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-2,0,150);
-lambdaRegVals = logspace(-2,2,10);
+lambdaRegVals = [0 logspace(-2,2,32)];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
@@ -90,7 +90,7 @@ for s_dfix = 1
 
     for sig_i = 1:5
         for j_s = 1:numel(lambdaVals)
-            for j_reg = 1:numel(lambdaRegVals)
+            for j_reg = 1
                 varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
