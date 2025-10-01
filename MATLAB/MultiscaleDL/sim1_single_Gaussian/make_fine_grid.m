@@ -5,6 +5,7 @@ sigmas = zeros(numel(SNRs),1);
 for i = 1:numel(SNRs)
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);
 end
+k = 1;
 for sig_i = 1:numel(SNRs)
     sigma = sigmas(sig_i);
     rng(1);
@@ -14,7 +15,7 @@ for sig_i = 1:numel(SNRs)
     jobDir = '/cluster/home/dbanco02/jobs/';
     scriptFileName = 'mcdlof_fine_bash.sh';
     funcName = 'sim_mcdl_reg_wrapper';
-    K_select = 4;           % number of coarse candidates to refine
+    K_select = 2;           % number of coarse candidates to refine
     tolerance = 0.2;        % discrepancy ±20%
     nFine = 10;             % points per axis in fine grid
     zoomFactor = 2;         % factor around coarse center
@@ -70,7 +71,7 @@ for sig_i = 1:numel(SNRs)
     fprintf('Selected %d coarse candidates for fine grid\n',K);
     
     % --- Generate fine grids around selected parameters ---
-    k = 1;
+    
     for i = 1:K
         idx = selectedIdx(i);
         lam = lambdaValsAll(idx);
