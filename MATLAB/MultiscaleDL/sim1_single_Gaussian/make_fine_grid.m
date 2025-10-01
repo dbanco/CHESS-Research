@@ -2,10 +2,10 @@
 dataset = 'dissertation_adjust2';
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
-for i = sig_ind
+for i = 1:numel(SNRs)
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);
 end
-for sig_i = 1:5
+for sig_i = 1:numel(SNRs)
     sigma = sigmas(sig_i);
     rng(1);
     [y,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
