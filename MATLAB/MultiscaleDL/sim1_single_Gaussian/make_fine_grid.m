@@ -94,4 +94,4 @@ end
 
 % --- Write SLURM job script ---
 slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1));
-fprintf('Wrote %d fine jobs to %s\n', k-1, fineJobDir);
+fprintf('Wrote %d fine jobs to %s\n', k-1, jobDir);
