@@ -1,6 +1,6 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
-lambdaVals = logspace(-2,0,150);
+lambdaVals = logspace(-1.5,1,150);
 lambdaRegVals = [0 logspace(-2,2,32)];
 
 % Set up algorithm parameters
