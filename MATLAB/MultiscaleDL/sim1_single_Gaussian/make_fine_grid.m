@@ -20,7 +20,7 @@ for sig_i = 1:numel(SNRs)
     nFine = 10;             % points per axis in fine grid
     zoomFactor = 2;         % factor around coarse center
     
-    if ~exist(fineJobDir,'dir'), mkdir(fineJobDir); end
+    if ~exist(jobDir,'dir'), mkdir(jobDir); end
     
     % --- Load all coarse metrics ---
     metricFiles = dir(fullfile(coarseDir,'output_*.mat'));
