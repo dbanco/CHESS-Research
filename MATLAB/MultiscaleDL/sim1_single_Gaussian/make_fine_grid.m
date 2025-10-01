@@ -33,6 +33,9 @@ for sig_i = 1:numel(SNRs)
     for f = 1:numel(metricFiles)
         data = load(fullfile(coarseDir,metricFiles(f).name));
         m = data.outputs.metrics;
+        if f == 1
+            opt = data.outputs.opt;
+        end
         lambdaValsAll(end+1) = m.lambda;
         lambda2ValsAll(end+1)= m.lambda2;
         relErrAll(end+1) = m.rel_error;
@@ -78,6 +81,8 @@ for sig_i = 1:numel(SNRs)
         
         for j_s = fineLambda
             for j_reg = fineLambda2
+                opt.lambda = fineLambda(j_s);
+                opt.lambda2 = fineLambda(j_reg);
                 varin = {fineLambda,fineLambda2,j_s,j_reg,sigmas,sig_i,opt,fineDir,dataset};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
                 k = k + 1;
