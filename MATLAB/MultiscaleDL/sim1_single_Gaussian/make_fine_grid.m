@@ -10,7 +10,7 @@ for sig_i = 1:numel(SNRs)
     rng(1);
     [y,y_true,N,M,T,Xtrue,Dtrue] = sim_switch_multiscale_dl(sigma,dataset);
     coarseDir = ['/cluster/home/dbanco02/Outputs_9_29_filter3_dissertation_adjust2_log_Dflat0_Xzeros0/results_trial_1_sig_',num2str(sig_i)];
-    fineDir = ['/cluster/home/dbanco02/Outputs_9_29_fine_filter3_dissertation_adjust2_log_Dflat0_Xzeros0/results_trial_1_sig_',num2str(sig_i)];
+    fineDir = '/cluster/home/dbanco02/Outputs_9_29_fine_filter3_dissertation_adjust2_log_Dflat0_Xzeros0/results_trial_1';
     jobDir = '/cluster/home/dbanco02/jobs/';
     scriptFileName = 'mcdlof_fine_bash.sh';
     funcName = 'sim_mcdl_reg_wrapper';
@@ -92,5 +92,5 @@ for sig_i = 1:numel(SNRs)
 end
 
 % --- Write SLURM job script ---
-slurm_write_bash(k-1,fineJobDir,scriptFileName,sprintf('1-%i',k-1));
+slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1));
 fprintf('Wrote %d fine jobs to %s\n', k-1, fineJobDir);
