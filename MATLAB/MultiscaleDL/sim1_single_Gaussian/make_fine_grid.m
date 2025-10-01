@@ -79,8 +79,8 @@ for sig_i = 1:numel(SNRs)
         fineLambda = logspace(log10(lam/zoomFactor), log10(lam*zoomFactor), nFine);
         fineLambda2= logspace(log10(lam2/zoomFactor), log10(lam2*zoomFactor), nFine);
         
-        for j_s = fineLambda
-            for j_reg = fineLambda2
+        for j_s = 1:numel(fineLambda)
+            for j_reg = 1:numel(fineLambda2)
                 opt.lambda = fineLambda(j_s);
                 opt.lambda2 = fineLambda(j_reg);
                 varin = {fineLambda,fineLambda2,j_s,j_reg,sigmas,sig_i,opt,fineDir,dataset};
