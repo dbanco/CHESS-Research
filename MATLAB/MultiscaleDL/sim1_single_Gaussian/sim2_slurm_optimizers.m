@@ -1,7 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-1.5,1,150);
-lambdaRegVals = [0 logspace(-2,2,99), 500, 1000, 10000];
+lambdaRegVals = [0 logspace(-2,2,99)];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
@@ -93,13 +93,15 @@ for s_optim = 1:3
         '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '_recenter',num2str(opt.Recenter),'\results_trial_',num2str(trial)];
+        '\results_trial_',num2str(trial)];
 
     for sig_i = 1:5
         for j_s = [80,90,100,110,120]
-            for j_reg = [2,10,20,30,40,50]
-                sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,...
-                        j_s,j_reg,sigmas,sig_i,opt,topDir,dataset);
+            for j_reg = [2,20,40,60,80,100]
+                varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
+                         sig_i,opt,topDir,dataset};
+                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+                k = k + 1;
             end
         end
     end
