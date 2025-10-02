@@ -6,9 +6,9 @@ lambdaRegVals = [0 logspace(-2,2,99)];
 % Set up algorithm parameters
 opt.plotDict = 0;
 opt.Verbose = 1;
-opt.MaxMainIter = 300;
+opt.MaxMainIter = 1000;
 opt.MaxCGIter = 100;
-opt.CGTol = 1e-6;
+opt.CGTol = 1e-10;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-10;
 % Rho and sigma params
@@ -35,7 +35,7 @@ opt.useMin = true;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = 60;
+opt.mcdl_init = 300;
 opt.ism_init = true;
 opt.L = 1;
 opt.tau = 1e-2;
@@ -98,7 +98,7 @@ for s_optim = 1:3
         '/results_trial_',num2str(trial)];
 
     for sig_i = 1:5
-        for j_s = [80,90,100,110,120]
+        for j_s = [10,20,30,40,50,60,70]
             for j_reg = [2,20,40,60,80,100]
                 varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset};
