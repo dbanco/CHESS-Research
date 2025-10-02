@@ -47,7 +47,9 @@ scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
 scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
 J = size(scales{1},2);
 
+scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdl_reg_wrapper';
+jobDir = '/cluster/home/dbanco02/jobs/';
 k = 1;
 
 datasets = {'dissertation_adjust2'};
@@ -89,11 +91,11 @@ for s_optim = 1:3
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\Outputs_10_2_softmin_',opt.optimizer,...
+    topDir = ['/cluster/home/dbanco02/Outputs_10_1_',opt.regularizer,'_',opt.optimizer,...
         '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '\results_trial_',num2str(trial)];
+        '/results_trial_',num2str(trial)];
 
     for sig_i = 1:5
         for j_s = [80,90,100,110,120]
