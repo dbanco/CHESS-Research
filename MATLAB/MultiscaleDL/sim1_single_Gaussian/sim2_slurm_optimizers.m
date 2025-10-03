@@ -12,8 +12,8 @@ opt.CGTol = 1e-10;
 opt.MaxCGIterX = 100;
 opt.CGTolX = 1e-10;
 % Rho and sigma params
-opt.rho1 = 10;
-opt.rho2 = 5;
+opt.rho1 = 1000;
+opt.rho2 = 500;
 opt.AutoRho1 = 1;
 opt.AutoRho1Period = 1;
 opt.AutoRho2 = 1;
