@@ -115,3 +115,4 @@ end
 end
 end
 end
+slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))
