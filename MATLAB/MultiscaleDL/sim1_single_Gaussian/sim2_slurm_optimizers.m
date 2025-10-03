@@ -34,8 +34,8 @@ opt.a = 1;
 opt.useMin = true;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
-opt.l1_iters = 10;
-opt.mcdl_init = 300;
+opt.l1_iters = 20;
+opt.mcdl_init = 100;
 opt.ism_init = true;
 opt.L = 1;
 opt.tau = 1e-2;
@@ -72,7 +72,7 @@ ind1 = 1:numel(lambdaVals);
 
 % Regularizer
 opt.regularizer = 'softmin';
-optimizers = {'LBFGS', 'Lin MM', 'Quad MM'};
+optimizers = {'LBFGS', 'LinMM', 'QuadMM'};
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
@@ -80,7 +80,7 @@ for s_pen = 2
 for s_xinit = 1
 for s_dinit = 2
 for s_dfix = 1
-for s_optim = 1:3
+for s_optim = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -91,15 +91,15 @@ for s_optim = 1:3
         continue
     end
    
-    topDir = ['/cluster/home/dbanco02/Outputs_10_1_',opt.regularizer,'_',opt.optimizer,...
+    topDir = ['/cluster/home/dbanco02/Outputs_10_3_',opt.regularizer,'_',opt.optimizer,...
         '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '/results_trial_',num2str(trial)];
 
     for sig_i = 1:5
-        for j_s = [10,20,30,40,50,60,70]
-            for j_reg = [2,20,40,60,80,100]
+        for j_s = 1:numel(lambdaVals)
+            for j_reg = 1
                 varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset};
                 save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')

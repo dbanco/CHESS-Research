@@ -383,7 +383,14 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
     % use the projected dictionary variable G
     if ~opt.Xfixed
         
+        if opt.adapt_a && k <= (opt.AdaptIters + opt.l1_iters)
+            a_n = opt.a_min*(opt.a/opt.a_min)^((k-opt.l1_iters)/opt.AdaptIters);
+        else
+            a_n = opt.a;
+        end
         
+        opt.a_n = a_n;
+        opt.k = k;
 
         bf = AGSf + rho1*fft2(Y-U);
         [Xf, cgst, opt] = x_update_switch(Y,Yf,AGf,bf,Spadf,Y,U,opt,N2,M,K,J,T);
@@ -399,12 +406,6 @@ while k <= opt.MaxMainIter && (rx > eprix||sx > eduax||rd > eprid||sd >eduad)
             Xr = X;
         else
             Xr = opt.XRelaxParam*X + (1-opt.XRelaxParam)*Y;
-        end
-        
-        if opt.adapt_a && k <= (opt.AdaptIters + opt.l1_iters)
-            a_n = opt.a_min*(opt.a/opt.a_min)^((k-opt.l1_iters)/opt.AdaptIters);
-        else
-            a_n = opt.a;
         end
 
         % Solve Y subproblem

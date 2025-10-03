@@ -31,7 +31,7 @@ opt.Dfixed = dfixes{s(5)};
 opt.Recenter = recenters{s(6)};
 opt.Xfixed = 0;
 
-prefix = ['10_1_filter3_',dataset];
+prefix = ['10_1_softmin_Lin MM_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed)];
