@@ -31,7 +31,7 @@ opt.Dfixed = dfixes{s(5)};
 opt.Recenter = recenters{s(6)};
 opt.Xfixed = 0;
 
-prefix = ['10_1_softmin_Lin MM_',dataset];
+prefix = ['10_3_softmin_LBFGS_',dataset];
 topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
     '_D',opt.dictInit,num2str(opt.Dfixed),...
     '_X',opt.coefInit,num2str(opt.Xfixed)];
@@ -48,7 +48,7 @@ selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.1; % for discrepancy range
+relax_param = 1.2; % for discrepancy range
 makeFigures = true;
 
 for n = sig_ind

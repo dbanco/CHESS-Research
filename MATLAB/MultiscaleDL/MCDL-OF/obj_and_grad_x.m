@@ -16,6 +16,9 @@ function [f, gvec] = obj_and_grad_x(xvec, Df, Sf, Y, U, rho1, lambda2, K, J)
     if lambda2 > 0
         [R, g_soft] = compute_softmin(X, K, J);
     end
+    % gradient clip g_soft
+    % g_soft(g_soft > 0.1) = 0.1;
+
     f = data_term + quad_term + lambda2 * R;
 
     % gradient: Atop(AfXf - Sf) + rho*(X - Y + U) + lambda2 * g_soft
