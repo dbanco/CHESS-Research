@@ -39,5 +39,5 @@ for t = 1:T
     % subplot(2,1,2)
     % imagesc(X(:,:,t))
 
-    wass_dist = wass_dist + sinkhornKnoppTransport(vec1(:),vec2(:), 10, D);
+    wass_dist = wass_dist + sinkhornKnoppTransport(vec1(:),vec2(:), 5, D);
 end
