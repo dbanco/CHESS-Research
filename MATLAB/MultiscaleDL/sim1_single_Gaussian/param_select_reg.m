@@ -48,7 +48,7 @@ selected_inds = zeros(NN,1);
 objectives = cell(NN,1);
 
 useMin = 1;
-relax_param = 1.2; % for discrepancy range
+relax_param = 1; % for discrepancy range
 makeFigures = true;
 
 for n = sig_ind

@@ -61,7 +61,7 @@ recenter = {0,1};
 
 % Noise level
 dataset = datasets{1};
-sig_ind = 1:5;
+sig_ind = 1:4;
 SNRs = [20,16,12,8,4];
 sigmas = zeros(numel(SNRs),1);
 for i = sig_ind
@@ -74,7 +74,7 @@ ind1 = 1:numel(lambdaVals);
 opt.regularizer = 'softmin';
 optimizers = {'LBFGS', 'LinMM', 'QuadMM'};
 
-selected_lam = [20,32,45,54,68];
+selected_lam = [14,26,39,50,63];
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
@@ -99,8 +99,9 @@ for s_optim = 1
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '/results_trial_',num2str(trial)];
 
-    for sig_i = 1:5
-        for j_s = selected_lam(sig_i)
+    for sig_i = 1:4
+        jj = selected_lam(sig_i);
+        for j_s = jj:(jj+1)
             for j_reg = 2:100
                 varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
                          sig_i,opt,topDir,dataset};
