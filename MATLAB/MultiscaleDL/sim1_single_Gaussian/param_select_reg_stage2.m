@@ -39,7 +39,8 @@ topDir = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,...
 % criterion = 'truth_error';
 % criterion = 'relaxed discrepancy';
 % criterion = 'discrepancy range';
-criterion = 'score';
+% criterion = 'score';
+criterion = 'l-curve-MDF3';
 % criterion = 'x_metric2';
 % criterion = 'discrepancy range of-hs-log';
 
@@ -51,7 +52,7 @@ objectives = cell(NN,1);
 
 useMin = 1;
 relax_param = 1.1; % for discrepancy range
-makeFigures = true;
+makeFigures = false;
 
 for n = sig_ind
     inDir = [topDir,'\results_trial_1_sig_',num2str(n)];
@@ -80,8 +81,19 @@ for n = sig_ind
     end
     objectives{n} = objective;
 end
-LcurveFile = fullfile(topDir,'l-curve_plot.png'); 
-fig = gcf;
-fig.Position = [100 100 1400 800];
-saveas(gcf, LcurveFile);
-removeWhiteSpace(LcurveFile)
+
+% Plot Evaluation Metrics
+prefix2 = ['10_3_softmin_LBFGS_',dataset];
+topDirIndep = ['E:\MCDLOF_processing\Outputs_',prefix2,'_',opt.Penalty,'_Dflat0_Xzeros0'];
+topDirReg = ['E:\MCDLOF_processing\Outputs_',prefix,'_',opt.Penalty,'_Dflat0_Xzeros0'];
+num_trials = 1;
+[objectives_of,objectives_indep] = compute_objectives_metrics(sig_ind,sigmas,...
+    dataset,topDirIndep,topDirReg,selected_inds(:,1),selected_inds(:,2));
+
+fig_dir = 'C:\Users\dpqb1\Documents\MCDL Paper';
+data_name = 'sim2';
+
+error_stats_indep = compute_error_stats2(objectives_indep,sig_ind);
+error_stats_of = compute_error_stats2(objectives_of,sig_ind);
+
+plot_eval_metrics(fig_dir,num_trials,data_name,SNRs(1:4),error_stats_indep,error_stats_of)
