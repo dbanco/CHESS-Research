@@ -55,7 +55,7 @@ recenter = {0,1};
 % Noise level
 dataset = datasets{1};
 sig_ind = 1:5;
-SNRs = [20,16,12,8,4];
+SNRs = [20,17,14,11,8];
 sigmas = zeros(numel(SNRs),1);
 for i = sig_ind
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);

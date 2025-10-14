@@ -40,13 +40,6 @@ opt.ism_init = true;
 opt.L = 1;
 opt.tau = 1e-2;
 
-% Multiscale dictionary setup
-K = 2;
-scales = cell(K,1);
-scales{1} = genRationals([0;1],[1;1],8,8, 1/6);
-scales{2} = genRationals([0;1],[1;1],8,8, 1/6);
-J = size(scales{1},2);
-
 scriptFileName = 'mcdlof_bash.sh';
 funcName = 'sim_mcdl_reg_wrapper';
 jobDir = '/cluster/home/dbanco02/jobs/';
@@ -62,7 +55,7 @@ recenter = {0,1};
 % Noise level
 dataset = datasets{1};
 sig_ind = 1:5;
-SNRs = [20,16,12,8,4];
+SNRs = [20,17,14,11,8];
 sigmas = zeros(numel(SNRs),1);
 for i = sig_ind
     sigmas(i) = SNRtoSigma(SNRs(i),dataset);

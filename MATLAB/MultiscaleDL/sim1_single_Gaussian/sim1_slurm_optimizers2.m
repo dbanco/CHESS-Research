@@ -1,8 +1,7 @@
 %% Multiscale 1D dictionary learning toy problem
 % Directory
 lambdaVals = logspace(-1.5,1,150);
-% Should be  lambdaVals = logspace(-1.5,0.3,150);
-lambdaRegVals  = [0 logspace(-2,2,99),200,500,1000];
+lambdaRegVals = [0 logspace(-2,2,99)];
 
 % Set up algorithm parameters
 opt.plotDict = 0;
@@ -66,7 +65,9 @@ ind1 = 1:numel(lambdaVals);
 
 % Regularizer
 opt.regularizer = 'softmin';
-optimizers = {'LBFGS', 'LinMM', 'QuadMM','TrustRegion'};
+optimizers = {'LBFGS', 'LinMM', 'QuadMM'};
+
+selected_lam = [45,46,48,50,61];
 
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
@@ -85,18 +86,20 @@ for s_optim = 1
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\Outputs_10_10_local1_',...
-        opt.regularizer,'_',opt.optimizer,...
+    topDir = ['/cluster/home/dbanco02/Outputs_10_14_reg_',opt.regularizer,'_',opt.optimizer,...
         '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
-        '\results_trial_',num2str(trial)];
+        '/results_trial_',num2str(trial)];
 
-    for sig_i = 1
-        for j_s = 1:150
-            for j_reg = 1
-                sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,j_s,j_reg,...
-                                     sigmas,sig_i,opt,topDir,dataset)
+    for sig_i = 1:5
+        jj = selected_lam(sig_i);
+        for j_s = jj:(jj+1)
+            for j_reg = 2:100
+                varin = {lambdaVals,lambdaRegVals,j_s,j_reg,sigmas,...
+                         sig_i,opt,topDir,dataset};
+                save(fullfile(jobDir,['varin_',num2str(k),'.mat']),'varin','funcName')
+                k = k + 1;
             end
         end
     end
@@ -106,3 +109,4 @@ end
 end
 end
 end
+slurm_write_bash(k-1,jobDir,scriptFileName,sprintf('1-%i',k-1))

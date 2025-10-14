@@ -36,8 +36,8 @@ opt.useMin = true;
 opt.AdaptIters = 100;
 opt.a_via_lam = true;
 opt.l1_iters = 10;
-opt.mcdl_init = 100;
-opt.ism_init = true;
+opt.mcdl_init = 0;
+opt.ism_init = false;
 opt.L = 1;
 opt.tau = 1e-2;
 opt.FISTAstepsize = 1;
@@ -80,10 +80,10 @@ optimizers = {'LBFGS', 'LinMM', 'QuadMM','TrustRegion'};
 % --- Dataset, Initialization, Parameters ---
 for trial = 1
 for s_pen = 2
-for s_xinit = 1
-for s_dinit = 2
-for s_dfix = 1
-for s_optim = 4
+for s_xinit = 2
+for s_dinit = 3
+for s_dfix = 2
+for s_optim = 1
     opt.Penalty = penalties{s_pen};
     opt.coefInit = xinits{s_xinit};
     opt.dictInit = dinits{s_dinit};
@@ -94,16 +94,16 @@ for s_optim = 4
         continue
     end
    
-    topDir = ['E:\MCDLOF_processing\Outputs_10_9_local2_',...
+    topDir = ['E:\MCDLOF_processing\Outputs_10_10_local1_',...
         opt.regularizer,'_',opt.optimizer,...
         '_',dataset,'_',opt.Penalty,...
         '_D',opt.dictInit,num2str(opt.Dfixed),...
         '_X',opt.coefInit,num2str(opt.Xfixed),...
         '\results_trial_',num2str(trial)];
 
-    for sig_i = 3
-        for j_s = 39
-            for j_reg = [60,70,80,90]
+    for sig_i = 1
+        for j_s = 15
+            for j_reg = [90]
                 sim_mcdl_reg_wrapper(lambdaVals,lambdaRegVals,j_s,j_reg,...
                                      sigmas,sig_i,opt,topDir,dataset)
             end
