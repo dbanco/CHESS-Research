@@ -1,4 +1,4 @@
-function results = compute_metrics_reg(outputDir,sigma,dataset,indep_only)
+function results = compute_metrics_reg(outputDir,sigma,dataset,useMin,indep_only)
 %param_select_3D 
 if nargin < 5
     indep_only = false;
@@ -36,8 +36,12 @@ for i = 1:numel(matFileNames)
             continue
         end
     end
-
-    metrics = outputs.metrics;
+    
+    if useMin
+        metrics = outputs.metrics_min;
+    else
+        metrics = outputs.metrics;
+    end
 
     % Compute error
     error(i) = metrics.error;

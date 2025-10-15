@@ -77,6 +77,9 @@ metrics_min = compute_single_metrics(ADf,y,y_true,Dmin,Dtrue,Ymin,Xtrue,a,K,J,M,
 metrics.lambda = lambda;
 metrics.lambda2 = lambda2;
 
+metrics_min.lambda = lambda;
+metrics_min.lambda2 = lambda2;
+
 outputs.metrics = metrics;
 outputs.metrics_min = metrics_min;
 
