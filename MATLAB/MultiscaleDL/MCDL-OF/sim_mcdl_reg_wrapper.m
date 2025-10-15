@@ -58,19 +58,27 @@ outputs.opt = opt;
 outputs.lambda = lambda;
 outputs.lambda2 = lambda2;
 
-AD = reSampleCustomArrayCenter3(N,D,scales,center);
-AD = padarray(AD,[0 M-1 0],0,'post');
-ADf = fft2(AD);
-
 if opt.a_via_lam
     a = 0.95./outputs.lambda;
 else
     a = opt.a;
 end
+
+AD = reSampleCustomArrayCenter3(N,D,scales,center);
+AD = padarray(AD,[0 M-1 0],0,'post');
+ADf = fft2(AD);
 metrics = compute_single_metrics(ADf,y,y_true,D,Dtrue,X,Xtrue,a,K,J,M,opt);
+
+AD = reSampleCustomArrayCenter3(N,Dmin,scales,center);
+AD = padarray(AD,[0 M-1 0],0,'post');
+ADf = fft2(AD);
+metrics_min = compute_single_metrics(ADf,y,y_true,Dmin,Dtrue,Ymin,Xtrue,a,K,J,M,opt);
+
 metrics.lambda = lambda;
 metrics.lambda2 = lambda2;
+
 outputs.metrics = metrics;
+outputs.metrics_min = metrics_min;
 
 suffix = sprintf('_j%i_%i_sig_%0.2e_lam1_%0.2e_lam2_%0.2e',...
                   j_s,j_reg,sigmas(i),outputs.lambda,outputs.lambda2);
